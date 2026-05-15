@@ -1,0 +1,37 @@
+{
+  "name": "ai-browser",
+  "short_name": "AI Browser",
+  "description": "An AI-powered browser with intelligent automation",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#3b82f6",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "AI Chat",
+      "url": "/?view=ai-chat",
+      "icons": [{ "src": "/icons/chat.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Notes",
+      "url": "/?view=notes",
+      "icons": [{ "src": "/icons/notes.png", "sizes": "192x192" }]
+    }
+  ]
+}

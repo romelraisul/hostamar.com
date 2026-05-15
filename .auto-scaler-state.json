@@ -1,0 +1,37 @@
+{
+  "startedAt": "2026-05-13T04:54:54.142Z",
+  "currentTier": "bronze",
+  "totalCustomers": 0,
+  "totalRevenue": 8400,
+  "dailyStats": {
+    "newLeads": 36,
+    "contacted": 0,
+    "converted": 0,
+    "revenue": 8400,
+    "outreachSent": 120,
+    "date": "2026-05-13"
+  },
+  "weeklyStats": {
+    "newCustomers": 0,
+    "totalOutreach": 0,
+    "responseRate": 0
+  },
+  "pipeline": {
+    "visitors": 0,
+    "leads": 120,
+    "contacted": 0,
+    "interested": 0,
+    "demos": 0,
+    "converted": 0,
+    "paying": 0,
+    "churned": 0
+  },
+  "flags": {
+    "needMoreContent": false,
+    "needMoreLeads": false,
+    "needInfraScale": false,
+    "campaignFatigue": false
+  },
+  "lastRun": "2026-05-14T03:48:19.572Z",
+  "runCount": 5
+}

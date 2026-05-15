@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    { "src": "/qr/(.*)", "dest": "/qr/$1" },
+    { "src": "/login", "dest": "/login" },
+    { "src": "/app-redirect", "dest": "/app-redirect" },
+    { "src": "/dashboard/pricing", "dest": "/dashboard/pricing" },
+    { "src": "/dashboard/payment/crypto", "dest": "/dashboard/payment/crypto" },
+    { "src": "/api/health", "dest": "/api/health" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    }
+  ]
+}

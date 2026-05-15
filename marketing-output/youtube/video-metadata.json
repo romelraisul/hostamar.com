@@ -1,0 +1,30 @@
+[
+  {
+    "id": "yt1",
+    "title": "How to Make a Video in 5 Minutes | Hostamar Tutorial",
+    "description": "Learn how to create professional videos in just 5 minutes using Hostamar! \n\nIn this tutorial, I show you step-by-step how to use Hostamar's AI video generation platform to create stunning videos without any editing experience.\n\n🔗 Try FREE: https://hostamar.com\n🎁 First 100 users: 50% OFF\n\nTimestamps:\n0:00 Introduction\n0:30 What is Hostamar\n1:15 Creating your first video\n3:00 Adding Bangla text & music\n4:00 Export in 1080p HD\n4:30 Pricing & Plans\n\n#VideoEditing #AIVideo #Bangladesh #Hostamar #ContentCreation",
+    "tags": "video editing, AI video, bangladesh, tutorial, hostamar, content creation, video maker",
+    "category": "Howto & Style",
+    "default_lang": "bn",
+    "thumbnails": {
+      "1280x720": "yt1-thumb-1280.jpg",
+      "640x480": "yt1-thumb-640.jpg"
+    }
+  },
+  {
+    "id": "yt2",
+    "title": "AI Will Change Video Editing FOREVER | Hostamar Review",
+    "description": "AI is revolutionizing video creation! In this video, I review Hostamar - an AI-powered video generation tool designed specifically for Bangladesh creators.\n\nWatch as I create multiple videos in real-time!\n\n📊 Results:\n- Created 5 videos in 25 minutes\n- Cost: ৳2,000/month (vs ৳15,000+ for traditional editing)\n- Quality: 1080p HD\n\n🔗 Try it: https://hostamar.com\n\n#AI #VideoEditing #BangladeshCreators #Hostamar",
+    "tags": "ai video, video editing, bangladesh, review, hostamar, technology, ai editing",
+    "category": "Science & Technology",
+    "default_lang": "bn"
+  },
+  {
+    "id": "yt3",
+    "title": "Hostamar vs Canva Video | Which is Better for Bangla Content?",
+    "description": "Hostamar vs Canva - the ultimate comparison for Bangladesh content creators!\n\nI tested both platforms for creating Bangla video content:\n\nCategory | Hostamar | Canva\nBangla Text | ✅ Full support | ❌ Limited\nTemplates | 50+ (BD focused) | 100+ (Global)\nPrice | ৳2,000/mo | $12.99/mo\nSpeed | 5 min/video | 15 min/video\nExport | 1080p HD | 720p (free)\n\n🎯 Winner for BD creators: HOSTAMAR!\n\n#Hostamar #Canva #BanglaContent",
+    "tags": "hostamar, canva, comparison, bangladesh, video editing, bangla content",
+    "category": "Howto & Style",
+    "default_lang": "bn"
+  }
+]

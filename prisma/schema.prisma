@@ -1,0 +1,420 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User/Customer Model
+model Customer {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  password      String
+  resetToken    String?
+  resetTokenExpiry DateTime?
+  phone         String?
+  stage        String?   @default("lead")
+  source       String?   @default("website")
+  score        Int?      @default(0)
+  notes        String?
+  referralCode String?   @unique
+  referredBy   String?
+  referralBonus Float?  @default(0)
+  balance       Float?  @default(0)
+
+  // Relations
+  business      Business?
+  subscriptions Subscription[]
+  videos        Video[]
+  services      Service[]
+  payments      Payment[]
+  orders        Order[]
+  notifications    Notification[]
+  leads         Lead[]
+  referralsMade    Referral[]   @relation("ReferrerReferrals")
+  referralsReceived Referral[]  @relation("ReferredReferrals")
+  videoQueues      VideoQueue[]
+  activityLogs     ActivityLog[]
+  campaigns        Campaign[]
+  userProgress     UserProgress[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Business Profile
+model Business {
+  id            String   @id @default(cuid())
+  customerId    String   @unique
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name          String
+  industry      String
+  description   String?
+  website       String?
+  logo          String?
+  brandColor    String   @default("#3B82F6")
+
+  facebook      String?
+  instagram     String?
+  youtube       String?
+  tiktok        String?
+
+  videoFrequency String  @default("daily")
+  videoTopics    String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Subscription Plans
+model Subscription {
+  id            String   @id @default(cuid())
+  customerId    String   @unique
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  plan          String
+  status        String   @default("active")
+
+  videosPerMonth Int     @default(10)
+  storageGB     Int      @default(5)
+
+  price         Float
+  currency      String   @default("BDT")
+  billingCycle  String   @default("monthly")
+  nextBillingDate DateTime
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Generated Videos
+model Video {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?
+  prompt        String?
+  script        String?
+  templateId    String?
+
+  duration      Int
+  format        String   @default("mp4")
+  resolution    String   @default("1080p")
+  fileSize      Int?
+
+  url           String?
+  thumbnailUrl  String?
+
+  topic         String?
+  language      String   @default("bn")
+  status        String   @default("processing")
+
+  downloads     Int      @default(0)
+  views         Int      @default(0)
+  shares        Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([createdAt])
+}
+
+// Services
+model Service {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  type          String
+  name          String
+  status        String   @default("active")
+
+  specs         String?
+  credentials   String
+
+  serverIp      String?
+  serverId      String?
+
+  price         Float
+  billingCycle  String   @default("monthly")
+
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime?
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerId, status])
+}
+
+// Video Generation Queue
+model VideoQueue {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  topic         String
+  priority      Int      @default(5)
+  status        String   @default("pending")
+
+  attempts      Int      @default(0)
+  maxAttempts   Int      @default(3)
+  error         String?
+
+  videoId       String?
+
+  createdAt     DateTime @default(now())
+  processedAt   DateTime?
+
+  @@index([status, priority])
+}
+
+// System Logs
+model ActivityLog {
+  id            String   @id @default(cuid())
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id])
+
+  action        String
+  description   String
+  metadata      String?
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([createdAt])
+}
+
+// Payments
+model Payment {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  method        String
+  amount        Float
+  currency      String   @default("BDT")
+  status        String   @default("pending")
+  transactionId String?  @unique
+
+  walletAddress String?
+  usdtTxHash    String?
+
+  planName      String?
+  billingPeriod String?
+  startsAt      DateTime?
+  endsAt        DateTime?
+
+  webhookSent   Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([transactionId])
+  @@index([createdAt])
+}
+
+// Notifications
+model Notification {
+  id        String   @id @default(cuid())
+  customerId String
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  actionUrl String?
+
+  createdAt DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+// Referrals
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referrer    Customer @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId  String
+  referred    Customer @relation("ReferredReferrals", fields: [referredId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING")
+  bonusAmount Float
+
+  createdAt   DateTime @default(now())
+
+  @@index([referrerId])
+  @@index([referredId])
+}
+
+// Orders - mapped to payments
+model Order {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  plan        String
+  amount      Float
+  status      String   @default("pending")
+  currency    String   @default("BDT")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([createdAt])
+}
+
+// Lead model for CRM
+model Lead {
+  id          String   @id @default(cuid())
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  source      String   @default("manual")
+  status      String   @default("new")
+  score       Int      @default(0)
+  tags        String?
+  notes       String?
+
+  contactedAt   DateTime?
+  lastContactAt DateTime?
+  attemptCount  Int       @default(0)
+  convertedAt   DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  logs        LeadLog[]
+  followUps   FollowUp[]
+  outreachLogs OutreachLog[]
+
+  @@index([status])
+  @@index([source])
+}
+
+// Lead log for activity tracking
+model LeadLog {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  action    String
+  notes     String?
+  outcome   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+}
+
+// Campaign model for marketing
+model Campaign {
+  id            String   @id @default(cuid())
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id])
+
+  name          String
+  description   String?
+  type          String
+  channel       String?
+  targetCount   Int      @default(0)
+  startDate     DateTime?
+  endDate       DateTime?
+
+  status        String   @default("draft")
+  reachedCount  Int      @default(0)
+  respondedCount Int     @default(0)
+  convertedCount Int     @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+}
+
+// Follow-up tasks
+model FollowUp {
+  id            String   @id @default(cuid())
+  leadId        String?
+  lead          Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  customerId    String?
+
+  followUpType  String
+  scheduledFor  DateTime
+  notes         String?
+  priority      String   @default("medium")
+  status        String   @default("pending")
+  completedAt   DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([scheduledFor])
+  @@index([status])
+}
+
+// Outreach logs
+model OutreachLog {
+  id          String   @id @default(cuid())
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  customerId  String?
+
+  channel     String
+  direction   String   @default("outbound")
+  subject     String?
+  message     String?
+  status      String
+  response    String?
+  outcome     String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([leadId])
+  @@index([createdAt])
+}
+
+// Pipeline snapshots for analytics
+model PipelineSnapshot {
+  id            String   @id @default(cuid())
+
+  totalLeads    Int
+  contacted     Int
+  interested    Int
+  converted     Int
+  paying        Int
+  totalRevenue  Float
+
+  createdAt     DateTime @default(now())
+}
+
+// User progress tracking for OSSU courses
+model UserProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        Customer @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String
+  lessonId    String
+  completed   Boolean  @default(false)
+  quizScore   Int?     @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, courseId, lessonId], name: "userId_courseId_lessonId")
+  @@index([userId])
+  @@index([courseId])
+}

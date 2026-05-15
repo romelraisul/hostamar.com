@@ -1,0 +1,8 @@
+
+// Google Analytics 4 - Add to next.config.js:
+// env: { GA_MEASUREMENT_ID: 'G-XXXXXXXXXX' }
+
+// Track events in components:
+// import * as ReactGA from 'react-ga4';
+// ReactGA.initialize('G-XXXXXXXXXX');
+// ReactGA.event({ category: 'Video', action: 'created', label: 'free_user' });
