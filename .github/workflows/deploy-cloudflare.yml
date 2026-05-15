@@ -2,9 +2,9 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, main ]
 
 jobs:
   deploy:
