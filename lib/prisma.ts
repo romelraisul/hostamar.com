@@ -11,11 +11,8 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 const prismaClientSingleton = () => {
-  const poolTimeout = parseInt(process.env.PRISMA_POOL_TIMEOUT || '10') // seconds
-
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
-    connectionTimeout: poolTimeout * 1000, // convert to ms
   })
 }
 
