@@ -6,12 +6,6 @@
       "use": "@vercel/next"
     }
   ],
-  "functions": {
-    "app/api/**/*.ts": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  },
   "routes": [
     { "src": "/qr/(.*)", "dest": "/qr/$1" },
     { "src": "/login", "dest": "/login" },
