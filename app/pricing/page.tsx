@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Check } from 'lucide-react';
 
+export const revalidate = 3600 // ISR: revalidate every hour
+
 export const metadata: Metadata = {
   title: 'Pricing - Hostamar',
   description: 'Simple, transparent pricing for all your needs.',

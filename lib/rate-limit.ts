@@ -1,3 +1,10 @@
+// ⚠️ In-Memory Rate Limiter (Serverless Warning)
+// On Vercel/ serverless, each invocation has its own memory.
+// This limiter only works per-instance, NOT globally.
+// For production scaling, replace with Vercel KV or Edge Config:
+//   https://vercel.com/docs/storage/edge-config
+// Or use the @upstash/ratelimit package with Redis.
+
 interface RateLimitConfig {
   maxRequests: number;
   windowMs: number;
