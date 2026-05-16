@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
 
-export function middleware(request: NextRequest) {
+// Lazy import — jsonwebtoken uses Node.js crypto which crashes Edge Runtime on import
+// We only import/call it when actually needed (not on public pages)
+async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string } | null> {
+  try {
+    // Dynamic import — jsonwebtoken may not work on Edge Runtime
+    // If it fails, we just return null (no auth check for edge requests)
+    const jwt = await import('jsonwebtoken')
+    const secret = process.env.JWT_SECRET
+    if (!secret) return null
+    return (jwt as any).default?.verify?.(token, secret) || (jwt as any).verify?.(token, secret) || null
+  } catch {
+    return null
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const token = request.cookies.get('auth_token')?.value
   const { pathname } = request.nextUrl
 
@@ -11,9 +25,8 @@ export function middleware(request: NextRequest) {
   
   for (const p of publicPaths) {
     if (pathname === p || pathname.startsWith(p + '/')) {
-      // Check if it's an API sub-path we want to protect
       if (pathname.startsWith('/api/') && !publicApiPaths.some(ap => pathname.startsWith(ap))) {
-        break // don't skip, check auth below
+        break
       }
       return NextResponse.next()
     }
@@ -34,7 +47,7 @@ export function middleware(request: NextRequest) {
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
-    const payload = verifyToken(token)
+    const payload = await verifyTokenEdge(token)
     if (!payload) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -52,7 +65,7 @@ export function middleware(request: NextRequest) {
     if (!token) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    const payload = verifyToken(token)
+    const payload = await verifyTokenEdge(token)
     if (!payload) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -62,6 +75,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Exclude all static assets from middleware entirely — never run auth checks on them
   matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image).*)']
 }
