@@ -1,0 +1,37 @@
+{
+  "domain": "hostamar.com",
+  "vercel_project": "hostamar-local",
+  "dns_records": [
+    {
+      "type": "A",
+      "name": "@",
+      "content": "76.76.21.21",
+      "ttl": 1
+    },
+    {
+      "type": "CNAME",
+      "name": "www",
+      "content": "cname.vercel-dns.com",
+      "ttl": 1
+    }
+  ],
+  "cloudflare": {
+    "api_endpoint": "https://api.cloudflare.com/client/v4",
+    "required_permissions": "Zone:DNS:Edit",
+    "steps": [
+      "Get API token from Cloudflare dashboard",
+      "Get Zone ID for hostamar.com",
+      "Set CLOUDFLARE_API_TOKEN environment variable",
+      "Set CLOUDFLARE_ZONE_ID environment variable",
+      "Run automated DNS update script"
+    ]
+  },
+  "vercel": {
+    "domain_verification": "https://vercel.com/dashboard/projects/hostamar-local/domains",
+    "instructions": [
+      "Add hostamar.com as custom domain",
+      "Select DNS verification method",
+      "Click Verify after DNS propagates"
+    ]
+  }
+}

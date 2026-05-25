@@ -1,0 +1,8 @@
+# Root path — serve index.html (SPA fallback)
+/* /index.html 200
+
+# API routes — pass through
+/api/* /api/:splat 200
+
+# Force trailing slash removal
+# /about/ /about 301

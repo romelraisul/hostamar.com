@@ -1,0 +1,21 @@
+Subject: We miss you! Come back to Hostamar 🎬
+
+Hello {name},
+
+It's been {days_since_last_visit} days since you last visited Hostamar.
+
+Here's what's new:
+🆕 10 new templates added
+⚡ Faster rendering (2x speed)
+📱 New Bangla fonts
+🎬 Batch video creation
+
+Come back and create your next viral video!
+
+👉 Login: https://hostamar.com/login
+
+Still free - no payment needed. Just log in and start creating!
+
+Best,
+Romel Raisul
+Founder, Hostamar

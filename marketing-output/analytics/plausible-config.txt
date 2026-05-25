@@ -1,0 +1,11 @@
+
+// For privacy-friendly analytics, use Plausible
+// Add to layout.tsx:
+// <script defer data-domain="hostamar.com" src="https://plausible.io/js/script.js"></script>
+
+// Key metrics to track:
+// - Page views (homepage, pricing, signup)
+// - Signup conversion rate
+// - Video creation events
+// - Referral link clicks
+// - Payment completion

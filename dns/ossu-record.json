@@ -1,0 +1,10 @@
+{
+  "type": "dns_record",
+  "content": {
+    "type": "CNAME",
+    "name": "ossu",
+    "content": "cname.vercel-dns.com",
+    "ttl": 1,
+    "proxied": false
+  }
+}

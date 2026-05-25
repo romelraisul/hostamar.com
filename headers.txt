@@ -1,0 +1,16 @@
+HTTP/1.1 307 Temporary Redirect
+Cache-Control: public, max-age=0, must-revalidate
+Content-Type: text/plain
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Date: Thu, 07 May 2026 17:08:42 GMT
+Location: /login
+Permissions-Policy: microphone=(), camera=(), geolocation=()
+Referrer-Policy: strict-origin-when-cross-origin
+Server: Vercel
+Strict-Transport-Security: max-age=63072000
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Vercel-Enable-Rewrite-Caching: 1
+X-Vercel-Id: bom1::dhwsv-1778173722792-cc37292fe777
+

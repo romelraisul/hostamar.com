@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@cloudflare/next-on-pages",
+      "config": {
+        "includeFiles": ["prisma/**"]
+      }
+    }
+  ]
+}

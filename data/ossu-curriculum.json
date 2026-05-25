@@ -1,0 +1,20 @@
+{
+  "courses": [
+    {"id": "cs50", "title": "CS50: Computer Science Introduction", "path": "cs50", "category": "Foundations", "difficulty": "Beginner", "duration": "12 weeks", "youtube": "https://youtube.com/playlist?list=PLhQjrBD2T382eX9T_Ha2iC7g9X6X4oJ4E"},
+    {"id": "prog-fund", "title": "প্রোগ্রামিং এর মৌলিক ধারণা", "path": "programming-fundamentals", "category": "Programming", "difficulty": "Beginner", "duration": "6 সপ্তাহ", "youtube": ""},
+    {"id": "python1", "title": "পাইথন প্রোগ্রামিং", "path": "python-programming", "category": "Programming", "difficulty": "Beginner", "duration": "8 সপ্তাহ"},
+    {"id": "java", "title": "জাভা প্রোগ্রামিং", "path": "java-programming", "category": "Programming", "difficulty": "Intermediate", "duration": "10 সপ্তাহ"},
+    {"id": "html-css", "title": "HTML & CSS টিউটোরিয়াল", "path": "html-css", "category": "Web Dev", "difficulty": "Beginner", "duration": "4 সপ্তাহ"},
+    {"id": "javascript", "title": "জাভাস্ক্রিপ্ট প্রোগ্রামিং", "path": "javascript", "category": "Web Dev", "difficulty": "Intermediate", "duration": "6 সপ্তাহ"},
+    {"id": "react", "title": "রিঅ্যাক্ট জেএস", "path": "react", "category": "Web Dev", "difficulty": "Intermediate", "duration": "4 সপ্তাহ"},
+    {"id": "nodejs", "title": "Node.js Backend", "path": "nodejs", "category": "Web Dev", "difficulty": "Advanced", "duration": "5 সপ্তাহ"},
+    {"id": "sql", "title": "SQL ডাটাবেজ", "path": "sql", "category": "Databases", "difficulty": "Intermediate", "duration": "4 সপ্তাহ"},
+    {"id": "mongodb", "title": "MongoDB NoSQL", "path": "mongodb", "category": "Databases", "difficulty": "Intermediate", "duration": "3 সপ্তাহ"},
+    {"id": "dsa", "title": "Data Structures & Algorithms", "path": "dsa", "category": "Foundations", "difficulty": "Advanced", "duration": "12 সপ্তাহ"},
+    {"id": "ml", "title": "মেশিন লার্নিং", "path": "machine-learning", "category": "AI/ML", "difficulty": "Advanced", "duration": "8 সপ্তাহ"},
+    {"id": "git", "title": "Git Version Control", "path": "git", "category": "DevOps", "difficulty": "Beginner", "duration": "2 সপ্তাহ"},
+    {"id": "docker", "title": "Docker Containerization", "path": "docker", "category": "DevOps", "difficulty": "Intermediate", "duration": "3 সপ্তাহ"},
+    {"id": "aws", "title": "AWS Cloud", "path": "aws", "category": "DevOps", "difficulty": "Advanced", "duration": "6 সপ্তাহ"},
+    {"id": "security", "title": "Cybersecurity", "path": "cybersecurity", "category": "Security", "difficulty": "Advanced", "duration": "5 সপ্তাহ"}
+  ]
+}
