@@ -1,0 +1,53 @@
+# Static assets — immutable long-term cache (content-hashed by Next.js)
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# Optimized images via Next/Image API — short client cache, long CDN cache
+/_next/image/*
+  Cache-Control: public, max-age=86400, s-maxage=31536000, stale-while-revalidate=2592000
+  X-Content-Type-Options: nosniff
+
+# Custom fonts
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# Icons
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# Images in public/
+/images/*
+  Cache-Control: public, max-age=86400, s-maxage=31536000, stale-while-revalidate=2592000
+  X-Content-Type-Options: nosniff
+
+# Favicon
+/favicon.*
+  Cache-Control: public, max-age=86400, s-maxage=31536000
+  X-Content-Type-Options: nosniff
+
+# Open Graph image
+/og-image.*
+  Cache-Control: public, max-age=86400, s-maxage=604800
+  X-Content-Type-Options: nosniff
+
+# Manifest (short-lived so updates propagate quickly)
+/manifest.json
+  Cache-Control: public, max-age=3600, must-revalidate
+  X-Content-Type-Options: nosniff
+
+# QR code images
+/qr/*
+  Cache-Control: public, max-age=604800, s-maxage=31536000
+  X-Content-Type-Options: nosniff
+
+# All pages — no caching for HTML (ensures fresh content)
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-DNS-Prefetch-Control: on
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Cache-Control: public, max-age=0, must-revalidate

@@ -1,0 +1,57 @@
+================================================================
+ZERO-COST DEPLOYMENT GUIDE - HOSTAMAR VIDEO SERVICE
+================================================================
+
+METHOD 1: GITHUB PAGES (100% FREE - RECOMMENDED)
+--------------------------------------------------
+
+Step 1: Open Windows Command Prompt (cmd.exe)
+
+Step 2: Run these commands:
+
+  cd C:\Users\romel\hostamar-local
+  git init
+  git add .
+  git commit -m "initial deployment"
+  
+  # Create repo at https://github.com/new
+  # Name: hostamar-video
+  # Then add remote (replace YOURNAME):
+  
+  git remote add origin https://github.com/YOURNAME/hostamar-video.git
+  git branch -M main
+  git push -u origin main
+
+Step 3: In browser, go to GitHub repo
+  - Settings -> Pages
+  - Source: GitHub Actions
+  - Click Save
+
+Step 4: Add Secret
+  - Settings -> Secrets and variables -> Actions
+  - New repository secret
+  - Name: NEXTAUTH_SECRET
+  - Value: (generate with node -e "console.log(require('crypto').randomBytes(64).toString('base64'))")
+
+Your site: https://YOURNAME.github.io/hostamar-video/
+
+
+METHOD 2: VERCEL (100% FREE)
+------------------------------
+
+Open Windows Command Prompt:
+
+  cd C:\Users\romel\hostamar-local
+  npm install -g vercel
+  vercel login
+  vercel --prod
+
+Your site: https://hostamar-video.vercel.app
+
+
+COST: $0
+=======
+- Hosting: FREE (GitHub Pages or Vercel)
+- Database: FREE (SQLite)
+- Storage: FREE (Cloudinary 25GB for videos)
+- Everything: FREE

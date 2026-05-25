@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostamar - Flagship Platform</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { max-width: 800px; text-align: center; }
+        h1 { 
+            font-size: 3.5rem; 
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle { color: #94a3b8; font-size: 1.3rem; margin-bottom: 40px; }
+        .services { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px;
+        }
+        .service-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s;
+        }
+        .service-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-5px);
+            border-color: #00d4ff;
+        }
+        .service-icon { font-size: 2rem; margin-bottom: 10px; }
+        .service-name { font-weight: 600; font-size: 1.1rem; }
+        .service-desc { color: #94a3b8; font-size: 0.9rem; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Hostamar</h1>
+        <p class="subtitle">Your Unified Flagship Platform Dashboard</p>
+        <div class="services">
+            <a href="http://localhost:5173" class="service-card" target="_blank">
+                <div class="service-icon">🤖</div>
+                <div class="service-name">AI Browser</div>
+                <div class="service-desc">Port 5173</div>
+            </a>
+            <a href="http://localhost:5174" class="service-card" target="_blank">
+                <div class="service-icon">🎰</div>
+                <div class="service-name">Casino</div>
+                <div class="service-desc">Port 5174</div>
+            </a>
+            <a href="http://localhost:3002" class="service-card" target="_blank">
+                <div class="service-icon">⚙️</div>
+                <div class="service-name">Casino API</div>
+                <div class="service-desc">Port 3002</div>
+            </a>
+            <a href="http://localhost:3003" class="service-card" target="_blank">
+                <div class="service-icon">🔌</div>
+                <div class="service-name">AI Browser API</div>
+                <div class="service-desc">Port 3003</div>
+            </a>
+            <a href="http://localhost:3004" class="service-card" target="_blank">
+                <div class="service-icon">🦆</div>
+                <div class="service-name">DuckAI Chat</div>
+                <div class="service-desc">Port 3004</div>
+            </a>
+            <a href="http://localhost:8000" class="service-card" target="_blank">
+                <div class="service-icon">📊</div>
+                <div class="service-name">SaaS Dashboard</div>
+                <div class="service-desc">Port 8000</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

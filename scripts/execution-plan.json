@@ -1,0 +1,89 @@
+{
+  "name": "Hostamar 100 Customer Execution Plan",
+  "version": "1.0",
+  "created": "2026-05-13",
+  "goal": "100 paying customers within 60 days",
+  "status": "in_progress",
+
+  "phases": {
+    "1_foundation": {
+      "days": "1-7",
+      "tasks": [
+        {"day": 1, "task": "Finalize Prisma schema with CRM models", "status": "done"},
+        {"day": 1, "task": "Set up Neon PostgreSQL database", "status": "done"},
+        {"day": 1, "task": "Configure Vercel env vars", "status": "done"},
+        {"day": 2, "task": "Create CRM API routes (6 endpoints)", "status": "done"},
+        {"day": 2, "task": "Build dashboard data endpoints", "status": "done"},
+        {"day": 3, "task": "Set up payment integration (bKash/Nagad/USDT)", "status": "done"},
+        {"day": 4, "task": "Build CRM dashboard page", "status": "in_progress"},
+        {"day": 5, "task": "Customer registration/login with NextAuth", "status": "pending"},
+        {"day": 6, "task": "Video generation queue system", "status": "pending"},
+        {"day": 7, "task": "Phase 1 review - all systems operational", "status": "pending"}
+      ]
+    },
+    "2_outreach": {
+      "days": "8-21",
+      "goal": "400+ leads, 25+ paid",
+      "tasks": [
+        {"task": "Facebook Group cold outreach (50/week)", "status": "pending"},
+        {"task": "B2B Email outreach (30/week)", "status": "pending"},
+        {"task": "WhatsApp warm contacts (30/week)", "status": "pending"},
+        {"task": "Referral program launch", "status": "pending"},
+        {"task": "Weekly review and optimization", "status": "pending"}
+      ]
+    },
+    "3_conversion": {
+      "days": "22-40",
+      "goal": "60+ paid customers",
+      "tasks": [
+        {"task": "Demo-to-paid conversion focus", "status": "pending"},
+        {"task": "Limited-time offer launch (30% OFF)", "status": "pending"},
+        {"task": "Retarget cold leads", "status": "pending"},
+        {"task": "Referral program push", "status": "pending"},
+        {"task": "New channel testing (Instagram, YouTube)", "status": "pending"}
+      ]
+    },
+    "4_scale": {
+      "days": "41-60",
+      "goal": "100 paid customers",
+      "tasks": [
+        {"task": "Scale winning channels", "status": "pending"},
+        {"task": "Partnership outreach", "status": "pending"},
+        {"task": "Flash sale (50% OFF annual)", "status": "pending"},
+        {"task": "Aggressive referral bonuses", "status": "pending"},
+        {"task": "Daily conversion tracking", "status": "pending"}
+      ]
+    }
+  },
+
+  "revenue_model": {
+    "starter": "৳2,000/month",
+    "business": "৳3,500/month",
+    "enterprise": "৳6,000/month"
+  },
+
+  "targets": {
+    "total_leads": 1000,
+    "contacted": 500,
+    "interested": 200,
+    "demos": 100,
+    "paid_customers": 100,
+    "monthly_revenue_bdt": 300000,
+    "timeline_days": 60
+  },
+
+  "channels": {
+    "facebook_groups": "400K+ members",
+    "youtube": "Active channel",
+    "whatsapp": "Personal + broadcast lists",
+    "email": "B2B outreach",
+    "referral": "Existing customers"
+  },
+
+  "automation": {
+    "payment_verification": "scripts/payment-verifier.js",
+    "outreach_automation": "scripts/outreach-automation.js",
+    "daily_scheduler": "scripts/daily-cron.sh",
+    "campaign_manager": "scripts/campaign-manager.js"
+  }
+}

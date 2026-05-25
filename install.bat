@@ -1,0 +1,13 @@
+@echo off
+cd /d C:\Users\romel\hostamar-local
+echo Installing dependencies...
+npm install
+echo.
+echo Generating Prisma client...
+npx prisma generate
+echo.
+echo Building project...
+npm run build
+echo.
+echo Starting server...
+npm run start

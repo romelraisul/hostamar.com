@@ -1,0 +1,26 @@
+
+<!-- Hostamar Analytics - Add to layout.tsx <head> -->
+<script>
+(function() {
+  const page = window.location.pathname;
+  const referrer = document.referrer || 'direct';
+  const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+  const country = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  // Send to your analytics endpoint
+  fetch('/api/track', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      page, referrer, device, country,
+      timestamp: new Date().toISOString(),
+      sessionId: localStorage.getItem('sessionId') || crypto.randomUUID()
+    })
+  }).catch(() => {});
+  
+  // Store session
+  if (!localStorage.getItem('sessionId')) {
+    localStorage.setItem('sessionId', crypto.randomUUID());
+  }
+})();
+</script>

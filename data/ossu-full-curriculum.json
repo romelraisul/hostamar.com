@@ -1,0 +1,21 @@
+{
+  "courses": [
+    {"id": "intro-python", "title": "Intro CS: Python", "category": "Intro", "duration": "14 weeks"},
+    {"id": "intro-programming", "title": "Programming Fundamentals", "category": "Intro", "duration": "8 weeks"},
+    {"id": "core-programming", "title": "Core Programming (C, Rust)", "category": "Core", "duration": "12 weeks"},
+    {"id": "core-math-calculus", "title": "Calculus", "category": "Core Math", "duration": "16 weeks"},
+    {"id": "core-math-discrete", "title": "Discrete Math", "category": "Core Math", "duration": "12 weeks"},
+    {"id": "core-math-linear", "title": "Linear Algebra", "category": "Core Math", "duration": "10 weeks"},
+    {"id": "core-tools", "title": "CS Tools (Git, Vim, Shell)", "category": "Core Tools", "duration": "6 weeks"},
+    {"id": "core-systems", "title": "Computer Architecture", "category": "Core Systems", "duration": "12 weeks"},
+    {"id": "core-os", "title": "Operating Systems", "category": "Core Systems", "duration": "12 weeks"},
+    {"id": "core-networking", "title": "Computer Networking", "category": "Core Systems", "duration": "10 weeks"},
+    {"id": "core-theory", "title": "Algorithms", "category": "Core Theory", "duration": "12 weeks"},
+    {"id": "core-security", "title": "Cybersecurity", "category": "Core Security", "duration": "12 weeks"},
+    {"id": "core-databases", "title": "Databases", "category": "Core Applications", "duration": "8 weeks"},
+    {"id": "core-ml", "title": "Machine Learning", "category": "Core Applications", "duration": "12 weeks"},
+    {"id": "advanced-parallel", "title": "Parallel Programming", "category": "Advanced", "duration": "8 weeks"},
+    {"id": "advanced-compilers", "title": "Compilers", "category": "Advanced", "duration": "12 weeks"},
+    {"id": "advanced-security", "title": "Advanced Security", "category": "Advanced", "duration": "10 weeks"}
+  ]
+}

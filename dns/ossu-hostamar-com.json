@@ -1,0 +1,14 @@
+# DNS Configuration for ossu.hostamar.com
+# Add via Cloudflare dashboard or API
+
+# Option 1: CNAME record (recommended)
+TYPE: CNAME
+NAME: ossu
+TARGET: cname.vercel-dns.com
+
+# Option 2: A record (if CNAME not available)
+TYPE: A
+NAME: ossu  
+TARGET: 76.76.21.21
+
+# TTL: Auto

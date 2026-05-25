@@ -1,0 +1,36 @@
+services:
+  hostamar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./dev.db
+      - NEXTAUTH_URL=https://hostamar.com
+      - NEXT_PUBLIC_SITE_URL=https://hostamar.com
+      - NEXTAUTH_SECRET=hostamar-nextauth-secret-2025-production-key-12345
+      - AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=https://hostamar-resource.services.ai.azure.com/api/projects/hostamar
+      - EVAL_MODELS=gpt-4o
+    restart: unless-stopped
+    volumes:
+      - hostamar-data:/app/data
+      - hostamar-prisma:/app/prisma
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - hostamar
+    restart: unless-stopped
+
+volumes:
+  hostamar-data:
+  hostamar-prisma:

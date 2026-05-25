@@ -1,0 +1,17 @@
+WEEK 1 CONTENT CALENDAR
+============================================================
+MON 09:00 | Facebook  | P001 Launch
+MON 10:00 | WhatsApp  | 7 groups (Msg 1)
+TUE 09:00 | Facebook  | P002 Problem-Solution
+TUE 11:00 | Email     | Welcome
+WED 09:00 | Facebook  | P003 Benefits
+WED 14:00 | YouTube   | Upload Video 1
+THU 09:00 | Facebook  | P004 Social Proof
+THU 10:00 | WhatsApp  | 7 groups (Msg 2)
+FRI 09:00 | Facebook  | P005 Urgency
+FRI 11:00 | Email     | Upgrade nudge
+SAT 09:00 | Facebook  | P006 Tutorial
+SAT 14:00 | YouTube   | Upload Video 2
+SUN 09:00 | Facebook  | P007 Comparison
+SUN 10:00 | WhatsApp  | 7 groups (Msg 3)
+SUN 15:00 | Email     | Re-engage

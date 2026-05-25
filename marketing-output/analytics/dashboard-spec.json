@@ -1,0 +1,38 @@
+{
+  "metrics": {
+    "daily_visitors": {
+      "target": 100,
+      "source": "plausible"
+    },
+    "signup_rate": {
+      "target": "5%",
+      "source": "database"
+    },
+    "video_creation_rate": {
+      "target": "3%",
+      "source": "database"
+    },
+    "conversion_rate": {
+      "target": "1%",
+      "source": "payments"
+    },
+    "referral_rate": {
+      "target": "10%",
+      "source": "referrals"
+    }
+  },
+  "channels": {
+    "organic_search": {
+      "goal": "50 visits/day by month 2"
+    },
+    "facebook": {
+      "goal": "200 visits/day by month 1"
+    },
+    "youtube": {
+      "goal": "100 visits/day by month 2"
+    },
+    "referrals": {
+      "goal": "50 visits/day by month 3"
+    }
+  }
+}

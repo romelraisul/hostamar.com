@@ -1,0 +1,35 @@
+module.exports = {
+  apps: [{
+    name: 'hostamar',
+    script: 'node_modules/next/dist/bin/next',
+    args: 'start -p 3000 -H 0.0.0.0',
+    cwd: './',
+    instances: 1,
+    exec_mode: 'fork',
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000,
+      NEXTAUTH_URL: 'https://hostamar.com',
+      NEXT_PUBLIC_SITE_URL: 'https://hostamar.com',
+      DATABASE_URL: 'file:./dev.db',
+    },
+    error_file: './logs/pm2-error.log',
+    out_file: './logs/pm2-out.log',
+    log_file: './logs/pm2-combined.log',
+    time: true,
+    merge_logs: true,
+  }],
+  deploy: {
+    production: {
+      user: 'root',
+      host: 'hostamar.com',
+      ref: 'origin/main',
+      repo: 'git@github.com:user/hostamar.git',
+      path: '/opt/hostamar',
+      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
+    },
+  },
+};
