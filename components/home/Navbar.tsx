@@ -1,3 +1,5 @@
+import LanguageSwitcher from '@/components/LanguageSwitcher'
+
 export default function Navbar() {
   return (
     <nav className="bg-white/80 backdrop-blur-sm border-b">
@@ -11,6 +13,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <a href="#pricing" className="text-gray-600 hover:text-blue-600">Pricing</a>
           <a href="#features" className="text-gray-600 hover:text-blue-600">Features</a>
+          <LanguageSwitcher />
           <a href="/login" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             Get Started Free
           </a>

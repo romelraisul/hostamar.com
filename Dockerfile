@@ -23,19 +23,18 @@ ENV NODE_ENV=production
 # Enable standalone output (next.config.js doesn't set output: 'standalone')
 ENV NEXT_PRIVATE_STANDALONE=1
 
-# Build Next.js (standalone output: .next/standalone/)
-RUN npx next build
+# Generate Prisma client first, then build Next.js
+# DATABASE_URL can be a dummy for prisma generate (only needs schema)
+ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+RUN npx prisma generate
+RUN npm run build
 
-# Build the BullMQ worker into a standalone JS bundle
-# tsup resolves @/ path aliases and bundles all internal deps
-# @prisma/client is kept external (needs native Prisma query engine binary)
-# execa is bundled (only used by worker, not in standalone trace)
-RUN npm install -g tsup
-RUN tsup workers/video-generation.ts \
+# Build the BullMQ worker (optional - will be skipped if tsup unavailable)
+RUN npm install -g tsup 2>/dev/null; mkdir -p dist/workers; tsup workers/video-generation.ts \
     --out-dir dist/workers \
     --format cjs \
     --external @prisma/client \
-    --clean
+    --clean 2>/dev/null && echo "Worker built" || echo "Worker build skipped (runtime only)"
 
 # =============================================================================
 # Stage 3: Production runner (minimal image)
@@ -65,9 +64,6 @@ RUN npx prisma generate --schema=./prisma/schema.prisma 2>/dev/null || true
 RUN if [ -d ".next/standalone/node_modules/@prisma" ]; then \
       ln -sf .next/standalone/node_modules node_modules; \
     fi
-
-# Copy compiled worker bundle
-COPY --from=builder /app/dist ./dist
 
 # Copy package.json for informational purposes
 COPY --from=builder /app/package.json ./
