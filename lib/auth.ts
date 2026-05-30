@@ -1,6 +1,26 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-config'
 import prisma from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'hostamar-jwt-secret-change-in-production'
+
+export async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  return bcrypt.compare(plainPassword, hashedPassword)
+}
+
+export function signToken(payload: { id: string; email: string; name: string }): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
+}
+
+export function verifyToken(token: string): { id: string; email: string; name: string } | null {
+  try {
+    return jwt.verify(token, JWT_SECRET) as { id: string; email: string; name: string }
+  } catch {
+    return null
+  }
+}
 
 export async function getAuthUser() {
   const session = await getServerSession(authOptions)

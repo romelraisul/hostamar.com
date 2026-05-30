@@ -19,7 +19,9 @@ export default function LanguageSwitcher() {
   }, [])
 
   const toggleLocale = () => {
-    const next = locale === 'en' ? 'bn' : 'en'
+    const order: Locale[] = ['en', 'bn', 'ur']
+    const currentIndex = order.indexOf(locale)
+    const next = order[(currentIndex + 1) % order.length]
     document.cookie = `locale=${next}; path=/; max-age=31536000`
     setLocale(next)
     window.location.reload()
@@ -31,12 +33,12 @@ export default function LanguageSwitcher() {
     <button
       onClick={toggleLocale}
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
-      aria-label={`Switch to ${locale === 'en' ? 'Bengali' : 'English'}`}
-      title={`Switch to ${locale === 'en' ? 'বাংলা' : 'English'}`}
+      aria-label={`Switch to ${locale === 'en' ? 'Bengali' : locale === 'bn' ? 'Urdu' : 'English'}`}
+      title={`Switch to ${locale === 'en' ? 'বাংলা' : locale === 'bn' ? 'اردو' : 'English'}`}
     >
       <span className="text-sm">🌐</span>
       <span className="font-medium">
-        {locale === 'en' ? 'EN' : 'বাং'}
+        {locale === 'en' ? 'EN' : locale === 'bn' ? 'বাং' : 'اردو'}
       </span>
     </button>
   )
