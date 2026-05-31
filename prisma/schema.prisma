@@ -417,4 +417,32 @@ model UserProgress {
   @@unique([userId, courseId, lessonId], name: "userId_courseId_lessonId")
   @@index([userId])
   @@index([courseId])
+  @@index([courseId, completed])
+}
+
+// Beta cohort signup invite model
+enum BetaStatus {
+  PENDING
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+model BetaInvite {
+  id              String     @id @default(cuid())
+  code            String     @unique
+  email           String
+  name            String
+  phone           String?
+  status          BetaStatus @default(PENDING)
+  discountPercent Float      @default(10)
+
+  usedAt          DateTime?
+  expiresAt       DateTime?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
 }
