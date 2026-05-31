@@ -51,51 +51,68 @@ export default function ChatInterface({ videoId, videoTitle }: ChatInterfaceProp
     try {
       const history = messages.map((m) => ({ role: m.role, content: m.content }))
 
-      const res = await fetch('/api/chat/video', {
+      // Try Ollama AI endpoint first, fall back to video chat
+      let res = await fetch('/api/chat/ollama', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, videoId: videoId || null, history }),
+        body: JSON.stringify({ message: text, history }),
       })
+
+      if (!res.ok) {
+        // Fallback to video chat endpoint
+        res = await fetch('/api/chat/video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, videoId: videoId || null, history }),
+        })
+      }
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
         throw new Error(errData.error || 'Failed to send message')
       }
 
-      // Read streaming response
-      const reader = res.body?.getReader()
-      if (!reader) throw new Error('No response stream')
+      // Handle both streaming and non-streaming responses
+      const contentType = res.headers.get('content-type') || ''
+      if (contentType.includes('application/json')) {
+        const data = await res.json()
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.content || data.reply || JSON.stringify(data) }])
+      } else {
+        // Streaming response
+        const reader = res.body?.getReader()
+        if (!reader) throw new Error('No response stream')
 
-      const decoder = new TextDecoder()
-      let assistantMessage = ''
+        const decoder = new TextDecoder()
+        let assistantMessage = ''
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
 
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+          const chunk = decoder.decode(value, { stream: true })
+          const lines = chunk.split('\n')
 
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          const data = line.slice(6)
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue
+            const data = line.slice(6)
 
-          if (data === '[DONE]') break
+            if (data === '[DONE]') break
 
-          try {
-            const parsed = JSON.parse(data)
-            if (parsed.token) {
-              assistantMessage += parsed.token
-              setMessages((prev) => {
-                const updated = [...prev]
-                updated[updated.length - 1] = { role: 'assistant', content: assistantMessage }
-                return updated
-              })
+            try {
+              const parsed = JSON.parse(data)
+              if (parsed.token) {
+                assistantMessage += parsed.token
+                setMessages((prev) => {
+                  const updated = [...prev]
+                  updated[updated.length - 1] = { role: 'assistant', content: assistantMessage }
+                  return updated
+                })
+              }
+            } catch {
+              // skip
             }
-          } catch {
-            // skip
           }
         }
       }
