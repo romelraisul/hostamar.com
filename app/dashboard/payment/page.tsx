@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Phone, CreditCard, AlertCircle, Loader2, ArrowLeft, Shield, Copy, CheckCircle2, XCircle, Clock, Send, Wallet, Smartphone, Banknote } from 'lucide-react';
 import NextImage from 'next/image';
+import { useLocale } from '@/lib/locale-context';
 
 type Plan = 'starter' | 'business' | 'enterprise';
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';
@@ -35,6 +36,7 @@ type PaymentState = {
 };
 
 export default function PaymentPage() {
+  const { t } = useLocale();
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [phone, setPhone] = useState('');
@@ -138,29 +140,29 @@ export default function PaymentPage() {
           <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10 text-green-400" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">পেমেন্ট সফল!</h2>
-          <p className="text-gray-400 mb-4">Payment Successful!</p>
+          <h2 className="text-2xl font-bold mb-2">{t('payment.successTitle')}</h2>
+          <p className="text-gray-400 mb-4">{t('payment.successTitle')}</p>
           <div className="bg-gray-800/50 rounded-xl p-4 mb-6 text-left">
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-400">Plan</span>
+              <span className="text-gray-400">{t('payment.successPlan')}</span>
               <span className="font-semibold">{state.plan}</span>
             </div>
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-400">Amount</span>
+              <span className="text-gray-400">{t('payment.successAmount')}</span>
               <span className="font-semibold">৳{state.amount?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-400">Method</span>
+              <span className="text-gray-400">{t('payment.successMethod')}</span>
               <span className="font-semibold">{getMethodLabel(state.method!)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Transaction ID</span>
+              <span className="text-gray-400">{t('payment.successTrxId')}</span>
               <span className="font-mono text-xs">{state.trxId}</span>
             </div>
           </div>
           <p className="text-green-400 text-sm mb-6">{state.message}</p>
           <button onClick={() => window.location.href = '/app'} className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
-            Go to Dashboard →
+            {t('payment.goToDashboard')} →
           </button>
         </div>
       </div>
@@ -175,15 +177,15 @@ export default function PaymentPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Hostamar.com
+            {t('payment.hostamarBrand')}
           </div>
         </nav>
       </header>
 
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-3">পেমেন্ট করুন</h1>
-          <p className="text-gray-400 text-lg">Make a Payment</p>
+          <h1 className="text-4xl font-bold mb-3">{t('payment.subtitle')}</h1>
+          <p className="text-gray-400 text-lg">{t('payment.subtitle')}</p>
         </div>
 
         {state.error && (
@@ -206,7 +208,7 @@ export default function PaymentPage() {
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-blue-400" />
-                প্ল্যান নির্বাচন করুন
+                {t('payment.selectPlanHeading')}
               </h3>
               <div className="space-y-3">
                 {(Object.entries(PLANS) as [Plan, typeof PLANS[Plan]][]).map(([key, plan]) => (
@@ -240,7 +242,7 @@ export default function PaymentPage() {
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-purple-400" />
-                পেমেন্ট মাধ্যম
+                {t('payment.paymentMethodHeading')}
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {(Object.entries(PAYMENT_METHODS) as [PaymentMethod, typeof PAYMENT_METHODS[PaymentMethod]][]).map(([key, method]) => (
@@ -256,7 +258,7 @@ export default function PaymentPage() {
                   >
                     <div className={`text-lg font-bold mb-1 ${method.text}`}>{method.name}</div>
                     <div className="text-xs text-gray-500">
-                      {key === 'usdt' ? 'Crypto (BSC)' : 'Mobile Payment'}
+                      {key === 'usdt' ? t('payment.cryptoLabel') : t('payment.mobilePaymentLabel')}
                     </div>
                   </button>
                 ))}
@@ -276,12 +278,12 @@ export default function PaymentPage() {
                     priority
                   />
                   <p className={`mt-3 text-sm font-semibold ${PAYMENT_METHODS[selectedMethod].text}`}>
-                    Scan to Pay via {PAYMENT_METHODS[selectedMethod].name}
+                    {t('payment.scanToPay')} {PAYMENT_METHODS[selectedMethod].name}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     {selectedMethod === 'usdt'
-                      ? 'Send USDT to this address'
-                      : 'Open app & scan QR code'}
+                      ? t('payment.sendUSDTTo')
+                      : t('payment.openAppScan')}
                   </p>
                 </div>
               </div>
@@ -292,29 +294,29 @@ export default function PaymentPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Phone className="w-5 h-5 text-green-400" />
-                  ফোন নম্বর
+                  {t('payment.phoneNumberHeading')}
                 </h3>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="01XXXXXXXXX"
+                  placeholder={t('payment.phonePlaceholder')}
                   disabled={state.status === 'creating' || state.status === 'verifying'}
                   className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
-                <p className="text-xs text-gray-500 mt-2">Bangladesh mobile number (013, 015, 016, 017, 018, 019)</p>
+                <p className="text-xs text-gray-500 mt-2">{t('payment.phoneHint')}</p>
               </div>
             ) : selectedMethod === 'usdt' ? (
               <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Wallet className="w-5 h-5 text-green-400" />
-                  USDT Wallet Address
+                  {t('payment.walletHeading')}
                 </h3>
                 <input
                   type="text"
                   value={walletAddress}
                   onChange={(e) => setWalletAddress(e.target.value)}
-                  placeholder="0x..."
+                  placeholder={t('payment.walletPlaceholder')}
                   disabled={state.status === 'creating' || state.status === 'verifying'}
                   className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition font-mono"
                 />
@@ -340,7 +342,7 @@ export default function PaymentPage() {
               {state.status === 'creating' ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Creating Payment...
+                  {t('payment.creatingPayment')}
                 </span>
               ) : (
                 `Pay ৳${selectedPlan ? PLANS[selectedPlan].amount.toLocaleString() : '0'} via ${selectedMethod ? getMethodLabel(selectedMethod) : '...'}`
@@ -353,15 +355,15 @@ export default function PaymentPage() {
             {(state.status as string) === 'created' && state.instructions ? (
               <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-6 h-full">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">পেমেন্ট নির্দেশনা</h3>
-                  <span className="text-sm text-gray-500">Payment Instructions</span>
+                  <h3 className="text-lg font-semibold">{t('payment.instructionsTitle')}</h3>
+                  <span className="text-sm text-gray-500">{t('payment.instructionsTitle')}</span>
                 </div>
 
                 <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
-                  <div className="text-xs text-gray-500 mb-1">Transaction ID</div>
+                  <div className="text-xs text-gray-500 mb-1">{t('payment.transactionId')}</div>
                   <div className="flex items-center justify-between">
                     <code className="text-sm font-mono text-blue-400">{state.trxId}</code>
-                    <button onClick={copyTrxId} className="p-2 hover:bg-gray-700/50 rounded-lg transition" title="Copy Transaction ID">
+                    <button onClick={copyTrxId} className="p-2 hover:bg-gray-700/50 rounded-lg transition" title={t('payment.transactionId')}>
                       {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-gray-400" />}
                     </button>
                   </div>
@@ -384,15 +386,15 @@ export default function PaymentPage() {
 
                 <div className="bg-gray-800/30 rounded-xl p-4 mb-6">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Plan</span>
+                    <span className="text-gray-400">{t('payment.planLabel')}</span>
                     <span>{state.plan}</span>
                   </div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Amount</span>
+                    <span className="text-gray-400">{t('payment.amountLabel')}</span>
                     <span className="font-bold text-lg">৳{state.amount?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Method</span>
+                    <span className="text-gray-400">{t('payment.methodLabel')}</span>
                     <span>{getMethodLabel(state.method!)}</span>
                   </div>
                 </div>
@@ -405,18 +407,18 @@ export default function PaymentPage() {
                   {state.status === 'verifying' ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Verifying...
+                      {t('payment.verifying')}
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-5 h-5" />
-                      পেমেন্ট যাচাই করুন (Verify Payment)
+                      {t('payment.verifyPaymentBtn')}
                     </>
                   )}
                 </button>
 
                 <button onClick={reset} className="w-full py-3 mt-3 text-gray-400 hover:text-white transition text-sm">
-                  Cancel / বাতিল করুন
+                  {t('payment.cancelResetBtn')}
                 </button>
               </div>
             ) : (
@@ -424,9 +426,9 @@ export default function PaymentPage() {
                 <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mb-4">
                   <Shield className="w-8 h-8 text-gray-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-gray-400">পেমেন্ট নির্দেশনা এখানে দেখাবে</h3>
+                <h3 className="text-lg font-semibold mb-2 text-gray-400">{t('payment.placeholders.selectPlan')}</h3>
                 <p className="text-sm text-gray-600">
-                  Select a plan and payment method above to get started.
+                  {t('payment.placeholders.selectPlanDesc')}
                 </p>
               </div>
             )}
@@ -436,7 +438,7 @@ export default function PaymentPage() {
         <div className="mt-12 text-center">
           <div className="inline-flex items-center gap-2 text-sm text-gray-500">
             <Shield className="w-4 h-4" />
-            <span>Secure payment • SSL Encrypted • Powered by local methods</span>
+            <span>{t('payment.secureNote')}</span>
           </div>
         </div>
       </main>
