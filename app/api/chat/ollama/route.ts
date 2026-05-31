@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://192.168.1.2:11434'
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6:latest'
+
+const MODELS_AVAILABLE = ['qwen3.6:latest', 'hermes3:latest', 'granite4.1:8b']
 
 export async function POST(request: NextRequest) {
   try {

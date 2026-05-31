@@ -144,6 +144,17 @@ export async function GET() {
         ? 'degraded'
         : 'down';
 
+  // Metrics-compatible view for Prometheus scraping
+  const metrics: Record<string, number> = {};
+  for (const s of services) {
+    metrics[`service_${s.name.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`] =
+      s.status === 'online' ? 1 : 0;
+  }
+  metrics.docker_running =
+    docker.status === 'healthy' || docker.status === 'warning' ? 1 : 0;
+  metrics.cloudflared_running =
+    cloudflared.status === 'online' ? 1 : 0;
+
   return NextResponse.json({
     timestamp: new Date().toISOString(),
     overallStatus,
@@ -157,5 +168,7 @@ export async function GET() {
       docker,
       cloudflared,
     },
+    // Prometheus-compatible numeric status values
+    metrics,
   });
 }
