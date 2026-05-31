@@ -1,4 +1,12 @@
+import { Metadata } from 'next'
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: 'Curriculum — OSSU Academy | Hostamar',
+  description:
+    'Full OSSU computer science curriculum in Bengali: Introduction to CS, Core Programming, Math, Systems, and Advanced topics. Self-paced, free, and complete.',
+  robots: { index: false, follow: false },
+}
 
 const phases = [
   {

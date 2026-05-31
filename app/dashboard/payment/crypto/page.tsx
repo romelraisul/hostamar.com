@@ -1,6 +1,15 @@
 // File: /app/dashboard/payment/crypto/page.tsx
 // Server Component
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Crypto Payment | Hostamar Dashboard',
+  description:
+    'Pay your Hostamar subscription with cryptocurrency (USDT, BTC, ETH). Secure crypto payment gateway with real-time confirmation.',
+  robots: { index: false, follow: false },
+}
+
 export default async function CryptoPaymentPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">

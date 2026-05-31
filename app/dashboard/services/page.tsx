@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Plus, Server, Cloud, Terminal, HardDrive, Power, MoreVertical, Trash2, RefreshCw } from 'lucide-react'
+import { useLocale } from '@/lib/locale-context'
 
 interface Service {
   id: string
@@ -22,17 +23,18 @@ const serviceIcons: Record<string, any> = {
   storage: HardDrive,
 }
 
-const serviceLabels: Record<string, string> = {
-  vps: 'VPS Server',
-  rdp: 'RDP Server',
-  'web-hosting': 'Web Hosting',
-  storage: 'Storage',
-}
-
 export default function ServicesPage() {
+  const { t } = useLocale()
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+
+  const serviceLabels: Record<string, string> = {
+    vps: t('dashServices.vps'),
+    rdp: t('dashServices.rdp'),
+    'web-hosting': t('dashServices.webHosting'),
+    storage: t('dashServices.storage'),
+  }
 
   useEffect(() => {
     fetchServices()
@@ -82,19 +84,17 @@ export default function ServicesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Services</h1>
-          <p className="text-gray-500 mt-1">Manage your hosting services</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{t('dashServices.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('dashServices.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Order Service
+          {t('dashServices.order')}
         </button>
       </div>
-
-      {/* Services List */}
       {services.length > 0 ? (
         <div className="space-y-4">
           {services.map((service) => {
@@ -190,14 +190,14 @@ export default function ServicesPage() {
       ) : (
         <div className="bg-white rounded-xl border p-12 text-center">
           <Server className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No services yet</h3>
-          <p className="text-gray-500 mb-4">Order your first hosting service</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('dashServices.noServices')}</h3>
+          <p className="text-gray-500 mb-4">{t('dashServices.orderFirst')}</p>
           <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <Plus className="w-4 h-4" />
-            Order Service
+            {t('dashServices.order')}
           </button>
         </div>
       )}
@@ -211,6 +211,7 @@ export default function ServicesPage() {
 }
 
 function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const { t } = useLocale()
   const [formData, setFormData] = useState({
     type: 'vps',
     name: '',
@@ -272,7 +273,7 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Order New Service</h2>
+          <h2 className="text-xl font-bold">{t('dashServices.orderNewTitle')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -282,28 +283,28 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('dashServices.serviceType')}</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
             >
-              <option value="vps">VPS Server</option>
-              <option value="rdp">RDP Server</option>
-              <option value="web-hosting">Web Hosting</option>
-              <option value="storage">Storage</option>
+              <option value="vps">{t('dashServices.vps')}</option>
+              <option value="rdp">{t('dashServices.rdp')}</option>
+              <option value="web-hosting">{t('dashServices.webHosting')}</option>
+              <option value="storage">{t('dashServices.storage')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('dashServices.serviceName')}</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="My Server"
+              placeholder={t('dashServices.serviceNamePlaceholder')}
             />
           </div>
 
@@ -367,14 +368,14 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
               onClick={onClose}
               className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
             >
-              Cancel
+              {t('dashServices.cancel')}
             </button>
             <button
               type="submit"
               disabled={loading}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Order Now'}
+              {loading ? t('dashServices.creating') : t('dashServices.orderNow')}
             </button>
           </div>
         </form>

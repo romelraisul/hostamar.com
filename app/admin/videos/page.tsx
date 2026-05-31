@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Video, Play, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react'
+import { useLocale } from '@/lib/locale-context'
 
 interface VideoItem {
   id: string
@@ -23,6 +24,7 @@ interface QueueItem {
 }
 
 export default function AdminVideosPage() {
+  const { t } = useLocale()
   const [videos, setVideos] = useState<VideoItem[]>([])
   const [queue, setQueue] = useState<QueueItem[]>([])
   const [loading, setLoading] = useState(true)

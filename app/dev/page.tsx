@@ -1,18 +1,17 @@
-import { Metadata } from 'next';
+'use client';
+
 import Link from 'next/link';
 import { Code2, Terminal, Zap, Shield, ArrowLeft, Play } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'Dev IDE - Hostamar',
-  description: 'Cloud-based IDE for developers. Code from anywhere in your browser.',
-};
+import { useLocale } from '@/lib/locale-context';
 
 export default function DevPage() {
+  const { t } = useLocale();
+
   const features = [
-    { icon: Code2, title: 'Code Editor', desc: 'Full VS Code experience in browser' },
-    { icon: Terminal, title: 'Terminal', desc: 'Linux terminal with full access' },
-    { icon: Zap, title: 'Deploy', desc: 'One-click deployment to production' },
-    { icon: Shield, title: 'Secure', desc: 'Isolated containers for each session' },
+    { icon: Code2, title: t('dev.codeEditor'), desc: t('dev.codeEditorDesc') },
+    { icon: Terminal, title: t('dev.terminal'), desc: t('dev.terminalDesc') },
+    { icon: Zap, title: t('dev.deploy'), desc: t('dev.deployDesc') },
+    { icon: Shield, title: t('dev.secure'), desc: t('dev.secureDesc') },
   ];
 
   return (
@@ -33,13 +32,13 @@ export default function DevPage() {
           <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-6">
             <Code2 className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-5xl font-bold mb-6">Cloud IDE for Developers</h1>
+          <h1 className="text-5xl font-bold mb-6">{t('dev.title')}</h1>
           <p className="text-xl text-gray-400 mb-8">
-            Full VS Code in your browser. Code, run, and deploy from anywhere
+            {t('dev.subtitle')}
           </p>
           <button className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg font-semibold hover:from-cyan-600 hover:to-blue-600 transition">
             <Play className="w-5 h-5 inline mr-2" />
-            Launch IDE
+            {t('dev.launchIDE')}
           </button>
         </div>
       </section>
@@ -61,9 +60,9 @@ export default function DevPage() {
       <section className="container mx-auto px-4 py-12">
         <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-2xl p-8 text-center">
           <Terminal className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold mb-2">Ready to Code?</h3>
+          <h3 className="text-2xl font-bold mb-2">{t('dev.readyToCode')}</h3>
           <p className="text-gray-400 mb-6">
-            Full terminal access with npm, pip, git, and all your favorite tools pre-installed
+            {t('dev.readyToCodeDesc')}
           </p>
           <div className="bg-gray-900 rounded-lg p-4 max-w-lg mx-auto font-mono text-sm text-left">
             <div className="text-green-400">$ npm create hostamar@latest</div>
@@ -74,7 +73,7 @@ export default function DevPage() {
       </section>
 
       <footer className="container mx-auto px-4 py-8 border-t border-white/10 text-center text-sm text-gray-500">
-        <p>© 2026 Hostamar.com - Dev IDE</p>
+        <p>{t('dev.footer')}</p>
       </footer>
     </div>
   );

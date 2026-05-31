@@ -13,6 +13,7 @@ import {
   List,
   X
 } from 'lucide-react'
+import { useLocale } from '@/lib/locale-context'
 
 interface VideoItem {
   id: string
@@ -28,6 +29,7 @@ interface VideoItem {
 }
 
 export default function VideosPage() {
+  const { t } = useLocale()
   const [videos, setVideos] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -115,25 +117,25 @@ export default function VideosPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Videos</h1>
-          <p className="text-gray-500 mt-1">Manage your AI-generated marketing videos</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{t('dashVideos.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('dashVideos.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Create Video
+          {t('dashVideos.create')}
         </button>
       </div>
 
-      {/* Filters & View Toggle */}
+      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search videos..."
+            placeholder={t('dashVideos.search')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -146,10 +148,10 @@ export default function VideosPage() {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">All Status</option>
-            <option value="ready">Ready</option>
-            <option value="processing">Processing</option>
-            <option value="failed">Failed</option>
+            <option value="all">{t('dashVideos.allStatus')}</option>
+            <option value="ready">{t('dashVideos.ready')}</option>
+            <option value="processing">{t('dashVideos.processing')}</option>
+            <option value="failed">{t('dashVideos.failed')}</option>
           </select>
           <div className="border-l pl-2 ml-2 flex items-center gap-1">
             <button
@@ -157,7 +159,7 @@ export default function VideosPage() {
               className={`p-2 rounded-lg transition-colors ${
                 viewMode === 'grid' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
               }`}
-              title="Grid view"
+              title={t('dashVideos.gridView')}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
@@ -166,7 +168,7 @@ export default function VideosPage() {
               className={`p-2 rounded-lg transition-colors ${
                 viewMode === 'table' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
               }`}
-              title="Table view"
+              title={t('dashVideos.tableView')}
             >
               <List className="w-4 h-4" />
             </button>
@@ -179,7 +181,7 @@ export default function VideosPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-sm w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Delete Video</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t('dashVideos.deleteTitle')}</h2>
               <button
                 onClick={() => { setDeleteConfirm(null); setDeleteError('') }}
                 className="text-gray-400 hover:text-gray-600"
@@ -188,7 +190,7 @@ export default function VideosPage() {
               </button>
             </div>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this video? This action cannot be undone.
+              {t('dashVideos.deleteConfirm')}
             </p>
             {deleteError && (
               <p className="text-red-500 text-sm mb-4">{deleteError}</p>
@@ -205,7 +207,7 @@ export default function VideosPage() {
                 disabled={deleting}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
-                {deleting ? 'Deleting...' : 'Delete'}
+                {deleting ? t('dashVideos.deleting') : t('dashVideos.delete')}
               </button>
             </div>
           </div>
@@ -254,8 +256,8 @@ export default function VideosPage() {
                   <div className="flex items-center justify-between text-xs text-gray-400">
                     <span>{new Date(video.createdAt).toLocaleDateString()}</span>
                     <div className="flex items-center gap-3">
-                      <span>{video.views} views</span>
-                      <span>{video.downloads} downloads</span>
+                      <span>{video.views} {t('dashVideos.views')}</span>
+                      <span>{video.downloads} {t('dashVideos.downloads')}</span>
                     </div>
                   </div>
 
@@ -265,18 +267,18 @@ export default function VideosPage() {
                       <>
                         <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
                           <Play className="w-4 h-4" />
-                          Play
+                          {t('dashVideos.play')}
                         </button>
                         <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
                           <Download className="w-4 h-4" />
-                          Download
+                          {t('dashVideos.download')}
                         </button>
                       </>
                     )}
                     <button
                       onClick={() => setDeleteConfirm(video.id)}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete video"
+                      title={t('dashVideos.deleteVideo')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -292,7 +294,7 @@ export default function VideosPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-gray-50">
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Title</th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">{t('dashVideos.title')}</th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Duration</th>
                     <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Views</th>
@@ -334,10 +336,10 @@ export default function VideosPage() {
                         <div className="flex items-center justify-end gap-1">
                           {video.status === 'ready' && (
                             <>
-                              <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Play">
+                              <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title={t('dashVideos.play')}>
                                 <Play className="w-4 h-4" />
                               </button>
-                              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Download">
+                              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title={t('dashVideos.download')}>
                                 <Download className="w-4 h-4" />
                               </button>
                             </>
@@ -345,7 +347,7 @@ export default function VideosPage() {
                           <button
                             onClick={() => setDeleteConfirm(video.id)}
                             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete video"
+                            title={t('dashVideos.deleteVideo')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -362,18 +364,18 @@ export default function VideosPage() {
         /* Empty State */
         <div className="bg-white rounded-xl border p-12 text-center">
           <Video className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No videos found</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('dashVideos.noVideos')}</h3>
           <p className="text-gray-500 mb-4">
             {searchTerm || filterStatus !== 'all'
-              ? 'Try adjusting your filters'
-              : 'Create your first AI-generated video'}
+              ? t('dashVideos.adjustFilters')
+              : t('dashVideos.createFirst')}
           </p>
           <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <Plus className="w-4 h-4" />
-            Create Video
+            {t('dashVideos.create')}
           </button>
         </div>
       )}
@@ -393,6 +395,7 @@ function CreateVideoModal({
   onClose: () => void
   onCreated: () => void
 }) {
+  const { t } = useLocale()
   const [formData, setFormData] = useState({
     title: '',
     topic: '',
@@ -432,7 +435,7 @@ function CreateVideoModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Create New Video</h2>
+          <h2 className="text-xl font-bold">{t('dashVideos.createNewTitle')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -448,7 +451,7 @@ function CreateVideoModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Video Title
+              {t('dashVideos.videoTitle')}
             </label>
             <input
               type="text"
@@ -456,13 +459,13 @@ function CreateVideoModal({
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter video title"
+              placeholder={t('dashVideos.videoTitlePlaceholder')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Topic
+              {t('dashVideos.topic')}
             </label>
             <input
               type="text"
@@ -470,34 +473,34 @@ function CreateVideoModal({
               value={formData.topic}
               onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., Product launch, Sale, Holiday offer"
+              placeholder={t('dashVideos.topicPlaceholder')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description (Optional)
+              {t('dashVideos.description')}
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               rows={3}
-              placeholder="Additional details about the video"
+              placeholder={t('dashVideos.descriptionPlaceholder')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Language
+              {t('dashVideos.language')}
             </label>
             <select
               value={formData.language}
               onChange={(e) => setFormData({ ...formData, language: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
             >
-              <option value="bn">Bengali</option>
-              <option value="en">English</option>
+              <option value="bn">{t('dashVideos.bengali')}</option>
+              <option value="en">{t('dashVideos.english')}</option>
             </select>
           </div>
 
@@ -516,7 +519,7 @@ function CreateVideoModal({
               disabled={loading}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Video'}
+              {loading ? t('dashVideos.creating') : t('dashVideos.createBtn')}
             </button>
           </div>
         </form>

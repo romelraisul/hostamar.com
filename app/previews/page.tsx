@@ -1,14 +1,12 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowLeft, Sparkles } from 'lucide-react'
-import PreviewsClient from './client'
+'use client';
 
-export const metadata: Metadata = {
-  title: 'AI Video Previews - Hostamar',
-  description: 'Generate AI-powered 10-second video previews for your content.',
-}
+import Link from 'next/link';
+import { ArrowLeft, Sparkles } from 'lucide-react';
+import PreviewsClient from './client';
+import { useLocale } from '@/lib/locale-context';
 
 export default function PreviewsPage() {
+  const { t } = useLocale();
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       <header className="container mx-auto px-4 py-6">
@@ -21,8 +19,8 @@ export default function PreviewsPage() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">AI Previews</h1>
-              <p className="text-xs text-gray-400">Generate 10-second video preview concepts</p>
+              <h1 className="text-2xl font-bold">{t('previews.title')}</h1>
+              <p className="text-xs text-gray-400">{t('previews.subtitle')}</p>
             </div>
           </div>
         </nav>

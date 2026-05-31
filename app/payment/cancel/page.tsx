@@ -1,4 +1,12 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Payment Cancelled | Hostamar',
+  description:
+    'Your Hostamar payment was cancelled. No charges were made. You can try again or choose a different payment method.',
+  robots: { index: false, follow: false },
+}
 
 export default function CancelPage() {
   return (

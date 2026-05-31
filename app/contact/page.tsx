@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Mail, Phone, MapPin, MessageSquare } from 'lucide-react';
+import { useLocale } from '@/lib/locale-context';
 
 export default function ContactPage() {
+  const { t } = useLocale();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -28,7 +30,7 @@ export default function ContactPage() {
       setMessage('');
     } catch (err) {
       setStatus('error');
-      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong');
+      setErrorMsg(err instanceof Error ? err.message : t('contact.failMsg'));
     }
   };
 
@@ -49,21 +51,21 @@ export default function ContactPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Contact Us
+              {t('contact.title')}
             </h1>
-            <p className="text-xl text-gray-400">We'd love to hear from you. Reach out through any of these channels.</p>
+            <p className="text-xl text-gray-400">{t('contact.subtitle')}</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('contact.getInTouch')}</h2>
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
                     <Mail className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Email</p>
+                    <p className="text-sm text-gray-400">{t('contact.email')}</p>
                     <p className="font-semibold">{process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@hostamar.com'}</p>
                   </div>
                 </div>
@@ -72,7 +74,7 @@ export default function ContactPage() {
                     <Phone className="w-6 h-6 text-green-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Phone</p>
+                    <p className="text-sm text-gray-400">{t('contact.phone')}</p>
                     <p className="font-semibold">+880 1XXX-XXXXXX</p>
                   </div>
                 </div>
@@ -81,7 +83,7 @@ export default function ContactPage() {
                     <MapPin className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Location</p>
+                    <p className="text-sm text-gray-400">{t('contact.location')}</p>
                     <p className="font-semibold">Dhaka, Bangladesh</p>
                   </div>
                 </div>
@@ -90,40 +92,40 @@ export default function ContactPage() {
                     <MessageSquare className="w-6 h-6 text-yellow-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Live Chat</p>
-                    <p className="font-semibold">Available 24/7</p>
+                    <p className="text-sm text-gray-400">{t('contact.liveChat')}</p>
+                    <p className="font-semibold">{t('contact.available247')}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-bold mb-6">Send a Message</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('contact.sendMessage')}</h2>
               {status === 'success' && (
                 <div className="mb-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 text-sm">
-                  Message sent successfully! We'll get back to you soon.
+                  {t('contact.successMsg')}
                 </div>
               )}
               {status === 'error' && (
                 <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 text-sm">
-                  {errorMsg || 'Failed to send message. Please try again.'}
+                  {errorMsg || t('contact.failMsg')}
                 </div>
               )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Name</label>
-                  <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Your name" />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('contact.nameLabel')}</label>
+                  <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder={t('contact.namePlaceholder')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="you@example.com" />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('contact.emailLabel')}</label>
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder={t('contact.emailPlaceholder')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Message</label>
-                  <textarea rows={4} required value={message} onChange={(e) => setMessage(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="How can we help?"></textarea>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('contact.messageLabel')}</label>
+                  <textarea rows={4} required value={message} onChange={(e) => setMessage(e.target.value)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder={t('contact.messagePlaceholder')}></textarea>
                 </div>
                 <button type="submit" disabled={status === 'sending'} className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50">
-                  {status === 'sending' ? 'Sending...' : 'Send Message'}
+                  {status === 'sending' ? t('contact.sending') : t('contact.sendBtn')}
                 </button>
               </form>
             </div>
@@ -132,7 +134,7 @@ export default function ContactPage() {
       </section>
 
       <footer className="container mx-auto px-4 py-8 border-t border-white/10 text-center text-sm text-gray-500">
-        <p>© 2026 Hostamar.com. All rights reserved.</p>
+        <p>{t('contact.copyright')}</p>
       </footer>
     </div>
   );

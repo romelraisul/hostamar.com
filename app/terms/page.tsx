@@ -3,9 +3,28 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - Hostamar',
-  description: 'Terms of service for Hostamar.com',
-};
+  title: 'Terms of Service | Hostamar',
+  description:
+    'Hostamar terms of service covering platform usage, billing, cancellations, and user responsibilities for cloud hosting, AI video generation, and all services.',
+  alternates: { canonical: 'https://hostamar.com/terms' },
+  openGraph: {
+    title: 'Terms of Service | Hostamar',
+    description:
+      'Hostamar terms of service covering platform usage, billing, cancellations, and user responsibilities for all services.',
+    url: 'https://hostamar.com/terms',
+    siteName: 'Hostamar',
+    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630 }],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Terms of Service | Hostamar',
+    description: 'Hostamar terms of service — platform usage, billing, and user responsibilities.',
+    images: ['https://hostamar.com/opengraph-image'],
+  },
+  keywords: ['hostamar terms', 'terms of service', 'hostamar legal', 'service agreement'],
+}
 
 export default function TermsPage() {
   return (

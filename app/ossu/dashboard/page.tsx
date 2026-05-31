@@ -1,4 +1,12 @@
+import { Metadata } from 'next'
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: 'My Learning Dashboard — OSSU Academy | Hostamar',
+  description:
+    'Track your OSSU Academy progress. View enrolled courses, completed modules, certificates earned, and current learning phase in Bengali.',
+  robots: { index: false, follow: false },
+}
 
 // Mock student data - in production this comes from database
 const studentData = {

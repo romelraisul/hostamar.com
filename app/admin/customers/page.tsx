@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Users, Search, Filter, MoreVertical, Eye, Ban, CheckCircle } from 'lucide-react'
+import { useLocale } from '@/lib/locale-context'
 
 interface Customer {
   id: string
@@ -17,6 +18,7 @@ interface Customer {
 }
 
 export default function AdminCustomersPage() {
+  const { t } = useLocale()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -58,11 +60,11 @@ export default function AdminCustomersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Customers</h1>
-          <p className="text-gray-500 mt-1">Manage customer accounts</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{t('admin.customers.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('admin.customers.subtitle')}</p>
         </div>
         <div className="text-sm text-gray-500">
-          Total: {customers.length} customers
+          {t('admin.customers.total')}: {customers.length} {t('admin.customers.title')}
         </div>
       </div>
 
@@ -71,7 +73,7 @@ export default function AdminCustomersPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
           type="text"
-          placeholder="Search customers..."
+          placeholder={t('admin.customers.search')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -82,13 +84,13 @@ export default function AdminCustomersPage() {
       <div className="bg-white rounded-xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stats</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+            <thead>
+              <tr className="border-b bg-gray-50">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('admin.customers.customer')}</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('admin.customers.contact')}</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('admin.customers.stats')}</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('admin.customers.joined')}</th>
+                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">{t('admin.customers.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -108,7 +110,7 @@ export default function AdminCustomersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm text-gray-900">{customer.phone || 'No phone'}</p>
+                    <p className="text-sm text-gray-900">{customer.phone || t('admin.customers.noPhone')}</p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3 text-sm">
@@ -126,19 +128,19 @@ export default function AdminCustomersPage() {
                       <button 
                         onClick={() => setSelectedCustomer(customer)}
                         className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                        title="View Details"
+                        title={t('admin.customers.viewDetails')}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button 
                         className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
-                        title="Activate"
+                        title={t('admin.customers.activate')}
                       >
                         <CheckCircle className="w-4 h-4" />
                       </button>
                       <button 
                         className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                        title="Suspend"
+                        title={t('admin.customers.suspend')}
                       >
                         <Ban className="w-4 h-4" />
                       </button>
@@ -153,7 +155,7 @@ export default function AdminCustomersPage() {
         {filteredCustomers.length === 0 && (
           <div className="px-6 py-12 text-center">
             <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No customers found</p>
+            <p className="text-gray-500">{t('admin.customers.noCustomers')}</p>
           </div>
         )}
       </div>
@@ -200,7 +202,7 @@ function CustomerDetailModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Customer Details</h2>
+          <h2 className="text-xl font-bold">{t('admin.customers.details')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -228,29 +230,29 @@ function CustomerDetailModal({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">Videos</p>
+                <p className="text-sm text-gray-500">{t('admin.customers.videos')}</p>
                 <p className="text-2xl font-bold">{customer._count.videos}</p>
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">Services</p>
+                <p className="text-sm text-gray-500">{t('admin.customers.services')}</p>
                 <p className="text-2xl font-bold">{customer._count.services}</p>
               </div>
             </div>
 
             {customerDetails?.business && (
               <div>
-                <h4 className="font-semibold mb-2">Business Info</h4>
+                <h4 className="font-semibold mb-2">{t('admin.customers.businessInfo')}</h4>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p><strong>Name:</strong> {customerDetails.business.name || 'Not set'}</p>
-                  <p><strong>Industry:</strong> {customerDetails.business.industry || 'Not set'}</p>
-                  <p><strong>Website:</strong> {customerDetails.business.website || 'Not set'}</p>
+                  <p><strong>Name:</strong> {customerDetails.business.name || t('admin.customers.notSet')}</p>
+                  <p><strong>Industry:</strong> {customerDetails.business.industry || t('admin.customers.notSet')}</p>
+                  <p><strong>Website:</strong> {customerDetails.business.website || t('admin.customers.notSet')}</p>
                 </div>
               </div>
             )}
 
             {customerDetails?.subscriptions?.length > 0 && (
               <div>
-                <h4 className="font-semibold mb-2">Active Subscription</h4>
+                <h4 className="font-semibold mb-2">{t('admin.customers.activeSubscription')}</h4>
                 <div className="bg-blue-50 rounded-lg p-4">
                   <p className="font-medium capitalize">{customerDetails.subscriptions[0].plan} Plan</p>
                   <p className="text-sm text-gray-600">৳{customerDetails.subscriptions[0].price}/month</p>

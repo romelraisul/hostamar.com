@@ -1,14 +1,12 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowLeft, Layout } from 'lucide-react'
-import EditorClient from './client'
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Video Editor - Hostamar',
-  description: 'Create beautiful videos with Bangladeshi cultural templates.',
-}
+import Link from 'next/link';
+import { ArrowLeft, Layout } from 'lucide-react';
+import EditorClient from './client';
+import { useLocale } from '@/lib/locale-context';
 
 export default function EditorPage() {
+  const { t } = useLocale();
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       <header className="container mx-auto px-4 py-6">
@@ -19,8 +17,8 @@ export default function EditorPage() {
           <div className="flex items-center gap-2">
             <Layout className="w-6 h-6 text-orange-400" />
             <div>
-              <h1 className="text-2xl font-bold">Video Editor</h1>
-              <p className="text-xs text-gray-400">Create with Bangladeshi cultural templates</p>
+              <h1 className="text-2xl font-bold">{t('editor.title')}</h1>
+              <p className="text-xs text-gray-400">{t('editor.subtitle')}</p>
             </div>
           </div>
         </nav>

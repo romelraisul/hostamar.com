@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Film, CreditCard, Eye, TrendingUp } from 'lucide-react'
+import { useLocale } from '@/lib/locale-context'
 
 export default function AnalyticsPage() {
+  const { t } = useLocale()
   const [stats, setStats] = useState({ totalVideos: 0, totalPreviews: 0, creditsRemaining: 0 })
 
   useEffect(() => {
@@ -23,15 +25,15 @@ export default function AnalyticsPage() {
   ]
 
   const cards = [
-    { label: 'Videos Created', value: stats.totalVideos, icon: Film, color: 'text-blue-400 bg-blue-500/10' },
-    { label: 'AI Previews', value: stats.totalPreviews, icon: Eye, color: 'text-purple-400 bg-purple-500/10' },
-    { label: 'Credits Left', value: stats.creditsRemaining, icon: CreditCard, color: 'text-green-400 bg-green-500/10' },
-    { label: 'Growth Rate', value: '+24%', icon: TrendingUp, color: 'text-yellow-400 bg-yellow-500/10' },
+    { label: t('dashAnalytics.videosCreated'), value: stats.totalVideos, icon: Film, color: 'text-blue-400 bg-blue-500/10' },
+    { label: t('dashAnalytics.aiPreviews'), value: stats.totalPreviews, icon: Eye, color: 'text-purple-400 bg-purple-500/10' },
+    { label: t('dashAnalytics.creditsLeft'), value: stats.creditsRemaining, icon: CreditCard, color: 'text-green-400 bg-green-500/10' },
+    { label: t('dashAnalytics.growthRate'), value: '+24%', icon: TrendingUp, color: 'text-yellow-400 bg-yellow-500/10' },
   ]
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Analytics</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">{t('dashAnalytics.title')}</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map(card => {
@@ -49,7 +51,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Monthly Activity</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">{t('dashAnalytics.monthlyActivity')}</h2>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -59,8 +61,8 @@ export default function AnalyticsPage() {
               contentStyle={{ background: '#1f2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
               labelStyle={{ color: '#fff' }}
             />
-            <Bar dataKey="videos" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Videos" />
-            <Bar dataKey="previews" fill="#a855f7" radius={[4, 4, 0, 0]} name="Previews" />
+            <Bar dataKey="videos" fill="#3b82f6" radius={[4, 4, 0, 0]} name={t('dashAnalytics.videos')} />
+            <Bar dataKey="previews" fill="#a855f7" radius={[4, 4, 0, 0]} name={t('dashAnalytics.previews')} />
           </BarChart>
         </ResponsiveContainer>
       </div>

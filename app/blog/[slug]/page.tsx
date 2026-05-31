@@ -1,11 +1,13 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
 import { Calendar, Clock, ArrowLeft } from 'lucide-react'
 
-const posts: Record<string, { title: string; date: string; readTime: string; content: string }> = {
+const posts: Record<string, { title: string; date: string; readTime: string; content: string; excerpt: string }> = {
   'ai-video-bangladesh': {
     title: 'AI দিয়ে বাংলা ভিডিও তৈরি: সম্পূর্ণ গাইড',
     date: '2026-05-20',
     readTime: '৫ মিনিট',
+    excerpt: 'AI প্রযুক্তি এখন বাংলা ভাষায় ভিডিও তৈরি করা আগের চেয়ে অনেক সহজ করে দিয়েছে। এই গাইডে আমরা দেখব কীভাবে আপনি Hostamar ব্যবহার করে পেশাদার মানের ভিডিও তৈরি করতে পারেন।',
     content: `
 <p>AI প্রযুক্তি এখন বাংলা ভাষায় ভিডিও তৈরি করা আগের চেয়ে অনেক সহজ করে দিয়েছে। এই গাইডে আমরা দেখব কীভাবে আপনি Hostamar ব্যবহার করে পেশাদার মানের ভিডিও তৈরি করতে পারেন।</p>
 
@@ -37,6 +39,7 @@ const posts: Record<string, { title: string; date: string; readTime: string; con
     title: 'ছোট ব্যবসার জন্য ভিডিও মার্কেটিং টিপস',
     date: '2026-05-18',
     readTime: '৪ মিনিট',
+    excerpt: 'ছোট ব্যবসার জন্য ভিডিও মার্কেটিং এখন আর ঐচ্ছিক নয় — এটি প্রয়োজনীয়। ফেসবুক, ইউটিউব এবং TikTok-এ ভিডিও কন্টেন্টের চাহিদা দিন দিন বাড়ছে।',
     content: `
 <p>ছোট ব্যবসার জন্য ভিডিও মার্কেটিং এখন আর ঐচ্ছিক নয় — এটি প্রয়োজনীয়। ফেসবুক, ইউটিউব এবং TikTok-এ ভিডিও কন্টেন্টের চাহিদা দিন দিন বাড়ছে।</p>
 
@@ -64,6 +67,7 @@ const posts: Record<string, { title: string; date: string; readTime: string; con
     title: 'Hostamar-এ bKash দিয়ে পেমেন্ট করার নিয়ম',
     date: '2026-05-15',
     readTime: '৩ মিনিট',
+    excerpt: 'Hostamar-এ ক্রেডিট কিনতে আপনি bKash Personal ব্যবহার করতে পারেন। কোনো ব্যাংক কার্ড বা merchant অ্যাকাউন্টের প্রয়োজন নেই। ধাপে ধাপে সম্পূর্ণ গাইড।',
     content: `
 <p>Hostamar-এ ক্রেডিট কিনতে আপনি bKash Personal ব্যবহার করতে পারেন। কোনো ব্যাংক কার্ড বা merchant অ্যাকাউন্টের প্রয়োজন নেই।</p>
 
@@ -91,6 +95,35 @@ const posts: Record<string, { title: string; date: string; readTime: string; con
 </ul>
     `.trim(),
   },
+}
+
+export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+  const post = posts[params.slug]
+  if (!post) {
+    return { title: 'Post Not Found | Hostamar Blog' }
+  }
+  return {
+    title: `${post.title} | Hostamar Blog`,
+    description: post.excerpt,
+    alternates: { canonical: `https://hostamar.com/blog/${params.slug}` },
+    openGraph: {
+      title: `${post.title} | Hostamar Blog`,
+      description: post.excerpt,
+      url: `https://hostamar.com/blog/${params.slug}`,
+      siteName: 'Hostamar',
+      images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630 }],
+      locale: 'bn_BD',
+      type: 'article',
+      publishedTime: post.date,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${post.title} | Hostamar Blog`,
+      description: post.excerpt,
+      images: ['https://hostamar.com/opengraph-image'],
+    },
+    keywords: ['hostamar blog', 'ai video bangladesh', 'bangla video tutorial', 'hostamar guide'],
+  }
 }
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {

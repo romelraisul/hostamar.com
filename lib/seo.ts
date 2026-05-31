@@ -90,11 +90,11 @@ export function generateSeoMetadata({
 export const defaultSeo: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE`,
-    template: `%s | ${SITE_NAME}`,
+    default: `Hostamar - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE`,
+    template: `%s | Hostamar`,
   },
   description:
-    'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment',
+    'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment — all under one roof.',
   keywords: [
     'cloud hosting',
     'AI marketing videos',
@@ -107,34 +107,36 @@ export const defaultSeo: Metadata = {
     'DuckAI chat',
     'LuckyStar game',
   ],
-  authors: [{ name: 'Hostamar' }],
+  authors: [{ name: 'Hostamar', url: SITE_URL }],
   creator: 'Hostamar',
-  publisher: 'Hostamar',
+  publisher: 'Hostamar Technologies',
   alternates: {
     canonical: SITE_URL,
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
+    alternateLocale: ['bn_BD', 'ur_PK'],
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE`,
+    title: `Hostamar - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE`,
     description:
-      'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment',
+      'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment.',
     images: [
       {
         url: `${SITE_URL}/opengraph-image`,
         width: 1200,
         height: 630,
-        alt: SITE_NAME,
+        alt: 'Hostamar — All-in-One Platform',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE`,
+    site: '@hostamar',
+    title: `Hostamar - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE`,
     description:
-      'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment',
+      'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment.',
     images: [`${SITE_URL}/opengraph-image`],
   },
   robots: {
@@ -150,8 +152,13 @@ export const defaultSeo: Metadata = {
   },
   icons: {
     icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
   category: 'technology',
+  other: {
+    'apple-mobile-web-app-title': 'Hostamar',
+    'application-name': 'Hostamar',
+  },
 }
