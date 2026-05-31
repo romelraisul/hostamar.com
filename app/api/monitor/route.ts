@@ -116,18 +116,14 @@ function getCloudflaredStatus() {
 export async function GET() {
   const [
     homepage,
-    luckyStar,
-    aiBrowser,
-    duckAI,
-    devIDE,
-    aiBrowserAPI,
+    production,
+    healthApi,
+    ollamaBridge,
   ] = await Promise.all([
-    checkService('Homepage', 'http://localhost:3001'),
-    checkService('LuckyStar Game', 'http://localhost:8081'),
-    checkService('AI Browser', 'http://localhost:8080', '/browser/'),
-    checkService('DuckAI Chat', 'http://localhost:3004', '/api/health'),
-    checkService('Dev IDE', 'http://localhost:8082'),
-    checkService('AI Browser API', 'http://localhost:3003', '/api/health'),
+    checkService('Local (Docker)', 'http://localhost:3000'),
+    checkService('Production (Vercel)', 'https://hostamar.com'),
+    checkService('Health API', 'https://hostamar.com', '/api/health'),
+    checkService('Ollama AI', 'http://192.168.1.2:11434'),
   ]);
 
   const docker = getDockerContainers();
@@ -135,11 +131,9 @@ export async function GET() {
 
   const services = [
     homepage,
-    luckyStar,
-    aiBrowser,
-    duckAI,
-    devIDE,
-    aiBrowserAPI,
+    production,
+    healthApi,
+    ollamaBridge,
   ];
 
   const onlineCount = services.filter((s) => s.status === 'online').length;
