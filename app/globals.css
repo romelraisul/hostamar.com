@@ -1,3 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   DARK MODE — CSS Variables + Tailwind Integration
+   ============================================ */
+
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --surface-overlay: rgba(255, 255, 255, 0.8);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --accent-color: #3b82f6;
+  --accent-hover: #60a5fa;
+  --surface-overlay: rgba(15, 23, 42, 0.8);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+/* Smooth theme transition — only on supported properties, avoid layout thrash */
+html {
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+html *,
+html *::before,
+html *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+}
+
+/* ============================================
+   BASE ELEMENTS — Dark Mode Aware
+   ============================================ */
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: var(--text-primary);
+}
+
+/* Scrollbar styling for dark mode */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Bengali font support */
+[lang="bn"] {
+  font-family: var(--font-bengali), 'Noto Sans Bengali', sans-serif;
+}
 
 /* ============================================
    MOBILE RESPONSIVE FIXES
@@ -10,68 +111,68 @@
     gap: 1rem;
     padding: 1rem;
   }
-  
+
   .nav-links {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: center;
   }
-  
+
   .hero-section {
     padding: 2rem 1rem;
   }
-  
+
   .hero-title {
     font-size: 1.75rem;
     line-height: 1.3;
   }
-  
+
   .hero-description {
     font-size: 1rem;
   }
-  
+
   .pricing-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
-  
+
   .footer-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
-  
+
   /* Touch-friendly buttons */
   .cta-button {
     min-height: 48px;
     min-width: 48px;
   }
-  
+
   /* Dashboard mobile */
   .dashboard-container {
     padding: 1rem;
   }
-  
+
   .video-preview-container {
     aspect-ratio: 16/9;
     max-width: 100%;
   }
-  
+
   /* Hide desktop-only elements on mobile */
   .desktop-only {
     display: none !important;
   }
-  
+
   /* Show mobile-only elements */
   .mobile-only {
     display: block !important;
@@ -83,7 +184,7 @@
   .pricing-grid {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -94,15 +195,15 @@
   .hero-title {
     font-size: 1.5rem;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .footer-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
@@ -166,36 +267,31 @@
   animation: pulse-glow 2s infinite;
 }
 
-
-/* Dark Mode Variables */
-[data-theme="dark"] {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-card: #1e293b;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --border-color: #334155;
-  --accent-color: #3b82f6;
-  --accent-hover: #2563eb;
+/* ============================================
+   ANIMATION PREFERENCES — Respect motion preferences
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-/* Smooth theme transition */
-* {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+/* ============================================
+   FOCUS VISIBLE — Keyboard accessibility
+   ============================================ */
+:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
-/* Light mode (default) */
-[data-theme="light"] {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --border-color: #e2e8f0;
-  --accent-color: #3b82f6;
-  --accent-hover: #2563eb;
-}
-
+/* ============================================
+   FONT FACES
+   ============================================ */
 @font-face {
   font-family: 'Noto Sans Bengali';
   src: url('/fonts/NotoSansBengali-VariableFont_wdth,wght.woff2') format('woff2');
@@ -206,7 +302,3 @@
 :root {
   --font-bangla: 'Noto Sans Bengali', sans-serif;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;

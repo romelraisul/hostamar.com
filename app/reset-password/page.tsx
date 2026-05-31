@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
 import Link from 'next/link'
+import { useLocale } from '@/lib/locale-context'
 
 function ForgotPasswordForm() {
+  const { t } = useLocale()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -40,12 +42,12 @@ function ForgotPasswordForm() {
         <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">📧</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Check Your Email</h1>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('forgotPassword.checkEmail')}</h1>
         <p className="text-gray-400 mb-6">
-          If an account exists with that email, we&apos;ve sent a reset link.
+          {t('forgotPassword.checkEmailMsg')}
         </p>
         <Link href="/login" className="text-blue-400 hover:underline text-sm">
-          Back to Login
+          {t('forgotPassword.backToLogin')}
         </Link>
       </div>
     )
@@ -54,8 +56,8 @@ function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Forgot Password</h1>
-        <p className="text-gray-400 text-sm">Enter your email to receive a reset link</p>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('forgotPassword.title')}</h1>
+        <p className="text-gray-400 text-sm">{t('forgotPassword.subtitle')}</p>
       </div>
 
       {error && (
@@ -63,14 +65,14 @@ function ForgotPasswordForm() {
       )}
 
       <div>
-        <label className="block text-sm text-gray-400 mb-1">Email</label>
+        <label className="block text-sm text-gray-400 mb-1">{t('forgotPassword.emailLabel')}</label>
         <input
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
           className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="you@example.com"
+          placeholder={t('forgotPassword.emailPlaceholder')}
         />
       </div>
 
@@ -79,18 +81,19 @@ function ForgotPasswordForm() {
         disabled={loading}
         className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
       >
-        {loading ? 'Sending...' : 'Send Reset Link'}
+        {loading ? t('forgotPassword.sending') : t('forgotPassword.sendReset')}
       </button>
 
       <p className="text-center text-sm text-gray-500">
-        Remember your password?{' '}
-        <Link href="/login" className="text-blue-400 hover:underline">Login</Link>
+        {t('forgotPassword.rememberPassword')}{' '}
+        <Link href="/login" className="text-blue-400 hover:underline">{t('nav.login')}</Link>
       </p>
     </form>
   )
 }
 
 function ResetPasswordForm() {
+  const { t } = useLocale()
   const searchParams = useSearchParams()
   const router = useRouter()
   const token = searchParams.get('token')
@@ -103,9 +106,9 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Invalid Link</h1>
-        <p className="text-gray-400 mb-4">This reset link is missing or invalid.</p>
-        <Link href="/forgot-password" className="text-blue-400 hover:underline">Request a new one</Link>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('resetPassword.invalidLink')}</h1>
+        <p className="text-gray-400 mb-4">{t('resetPassword.invalidLinkMsg')}</p>
+        <Link href="/forgot-password" className="text-blue-400 hover:underline">{t('resetPassword.requestNew')}</Link>
       </div>
     )
   }
@@ -116,9 +119,9 @@ function ResetPasswordForm() {
         <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">✅</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Password Reset!</h1>
-        <p className="text-gray-400 mb-6">Your password has been changed successfully.</p>
-        <Link href="/login" className="text-blue-400 hover:underline">Login with new password</Link>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('resetPassword.resetDone')}</h1>
+        <p className="text-gray-400 mb-6">{t('resetPassword.resetDoneMsg')}</p>
+        <Link href="/login" className="text-blue-400 hover:underline">{t('resetPassword.loginWithNew')}</Link>
       </div>
     )
   }
@@ -153,8 +156,8 @@ function ResetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Set New Password</h1>
-        <p className="text-gray-400 text-sm">Enter your new password below</p>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('resetPassword.setNewPassword')}</h1>
+        <p className="text-gray-400 text-sm">{t('resetPassword.enterNewPassword')}</p>
       </div>
 
       {error && (
@@ -162,7 +165,7 @@ function ResetPasswordForm() {
       )}
 
       <div>
-        <label className="block text-sm text-gray-400 mb-1">New Password</label>
+        <label className="block text-sm text-gray-400 mb-1">{t('resetPassword.newPasswordLabel')}</label>
         <input
           type="password"
           value={password}
@@ -174,7 +177,7 @@ function ResetPasswordForm() {
       </div>
 
       <div>
-        <label className="block text-sm text-gray-400 mb-1">Confirm Password</label>
+        <label className="block text-sm text-gray-400 mb-1">{t('resetPassword.confirmPasswordLabel')}</label>
         <input
           type="password"
           value={confirm}
@@ -190,7 +193,7 @@ function ResetPasswordForm() {
         disabled={loading}
         className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
       >
-        {loading ? 'Resetting...' : 'Reset Password'}
+        {loading ? t('resetPassword.resetting') : t('resetPassword.resetBtn')}
       </button>
     </form>
   )
@@ -200,7 +203,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-xl border border-white/10 bg-gray-800/50 p-8">
-        <Suspense fallback={<div className="text-center text-gray-400">Loading...</div>}>
+        <Suspense fallback={<div className="text-center text-gray-400">{t('common.loading') || 'Loading...'}</div>}>
           <ResetPasswordForm />
         </Suspense>
       </div>

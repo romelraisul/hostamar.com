@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { CheckCircle, Copy, ExternalLink, Server, Mail, Database, Shield, HardDrive, Cpu } from 'lucide-react'
+import { useLocale } from '@/lib/locale-context'
 
 interface EnvField {
   label: string
@@ -12,6 +13,7 @@ interface EnvField {
 }
 
 export default function SetupPage() {
+  const { t } = useLocale()
   const [copied, setCopied] = useState<string | null>(null)
   const [fields, setFields] = useState<EnvField[]>([])
 
@@ -69,8 +71,8 @@ export default function SetupPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold mb-2">⚡ Hostamar Setup</h1>
-          <p className="text-gray-400">All self-hosted services — zero cloud dependency</p>
+          <h1 className="text-3xl font-bold mb-2">{t('setup.title')}</h1>
+          <p className="text-gray-400">{t('setup.subtitle')}</p>
         </div>
 
         {/* Infrastructure Overview */}
@@ -171,9 +173,9 @@ export default function SetupPage() {
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg mb-4 flex items-center justify-center gap-2 transition-colors"
           >
             {copied === 'all' ? (
-              <><CheckCircle className="w-5 h-5" /> Copied!</>
+              <><CheckCircle className="w-5 h-5" /> {t('setup.copied')}</>
             ) : (
-              <><Copy className="w-5 h-5" /> Copy All to Clipboard</>
+              <><Copy className="w-5 h-5" /> {t('setup.copyAll')}</>
             )}
           </button>
 
@@ -188,7 +190,7 @@ export default function SetupPage() {
                 <button
                   onClick={() => copyToClipboard(field.value, field.key)}
                   className="ml-3 p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
-                  title="Copy value"
+                  title={t('setup.copyValue')}
                 >
                   {copied === field.key ? (
                     <CheckCircle className="w-4 h-4 text-green-400" />
@@ -220,7 +222,7 @@ export default function SetupPage() {
             href="/dashboard"
             className="inline-block mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors"
           >
-            Go to Dashboard →
+            Go to {t('setup.goToDashboard')}
           </Link>
         </div>
       </div>

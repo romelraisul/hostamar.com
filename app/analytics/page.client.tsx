@@ -30,8 +30,10 @@ import {
   AlertCircle,
   ArrowRight
 } from "lucide-react"
+import { useLocale } from "@/lib/locale-context"
 
 export default function AnalyticsDashboard() {
+  const { t } = useLocale()
   const router = useRouter()
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -60,7 +62,7 @@ export default function AnalyticsDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="animate-pulse text-white">লোড হচ্ছে...</div>
+        <div className="animate-pulse text-white">{t('analytics.loading')}</div>
       </div>
     )
   }
@@ -70,13 +72,13 @@ export default function AnalyticsDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
         <div className="bg-white/5 backdrop-blur-md rounded-3xl p-8 text-center max-w-md w-full">
           <AlertCircle className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-          <h2 className="text-xl font-bold text-white mb-2">কোনো ডেটা নেই</h2>
-          <p className="text-gray-400">ভিডিও তৈরি করা শুরু করুন এবং এখানে অ্যানালিটিক্স দেখুন!</p>
+          <h2 className="text-xl font-bold text-white mb-2">{t('analytics.noData')}</h2>
+          <p className="text-gray-400">{t('analytics.noDataDesc')}</p>
           <button
             onClick={() => router.push('/generate')}
             className="mt-6 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition"
           >
-            ভিডিও তৈরি শুরু করুন →
+            {t('analytics.createVideos')}
           </button>
         </div>
       </div>
@@ -91,9 +93,9 @@ export default function AnalyticsDashboard() {
   }))
 
   const videoBreakdown = [
-    { name: 'পূর্ণ হয়েছে', value: analytics.videoBreakdown.completed, color: '#10b981' },
-    { name: 'প্রক্রিয়াজাত', value: analytics.videoBreakdown.processing, color: '#f59e0b' },
-    { name: 'ব্যর্থ', value: analytics.videoBreakdown.failed, color: '#ef4444' }
+    { name: t('analytics.completed'), value: analytics.videoBreakdown.completed, color: '#10b981' },
+    { name: t('analytics.processing'), value: analytics.videoBreakdown.processing, color: '#f59e0b' },
+    { name: t('analytics.cancelled'), value: analytics.videoBreakdown.failed, color: '#ef4444' }
   ]
 
   const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981']
@@ -107,7 +109,7 @@ export default function AnalyticsDashboard() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
               <TrendingUp className="text-white w-5 h-5" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">বিশ্লেষণ ড্যাশবোর্ড</span>
+            <span className="text-xl font-bold text-white tracking-tight">{t('analytics.title')}</span>
           </div>
           <button
             onClick={() => router.back()}
@@ -122,10 +124,10 @@ export default function AnalyticsDashboard() {
         {/* Overview Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: Eye, label: 'মোট ভিউ', value: analytics.overview.totalViews, change: 12 },
-            { icon: Download, label: 'ডাউনলোড', value: analytics.overview.totalDownloads, change: 8 },
-            { icon: Share2, label: 'শেয়ার', value: analytics.overview.totalShares, change: 15 },
-            { icon: DollarSign, label: 'মোট খরচ', value: `${analytics.overview.totalSpent}৳`, change: 5 }
+            { icon: Eye, label: t('analytics.totalViews'), value: analytics.overview.totalViews, change: 12 },
+            { icon: Download, label: t('analytics.totalDownloads'), value: analytics.overview.totalDownloads, change: 8 },
+            { icon: Share2, label: t('analytics.totalShares'), value: analytics.overview.totalShares, change: 15 },
+            { icon: DollarSign, label: t('analytics.totalSpent'), value: `${analytics.overview.totalSpent}৳`, change: 5 }
           ].map((stat, idx) => (
             <div key={idx} className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
               <div className="flex items-center justify-between mb-4">
@@ -144,11 +146,11 @@ export default function AnalyticsDashboard() {
         <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-white/10 rounded-2xl p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-white">🎯 Engagement Rate</h3>
+              <h3 className="text-lg font-bold text-white">{t('analytics.engagementRate')}</h3>
               <p className="text-3xl font-bold text-blue-400 mt-2">{analytics.overview.engagementRate}%</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-400">{analytics.overview.totalVideos} ভিডিও তৈরি</p>
+              <p className="text-sm text-gray-400">{analytics.overview.totalVideos} {t('analytics.videosCreated')}</p>
               <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mt-2" />
             </div>
           </div>
@@ -158,7 +160,7 @@ export default function AnalyticsDashboard() {
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Monthly Revenue */}
           <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-            <h3 className="text-lg font-bold text-white mb-4">📈 মাসিক রেভিনিউ</h3>
+            <h3 className="text-lg font-bold text-white mb-4">{t('analytics.monthlyRevenue')}</h3>
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={monthlyData}>
                 <defs>
@@ -178,7 +180,7 @@ export default function AnalyticsDashboard() {
 
           {/* Video Status */}
           <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-            <h3 className="text-lg font-bold text-white mb-4">🎬 ভিডিও স্ট্যাটাস</h3>
+            <h3 className="text-lg font-bold text-white mb-4">{t('analytics.videoStatus')}</h3>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
@@ -211,21 +213,21 @@ export default function AnalyticsDashboard() {
         {/* Top Videos Table */}
         <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden mb-8">
           <div className="p-6 border-b border-white/5">
-            <h3 className="text-lg font-bold text-white">🏆 টপ ভিডিও</h3>
+            <h3 className="text-lg font-bold text-white">{t('analytics.topVideos')}</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="text-left px-6 py-3 text-sm text-gray-400 font-medium">ভিডিও</th>
-                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">ভিউ</th>
-                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">ডাউনলোড</th>
-                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">শেয়ার</th>
-                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">স্ট্যাটাস</th>
+                  <th className="text-left px-6 py-3 text-sm text-gray-400 font-medium">{t('analytics.video')}</th>
+                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">{t('analytics.views')}</th>
+                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">{t('analytics.downloads')}</th>
+                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">{t('analytics.shares')}</th>
+                  <th className="text-center px-6 py-3 text-sm text-gray-400 font-medium">{t('analytics.status')}</th>
                 </tr>
               </thead>
               <tbody>
-                {(analytics.topVideos || []).map((video, idx) => (
+                {(analytics.topVideos || []).map((video: any, idx: number) => (
                   <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition">
                     <td className="px-6 py-4 text-white font-medium">{video.title}</td>
                     <td className="px-6 py-4 text-center text-gray-300">
@@ -243,7 +245,7 @@ export default function AnalyticsDashboard() {
                         video.status === 'processing' ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-red-500/20 text-red-400'
                       }`}>
-                        {video.status === 'ready' ? 'প্রস্তুত' : video.status === 'processing' ? 'প্রক্রিয়াজাত' : 'ব্যর্থ'}
+                        {video.status === 'ready' ? t('analytics.ready') : video.status === 'processing' ? t('analytics.processing') : t('analytics.cancelled')}
                       </span>
                     </td>
                   </tr>
@@ -256,21 +258,21 @@ export default function AnalyticsDashboard() {
         {/* Recent Orders */}
         <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden">
           <div className="p-6 border-b border-white/5">
-            <h3 className="text-lg font-bold text-white">📋 সাম্প্রতিক অর্ডার</h3>
+            <h3 className="text-lg font-bold text-white">{t('analytics.recentOrders')}</h3>
           </div>
           <div className="p-6 space-y-4">
-            {(analytics.recentOrders || []).map((order, idx) => (
+            {(analytics.recentOrders || []).map((order: any, idx: number) => (
               <div key={idx} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
                 <div>
-                  <div className="text-sm font-medium text-white">{order.plan} প্যাকেজ</div>
-                  <div className="text-xs text-gray-500">{new Date(order.date).toLocaleDateString('bn-BD')}</div>
+                  <div className="text-sm font-medium text-white">{order.plan} {t('analytics.package')}</div>
+                  <div className="text-xs text-gray-500">{new Date(order.date).toLocaleDateString('en-US')}</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-bold text-green-400">৳{order.amount}</span>
                   <span className={`px-2 py-0.5 rounded-full text-xs ${
                     order.status === 'completed' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
                   }`}>
-                    {order.status === 'completed' ? 'সম্পন্ন' : 'প্রক্রিয়াজাত'}
+                    {order.status === 'completed' ? t('analytics.completed') : t('analytics.processing')}
                   </span>
                 </div>
               </div>

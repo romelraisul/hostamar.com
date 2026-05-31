@@ -13,6 +13,7 @@ import {
   Lock,
   RefreshCw
 } from "lucide-react"
+import { useLocale } from "@/lib/locale-context"
 
 interface SubscriptionData {
   currentPlan: string;
@@ -25,6 +26,7 @@ interface SubscriptionData {
 }
 
 export default function SubscriptionPage() {
+  const { t } = useLocale()
   const router = useRouter()
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -47,10 +49,9 @@ export default function SubscriptionPage() {
     }
   }
 
-  const handleUpgrade = async (plan) => {
+  const handleUpgrade = async (plan: string) => {
     setProcessing(true)
     try {
-      // Redirect to payment page with plan info
       router.push(`/payment?plan=${plan}`)
     } catch (err) {
       console.error('Upgrade error:', err)
@@ -62,37 +63,37 @@ export default function SubscriptionPage() {
   const plans = [
     {
       id: 'free',
-      name: 'ফ্রি',
+      name: t('subscription.current'),
       price: '৳0',
-      period: '/মাস',
-      features: ['৫ ভিডিও/মাস', '৭২০p কোয়ালিটি', '৩ টেমপ্লেট', 'ওয়াটারমার্ক আছে'],
+      period: '/month',
+      features: ['5 videos/month', '720p quality', '3 templates', 'Watermark'],
       current: false,
       popular: false
     },
     {
       id: 'starter',
-      name: 'স্টার্টার',
+      name: 'Starter',
       price: '৳2,000',
-      period: '/মাস',
-      features: ['২০ ভিডিও/মাস', '১০৮০p কোয়ালিটি', '১০ টেমপ্লেট', 'প্রায়োরিটি সাপোর্ট'],
+      period: '/month',
+      features: ['20 videos/month', '1080p quality', '10 templates', 'Priority support'],
       current: subscription?.currentPlan === 'STARTER',
       popular: true
     },
     {
       id: 'business',
-      name: 'বিজনেস',
+      name: 'Business',
       price: '৳3,500',
-      period: '/মাস',
-      features: ['আনলিমিটেড ভিডিও', '৪K কোয়ালিটি', 'সব টেমপ্লেট', 'API অ্যাক্সেস', 'কাস্টম ব্র্যান্ডিং'],
+      period: '/month',
+      features: ['Unlimited videos', '4K quality', 'All templates', 'API access', 'Custom branding'],
       current: subscription?.currentPlan === 'BUSINESS',
       popular: false
     },
     {
       id: 'enterprise',
-      name: 'এন্টারপ্রাইজ',
+      name: 'Enterprise',
       price: '৳6,000',
-      period: '/মাস',
-      features: ['আনলিমিটেড ভিডিও', '৪K কোয়ালিটি', 'সব ফিচার', '২৪/৭ সাপোর্ট', 'আমরা পোস্ট করি'],
+      period: '/month',
+      features: ['Unlimited videos', '4K quality', 'All features', '24/7 support', 'We post for you'],
       current: subscription?.currentPlan === 'ENTERPRISE',
       popular: false
     }
@@ -101,7 +102,7 @@ export default function SubscriptionPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="animate-pulse text-white">লোড হচ্ছে...</div>
+        <div className="animate-pulse text-white">{t('subscription.loading')}</div>
       </div>
     )
   }
@@ -115,7 +116,7 @@ export default function SubscriptionPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center">
               <Crown className="text-white w-5 h-5" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">সাবস্ক্রিপশন ও বিলিং</span>
+            <span className="text-xl font-bold text-white tracking-tight">{t('subscription.title')}</span>
           </div>
         </div>
       </header>
@@ -126,35 +127,33 @@ export default function SubscriptionPage() {
           <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-2xl p-6 flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-green-400 mb-2">
-                {subscription.currentPlan === 'STARTER' ? 'স্টার্টার' :
-                 subscription.currentPlan === 'BUSINESS' ? 'বিজনেস' :
-                 subscription.currentPlan === 'ENTERPRISE' ? 'এন্টারপ্রাইজ' : 'ফ্রি'} প্যাকেজ সক্রিয়
+                {subscription.currentPlan} {t('subscription.activePlan')}
               </h2>
               <p className="text-green-300 text-sm">
-                কোয়ালিটি: {subscription.quality} | ভিডিও সীমা: {subscription.videoLimit === -1 ? 'আনলিমিটেড' : subscription.videoLimit}
+                {t('subscription.quality')}: {subscription.quality} | {t('subscription.videoLimit')}: {subscription.videoLimit === -1 ? 'Unlimited' : subscription.videoLimit}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-green-300">পরবর্তী বিলিং: {new Date(subscription.currentSubscription?.endDate as string).toLocaleDateString('bn-BD')}</p>
+              <p className="text-sm text-green-300">{t('subscription.nextBilling')}: {subscription.currentSubscription?.endDate ? new Date(subscription.currentSubscription.endDate as string).toLocaleDateString('en-US') : 'N/A'}</p>
               <button
                 onClick={() => router.push('/payment')}
                 className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition"
               >
-                রニュー করুন
+                {t('subscription.renew')}
               </button>
             </div>
           </div>
         ) : (
           <div className="bg-amber-600/20 border border-amber-500/30 rounded-2xl p-6 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-amber-400 mb-2">ফ্রি প্যাকেজ ব্যবহার করছেন</h2>
-              <p className="text-amber-300 text-sm">5 ভিডিও সীমা ও 720p কোয়ালিটি | আরও ফিচার আনলক করতে আপগ্রেড করুন</p>
+              <h2 className="text-xl font-bold text-amber-400 mb-2">{t('subscription.usingFree')}</h2>
+              <p className="text-amber-300 text-sm">{t('subscription.freePlanDesc')}</p>
             </div>
             <button
               onClick={() => handleUpgrade('starter')}
               className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg transition"
             >
-              আপগ্রেড করুন
+              {t('subscription.upgrade')}
             </button>
           </div>
         )}
@@ -165,26 +164,26 @@ export default function SubscriptionPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-white">{subscription?.totalSpent || 0}৳</div>
-            <div className="text-xs text-gray-500 mt-1">মোট খরচ</div>
+            <div className="text-xs text-gray-500 mt-1">{t('subscription.totalSpent')}</div>
           </div>
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-white">{subscription?.totalOrders || 0}</div>
-            <div className="text-xs text-gray-500 mt-1">মোট অর্ডার</div>
+            <div className="text-xs text-gray-500 mt-1">{t('subscription.totalOrders')}</div>
           </div>
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-green-400">{subscription?.videoLimit === -1 ? '∞' : subscription?.videoLimit || 5}</div>
-            <div className="text-xs text-gray-500 mt-1">ভিডিও সীমা</div>
+            <div className="text-xs text-gray-500 mt-1">{t('subscription.videoLimit')}</div>
           </div>
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-blue-400">{subscription?.quality || '720p'}</div>
-            <div className="text-xs text-gray-500 mt-1">কোয়ালিটি</div>
+            <div className="text-xs text-gray-500 mt-1">{t('subscription.quality')}</div>
           </div>
         </div>
       </section>
 
       {/* Plans */}
       <section className="max-w-6xl mx-auto px-4 pb-20">
-        <h2 className="text-2xl font-bold text-white text-center mb-8">প্যাকেজ তুলনা</h2>
+        <h2 className="text-2xl font-bold text-white text-center mb-8">{t('subscription.comparePlans')}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map(plan => (
             <div
@@ -199,12 +198,12 @@ export default function SubscriptionPage() {
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full">
-                  🔥 জনপ্রিয়
+                  {t('subscription.popular')}
                 </div>
               )}
               {plan.current && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-4 py-1 rounded-full">
-                  ✅ বর্তমান
+                  {t('subscription.currentLabel')}
                 </div>
               )}
               <h3 className="text-xl font-bold text-white mb-2 mt-2">{plan.name}</h3>
@@ -229,7 +228,7 @@ export default function SubscriptionPage() {
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
               >
-                {plan.current || plan.id === 'free' ? 'বর্তমান' : 'আপগ্রেড করুন'}
+                {plan.current || plan.id === 'free' ? t('subscription.current') : t('subscription.upgrade')}
               </button>
             </div>
           ))}

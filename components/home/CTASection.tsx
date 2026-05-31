@@ -5,7 +5,7 @@ import { useLocale } from '@/lib/locale-context'
 export default function CTASection() {
   const { t } = useLocale()
   return (
-    <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+    <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-900">
       <div className="max-w-4xl mx-auto px-4 text-center text-white">
         <h2 className="text-4xl font-bold mb-6">{t('cta.createTitle')}</h2>
         <p className="text-xl mb-8 opacity-90">

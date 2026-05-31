@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLocale } from '@/lib/locale-context'
 import CollabHeader from '@/components/collab/CollabHeader'
 import CollabHero from '@/components/collab/CollabHero'
 import CollabActions from '@/components/collab/CollabActions'
@@ -23,6 +24,7 @@ interface Session {
 }
 
 export default function CollabPage() {
+  const { t } = useLocale()
   const router = useRouter()
   const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -55,7 +57,7 @@ export default function CollabPage() {
     }
 
     loadSessions()
-  }, [router])
+  }, [router, t])
 
   const getToken = () => localStorage.getItem('token')
 

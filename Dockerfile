@@ -43,7 +43,8 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 # ffmpeg is required by the video-generation worker
-RUN apk add --no-cache ffmpeg
+# openssl + libc6-compat required by Prisma client (alpine musl compatibility)
+RUN apk add --no-cache ffmpeg openssl libc6-compat
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

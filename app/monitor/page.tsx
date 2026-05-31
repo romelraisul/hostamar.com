@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLocale } from '@/lib/locale-context';
 
 interface ServiceHealth {
   name: string;
@@ -224,6 +225,7 @@ function CloudflaredCard({ cloudflared }: { cloudflared: CloudflaredStatus }) {
 }
 
 export default function MonitorPage() {
+  const { t } = useLocale();
   const [data, setData] = useState<MonitorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
@@ -276,12 +278,12 @@ export default function MonitorPage() {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 text-lg mb-2">Failed to load monitor data</p>
+          <p className="text-red-400 text-lg mb-2">{t('monitor.failedLoad')}</p>
           <button
             onClick={fetchData}
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
           >
-            Retry
+            {t('monitor.retry')}
           </button>
         </div>
       </div>
@@ -294,9 +296,9 @@ export default function MonitorPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white">Hostamar Monitor</h1>
+            <h1 className="text-3xl font-bold text-white">{t('monitor.title')}</h1>
             <p className="text-gray-500 mt-1">
-              Service health dashboard &middot; Auto-refreshes every 10s
+              {t('monitor.subtitle')}
             </p>
           </div>
 
@@ -316,7 +318,7 @@ export default function MonitorPage() {
                 />
               </svg>
               <span className="text-gray-400 text-sm">
-                Refresh in <span className="text-emerald-400 font-mono">{countdown}s</span>
+                {t('monitor.refreshIn')} <span className="text-emerald-400 font-mono">{countdown}s</span>
               </span>
             </div>
 
@@ -349,7 +351,7 @@ export default function MonitorPage() {
               <StatusBadge status={data.overallStatus} />
               <div>
                 <p className="text-white font-medium">
-                  {data.summary.online} / {data.summary.total} services online
+                  {data.summary.online} / {data.summary.total} {t('monitor.servicesOnline')}
                 </p>
                 <p className="text-gray-500 text-sm">
                   Last checked:{' '}
@@ -363,20 +365,20 @@ export default function MonitorPage() {
                 <p className="text-emerald-400 text-2xl font-bold">
                   {data.summary.online}
                 </p>
-                <p className="text-gray-500">Online</p>
+                <p className="text-gray-500">{t('monitor.online')}</p>
               </div>
               <div className="text-center">
                 <p className="text-red-400 text-2xl font-bold">
                   {data.summary.offline}
                 </p>
-                <p className="text-gray-500">Offline</p>
+                <p className="text-gray-500">{t('monitor.offline')}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Services Grid */}
-        <h2 className="text-xl font-semibold text-white mb-4">Services</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t('monitor.services')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {data.services.map((service) => (
             <ServiceCard key={service.name} service={service} />
@@ -384,7 +386,7 @@ export default function MonitorPage() {
         </div>
 
         {/* Infrastructure */}
-        <h2 className="text-xl font-semibold text-white mb-4">Infrastructure</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t('monitor.infrastructure')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <DockerCard docker={data.infrastructure.docker} />
           <CloudflaredCard cloudflared={data.infrastructure.cloudflared} />
@@ -393,7 +395,7 @@ export default function MonitorPage() {
         {/* Footer */}
         <div className="mt-12 pt-6 border-t border-gray-800 text-center">
           <p className="text-gray-600 text-sm">
-            Hostamar Platform Monitor &middot; {new Date().getFullYear()}
+            {t('monitor.footer')} &middot; {new Date().getFullYear()}
           </p>
         </div>
       </div>

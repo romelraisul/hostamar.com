@@ -3,8 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
+import { useLocale } from "@/lib/locale-context"
 
 export default function LoginPage() {
+  const { t } = useLocale()
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -25,12 +27,12 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError("ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।")
+        setError(t('login.errorInvalid') || "ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।")
       } else if (result?.ok) {
         router.push("/dashboard")
       }
     } catch (err) {
-      setError("লগইন করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।")
+      setError(t('login.errorGeneric') || "লগইন করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।")
     } finally {
       setLoading(false)
     }
@@ -41,8 +43,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md animate-fadeIn">
         <div className="bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-700">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">হোস্টামার</h1>
-            <p className="text-gray-400 text-sm">ভিডিও জেনারেশন প্ল্যাটফর্ম</p>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('login.brandName')}</h1>
+            <p className="text-gray-400 text-sm">{t('login.brandSubtitle')}</p>
           </div>
 
           {error && (
@@ -54,7 +56,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">
-                ইমেইল অ্যাড্রেস
+                {t('login.emailLabel')}
               </label>
               <input
                 type="email"
@@ -62,14 +64,14 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
-                placeholder="example@email.com"
+                placeholder={t('login.emailPlaceholder')}
                 disabled={loading}
               />
             </div>
 
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">
-                পাসওয়ার্ড
+                {t('login.passwordLabel')}
               </label>
               <input
                 type="password"
@@ -77,7 +79,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
-                placeholder="••••••••"
+                placeholder={t('login.passwordPlaceholder')}
                 disabled={loading}
               />
             </div>
@@ -87,20 +89,20 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-3 rounded-lg transition duration-200 text-sm"
             >
-              {loading ? "লগইন হচ্ছে..." : "লগইন করুন"}
+              {loading ? t('login.loggingIn') : t('login.loginBtn')}
             </button>
           </form>
 
           <p className="text-center text-gray-400 text-sm mt-6">
-            অ্যাকাউন্ট নেই?{" "}
+            {t('login.noAccount')}{" "}
             <a href="/signup" className="text-blue-400 hover:underline font-medium">
-              এখানে রেজিস্টার করুন
+              {t('login.register')}
             </a>
           </p>
 
           <div className="mt-6 pt-6 border-t border-gray-700">
             <p className="text-center text-gray-500 text-xs">
-              <a href="/" className="hover:text-gray-300">← হোমপেজে ফিরে যান</a>
+              <a href="/" className="hover:text-gray-300">{t('login.backToHome')}</a>
             </p>
           </div>
         </div>

@@ -23,8 +23,10 @@ import {
   Check,
   X
 } from "lucide-react"
+import { useLocale } from "@/lib/locale-context"
 
 export default function AdminDashboard() {
+  const { t } = useLocale()
   const router = useRouter()
   const [stats, setStats] = useState<any>(null)
   const [customers, setCustomers] = useState<any[]>([])
@@ -59,7 +61,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const StatCard = ({ icon: Icon, label, value, change, color }) => (
+  const StatCard = ({ icon: Icon, label, value, change, color }: any) => (
     <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center`}>
@@ -77,7 +79,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="animate-pulse text-white">লোড হচ্ছে...</div>
+        <div className="animate-pulse text-white">{t('logs.loading')}</div>
       </div>
     )
   }
@@ -91,7 +93,7 @@ export default function AdminDashboard() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
               <Eye className="text-white w-5 h-5" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">অ্যাডমিন ড্যাশবোর্ড</span>
+            <span className="text-xl font-bold text-white tracking-tight">{t('admin.title') || 'Admin Dashboard'}</span>
           </div>
           <button
             onClick={() => fetchDashboardData()}
@@ -107,12 +109,12 @@ export default function AdminDashboard() {
         <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 border border-white/10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">স্বাগতম, অ্যাডমিন!</h1>
-              <p className="text-gray-400 mt-1">আপনার প্ল্যাটফর্মের সাম্প্রতিক ওভারভিউ দেখুন</p>
+              <h1 className="text-2xl font-bold text-white">{t('admin.welcome') || 'Welcome, Admin!'}</h1>
+              <p className="text-gray-400 mt-1">{t('admin.welcomeDesc') || 'View your platform overview'}</p>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-400">আজকের তারিখ</div>
-              <div className="text-lg font-bold text-white">{new Date().toLocaleDateString('bn-BD')}</div>
+              <div className="text-sm text-gray-400">{t('admin.today') || "Today's Date"}</div>
+              <div className="text-lg font-bold text-white">{new Date().toLocaleDateString('en-US')}</div>
             </div>
           </div>
         </div>
@@ -121,28 +123,28 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatCard
             icon={Users}
-            label="মোট কাস্টমার"
+            label={t('admin.totalCustomers') || 'Total Customers'}
             value={stats?.totalCustomers || 0}
             change={stats?.customerChange || 0}
             color="bg-blue-500/20"
           />
           <StatCard
             icon={ShoppingCart}
-            label="মোট অর্ডার"
+            label={t('admin.totalOrders') || 'Total Orders'}
             value={stats?.totalOrders || 0}
             change={stats?.orderChange || 0}
             color="bg-green-500/20"
           />
           <StatCard
             icon={DollarSign}
-            label="মোট আয়"
+            label={t('admin.totalRevenue') || 'Total Revenue'}
             value={`৳${stats?.totalRevenue || 0}`}
             change={stats?.revenueChange || 0}
             color="bg-purple-500/20"
           />
           <StatCard
             icon={TrendingUp}
-            label="পেন্ডিং অর্ডার"
+            label={t('admin.pendingOrders') || 'Pending Orders'}
             value={stats?.pendingOrders || 0}
             change={stats?.pendingChange || 0}
             color="bg-yellow-500/20"
@@ -161,10 +163,10 @@ export default function AdminDashboard() {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {tab === 'overview' && 'ওভারভিউ'}
-              {tab === 'customers' && 'কাস্টমার'}
-              {tab === 'orders' && 'অর্ডার'}
-              {tab === 'payments' && 'পেমেন্ট'}
+              {tab === 'overview' && (t('admin.overview') || 'Overview')}
+              {tab === 'customers' && (t('admin.customers.title') || 'Customers')}
+              {tab === 'orders' && (t('admin.orders') || 'Orders')}
+              {tab === 'payments' && (t('admin.payments') || 'Payments')}
             </button>
           ))}
         </div>
@@ -174,9 +176,9 @@ export default function AdminDashboard() {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="p-6">
-              <h3 className="text-lg font-bold text-white mb-4">📊 সাম্প্রতিক কার্যক্রম</h3>
+              <h3 className="text-lg font-bold text-white mb-4">{t('admin.recentActivity') || 'Recent Activity'}</h3>
               <div className="space-y-4">
-                {orders.slice(0, 10).map((order, idx) => (
+                {orders.slice(0, 10).map((order: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-lg ${
@@ -190,7 +192,7 @@ export default function AdminDashboard() {
                       </div>
                       <div>
                         <div className="text-sm font-medium text-white">{order.customerName}</div>
-                        <div className="text-xs text-gray-500">{order.plan} প্যাকেজ — {order.date}</div>
+                        <div className="text-xs text-gray-500">{order.plan} {t('analytics.package')} — {order.date}</div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -200,9 +202,9 @@ export default function AdminDashboard() {
                         order.status === 'processing' ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-red-500/20 text-red-400'
                       }`}>
-                        {order.status === 'completed' ? 'সম্পন্ন' :
-                         order.status === 'processing' ? 'প্রক্রিয়াজাত' :
-                         'বাতিল'}
+                        {order.status === 'completed' ? t('analytics.completed') :
+                         order.status === 'processing' ? t('analytics.processing') :
+                         t('analytics.cancelled')}
                       </span>
                     </div>
                   </div>
@@ -215,11 +217,11 @@ export default function AdminDashboard() {
           {activeTab === 'customers' && (
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">👥 কাস্টমার তালিকা</h3>
+                <h3 className="text-lg font-bold text-white">{t('admin.customers.title')}</h3>
                 <div className="flex gap-3">
                   <input
                     type="text"
-                    placeholder="খুঁজুন..."
+                    placeholder={t('admin.customers.search') || 'Search...'}
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-blue-500/50 w-48"
@@ -229,15 +231,15 @@ export default function AdminDashboard() {
                     onChange={e => setFilter(e.target.value)}
                     className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none"
                   >
-                    <option value="all">সব</option>
-                    <option value="active">সক্রিয়</option>
-                    <option value="inactive">নিষ্ক্রিয়</option>
-                    <option value="new">নতুন</option>
+                    <option value="all">{t('admin.all') || 'All'}</option>
+                    <option value="active">{t('admin.customers.activate') || 'Active'}</option>
+                    <option value="inactive">{t('admin.customers.suspend') || 'Inactive'}</option>
+                    <option value="new">New</option>
                   </select>
                 </div>
               </div>
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {customers.map((customer, idx) => (
+                {customers.map((customer: any, idx: number) => (
                   <div key={idx} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
@@ -260,17 +262,17 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Orders & Payments tabs would show similar structured data */}
+          {/* Orders & Payments tabs */}
           {activeTab === 'orders' && (
             <div className="p-6 text-center text-gray-400 py-12">
               <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-600" />
-              <p>অর্ডার ডেটা এখানে দেখাবে</p>
+              <p>{t('admin.ordersData') || 'Order data will appear here'}</p>
             </div>
           )}
           {activeTab === 'payments' && (
             <div className="p-6 text-center text-gray-400 py-12">
               <DollarSign className="w-12 h-12 mx-auto mb-4 text-gray-600" />
-              <p>পেমেন্ট ডেটা এখানে দেখাবে</p>
+              <p>{t('admin.paymentsData') || 'Payment data will appear here'}</p>
             </div>
           )}
         </div>

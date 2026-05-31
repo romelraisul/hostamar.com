@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import Script from 'next/script'
+import { useLocale } from '@/lib/locale-context'
 import GenerateHero from '@/components/generate/GenerateHero'
 import TemplateSelector from '@/components/generate/TemplateSelector'
 import VideoPreview from '@/components/generate/VideoPreview'
@@ -25,6 +26,7 @@ const pricingTiers = [
 ]
 
 export default function GeneratePage() {
+  const { t } = useLocale()
   const [activeTab, setActiveTab] = useState('generate')
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -34,7 +36,7 @@ export default function GeneratePage() {
   const [selectedTier, setSelectedTier] = useState<string | null>(null)
 
   const handleGenerate = useCallback(async () => {
-    if (!selectedTemplate) { alert('আপনাকে একটি টেমপ্লেট বেছে নিতে হবে!'); return }
+    if (!selectedTemplate) { alert('Please select a template first!'); return }
     setIsGenerating(true)
     setProgress(0)
     setGeneratedUrl(null)
@@ -68,9 +70,9 @@ export default function GeneratePage() {
               />
 
               <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">আপনার প্রম্পট লিখুন</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('generate.yourPrompt')}</label>
                 <textarea className="w-full p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-slate-800 dark:text-white min-h-[120px]"
-                  placeholder="আপনার ব্যবসার বিষয়বস্তু লিখুন..." rows={4} />
+                  placeholder={t('generate.promptPlaceholder')} rows={4} />
               </div>
 
               <button onClick={handleGenerate} disabled={isGenerating}
@@ -83,9 +85,9 @@ export default function GeneratePage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    AI ভিডিও তৈরি হচ্ছে...
+                    {t('generate.generating')}
                   </span>
-                ) : '🎬 AI দিয়ে ভিডিও তৈরি করুন'}
+                ) : t('generate.generateBtn')}
               </button>
             </div>
 
@@ -104,7 +106,7 @@ export default function GeneratePage() {
         {activeTab === 'pricing' && (
           <PricingPlans
             tiers={pricingTiers}
-            onSelectTier={(tier) => { setSelectedTier(tier); setShowPayment(true) }}
+            onSelectTier={(tier: string) => { setSelectedTier(tier); setShowPayment(true) }}
             showPayment={showPayment}
             selectedTier={selectedTier}
             onClosePayment={() => { setShowPayment(false); setSelectedTier(null) }}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useLocale } from '@/lib/locale-context';
 
 type LogLevel = 'info' | 'warn' | 'error';
 
@@ -25,6 +26,7 @@ const levelBg: Record<LogLevel, string> = {
 };
 
 export default function LogsPage() {
+  const { t } = useLocale();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [level, setLevel] = useState<LogLevel | 'all'>('all');
@@ -91,7 +93,7 @@ export default function LogsPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">System Logs</h1>
+          <h1 className="text-3xl font-bold text-white">{t('logs.title')}</h1>
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-sm text-gray-400">
               <input
@@ -100,13 +102,13 @@ export default function LogsPage() {
                 onChange={(e) => setAutoRefresh(e.target.checked)}
                 className="rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-blue-500"
               />
-              Auto-refresh (5s)
+              {t('logs.autoRefresh')}
             </label>
             <button
               onClick={fetchLogs}
               className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition-colors"
             >
-              Refresh
+              {t('logs.refresh')}
             </button>
           </div>
         </div>
@@ -114,18 +116,18 @@ export default function LogsPage() {
         <div className="bg-gray-900 rounded-xl p-4 mb-6 border border-gray-800">
           <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm text-gray-400 mb-1">Search</label>
+              <label className="block text-sm text-gray-400 mb-1">{t('logs.search')}</label>
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search logs..."
+                placeholder={t('logs.searchPlaceholder')}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Level</label>
+              <label className="block text-sm text-gray-400 mb-1">{t('logs.level')}</label>
               <div className="flex gap-2">
                 {(['all', 'info', 'warn', 'error'] as const).map((l) => (
                   <button
@@ -147,7 +149,7 @@ export default function LogsPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">From</label>
+              <label className="block text-sm text-gray-400 mb-1">{t('logs.from')}</label>
               <input
                 type="date"
                 value={startDate}
@@ -157,7 +159,7 @@ export default function LogsPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1">To</label>
+              <label className="block text-sm text-gray-400 mb-1">{t('logs.to')}</label>
               <input
                 type="date"
                 value={endDate}
@@ -170,18 +172,18 @@ export default function LogsPage() {
               type="submit"
               className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors"
             >
-              Apply
+              {t('logs.apply')}
             </button>
           </form>
         </div>
 
-        <div className="text-sm text-gray-500 mb-4">{total} entries found</div>
+        <div className="text-sm text-gray-500 mb-4">{total} {t('logs.entriesFound')}</div>
 
         <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading...</div>
+            <div className="p-8 text-center text-gray-500">{t('logs.loading')}</div>
           ) : logs.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No logs found</div>
+            <div className="p-8 text-center text-gray-500">{t('logs.noLogs')}</div>
           ) : (
             <div className="divide-y divide-gray-800">
               {logs.map((log, i) => (
@@ -218,17 +220,17 @@ export default function LogsPage() {
               disabled={page === 1}
               className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm transition-colors"
             >
-              Previous
+              {t('logs.previous')}
             </button>
             <span className="text-sm text-gray-400">
-              Page {page} of {totalPages}
+              {t('logs.page')} {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm transition-colors"
             >
-              Next
+              {t('logs.next')}
             </button>
           </div>
         )}

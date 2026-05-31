@@ -3,10 +3,12 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Sparkles } from 'lucide-react'
+import { useLocale } from '@/lib/locale-context'
 import SearchBar from '@/components/search/SearchBar'
 import SearchResults, { SearchResultItem } from '@/components/search/SearchResults'
 
 export default function SearchPage() {
+  const { t } = useLocale()
   const router = useRouter()
 
   const [query, setQuery] = useState('')
@@ -64,17 +66,17 @@ export default function SearchPage() {
             <button
               onClick={() => router.back()}
               className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
-              aria-label="Go back"
+              aria-label={t('search.goBack')}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               <h1 className="text-xl font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-400" />
-                AI Video Search
+                {t('search.title')}
               </h1>
               <p className="text-xs text-gray-500">
-                Semantic search powered by Ollama embeddings
+                {t('search.subtitle')}
               </p>
             </div>
           </div>
@@ -101,7 +103,7 @@ export default function SearchPage() {
               <span className="text-red-400 text-2xl font-bold">!</span>
             </div>
             <h3 className="text-xl font-bold text-red-400 mb-2">
-              Search Failed
+              {t('search.failed')}
             </h3>
             <p className="text-sm text-gray-500 max-w-md text-center mb-6">
               {error}
@@ -128,10 +130,10 @@ export default function SearchPage() {
       <footer className="fixed bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur-xl border-t border-white/5 py-3">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between text-xs text-gray-600">
           <span>
-            Powered by{' '}
+            {t('search.poweredBy')}{' '}
             <span className="text-purple-400">Ollama · hermes3:latest</span>
           </span>
-          <span>Semantic cosine similarity search</span>
+          <span>{t('search.semanticSearch')}</span>
         </div>
       </footer>
     </main>

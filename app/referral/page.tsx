@@ -1,15 +1,15 @@
-// @ts-nocheck — see: referralRewards type needs threshold/label/bonus properties that the inferred API type doesn't declare
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
 import { Copy, Check, Share2, Gift, Users, Award, TrendingUp, ArrowRight, RefreshCw, CopyCheck } from "lucide-react"
+import { useLocale } from "@/lib/locale-context"
 
 interface ReferralData {
   referralLink: string;
   referralCode: string;
   referredCount: number;
-  referralRewards: Array<{ tier: string; reward: number; referredCount: number }>;
+  referralRewards: Array<{ tier: string; reward: number; referredCount: number; threshold?: number; label?: string; bonus?: number }>;
   completedCount: number;
   pendingCount: number;
   totalBonus: number;
@@ -19,6 +19,7 @@ interface ReferralData {
 declare const gtag: (...args: any[]) => void;
 
 export default function ReferralPage() {
+  const { t } = useLocale()
   const router = useRouter()
   const [referralData, setReferralData] = useState<ReferralData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -27,7 +28,6 @@ export default function ReferralPage() {
 
   useEffect(() => {
     fetchReferralData()
-    // Check if PWA installed
     setAppInstalled(typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches)
   }, [])
 
@@ -48,23 +48,20 @@ export default function ReferralPage() {
     try {
       if (navigator.share && !appInstalled) {
         await navigator.share({
-          title: 'Hostamar - AI ভিডিও তৈরি করুন',
-          text: 'আমি হোস্টামারে যোগদান করলাম! ফ্রি AI ভিডিও তৈরি করুন।',
+          title: 'Hostamar - AI Video Creation',
+          text: 'I joined Hostamar! Create free AI videos.',
           url: referralData?.referralLink
         })
       } else {
         await navigator.clipboard.writeText(referralData?.referralLink)
       }
       setCopied(true)
-      // Reset after toast duration
       setTimeout(() => setCopied(false), 2500)
 
-      // Track copy event
       if (typeof gtag !== 'undefined') {
         gtag('event', 'referral_link_copied', { method: copied ? 'clipboard' : 'share' })
       }
     } catch (err) {
-      // Fallback for older browsers
       const textarea = document.createElement('textarea')
       textarea.value = referralData?.referralLink
       document.body.appendChild(textarea)
@@ -82,7 +79,7 @@ export default function ReferralPage() {
   }
 
   const shareOnWhatsApp = () => {
-    const message = encodeURIComponent('🎬 Hostamar - AI ভিডিও তৈরি করুন!\n\nআমি হোস্টামারে যোগদান করলাম এবং ফ্রি AI ভিডিও তৈরি করছি। তুমিও জয়েন!\n\n')
+    const message = encodeURIComponent('🎬 Hostamar - AI Video Creation!\n\nI joined Hostamar and I am creating AI videos. Join too!\n\n')
     const url = `https://wa.me/?text=${message}${encodeURIComponent(referralData?.referralLink || '')}`
     window.open(url, '_blank')
   }
@@ -95,7 +92,7 @@ export default function ReferralPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="animate-pulse text-white">লোড হচ্ছে...</div>
+        <div className="animate-pulse text-white">{t('referral.loading')}</div>
       </div>
     )
   }
@@ -104,22 +101,22 @@ export default function ReferralPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
         <div className="bg-white/5 backdrop-blur-md rounded-3xl p-8 max-w-md w-full text-center">
-          <p className="text-white/70">প্রথমে লগইন করুন</p>
+          <p className="text-white/70">{t('referral.loginFirst')}</p>
           <button
             onClick={() => router.push('/login')}
             className="mt-4 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition"
           >
-            লগইন করুন
+            {t('referral.login')}
           </button>
         </div>
       </div>
     )
   }
 
-  const rewards: ({ tier: string; reward: number; referredCount: number; threshold: number; label?: string; bonus?: number })[] = referralData.referralRewards
+  const rewards = referralData.referralRewards
   const progressPercent = Math.min((referralData.referredCount / 100) * 100, 100)
-  const nextTier = rewards.find(r => referralData.referredCount < r.threshold)
-  const currentTier = [...rewards].reverse().find(r => referralData.referredCount >= r.threshold)
+  const nextTier = rewards.find(r => referralData.referredCount < (r.threshold || 0))
+  const currentTier = [...rewards].reverse().find(r => referralData.referredCount >= (r.threshold || 0))
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -130,7 +127,7 @@ export default function ReferralPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
               <Gift className="text-white w-5 h-5" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">রেফারেল প্রোগ্রাম</span>
+            <span className="text-xl font-bold text-white tracking-tight">{t('referral.title')}</span>
           </div>
           <button
             onClick={() => router.back()}
@@ -145,16 +142,16 @@ export default function ReferralPage() {
       <section className="max-w-6xl mx-auto px-4 pt-8 pb-4 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
           <TrendingUp className="w-4 h-4" />
-          আপনার নেটওয়ার্কের সেরা
+          {t('referral.bestNetwork')}
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-          বন্ধুদের আমন্ত্রণ জানান <br />
+          {t('referral.heroTitle')} <br />
           <span className="text-gradient bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            উপার্জন করুন
+            {t('referral.heroEarn')}
           </span>
         </h1>
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          আপনার ইউনিক রেফারেল লিংক শেয়ার করুন — প্রতিটি সফল সাইনআপে আপনি ও আপনার বন্ধু উভয়েরই বোনাস পাবেন!
+          {t('referral.heroDesc')}
         </p>
       </section>
 
@@ -168,18 +165,18 @@ export default function ReferralPage() {
               <div className="p-6 border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <Link2 className="text-blue-400 w-5 h-5" />
+                    <svg className="text-blue-400 w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">আপনার রেফারেল লিংক</h2>
-                    <p className="text-sm text-gray-400">ফ্রি অ্যাকাউন্টে ৫ জন, পেইড অ্যাকাউন্টে ১০ জন পান ওভাররাইড</p>
+                    <h2 className="text-lg font-bold text-white">{t('referral.yourLink')}</h2>
+                    <p className="text-sm text-gray-400">{t('referral.linkDesc')}</p>
                   </div>
                 </div>
               </div>
               <div className="p-6 space-y-4">
                 {/* Referral Code Badge */}
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-400 w-28">রেফারেল কোড:</span>
+                  <span className="text-sm font-medium text-gray-400 w-28">{t('referral.code')}</span>
                   <span className="px-3 py-1.5 rounded-lg bg-purple-500/20 text-purple-400 font-mono font-bold text-lg border border-purple-500/30">
                     {referralData.referralCode}
                   </span>
@@ -204,12 +201,12 @@ export default function ReferralPage() {
                     {copied ? (
                       <>
                         <CopyCheck className="w-4 h-4" />
-                        <span className="hidden md:inline">কপি হয়েছে!</span>
+                        <span className="hidden md:inline">{t('referral.copied')}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-4 h-4" />
-                        <span className="hidden md:inline">কপি করুন</span>
+                        <span className="hidden md:inline">{t('referral.copy')}</span>
                       </>
                     )}
                   </button>
@@ -239,12 +236,12 @@ export default function ReferralPage() {
 
                 {/* Referral Instructions */}
                 <div className="bg-white/5 rounded-xl p-4 mt-4">
-                  <h4 className="text-sm font-bold text-white mb-3">কিভাবে কাজ করে:</h4>
+                  <h4 className="text-sm font-bold text-white mb-3">{t('referral.howItWorks')}</h4>
                   <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
-                    <li>আপনার রেফারেল লিংক কপি করুন</li>
-                    <li>ফেসবুক গ্রুপ, WhatsApp বা যেকোনো জায়গায় শেয়ার করুন</li>
-                    <li>আপনার বন্ধু লিংকে ক্লিক করে সাইনআপ করবেন</li>
-                    <li>উভয়েরই অ্যাকাউন্টে বোনাস যোগ হবে — তাৎক্ষণিকভাবে!</li>
+                    <li>{t('referral.step1')}</li>
+                    <li>{t('referral.step2')}</li>
+                    <li>{t('referral.step3')}</li>
+                    <li>{t('referral.step4')}</li>
                   </ol>
                 </div>
               </div>
@@ -253,7 +250,7 @@ export default function ReferralPage() {
             {/* Progress Card */}
             <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-white">রেফারেল প্রোগ্রেস</h2>
+                <h2 className="text-lg font-bold text-white">{t('referral.progress')}</h2>
                 <span className="text-sm text-gray-400">{referralData.referredCount} / 100</span>
               </div>
 
@@ -270,12 +267,12 @@ export default function ReferralPage() {
                 <div className="flex items-center gap-2">
                   <Award className="w-4 h-4 text-yellow-400" />
                   <span className="text-gray-300">
-                    {currentTier ? `বর্তমান: ${currentTier.label}` : 'আপনার প্রথম বোনাসের কাছাকাছি!'}
+                    {currentTier ? `${t('referral.currentTier')} ${currentTier.label || currentTier.tier}` : t('referral.firstBonus')}
                   </span>
                 </div>
                 {nextTier && (
                   <span className="text-blue-400 font-medium">
-                    পরবর্তী: {nextTier.label}
+                    {t('referral.nextTier')} {nextTier.label || nextTier.tier}
                   </span>
                 )}
               </div>
@@ -286,22 +283,22 @@ export default function ReferralPage() {
                   <div
                     key={idx}
                     className={`rounded-xl p-3 text-center border transition ${
-                      referralData.referredCount >= tier.threshold
+                      referralData.referredCount >= (tier.threshold || 0)
                         ? 'bg-green-500/10 border-green-500/30'
                         : 'bg-white/5 border-white/5'
                     }`}
                   >
-                    <div className="text-lg font-bold mb-1 ${
-                      referralData.referredCount >= tier.threshold
+                    <div className={`text-lg font-bold mb-1 ${
+                      referralData.referredCount >= (tier.threshold || 0)
                         ? 'text-green-400'
                         : 'text-gray-500'
-                    }">{tier.bonus}৳</div>
+                    }`}>{tier.bonus || tier.reward}৳</div>
                     <div className={`text-xs ${
-                      referralData.referredCount >= tier.threshold
+                      referralData.referredCount >= (tier.threshold || 0)
                         ? 'text-green-400'
                         : 'text-gray-500'
-                    }`}>{tier.threshold} জন</div>
-                    {referralData.referredCount >= tier.threshold && (
+                    }`}>{tier.threshold || tier.referredCount} referrals</div>
+                    {referralData.referredCount >= (tier.threshold || 0) && (
                       <Check className="w-3 h-3 mx-auto mt-1 text-green-400" />
                     )}
                   </div>
@@ -314,22 +311,22 @@ export default function ReferralPage() {
           <div className="md:col-span-2 space-y-6">
             {/* Stats Card */}
             <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4">📊 রেফারেল স্ট্যাটস</h2>
+              <h2 className="text-lg font-bold text-white mb-4">{t('referral.stats')}</h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400">মোট আমন্ত্রণ</span>
+                  <span className="text-gray-400">{t('referral.totalInvites')}</span>
                   <span className="text-white font-bold">{referralData.referredCount}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400">সফল রেফারেল</span>
+                  <span className="text-gray-400">{t('referral.successful')}</span>
                   <span className="text-green-400 font-bold">{referralData.completedCount}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400">পেন্ডিং</span>
+                  <span className="text-gray-400">{t('referral.pending')}</span>
                   <span className="text-yellow-400 font-bold">{referralData.pendingCount}</span>
                 </div>
                 <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                  <span className="text-gray-400 font-bold">মোট বোনাস অর্জন</span>
+                  <span className="text-gray-400 font-bold">{t('referral.totalEarned')}</span>
                   <span className="text-purple-400 font-bold text-xl">৳{referralData.totalBonus}</span>
                 </div>
               </div>
@@ -337,14 +334,14 @@ export default function ReferralPage() {
 
             {/* Leaderboard Card */}
             <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4">🏆 রেফারেল লিডারবোর্ড</h2>
+              <h2 className="text-lg font-bold text-white mb-4">{t('referral.leaderboard')}</h2>
               <div className="space-y-3" id="leaderboard">
                 {[
-                  { name: 'রিয়াজ', referrals: 47, bonus: 15000 },
-                  { name: 'তানভীর', referrals: 38, bonus: 10000 },
-                  { name: 'মাহমুদ', referrals: 29, bonus: 7500 },
-                  { name: 'সুমাইয়া', referrals: 22, bonus: 5000 },
-                  { name: 'কামাল', referrals: 15, bonus: 3000 },
+                  { name: 'Riaz', referrals: 47, bonus: 15000 },
+                  { name: 'Tanvir', referrals: 38, bonus: 10000 },
+                  { name: 'Mahmud', referrals: 29, bonus: 7500 },
+                  { name: 'Sumaiya', referrals: 22, bonus: 5000 },
+                  { name: 'Kamal', referrals: 15, bonus: 3000 },
                 ].map((leader, idx) => (
                   <div key={idx} className="flex items-center gap-3 py-2">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -357,26 +354,26 @@ export default function ReferralPage() {
                     </div>
                     <div className="flex-1">
                       <div className="text-sm text-white font-medium">{leader.name}</div>
-                      <div className="text-xs text-gray-500">{leader.referrals} জন রেফারেল</div>
+                      <div className="text-xs text-gray-500">{leader.referrals} referrals</div>
                     </div>
                     <div className="text-sm font-bold text-green-400">৳{leader.bonus}</div>
                   </div>
                 ))}
               </div>
               <button className="mt-4 w-full py-2.5 text-sm text-blue-400 hover:text-blue-300 transition font-medium">
-                সম্পূর্ণ লিডারবোর্ড দেখুন →
+                {t('referral.viewFull')}
               </button>
             </div>
 
             {/* FAQ Card */}
             <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4">❓ প্রায়ই জিজ্ঞাসিত</h2>
+              <h2 className="text-lg font-bold text-white mb-4">{t('referral.faq')}</h2>
               <div className="space-y-3">
                 {[
-                  ['বোনাস কিভাবে পাব?', 'আপনার রেফারেল লিংকে ক্লিক করে যারা সাইনআপ করবেন, তাদের পেমেন্ট শেষ হলে বোনাস যোগ করা হয়।'],
-                  ['বোনাস কখন পাব?', 'আপনার বন্ধু প্রথম পেমেন্ট সম্পন্ন করার পরই বোনাস যোগ করা হয়।'],
-                  ['কতগুলো বন্ধু রেফারেল করতে পারে?', 'আনলিমিটেড! যত বেশি তত বেশি বোনাস।'],
-                  ['বোনাস কোথায় ব্যবহার করব?', 'বোনাস আপনার অ্যাকাউন্ট ব্যালেন্সে যোগ হয়, যেকোনো পরিশোধে ব্যবহার করতে পারবেন।'],
+                  [t('referral.faqQ1'), t('referral.faqA1')],
+                  [t('referral.faqQ2'), t('referral.faqA2')],
+                  [t('referral.faqQ3'), t('referral.faqA3')],
+                  [t('referral.faqQ4'), t('referral.faqA4')],
                 ].map(([q, a], idx) => (
                   <details key={idx} className="group">
                     <summary className="cursor-pointer text-sm font-medium text-white py-2 hover:text-blue-400 transition">
@@ -392,8 +389,4 @@ export default function ReferralPage() {
       </section>
     </main>
   )
-}
-
-function Link2(props) {
-  return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
 }

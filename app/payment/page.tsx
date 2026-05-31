@@ -8,6 +8,7 @@ import {
   Loader2,
   Shield,
 } from 'lucide-react';
+import { useLocale } from '@/lib/locale-context';
 
 import { Plan, PaymentMethod, PaymentState, PLANS } from '@/components/payment/types';
 import PlanSelector from '@/components/payment/plan-selector';
@@ -17,6 +18,7 @@ import PaymentInstructions from '@/components/payment/payment-instructions';
 import CompletedView from '@/components/payment/completed-view';
 
 export default function PaymentPage() {
+  const { t } = useLocale();
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [phone, setPhone] = useState('');
@@ -126,8 +128,8 @@ export default function PaymentPage() {
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Page Title */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-3">পেমেন্ট করুন</h1>
-          <p className="text-gray-400 text-lg">Make a Payment</p>
+          <h1 className="text-4xl font-bold mb-3">{t('payment.pageTitle')}</h1>
+          <p className="text-gray-400 text-lg">{t('payment.subtitle')}</p>
         </div>
 
         {/* Error Display */}
@@ -180,10 +182,10 @@ export default function PaymentPage() {
               {state.status === 'creating' ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Creating Payment...
+                  {t('payment.creating')}
                 </span>
               ) : (
-                `Pay ৳${selectedPlan ? PLANS[selectedPlan].amount.toLocaleString() : '0'}`
+                `${t('payment.payWith')} ৳${selectedPlan ? PLANS[selectedPlan].amount.toLocaleString() : '0'}`
               )}
             </button>
           </div>
@@ -204,7 +206,7 @@ export default function PaymentPage() {
         <div className="mt-12 text-center">
           <div className="inline-flex items-center gap-2 text-sm text-gray-500">
             <Shield className="w-4 h-4" />
-            <span>Secure payment powered by bKash & Nagad &bull; SSL Encrypted</span>
+            <span>{t('payment.secureNote')}</span>
           </div>
         </div>
       </main>

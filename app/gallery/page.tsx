@@ -14,48 +14,50 @@ import {
   Edit3,
   Copy
 } from "lucide-react"
+import { useLocale } from "@/lib/locale-context"
 
-// Mock gallery videos — replace with real API data
+// Mock gallery videos
 const mockVideos = [
   {
     id: "vid_001",
-    title: "প্রোডাক্ট ডেমো ভিডিও — ফ্যাশন ব্র্যান্ড",
+    title: "Product Demo Video — Fashion Brand",
     thumbnail: null,
     duration: 45,
     quality: "1080p",
     status: "completed",
     views: 1250,
     likes: 89,
-    createdAt: "২০২৬-০৫-১০",
+    createdAt: "2026-05-10",
     template: "Product Demo"
   },
   {
     id: "vid_002",
-    title: "সোশ্যাল মিডিয়া অ্যাড — বিউটি পার্লোর",
+    title: "Social Media Ad — Beauty Parlor",
     thumbnail: null,
     duration: 30,
     quality: "720p",
     status: "completed",
     views: 890,
     likes: 45,
-    createdAt: "২০২৬-০৫-০৮",
+    createdAt: "2026-05-08",
     template: "Social Ad"
   },
   {
     id: "vid_003",
-    title: "এক্সপ্লেইনার ভিডিও — টেক প্রোডাক্ট",
+    title: "Explainer Video — Tech Product",
     thumbnail: null,
     duration: 60,
     quality: "1080p",
     status: "completed",
     views: 2100,
     likes: 156,
-    createdAt: "২০২৬-০৫-০৫",
+    createdAt: "2026-05-05",
     template: "Explainer"
   }
 ]
 
 export default function VideoGallery() {
+  const { t } = useLocale()
   const router = useRouter()
   const [videos] = useState(mockVideos)
   const [selectedQuality, setSelectedQuality] = useState("all")
@@ -71,18 +73,18 @@ export default function VideoGallery() {
     ? videos
     : videos.filter(v => v.quality === selectedQuality)
 
-  const getStatusBadge = (status) => {
-    const styles = {
+  const getStatusBadge = (status: string) => {
+    const styles: Record<string, string> = {
       completed: "bg-green-500/20 text-green-400",
       processing: "bg-yellow-500/20 text-yellow-400",
       failed: "bg-red-500/20 text-red-400",
       queued: "bg-blue-500/20 text-blue-400"
     }
-    const labels = {
-      completed: "পুরো হয়েছে",
-      processing: "প্রক্রিয়াজাত",
-      failed: "ব্যর্থ",
-      queued: "সরিবদ্ধ"
+    const labels: Record<string, string> = {
+      completed: t('gallery.statusCompleted'),
+      processing: t('gallery.statusProcessing'),
+      failed: t('gallery.statusFailed'),
+      queued: t('gallery.statusQueued')
     }
     return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles[status] || styles.queued}`}>
       {labels[status] || status}
@@ -98,21 +100,21 @@ export default function VideoGallery() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
               <Play className="text-white w-5 h-5" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">আমার ভিডিওগুলো</span>
+            <span className="text-xl font-bold text-white tracking-tight">{t('gallery.title')}</span>
           </div>
           <button
             onClick={() => router.back()}
             className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
           >
-            <ArrowRight className="w-5 h-5 rotate-180" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
           </button>
         </div>
       </header>
 
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-4 pt-8 pb-4 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">🎬 ভিডিও গ্যালারি</h1>
-        <p className="text-gray-400 text-lg">আপনার তৈরি সব AI ভিডিও এক জায়গায়</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">{t('gallery.pageTitle')}</h1>
+        <p className="text-gray-400 text-lg">{t('gallery.pageDesc')}</p>
       </section>
 
       {/* Stats Bar */}
@@ -174,13 +176,13 @@ export default function VideoGallery() {
                     </span>
                   </div>
                   <div className="flex gap-1">
-                    <button className="p-1.5 hover:bg-white/10 rounded-lg transition" title="পুনরায় ডাউনলোড">
+                    <button className="p-1.5 hover:bg-white/10 rounded-lg transition" title="Download">
                       <Download className="w-4 h-4 text-gray-400" />
                     </button>
-                    <button className="p-1.5 hover:bg-white/10 rounded-lg transition" title="শেয়ার">
+                    <button className="p-1.5 hover:bg-white/10 rounded-lg transition" title="Share">
                       <Share2 className="w-4 h-4 text-gray-400" />
                     </button>
-                    <button className="p-1.5 hover:bg-white/10 rounded-lg transition" title="কপি করুন">
+                    <button className="p-1.5 hover:bg-white/10 rounded-lg transition" title="Copy">
                       <Copy className="w-4 h-4 text-gray-400" />
                     </button>
                   </div>
@@ -193,21 +195,17 @@ export default function VideoGallery() {
         {videos.length === 0 && (
           <div className="text-center py-20 text-gray-500">
             <Play className="w-16 h-16 mx-auto mb-6 opacity-30" />
-            <h3 className="text-xl font-bold text-gray-400 mb-2">কোনো ভিডিও নেই!</h3>
-            <p className="text-gray-500">আপনার প্রথম AI ভিডিও তৈরি করতে নিচের বাটনে ক্লিক করুন</p>
+            <h3 className="text-xl font-bold text-gray-400 mb-2">{t('gallery.noVideos')}</h3>
+            <p className="text-gray-500">{t('gallery.noVideosDesc')}</p>
             <button
               onClick={() => router.push('/generate')}
               className="mt-6 px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:shadow-lg transition"
             >
-              ভিডিও তৈরি শুরু করুন →
+              {t('gallery.createVideo')}
             </button>
           </div>
         )}
       </section>
     </main>
   )
-}
-
-function ArrowRight(props) {
-  return <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
 }

@@ -3,7 +3,6 @@ import { Inter, Noto_Sans_Bengali } from 'next/font/google'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
 import ThemeToggle from '@/components/ThemeToggle'
 import { LocaleProvider } from '@/lib/locale-context'
 import { cookies } from 'next/headers'
@@ -155,7 +154,6 @@ export default async function RootLayout({
         <Providers>
           <LocaleProvider locale={locale}>
           {children}
-          <LanguageSwitcher />
           <ThemeToggle />
           </LocaleProvider>
         </Providers>
