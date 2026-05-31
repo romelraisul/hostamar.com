@@ -1,4 +1,9 @@
+'use client'
+
+import { useLocale } from '@/lib/locale-context'
+
 export default function Footer() {
+  const { t } = useLocale()
   return (
     <footer className="bg-gray-900 text-white py-16">
       <div className="max-w-6xl mx-auto px-4">
@@ -11,37 +16,37 @@ export default function Footer() {
               <span className="text-xl font-bold">Hostamar</span>
             </div>
             <p className="text-gray-400">
-              AI video generation built for Bangladeshi creators.
+              {t('footer.tagline')}
             </p>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Product</h4>
+            <h4 className="font-bold mb-4">{t('footer.product')}</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#features" className="hover:text-white">Features</a></li>
-              <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-              <li><a href="/login" className="hover:text-white">Sign Up</a></li>
-              <li><a href="/login" className="hover:text-white">Login</a></li>
+              <li><a href="#features" className="hover:text-white">{t('footer.featuresLink')}</a></li>
+              <li><a href="#pricing" className="hover:text-white">{t('footer.pricing')}</a></li>
+              <li><a href="/login" className="hover:text-white">{t('footer.signUp')}</a></li>
+              <li><a href="/login" className="hover:text-white">{t('footer.loginLink')}</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Company</h4>
+            <h4 className="font-bold mb-4">{t('footer.company')}</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="/about" className="hover:text-white">About</a></li>
-              <li><a href="/blog" className="hover:text-white">Blog</a></li>
-              <li><a href="/contact" className="hover:text-white">Contact</a></li>
+              <li><a href="/about" className="hover:text-white">{t('footer.about')}</a></li>
+              <li><a href="/blog" className="hover:text-white">{t('footer.blog')}</a></li>
+              <li><a href="/contact" className="hover:text-white">{t('footer.contact')}</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold mb-4">Legal</h4>
+            <h4 className="font-bold mb-4">{t('footer.legal')}</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="/privacy" className="hover:text-white">Privacy</a></li>
-              <li><a href="/terms" className="hover:text-white">Terms</a></li>
-              <li><a href="/privacy" className="hover:text-white">Refund Policy</a></li>
+              <li><a href="/privacy" className="hover:text-white">{t('footer.privacy')}</a></li>
+              <li><a href="/terms" className="hover:text-white">{t('footer.terms')}</a></li>
+              <li><a href="/privacy" className="hover:text-white">{t('footer.refund')}</a></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>🇧🇩 Hostamar Technologies — Made in Bangladesh with ❤️</p>
+          <p>{t('footer.madeIn')}</p>
         </div>
       </div>
     </footer>

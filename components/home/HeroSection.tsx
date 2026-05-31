@@ -1,32 +1,36 @@
+'use client'
+
+import { useLocale } from '@/lib/locale-context'
+
 export default function HeroSection() {
+  const { t } = useLocale()
   return (
     <>
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4 py-20 text-center">
         <div className="animate-fade-in">
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6">
-            Create Viral Videos
-            <span className="text-blue-600"> in Minutes</span>
+            {t('hero.mainTitle')}
+            <span className="text-blue-600">{t('hero.titleSuffix')}</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            AI-powered video generation built for Bangladeshi creators. 
-            Fast, affordable, and designed for your audience.
+            {t('hero.desc')}
           </p>
           <div className="flex gap-4 justify-center mb-12">
             <a href="/login" className="px-8 py-4 bg-blue-600 text-white text-lg rounded-xl hover:bg-blue-700 transition-all transform hover:scale-105">
-              Start Free Trial
+              {t('hero.startFree')}
             </a>
             <a href="#features" className="px-8 py-4 border-2 border-gray-300 text-gray-700 text-lg rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all">
-              Watch Demo
+              {t('hero.watchDemo')}
             </a>
           </div>
           <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Trusted by 500+ creators
+              {t('hero.trustedBy')}
             </span>
-            <span>🌟 50% discount for beta users</span>
-            <span>Made in Bangladesh</span>
+            <span>{t('hero.betaDiscount')}</span>
+            <span>{t('hero.madeInBD')}</span>
           </div>
         </div>
 
@@ -40,8 +44,8 @@ export default function HeroSection() {
           <div className="bg-gray-100 p-8 text-center h-64 flex items-center justify-center">
             <div className="text-gray-400">
               <div className="text-6xl mb-4">🎬</div>
-              <p className="text-lg">Hostamar Studio Interface</p>
-              <p className="text-sm mt-2">Select template → Customize → Export</p>
+              <p className="text-lg">{t('hero.studioInterface')}</p>
+              <p className="text-sm mt-2">{t('hero.templateFlow')}</p>
             </div>
           </div>
         </div>
