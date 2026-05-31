@@ -1,40 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import type { Locale } from '@/lib/i18n'
-
-function getCookieLocale(): Locale {
-  if (typeof document === 'undefined') return 'en'
-  const match = document.cookie.match(/locale=([^;]+)/)
-  return (match?.[1] as Locale) || 'en'
-}
+import { useLocale } from '@/lib/locale-context'
+import { locales, localeNames } from '@/lib/i18n'
 
 export default function LanguageSwitcher() {
-  const [locale, setLocale] = useState<Locale>('en')
-  const [mounted, setMounted] = useState(false)
+  const { locale, setLocale } = useLocale()
 
-  useEffect(() => {
-    setLocale(getCookieLocale())
-    setMounted(true)
-  }, [])
-
-  const toggleLocale = () => {
-    const order: Locale[] = ['en', 'bn', 'ur']
-    const currentIndex = order.indexOf(locale)
-    const next = order[(currentIndex + 1) % order.length]
-    document.cookie = `locale=${next}; path=/; max-age=31536000`
-    setLocale(next)
-    window.location.reload()
-  }
-
-  if (!mounted) return null
+  const currentIndex = locales.indexOf(locale)
+  const nextLocale = locales[(currentIndex + 1) % locales.length]
 
   return (
     <button
-      onClick={toggleLocale}
+      onClick={() => setLocale(nextLocale)}
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
-      aria-label={`Switch to ${locale === 'en' ? 'Bengali' : locale === 'bn' ? 'Urdu' : 'English'}`}
-      title={`Switch to ${locale === 'en' ? 'বাংলা' : locale === 'bn' ? 'اردو' : 'English'}`}
+      aria-label={`Switch language`}
+      title={`${localeNames[locale]} → ${localeNames[nextLocale]}`}
     >
       <span className="text-sm">🌐</span>
       <span className="font-medium">

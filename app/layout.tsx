@@ -5,6 +5,7 @@ import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import ThemeToggle from '@/components/ThemeToggle'
+import { LocaleProvider } from '@/lib/locale-context'
 import { cookies } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
 
@@ -133,8 +134,11 @@ export default async function RootLayout({
       </head>
       <body>
         <Providers>
+          <LocaleProvider locale={locale}>
           {children}
+          <LanguageSwitcher />
           <ThemeToggle />
+          </LocaleProvider>
         </Providers>
 
         <script
