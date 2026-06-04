@@ -1,27 +1,31 @@
 'use client'
 
+import { useState } from 'react'
+
 export default function DemoVideosSection() {
+  const [playingVideo, setPlayingVideo] = useState<string | null>(null)
+
   const demos = [
     {
       id: 'islamic-new-year',
       title: 'Islamic New Year Demo',
       bnTitle: 'ইসলামিক নতুন বছর',
-      embedId: '_PLACEHOLDER_', // Replace with actual YouTube ID
-      thumbnail: '/demo/islamic-new-year-thumb.jpg'
+      url: '/demo/islamic-new-year-demo.mp4',
+      thumbnail: '/demo/islamic-new-year-demo-thumb.jpg'
     },
     {
       id: 'eid-celebration',
       title: 'Eid Celebration Demo',
       bnTitle: 'ইদ উদযাপন',
-      embedId: '_PLACEHOLDER_',
-      thumbnail: '/demo/eid-celebration-thumb.jpg'
+      url: '/demo/eid-celebration-demo.mp4',
+      thumbnail: '/demo/eid-celebration-demo-thumb.jpg'
     },
     {
       id: 'business-promo',
       title: 'Business Promotion Demo',
       bnTitle: 'ব্যবসা প্রোমোশন',
-      embedId: '_PLACEHOLDER_',
-      thumbnail: '/demo/business-promo-thumb.jpg'
+      url: '/demo/business-promo-demo.mp4',
+      thumbnail: '/demo/business-promo-demo-thumb.jpg'
     }
   ]
 
@@ -41,21 +45,36 @@ export default function DemoVideosSection() {
           {demos.map((demo) => (
             <div key={demo.id} className="group cursor-pointer">
               <div className="aspect-video bg-gray-100 dark:bg-slate-800 rounded-xl overflow-hidden mb-4 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </div>
-                <img
-                  src={demo.thumbnail}
-                  alt={demo.title}
-                  className="w-full h-full object-cover opacity-50 group-hover:opacity-30 transition-opacity"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                  }}
-                />
+                {playingVideo === demo.id ? (
+                  <video 
+                    src={demo.url} 
+                    controls 
+                    autoPlay 
+                    className="w-full h-full object-cover"
+                    onEnded={() => setPlayingVideo(null)}
+                  />
+                ) : (
+                  <>
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center"
+                      onClick={() => setPlayingVideo(demo.id)}
+                    >
+                      <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <img
+                      src={demo.thumbnail}
+                      alt={demo.title}
+                      className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  </>
+                )}
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-white text-center">
                 {demo.bnTitle}
