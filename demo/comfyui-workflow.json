@@ -1,0 +1,40 @@
+{
+  "prompt": {
+    "1": {
+      "class_type": "EmptyHunyuanLatentVideo",
+      "inputs": {
+        "width": 512,
+        "height": 512,
+        "length": 30,
+        "batch_size": 1
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode", 
+      "inputs": {
+        "text": "Colorful Islamic New Year celebration with golden mosque silhouette and crescent moon, elegant particle effects floating down, cinematic lighting, peaceful atmosphere, 4K quality"
+      }
+    },
+    "3": {
+      "class_type": "HunyuanVideo15ImageToVideo",
+      "inputs": {
+        "positive": ["2"],
+        "negative": "",
+        "latent_video": ["1"]
+      }
+    },
+    "4": {
+      "class_type": "VAEDecodeVideo",
+      "inputs": {
+        "samples": ["3"]
+      }
+    },
+    "5": {
+      "class_type": "SaveVideo",
+      "inputs": {
+        "video": ["4"],
+        "filename_prefix": "islamic_new_year_demo"
+      }
+    }
+  }
+}

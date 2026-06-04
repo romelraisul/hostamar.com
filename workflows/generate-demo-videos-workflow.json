@@ -1,0 +1,38 @@
+{
+  "name": "Generate Demo Videos",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "url": "http://hostamar-comfyui:8188/prompt",
+        "options": {},
+        "method": "POST",
+        "body": {
+          "prompt": {
+            "3": {"class_type": "EmptyHunyuanLatentVideo", "inputs": {"width": 512, "height": 512, "length": 30}},
+            "4": {"class_type": "CLIPTextEncode", "inputs": {"text": "={{ $node[\"Set Input\"].json.prompt }}"}
+          }
+        },
+        "headers": {"Content-Type": "application/json"}
+      },
+      "id": "comfyui-video",
+      "name": "ComfyUI Video",
+      "type": "n8n-nodes-base.http-request",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "values": {"string": [{"name": "prompt", "value": "Colorful Islamic New Year video with mosque and crescent moon, gold particles, 4K cinematic"}]}
+      },
+      "id": "set-islamic",
+      "name": "Set Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2
+    }
+  ],
+  "connections": {
+    "Set Input": {
+      "main": [[{"node": "ComfyUI Video", "type": "main", "index": 0}]]
+    }
+  }
+}

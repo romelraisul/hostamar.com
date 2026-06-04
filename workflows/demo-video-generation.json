@@ -1,0 +1,36 @@
+{
+  "name": "Demo Video Generation",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/demo/generate",
+        "method": "POST",
+        "body": {
+          "prompt": "={{ $json.prompt }}",
+          "duration": 30
+        }
+      },
+      "id": "comfyui-request",
+      "name": "ComfyUI Request",
+      "type": "n8n-nodes-base.http-request",
+      "typeVersion": 1,
+      "url": "http://hostamar-comfyui:8188/generate"
+    },
+    {
+      "parameters": {
+        "fromEmail": "demo@hostamar.com",
+        "toEmail": "romelraisul@outlook.com",
+        "subject": "New Demo Video Ready",
+        "text": "Video generated: {{ $json.title }}"
+      },
+      "id": "notify",
+      "name": "Email Notification",
+      "type": "n8n-nodes-base.email-send"
+    }
+  ],
+  "connections": {
+    "ComfyUI Request": {
+      "main": [[{ "node": "Email Notification", "type": "main", "index": 0 }]]
+    }
+  }
+}
