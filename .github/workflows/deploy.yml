@@ -1,0 +1,27 @@
+# Hostamar Vercel Deploy Workflow
+# Requires a Vercel API token stored as VERCEL_TOKEN in GitHub Secrets
+# Generate one at: https://vercel.com/account/tokens
+
+name: Vercel Production Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} \
+          --scope romelraisul-8939s-projects \
+          --confirm
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
