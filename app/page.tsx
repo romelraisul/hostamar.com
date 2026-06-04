@@ -4,6 +4,7 @@ import HeroSection from '@/components/home/HeroSection'
 import StatsSection from '@/components/home/StatsSection'
 import FeaturesSection from '@/components/home/FeaturesSection'
 import OllamaFeaturesSection from '@/components/home/OllamaFeaturesSection'
+import DemoVideosSection from '@/components/home/DemoVideosSection'
 import PricingSection from '@/components/home/PricingSection'
 import CTASection from '@/components/home/CTASection'
 import Footer from '@/components/home/Footer'
@@ -53,15 +54,16 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
-      <Navbar />
-      <HeroSection />
-      <StatsSection />
-      <FeaturesSection />
-      <OllamaFeaturesSection />
-      <PricingSection />
-      <CTASection />
-      <Footer />
-    </div>
-  )
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
+        <Navbar />
+        <HeroSection />
+        <StatsSection />
+        <FeaturesSection />
+        <OllamaFeaturesSection />
+        <DemoVideosSection />
+        <PricingSection />
+        <CTASection />
+        <Footer />
+      </div>
+    )
 }
