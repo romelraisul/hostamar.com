@@ -1,0 +1,38 @@
+/* Hostamar New Design - Bangladesh Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+    --hostamar-blue: #3b82f6;
+    --hostamar-purple: #8b5cf6;
+    --bangladesh-green: #006a44;
+    --bangladesh-red: #f42a45;
+    --premium-yellow: #f59e0b;
+}
+
+* { font-family: 'Inter', sans-serif; }
+
+.gradient-primary {
+    background: linear-gradient(135deg, var(--hostamar-blue), var(--hostamar-purple));
+}
+
+.bangladesh-gradient {
+    background: linear-gradient(to right, var(--bangladesh-red) 33%, #fff 33% 66%, var(--bangladesh-green) 66%);
+}
+
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.animate-bounce-slow {
+    animation: bounce 3s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}

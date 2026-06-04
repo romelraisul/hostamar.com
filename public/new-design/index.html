@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostamar - AI Video Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #8b5cf6;
+            --accent: #f59e0b;
+        }
+        .gradient-bg { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .bangladesh-flag { background: linear-gradient(to right, #f42a45 33%, #fff 33% 66%, #006a44 66%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-blue-600">H Hostamar</a>
+            <div class="flex space-x-6">
+                <a href="/#features" class="hover:text-blue-600">ফিচারসমূহ</a>
+                <a href="/pricing" class="hover:text-blue-600">মূল্য</a>
+                <a href="/contact" class="hover:text-blue-600">যোগাযোগ</a>
+                <a href="/login" class="bg-blue-600 text-white px-4 py-2 rounded-lg">লগইন</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-20">
+        <div class="max-w-4xl mx-auto text-center px-4">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">আপনার ভিডিওটি এখনই তৈরি করুন</h1>
+            <p class="text-xl mb-8">FlociOps AI-এর সঙ্গে সেরা ভিডিও জেনারেশন</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/signup" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-100">এখনই শুরু করুন</a>
+                <a href="#demo" class="border-2 border-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-600">�েমো দেখুন</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">আমাদের সুবিধাবৃদ্ধি</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="text-6xl mb-4">🎥</div>
+                    <h3 class="text-xl font-bold mb-2">AI ভিডিও জেনারেশন</h3>
+                    <p>আপনার কন্টেন্ট থেকে স্বয়ংক্রিয় ভিডিও তৈরি</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="text-6xl mb-4">🎨</div>
+                    <h3 class="text-xl font-bold mb-2">ডিজাইন স্টুডিও</h3>
+                    <p>Canva মতো ডিজাইন টুল সহজে ব্যবহার করুন</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="text-6xl mb-4">🇧🇩</div>
+                    <h3 class="text-xl font-bold mb-2">বাংলাদেশি পদ্ধতি</h3>
+                    <p>bKash, Nagad, Rocket দিয়ে সহজে পেমেন্ট</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">মূল্য পরিকরমণ</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">স্টার্টার</h3>
+                    <p class="text-4xl font-bold mb-4">৳২,০০০<span class="text-sm">/মাস</span></p>
+                    <ul class="mb-6">
+                        <li>✓ ১০টি ভিডিও/মাস</li>
+                        <li>✓ ১GB স্টোরেজ</li>
+                        <li>✓ bKash পেমেন্ট</li>
+                    </ul>
+                    <a href="/signup?plan=starter" class="block w-full bg-blue-600 text-white text-center py-2 rounded-lg">শুরু করুন</a>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg border-2 border-blue-600">
+                    <h3 class="text-2xl font-bold mb-4">বিজনেস</h3>
+                    <p class="text-4xl font-bold mb-4">৳৩,৫০০<span class="text-sm">/মাস</span></p>
+                    <ul class="mb-6">
+                        <li>✓ ৫০টি ভিডিও/মাস</li>
+                        <li>✓ ৫GB স্টোরেজ</li>
+                        <li>✓ এসএমএস সহায়তা</li>
+                    </ul>
+                    <a href="/signup?plan=business" class="block w-full bg-blue-600 text-white text-center py-2 rounded-lg">শুরু করুন</a>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">এন্টারপ্রাইজ</h3>
+                    <p class="text-4xl font-bold mb-4">৳৬,০০০<span class="text-sm">/মাস</span></p>
+                    <ul class="mb-6">
+                        <li>✓ অসীম ভিডিও</li>
+                        <li>✓ ১০GB স্টোরেজ</li>
+                        <li>✓ ২৴/১০ সাপোর্ট</li>
+                    </ul>
+                    <a href="/signup?plan=enterprise" class="block w-full bg-blue-600 text-white text-center py-2 rounded-lg">শুরু করুন</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p>&copy; ২০২৪ Hostamar। সর্বস্বত্ব সংরক্ষিত।</p>
+            <p>সমর্থন: +৮৮০ ১৮২২৪১৭৪৬৩ (bKash/Nagad)</p>
+        </div>
+    </footer>
+</body>
+</html>
