@@ -1,0 +1,38 @@
+{
+  "last_node_id": 5,
+  "last_filter_id": "15",
+  "last_custom_node_id": "",
+  "last_custom_filter_id": "",
+  "extra_data": {
+    "extra_pnginfo": {}
+  },
+  "prompt": {
+    "1": {
+      "class_type": "EmptyHunyuanLatentVideo",
+      "inputs": {
+        "width": 544,
+        "height": 544,
+        "length": 30,
+        "batch_size": 1
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "Islamic New Year celebration video, golden mosque silhouette, crescent moon, soft particles animation, cinematic 4K quality, 30 seconds"
+      }
+    },
+    "3": {
+      "class_type": "HunyuanVideo15ImageToVideo",
+      "inputs": {
+        "positive": ["2"],
+        "negative": ["2"],
+        "vae": "",
+        "width": 544,
+        "height": 544,
+        "length": 30,
+        "batch_size": 1
+      }
+    }
+  }
+}
