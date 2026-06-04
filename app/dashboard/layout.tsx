@@ -3,28 +3,22 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { 
-  LayoutDashboard, 
-  Video, 
-  Server, 
-  CreditCard, 
-  Settings, 
+import { useSession } from 'next-auth/react'
+import { useLocale } from '@/lib/locale-context'
+import {
+  LayoutDashboard,
+  Video,
+  Server,
+  CreditCard,
+  Settings,
   LogOut,
   Menu,
   X,
   User,
   Bell,
-  BarChart3
+  BarChart3,
+  Gift
 } from 'lucide-react'
-
-const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/videos', icon: Video, label: 'Videos' },
-  { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/dashboard/services', icon: Server, label: 'Services' },
-  { href: '/dashboard/payment', icon: CreditCard, label: 'Payment' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-]
 
 export default function DashboardLayout({
   children,
@@ -33,7 +27,19 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { data: session } = useSession()
+  const { t } = useLocale()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const navItems = [
+      { href: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
+      { href: '/dashboard/videos', icon: Video, label: t('nav.videos') },
+      { href: '/dashboard/analytics', icon: BarChart3, label: t('nav.analytics') },
+      { href: '/dashboard/services', icon: Server, label: t('nav.services') },
+      { href: '/dashboard/payment', icon: CreditCard, label: t('nav.payment') },
+      { href: '/dashboard/referral', icon: Gift, label: t('nav.referral') },
+      { href: '/dashboard/settings', icon: Settings, label: t('nav.settings') },
+    ]
 
   const handleLogout = async () => {
     try {
@@ -79,7 +85,7 @@ export default function DashboardLayout({
             <Link href="/dashboard" className="font-bold text-2xl text-blue-600">
               Hostamar
             </Link>
-            <p className="text-xs text-gray-500 mt-1">Customer Portal</p>
+            <p className="text-xs text-gray-500 mt-1">{t('dashboard.customerPortal')}</p>
           </div>
 
           {/* Close button for mobile */}
@@ -121,8 +127,8 @@ export default function DashboardLayout({
                 <User className="w-5 h-5 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">User</p>
-                <p className="text-xs text-gray-500 truncate">user@email.com</p>
+                <p className="font-medium text-sm truncate">{session?.user?.name || 'User'}</p>
+                <p className="text-xs text-gray-500 truncate">{session?.user?.email || 'user@email.com'}</p>
               </div>
             </div>
             <button
@@ -130,7 +136,7 @@ export default function DashboardLayout({
               className="flex items-center gap-2 text-gray-600 hover:text-red-600 w-full px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-4 h-4" />
-              <span className="text-sm">Logout</span>
+              <span className="text-sm">{t('dashboard.logout')}</span>
             </button>
           </div>
         </div>
