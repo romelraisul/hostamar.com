@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { email, password, name, businessName, industry } = body
+    const { email, password, name, businessName, industry, inviteCode, refCode } = body
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -43,6 +43,31 @@ export async function POST(request: Request) {
         business: true
       }
     })
+
+
+    // Track referral if ref code provided
+    if (refCode) {
+      try {
+        await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/referral`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refCode, newUserId: customer.id })
+        });
+      } catch { /* referral tracking is non-critical */ }
+    }
+
+    // Consume beta invite code if provided
+    if (inviteCode) {
+      const invite = await prisma.betaInvite.findUnique({
+        where: { code: String(inviteCode).trim().toUpperCase() }
+      })
+      if (invite && invite.status === 'PENDING' && invite.email === email) {
+        await prisma.betaInvite.update({
+          where: { id: invite.id },
+          data: { status: 'USED', usedAt: new Date() }
+        })
+      }
+    }
 
     return NextResponse.json({
       id: customer.id,

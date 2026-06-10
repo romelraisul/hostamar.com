@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       })
     } catch {
       // Email may not be configured — log reset URL for development
-      console.log('Password reset URL:', resetUrl)
+      if (process.env.NODE_ENV === 'development') console.log('Password reset URL:', resetUrl)
     }
 
     return NextResponse.json({ success: true, message: 'If the email exists, a reset link has been sent.', resetUrl: process.env.NODE_ENV === 'development' ? resetUrl : undefined })

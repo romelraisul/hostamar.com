@@ -12,6 +12,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [inviteCode, setInviteCode] = useState(new URLSearchParams(window.location.search).get("invite") || "")
+  const [refCode] = useState(new URLSearchParams(window.location.search).get("ref") || "")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -33,31 +35,45 @@ export default function SignupPage() {
     }
 
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          inviteCode: inviteCode.trim().toUpperCase() || undefined,
+          refCode: refCode.trim().toUpperCase() || undefined,
+        }),
       })
 
       const data = await res.json()
-
       if (!res.ok) {
         setError(data.error || t('signup.errorGeneric'))
         return
       }
 
-      const loginResult = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: "/dashboard"
+      // Auto-login after successful signup
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       })
 
-      if (loginResult?.ok) {
-        router.push("/dashboard")
-      } else {
-        router.push("/login")
+      const loginData = (await loginRes.json()) as { token?: string; error?: string }
+      if (!loginRes.ok || !loginData.token) {
+        setError(loginData.error || t('signup.errorGeneric'))
+        return
       }
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("auth_token", loginData.token)
+      }
+
+      // Sync NextAuth session so dashboard layout works
+      await signIn("credentials", { email, password, redirect: false })
+
+      router.push("/dashboard")
     } catch (err) {
       setError(t('signup.errorGeneric'))
     } finally {
