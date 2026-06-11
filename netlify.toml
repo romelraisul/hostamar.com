@@ -1,5 +1,5 @@
 [build]
-  base = "."
+  base = "flociops-assistant"
   publish = ".next"
   command = "npm run build"
 
