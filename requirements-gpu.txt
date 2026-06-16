@@ -1,20 +1,15 @@
 # GPU Worker Python Dependencies
-# pytorch.org is the *extra* index, not the primary — keeps everything else
-# installable from PyPI in the same `pip install -r` call. The PyTorch cu128
-# nightly wheels are the first to ship sm_120 (Blackwell / RTX 50-series)
-# support; cu124 builds do NOT run on the RTX 5060. Version strings use the
-# `devYYYYMMDD+cu128` "nightly" convention. Bump the date stamp by checking
-# https://download.pytorch.org/whl/nightly/cu128/{torch,torchvision,torchaudio}/
-# for an x86_64 cp312 wheel.
---extra-index-url https://download.pytorch.org/whl/nightly/cu128
-torch==2.12.0.dev20260408+cu128
-torchvision==0.27.0.dev20260407+cu128
-torchaudio==2.11.0.dev20260407+cu128
+# NOTE: torch/torchvision/torchaudio are NOT installed — local GPU generation
+# is disabled (RTX 5060 sm_120 blocked by missing torch >=2.7 + CUDA 12.8 kernel).
+# Install them locally on the host if you want to re-enable local generation.
+# When re-enabling, add from PyTorch nightly cu128 index:
+#   --extra-index-url https://download.pytorch.org/whl/nightly/cu128
+#   torch==2.12.0.dev20260408+cu128
+#   torchvision==0.27.0.dev20260407+cu128
+#   torchaudio==2.11.0.dev20260407+cu128
 
 # ---- Video generation ----
-# Replicate/fal.ai are called via httpx direct to their REST APIs. The
-# `replicate` Python SDK ships sdist-only on PyPI from 1.x onward and dropped
-# cp310 wheels entirely.
+# Replicate/fal.ai are called via httpx direct to their REST APIs.
 httpx==0.28.1
 
 # ---- Queue & Redis ----

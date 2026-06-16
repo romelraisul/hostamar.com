@@ -82,7 +82,7 @@ services:
       - NEXTAUTH_URL=http://localhost:3000
       - UPSTASH_REDIS_REST_URL=http://redis:6379
       - GPU_WORKER_URL=http://gpu-worker:9997
-      - AI_VIDEO_PROVIDER=local-gpu
+      - AI_VIDEO_PROVIDER=replicate
       - LOCAL_GPU_WORKER_URL=http://gpu-worker:9997
       - BKASH_NUMBER=01822417463
       - NAGAD_NUMBER=01711317101
