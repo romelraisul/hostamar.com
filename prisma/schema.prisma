@@ -43,6 +43,10 @@ model Customer {
   activityLogs     ActivityLog[]
   campaigns        Campaign[]
   userProgress     UserProgress[]
+  conversations    Conversation[]
+  gameScores       GameScore[]
+  gameAchievements GameAchievement[]
+  ideProjects      IDEProject[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -455,4 +459,128 @@ model UserProgress {
   @@unique([userId, courseId, lessonId], name: "userId_courseId_lessonId")
   @@index([userId])
   @@index([courseId])
+}
+
+// ============================================================================
+// AI Chat — Conversation Storage
+// ============================================================================
+
+model Conversation {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  title         String   @default("New Chat")
+  model         String   @default("general")   // general | code | creative
+  tone          String   @default("casual")    // formal | casual | business
+
+  // Share functionality
+  shareSlug     String?  @unique
+  isPublic      Boolean  @default(false)
+
+  messages      ChatMessage[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerId, createdAt])
+  @@index([shareSlug])
+}
+
+model ChatMessage {
+  id              String   @id @default(cuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role            String   // user | assistant
+  content         String
+
+  // TTS metadata
+  audioUrl        String?
+  detectedLang    String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// ============================================================================
+// Game Platform (Phase 3)
+// ============================================================================
+
+model Game {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  category      String   // puzzle | arcade | strategy | educational
+  thumbnail     String?
+  embedUrl      String?  // iframe embed URL for HTML5 games
+  isExternal    Boolean  @default(false)
+  isPlayable    Boolean  @default(true)
+  popularity    Int      @default(0)
+  
+  scores        GameScore[]
+  achievements  GameAchievement[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([category])
+  @@index([slug])
+}
+
+model GameScore {
+  id            String   @id @default(cuid())
+  gameId        String
+  game          Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  score         Int
+  metadata      String?  // JSON for extra data (level, time, etc.)
+  
+  createdAt     DateTime @default(now())
+  
+  @@unique([gameId, customerId])
+  @@index([gameId, score])
+}
+
+model GameAchievement {
+  id            String   @id @default(cuid())
+  gameId        String
+  game          Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  achievementId String
+  name          String
+  description   String?
+  icon          String?
+  
+  earnedAt      DateTime @default(now())
+  
+  @@unique([gameId, customerId, achievementId])
+  @@index([customerId])
+}
+
+// ============================================================================
+// Dev IDE (Phase 4)
+// ============================================================================
+
+model IDEProject {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  name          String
+  description   String?
+  language      String   @default("python")
+  code          String   @default("# Your code here\n")
+  output        String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([customerId])
 }
