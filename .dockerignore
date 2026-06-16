@@ -1,0 +1,54 @@
+﻿# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Python virtual environment (7.7GB!)
+.venv/
+venv/
+env/
+
+# Next.js
+.next/
+out/
+build/
+
+# Production
+dist/
+
+# Git
+.git/
+.gitignore
+
+# Large directories
+data/
+deploy-temp/
+deployment/
+infrastructure/
+monitoring/
+eval/
+camofox/
+comfyui/
+foundry/
+nginx/
+ssl/
+remotion/
+optimization/
+payment/
+payments/
+tenants/
+themes/
+global/
+multitenant/
+functions/
+marketing-output/
+content/
+agent/
+agent-templates/
+flociops-docs/
+docs/
+prompts/
+tests/
+test/
+deploy/
+logging/

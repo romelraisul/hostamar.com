@@ -1,0 +1,13 @@
+# Netlify config for `romelraisul/hostamar.com` (the fork).
+#
+# This fork's repo root IS the Next.js app (npm run build works directly
+# from here). The old main repo (monjilaktn/hostamar) had this under a
+# `flociops-assistant/` subdir, so its netlify.toml had base = "flociops-assistant".
+# For the fork, no base — build context is the repo root.
+
+[build]
+  publish = ".next"
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

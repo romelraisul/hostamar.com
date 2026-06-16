@@ -1,0 +1,30 @@
+# Cloudflare Worker: HF Inference API Proxy
+# Routing: hf-proxy.<your-account>.workers.dev
+
+name = "hf-proxy"
+main = "index.js"
+compatibility_date = "2024-01-01"
+# compatibility_flags = ["nodejs_compat"]  # Uncomment if using Node.js APIs
+
+# Account ID - find at: https://dash.cloudflare.com/<account>/workers-and-pages
+# account_id = "YOUR_ACCOUNT_ID"
+
+# Route configuration - uncomment and set your zone/domain
+# routes = [
+#   { pattern = "hf-proxy.yourdomain.com", zone_name = "yourdomain.com" }
+# ]
+
+# KV Namespace for caching (optional - uncomment if implementing model cache)
+# [[kv_namespaces]]
+#   binding = "HF_CACHE"
+#   id = "YOUR_KV_NAMESPACE_ID"
+
+# Environment variables
+[vars]
+# HF_API_BASE = "https://api-inference.huggingface.co"
+
+# Secrets - set via CLI:
+# wrangler secret put HF_TOKEN
+
+[observability]
+enabled = true

@@ -1,0 +1,107 @@
+﻿version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hostamar-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hostamar
+      POSTGRES_USER: hostamar
+      POSTGRES_PASSWORD: hostamar123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hostamar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: hostamar-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gpu-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu-worker
+    container_name: hostamar-gpu-worker
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    env_file:
+      - .env.local
+    environment:
+      - UPSTASH_REDIS_REST_URL=http://redis:6379
+      - UPSTASH_REDIS_REST_TOKEN
+      - WORKER_CONCURRENCY=2
+      - DATABASE_URL=postgresql://hostamar:hostamar123@postgres:5432/hostamar
+    volumes:
+      - /tmp:/tmp
+      - ./logs:/app/logs
+      - ./videos:/app/videos
+      - /mnt/c/Users/romel/.cache/huggingface:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:9997/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hostamar-app
+    restart: unless-stopped
+    # Pull shared secrets from .env.local — gpu-worker reads the same file,
+    # including WORKER_SHARED_SECRET which gates the /api/worker/* callback.
+    env_file:
+      - .env.local
+    environment:
+      - DATABASE_URL=postgresql://hostamar:hostamar123@postgres:5432/hostamar
+      - NEXTAUTH_SECRET
+      - JWT_SECRET
+      - NEXTAUTH_URL=http://localhost:3000
+      - UPSTASH_REDIS_REST_URL=http://redis:6379
+      - GPU_WORKER_URL=http://gpu-worker:9997
+      - AI_VIDEO_PROVIDER=local-gpu
+      - LOCAL_GPU_WORKER_URL=http://gpu-worker:9997
+      - BKASH_NUMBER=01822417463
+      - NAGAD_NUMBER=01711317101
+      - ROCKET_NUMBER=018224174630
+      - NEXT_PUBLIC_BKASH_NUMBER=01822417463
+      - NEXT_PUBLIC_NAGAD_NUMBER=01711317101
+      - NEXT_PUBLIC_ROCKET_NUMBER=018224174630
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: node server.js
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+

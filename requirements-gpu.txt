@@ -1,0 +1,52 @@
+# GPU Worker Python Dependencies
+# pytorch.org is the *extra* index, not the primary — keeps everything else
+# installable from PyPI in the same `pip install -r` call. The PyTorch cu128
+# nightly wheels are the first to ship sm_120 (Blackwell / RTX 50-series)
+# support; cu124 builds do NOT run on the RTX 5060. Version strings use the
+# `devYYYYMMDD+cu128` "nightly" convention. Bump the date stamp by checking
+# https://download.pytorch.org/whl/nightly/cu128/{torch,torchvision,torchaudio}/
+# for an x86_64 cp312 wheel.
+--extra-index-url https://download.pytorch.org/whl/nightly/cu128
+torch==2.12.0.dev20260408+cu128
+torchvision==0.27.0.dev20260407+cu128
+torchaudio==2.11.0.dev20260407+cu128
+
+# ---- Video generation ----
+# Replicate/fal.ai are called via httpx direct to their REST APIs. The
+# `replicate` Python SDK ships sdist-only on PyPI from 1.x onward and dropped
+# cp310 wheels entirely.
+httpx==0.28.1
+
+# ---- Queue & Redis ----
+# BullMQ (the Python port at https://pypi.org/project/bullmq/) is here. It
+# shares the same Redis queue format as the Node bullmq used by the app's
+# video-worker.ts so jobs enqueued from Node are consumable from Python.
+bullmq==2.25.2
+# `ioredis` is a Node.js package and does NOT exist on PyPI — the Node app
+# uses it directly. The Python `redis` client library is brought in transitively
+# by `bullmq` (q.v. above) which currently pins redis==6.4.0.
+# redis==6.4.0  # pinned by bullmq — see above
+
+# ---- Video processing ----
+ffmpeg-python==0.2.0
+opencv-python-headless==4.13.0.92
+moviepy==2.2.1
+
+# ---- Database ----
+# Python `prisma` is a separate, leaner library — used here only so the
+# Python worker can introspect the schema if needed. The @prisma/client
+# actually used by the Node app lives in package.json.
+prisma==0.15.0
+
+# ---- Utilities ----
+python-dotenv==1.2.2
+pydantic==2.13.4
+pydantic-settings==2.14.1
+aiohttp==3.14.1
+aiofiles==25.1.0
+
+# ---- Monitoring ----
+prometheus-client==0.25.0
+
+# ---- Health check (Dockerfile HEALTHCHECK) ----
+requests==2.32.3
