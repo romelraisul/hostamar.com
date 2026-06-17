@@ -10,10 +10,10 @@
                    "ok":  true,
                    "url":  "http://127.0.0.1:11434/v1/models"
                },
-    "timestamp":  "2026-06-18T01:56:35.9332748+06:00",
+    "timestamp":  "2026-06-18T01:57:58.7472316+06:00",
     "postDeployVerify":  {
                              "output":  "",
-                             "success":  false
+                             "success":  true
                          },
     "dmr":  {
                 "body":  "The remote server returned an error: (404) Not Found.",

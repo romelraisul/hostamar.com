@@ -44,8 +44,9 @@ $pdvResult = @{ success = $false; output = $null }
 try {
   $pdvArgs = @{ BaseUrl = $BaseUrl; AdminPassword = $AdminPassword }
   if ($SkipLocalChecks) { $pdvArgs.SkipLocalChecks = $true }
-  $pdvOut = & ".\scripts\post-deploy-verify.ps1" @pdvArgs 2>&1
-  $pdvResult.success = ($LASTEXITCODE -eq 0)
+  $pdvOut = & ".\scripts\post-deploy-verify.ps1" @pdvArgs
+  $ec = $LASTEXITCODE
+  $pdvResult.success = ($ec -eq 0)
   $pdvResult.output = ($pdvOut | Out-String)
 } catch {
   $pdvResult.output = $_.Exception.Message

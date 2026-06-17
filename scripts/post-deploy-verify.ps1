@@ -196,4 +196,4 @@ $report = [PSCustomObject]@{
 Set-Content -Path $ReportFile -Value $report
 Write-Host "  Report saved: $ReportFile" -ForegroundColor Gray
 
-if (-not $allPassed) { exit 1 }
+if ($allPassed) { exit 0 } else { exit 1 }
