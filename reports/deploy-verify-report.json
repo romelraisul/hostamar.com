@@ -10,9 +10,9 @@
                    "ok":  true,
                    "url":  "http://127.0.0.1:11434/v1/models"
                },
-    "timestamp":  "2026-06-18T01:56:07.1407423+06:00",
+    "timestamp":  "2026-06-18T01:56:35.9332748+06:00",
     "postDeployVerify":  {
-                             "output":  "Cannot process argument transformation on parameter \u0027Block\u0027. Cannot convert the \"smollm3\" value of type \"System.String\" to type \"System.Management.Automation.ScriptBlock\".",
+                             "output":  "",
                              "success":  false
                          },
     "dmr":  {

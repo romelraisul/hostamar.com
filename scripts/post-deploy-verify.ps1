@@ -145,13 +145,24 @@ Check "/admin/models page loads" {
 # Database
 Write-Host "`nDatabase" -ForegroundColor Yellow
 
-Check "Audit endpoint works" {
-    $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/audit" -Method Post -Body '{}' -ContentType "application/json" -TimeoutSec 10 -ErrorAction SilentlyContinue
+Check "Audit endpoint reachable" {
+    try {
+        $res = Invoke-WebRequest -Uri "$BaseUrl/api/admin/audit" -Method Post -Body '{}' -ContentType "application/json" -TimeoutSec 10 -UseBasicParsing
+        if ($res.StatusCode -eq 200) { return }
+        if ($res.StatusCode -eq 401) { return }  # Unauthenticated is expected
+        throw "Unexpected status $($res.StatusCode)"
+    } catch {
+        if ($_.Exception.Response.StatusCode -eq 401) { return }
+        throw $_.Exception.Message
+    }
 }
 
-Check "Admin login" {
-    $body = @{ email = $AdminEmail; password = $AdminPassword } | ConvertTo-Json
-    $res = Invoke-RestMethod -Uri "$BaseUrl/api/auth/login" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 10 -ErrorAction SilentlyContinue
+if ($AdminPassword) {
+    Check "Admin login via API" {
+        $body = @{ email = $AdminEmail; password = $AdminPassword } | ConvertTo-Json
+        $res = Invoke-RestMethod -Uri "$BaseUrl/api/auth/login" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 10
+        if (-not $res) { throw "No response" }
+    }
 }
 
 # Security
