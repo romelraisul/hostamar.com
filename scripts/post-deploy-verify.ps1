@@ -1,5 +1,3 @@
-@'
-#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
     Post-deployment smoke test script.
@@ -39,17 +37,17 @@ $allPassed = $true
 function Check {
     param([string]$Name, [ScriptBlock]$Block, [int]$TimeoutSec = 10)
     
-    Write-Host "  ⏳ $Name..." -NoNewline
+    Write-Host "  `u{23F3} $Name..." -NoNewline
     $start = Get-Date
     
     try {
         $null = & $Block
         $elapsed = (Get-Date) - $start
-        Write-Host " ✅ ($($elapsed.TotalSeconds.ToString('0.0'))s)" -ForegroundColor Green
+        Write-Host " `u{2705} ($($elapsed.TotalSeconds.ToString('0.0'))s)" -ForegroundColor Green
         $results += [PSCustomObject]@{ name = $Name; status = "pass"; time = $elapsed.TotalSeconds }
     } catch {
         $elapsed = (Get-Date) - $start
-        Write-Host " ❌ ($($elapsed.TotalSeconds.ToString('0.0'))s)" -ForegroundColor Red
+        Write-Host " `u{274C} ($($elapsed.TotalSeconds.ToString('0.0'))s)" -ForegroundColor Red
         Write-Host "    $_" -ForegroundColor DarkRed
         $results += [PSCustomObject]@{ name = $Name; status = "fail"; time = $elapsed.TotalSeconds; error = $_ }
         $script:allPassed = $false
@@ -57,15 +55,14 @@ function Check {
 }
 
 # Ensure report directory
-New-Item -ItemType Directory -Force -Path (Split-Path $ReportFile) | Out-Null
+New-Item -ItemType Directory -Force -Path (Split-Path $ReportFile -Parent) | Out-Null
 
-Write-Host "`n═══════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Hostamar Post-Deploy Verification" -ForegroundColor Cyan
+Write-Host "`nHostamar Post-Deploy Verification" -ForegroundColor Cyan
 Write-Host "  Target: $BaseUrl" -ForegroundColor Gray
-Write-Host "═══════════════════════════════════════" -ForegroundColor Cyan
+if ($SkipLocalChecks) { Write-Host "  Local checks: SKIPPED" -ForegroundColor Yellow }
 
-# ── Infrastructure ──
-Write-Host "`n📡 Infrastructure" -ForegroundColor Yellow
+# Infrastructure
+Write-Host "`nInfrastructure" -ForegroundColor Yellow
 
 Check "Main page loads" {
     $res = Invoke-WebRequest -Uri "$BaseUrl/login" -TimeoutSec $TimeoutSec -UseBasicParsing
@@ -89,8 +86,8 @@ if (-not $SkipLocalChecks) {
     }
 }
 
-# ── Authentication ──
-Write-Host "`n🔐 Authentication" -ForegroundColor Yellow
+# Authentication
+Write-Host "`nAuthentication" -ForegroundColor Yellow
 
 if ($AdminPassword) {
     Check "Admin login" {
@@ -106,12 +103,11 @@ Check "Unauthenticated /admin blocked" {
         throw "Should have been blocked"
     } catch {
         if ($_.Exception.Response.StatusCode -eq 200) { throw "Admin is exposed without auth" }
-        # 302 redirect to login is expected
     }
 }
 
-# ── AI Models ──
-Write-Host "`n🤖 AI Models" -ForegroundColor Yellow
+# AI Models
+Write-Host "`nAI Models" -ForegroundColor Yellow
 
 Check "Chat API — smollm3 responds" {
     $body = @{ message = "Say hello"; model = "smollm3:F16" } | ConvertTo-Json
@@ -131,8 +127,8 @@ Check "Model list endpoint" {
     if ($res.status -ne "connected") { throw "DMR not connected" }
 }
 
-# ── Admin UI ──
-Write-Host "`n🖥️  Admin UI" -ForegroundColor Yellow
+# Admin UI
+Write-Host "`nAdmin UI" -ForegroundColor Yellow
 
 Check "/admin/chat page loads" {
     $res = Invoke-WebRequest -Uri "$BaseUrl/admin/chat" -TimeoutSec $TimeoutSec -UseBasicParsing
@@ -144,12 +140,11 @@ Check "/admin/models page loads" {
     if ($res.StatusCode -ne 200) { throw "Status $($res.StatusCode)" }
 }
 
-# ── Database ──
-Write-Host "`n🗄️  Database" -ForegroundColor Yellow
+# Database
+Write-Host "`nDatabase" -ForegroundColor Yellow
 
 Check "Audit endpoint works" {
     $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/audit" -Method Post -Body '{}' -ContentType "application/json" -TimeoutSec 10 -ErrorAction SilentlyContinue
-    # 401 is expected (no session) — means endpoint exists
 }
 
 Check "Admin login" {
@@ -157,8 +152,8 @@ Check "Admin login" {
     $res = Invoke-RestMethod -Uri "$BaseUrl/api/auth/login" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 10 -ErrorAction SilentlyContinue
 }
 
-# ── Security ──
-Write-Host "`n🛡️  Security" -ForegroundColor Yellow
+# Security
+Write-Host "`nSecurity" -ForegroundColor Yellow
 
 Check "Security headers present" {
     $res = Invoke-WebRequest -Uri "$BaseUrl/login" -TimeoutSec $TimeoutSec -UseBasicParsing
@@ -166,17 +161,15 @@ Check "Security headers present" {
     if (-not $headers['X-Frame-Options']) { throw "Missing X-Frame-Options" }
 }
 
-# ── Report ──
-Write-Host "`n═══════════════════════════════════════" -ForegroundColor Cyan
+# Report
+Write-Host "`n---" -ForegroundColor Cyan
 if ($allPassed) {
-    Write-Host "  ✅ ALL CHECKS PASSED" -ForegroundColor Green
+    Write-Host "  ALL CHECKS PASSED" -ForegroundColor Green
 } else {
     $failCount = ($results | Where-Object { $_.status -eq "fail" }).Count
-    Write-Host "  ❌ $failCount CHECK(S) FAILED" -ForegroundColor Red
+    Write-Host "  $failCount CHECK(S) FAILED" -ForegroundColor Red
 }
-Write-Host "═══════════════════════════════════════" -ForegroundColor Cyan
 
-# Write report
 $report = [PSCustomObject]@{
     timestamp = (Get-Date).ToUniversalTime().ToString("o")
     baseUrl = $BaseUrl
@@ -191,4 +184,3 @@ Set-Content -Path $ReportFile -Value $report
 Write-Host "  Report saved: $ReportFile" -ForegroundColor Gray
 
 if (-not $allPassed) { exit 1 }
-'@
