@@ -109,22 +109,24 @@ Check "Unauthenticated /admin blocked" {
 # AI Models
 Write-Host "`nAI Models" -ForegroundColor Yellow
 
-Check "Chat API — smollm3 responds" {
-    $body = @{ message = "Say hello"; model = "smollm3:F16" } | ConvertTo-Json
-    $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/chat" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 60
-    if (-not $res.success) { throw "Chat failed: $($res.error)" }
-    if (-not $res.response) { throw "Empty response" }
-}
+if (-not $SkipLocalChecks) {
+    Check "Chat API — smollm3 responds" {
+        $body = @{ message = "Say hello"; model = "smollm3:F16" } | ConvertTo-Json
+        $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/chat" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 60
+        if (-not $res.success) { throw "Chat failed: $($res.error)" }
+        if (-not $res.response) { throw "Empty response" }
+    }
 
-Check "Automation API — marketing agent" {
-    $body = @{ task = "Quick tip for Hostamar"; agent = "marketing" } | ConvertTo-Json
-    $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/automation" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 60
-    if ($res.tasks[0].status -ne "completed") { throw "Task not completed" }
-}
+    Check "Automation API — marketing agent" {
+        $body = @{ task = "Quick tip for Hostamar"; agent = "marketing" } | ConvertTo-Json
+        $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/automation" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 60
+        if ($res.tasks[0].status -ne "completed") { throw "Task not completed" }
+    }
 
-Check "Model list endpoint" {
-    $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/chat" -TimeoutSec $TimeoutSec -UseBasicParsing
-    if ($res.status -ne "connected") { throw "DMR not connected" }
+    Check "Model list endpoint" {
+        $res = Invoke-RestMethod -Uri "$BaseUrl/api/admin/chat" -TimeoutSec $TimeoutSec -UseBasicParsing
+        if ($res.status -ne "connected") { throw "DMR not connected" }
+    }
 }
 
 # Admin UI
