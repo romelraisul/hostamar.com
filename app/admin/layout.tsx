@@ -13,7 +13,8 @@ import {
   LogOut,
   Menu,
   X,
-  BarChart3
+  BarChart3,
+  Bot
 } from 'lucide-react'
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { href: '/admin/services', icon: Server, label: 'Services' },
   { href: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/admin/models', icon: Bot, label: 'AI Models' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
 
