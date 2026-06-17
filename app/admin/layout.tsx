@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { SidebarProvider } from "@/context/SidebarContext"
 import { 
   LayoutDashboard, 
   Users, 
@@ -25,6 +26,7 @@ const navItems = [
   { href: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/admin/models', icon: Bot, label: 'AI Models' },
+  { href: '/admin/chat', icon: Bot, label: 'AI Chat' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
 
@@ -141,7 +143,9 @@ export default function AdminLayout({
       {/* Main Content */}
       <main className="lg:ml-64 min-h-screen pt-16 lg:pt-0">
         <div className="p-6 lg:p-8">
-          {children}
+          <SidebarProvider>
+            {children}
+          </SidebarProvider>
         </div>
       </main>
     </div>

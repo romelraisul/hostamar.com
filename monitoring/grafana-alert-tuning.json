@@ -1,0 +1,62 @@
+[
+  {
+    "alert": "VRAM Pre-Warning (75%)",
+    "group": "Infrastructure / VRAM",
+    "expr": "model_vram_usage_bytes / 8e9 > 0.75",
+    "for": "2m",
+    "labels": { "severity": "warning", "team": "infra" },
+    "annotations": {
+      "summary": "VRAM at {{ $value | humanizePercentage }} — approaching critical",
+      "description": "RTX 5060 VRAM usage exceeds 75%. Async routing should be engaged if not already. Current: {{ $value | humanize }}",
+      "runbook": "docs/runbooks/incident-runbook.md#oom"
+    }
+  },
+  {
+    "alert": "Async Queue Depth High",
+    "group": "Infrastructure / Queue",
+    "expr": "async_queue_depth > 10",
+    "for": "5m",
+    "labels": { "severity": "warning", "team": "infra" },
+    "annotations": {
+      "summary": "Async queue depth at {{ $value }}",
+      "description": "More than 10 tasks waiting in async queue. Average wait likely exceeding SLA.",
+      "runbook": "docs/runbooks/incident-runbook.md#queue-backlog"
+    }
+  },
+  {
+    "alert": "Async Queue Wait Time",
+    "group": "Infrastructure / Queue",
+    "expr": "async_queue_avg_wait_seconds > 60",
+    "for": "3m",
+    "labels": { "severity": "warning", "team": "infra" },
+    "annotations": {
+      "summary": "Async queue wait time {{ $value }}s",
+      "description": "Average task wait in async queue exceeds 60s threshold.",
+      "runbook": "docs/runbooks/incident-runbook.md#queue-backlog"
+    }
+  },
+  {
+    "alert": "Frequent Model Toggle (Auto-Loop Detection)",
+    "group": "Infrastructure / Audit",
+    "expr": "rate(admin_audit_actions_total{action=~\"model_select|model_toggle|load_model|unload_model\"}[5m]) > 6",
+    "for": "2m",
+    "labels": { "severity": "warning", "team": "infra" },
+    "annotations": {
+      "summary": "Model toggle storm detected — {{ $value | humanize }} ops/s",
+      "description": "More than 6 model toggles per minute. Possible automation loop or runaway script.",
+      "runbook": "docs/runbooks/incident-runbook.md#automation-loop"
+    }
+  },
+  {
+    "alert": "Circuit Breaker Open Duration",
+    "group": "Infrastructure / Models",
+    "expr": "time() - circuit_breaker_last_opened > 1800",
+    "for": "1m",
+    "labels": { "severity": "info", "team": "infra" },
+    "annotations": {
+      "summary": "Circuit breaker open >30min for {{ $labels.model }}",
+      "description": "Model {{ $labels.model }} has been circuit-broken for over 30 minutes. Manual intervention may be required.",
+      "runbook": "docs/runbooks/incident-runbook.md#circuit-breaker-stuck"
+    }
+  }
+]

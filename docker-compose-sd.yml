@@ -1,0 +1,16 @@
+services:
+  stable-diffusion-api:
+    image: runpod/stable-diffusion:latest
+    container_name: stable-diffusion-api
+    ports:
+      - "7860:7860"
+    environment:
+      - COMMANDLINE_ARGS=--api --listen --port 7860
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped

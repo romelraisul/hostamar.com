@@ -1,0 +1,243 @@
+{
+  "title": "Hostamar AI Models & Admin Activity",
+  "uid": "hostamar-ai-models",
+  "version": 1,
+  "tags": ["hostamar", "ai", "admin"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "30s",
+  "panels": [
+    {
+      "title": "Model Health Overview",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 0, "y": 0 },
+      "targets": [{
+        "expr": "count(model_status == 1)",
+        "legendFormat": "Models Loaded"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [
+            { "color": "red", "value": null },
+            { "color": "orange", "value": 1 },
+            { "color": "green", "value": 3 }
+          ]}
+        }
+      }
+    },
+    {
+      "title": "OOM Errors (24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 3, "y": 0 },
+      "targets": [{
+        "expr": "sum(increase(model_oom_errors_total[24h]))",
+        "legendFormat": "OOM Events"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [
+            { "color": "green", "value": null },
+            { "color": "orange", "value": 3 },
+            { "color": "red", "value": 10 }
+          ]}
+        }
+      }
+    },
+    {
+      "title": "VRAM Usage",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 3, "x": 6, "y": 0 },
+      "targets": [{
+        "expr": "vram_usage_bytes / 8e9 * 100",
+        "legendFormat": "VRAM %"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "steps": [
+            { "color": "green", "value": null },
+            { "color": "orange", "value": 50 },
+            { "color": "red", "value": 80 }
+          ]}
+        }
+      }
+    },
+    {
+      "title": "Avg Response Latency",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 9, "y": 0 },
+      "targets": [{
+        "expr": "avg(model_latency_seconds)",
+        "legendFormat": "Avg Latency"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [
+            { "color": "green", "value": null },
+            { "color": "orange", "value": 10 },
+            { "color": "red", "value": 30 }
+          ]}
+        }
+      }
+    },
+    {
+      "title": "Model Latency (per model)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "model_latency_seconds{model=\"smollm3\"}", "legendFormat": "Smollm3 3B" },
+        { "expr": "model_latency_seconds{model=\"hermes3\"}", "legendFormat": "Hermes 3" },
+        { "expr": "model_latency_seconds{model=\"qwen3.6\"}", "legendFormat": "Qwen 3.6 27B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineInterpolation": "smooth" }
+        }
+      }
+    },
+    {
+      "title": "Circuit Breaker Status",
+      "type": "state-timeline",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 4 },
+      "targets": [
+        { "expr": "circuit_breaker_state{model=\"smollm3\"}", "legendFormat": "Smollm3 3B" },
+        { "expr": "circuit_breaker_state{model=\"hermes3\"}", "legendFormat": "Hermes 3" },
+        { "expr": "circuit_breaker_state{model=\"qwen3.6\"}", "legendFormat": "Qwen 3.6 27B" },
+        { "expr": "circuit_breaker_state{model=\"seed-oss\"}", "legendFormat": "Seed OSS 36B" }
+      ]
+    },
+    {
+      "title": "Request Rate (per model)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "rate(model_requests_total[5m])", "legendFormat": "{{model}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "lineInterpolation": "smooth" }
+        }
+      }
+    },
+    {
+      "title": "Failure Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 12 },
+      "targets": [
+        { "expr": "rate(model_failures_total[5m])", "legendFormat": "{{model}}" },
+        { "expr": "rate(model_oom_errors_total[5m])", "legendFormat": "OOM: {{model}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "rps",
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    },
+    {
+      "title": "Admin Actions (24h)",
+      "type": "barchart",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 },
+      "targets": [{
+        "expr": "sum(increase(admin_actions_total[24h])) by (action)",
+        "legendFormat": "{{action}}"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "stacking": { "mode": "none" } }
+        }
+      }
+    },
+    {
+      "title": "Failed Login Attempts",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 },
+      "targets": [{
+        "expr": "rate(admin_login_failures_total[5m])",
+        "legendFormat": "Failed logins"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "rps",
+          "color": { "fixedColor": "red", "mode": "fixed" }
+        }
+      }
+    },
+    {
+      "title": "Async Queue Depth",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 0, "y": 26 },
+      "targets": [{
+        "expr": "async_queue_depth",
+        "legendFormat": "Queued Jobs"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [
+            { "color": "green", "value": null },
+            { "color": "orange", "value": 10 },
+            { "color": "red", "value": 50 }
+          ]}
+        }
+      }
+    },
+    {
+      "title": "Database Connection Pool",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 3, "y": 26 },
+      "targets": [{
+        "expr": "pg_connection_pool_used / pg_connection_pool_max * 100",
+        "legendFormat": "Pool %"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [
+            { "color": "green", "value": null },
+            { "color": "orange", "value": 60 },
+            { "color": "red", "value": 80 }
+          ]}
+        }
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "model",
+        "type": "query",
+        "query": "label_values(model)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "value": "Prometheus" }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "Admin Actions",
+        "type": "grafana_annotation",
+        "query": "admin_action{type=\"model_change\"}",
+        "iconColor": "orange"
+      }
+    ]
+  }
+}

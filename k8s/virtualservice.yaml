@@ -1,0 +1,47 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: hostamar
+  namespace: prod
+spec:
+  hosts:
+    - hostamar.com
+  http:
+    - match:
+        - headers:
+            x-canary:
+              exact: "true"
+      route:
+        - destination:
+            host: hostamar-canary
+            port:
+              number: 3000
+    - route:
+        - destination:
+            host: hostamar-stable
+            port:
+              number: 3000
+          weight: 100
+        - destination:
+            host: hostamar-canary
+            port:
+              number: 3000
+          weight: 0
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: hostamar
+  namespace: prod
+spec:
+  host: hostamar-stable
+  subsets:
+    - name: stable
+      labels:
+        track: stable
+    - name: canary
+      labels:
+        track: canary
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

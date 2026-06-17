@@ -1,0 +1,17 @@
+version: "1"
+providers:
+  - id: docker-model-runner
+    type: docker-model-runner
+    model: qwen3.6:27B
+    models:
+      - qwen3.6:27B
+      - smollm3:F16
+      - seed-oss:36B-UD-IQ1_M
+      - stable-diffusion:latest
+  - id: ollama
+    type: ollama
+    base-url: http://host.docker.internal:11434
+    models:
+      - hermes3
+      - qwen2.5:32b
+      - llama3.1:8b

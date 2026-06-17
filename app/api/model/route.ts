@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const MODELS = [
-  { name: 'qwen3.6:27B', priority: 1, type: 'local', endpoint: 'http://localhost:1234' },
-  { name: 'smollm3:F16', priority: 2, type: 'local', endpoint: 'http://localhost:1234' },
+  { name: 'smollm3:F16', priority: 1, type: 'docker-model-runner', endpoint: 'http://localhost:12434' },
+  { name: 'hermes3', priority: 2, type: 'ollama', endpoint: 'http://localhost:11434' },
   { name: 'gpt-4o-mini', priority: 3, type: 'openai', endpoint: 'https://api.openai.com' },
   { name: 'gpt-3.5-turbo', priority: 4, type: 'openai', endpoint: 'https://api.openai.com' },
+]
+
+const IMAGE_MODELS = [
+  { name: 'stable-diffusion:latest', priority: 1, type: 'docker-model-runner', endpoint: 'http://localhost:12434' },
 ]
 
 let currentModelIndex = 0
@@ -53,7 +57,7 @@ function testModelResponse(response: string, prompt: string): boolean {
 }
 
 async function callModel(model: typeof MODELS[0], prompt: string): Promise<string> {
-  if (model.type === 'local') {
+  if (model.type === 'docker-model-runner') {
     try {
       const response = await fetch(`${model.endpoint}/v1/chat/completions`, {
         method: 'POST',
@@ -72,7 +76,30 @@ async function callModel(model: typeof MODELS[0], prompt: string): Promise<strin
       const data = await response.json()
       return data.choices?.[0]?.message?.content || ''
     } catch (error) {
-      throw new Error(`Local model error: ${error}`)
+      throw new Error(`Docker Model Runner error: ${error}`)
+    }
+  }
+
+  if (model.type === 'ollama') {
+    try {
+      const response = await fetch(`${model.endpoint}/v1/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: model.name,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 1000,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.choices?.[0]?.message?.content || ''
+    } catch (error) {
+      throw new Error(`Ollama error: ${error}`)
     }
   }
 

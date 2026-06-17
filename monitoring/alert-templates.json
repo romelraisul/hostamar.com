@@ -1,0 +1,220 @@
+# Hostamar Slack + PagerDuty Alert Templates
+
+## P1: VRAM > 85% (Critical)
+
+### Slack Message
+```
+🚨 P1 · VRAM CRITICAL
+GPU VRAM at {value}% on RTX 5060
+
+Loaded models: {models}
+Circuit breakers: {breaker_states}
+OOM errors (5m): {oom_count}
+
+Runbook: docs/runbooks/oncall-runbook.md#oom
+Executor: scripts/runbook-executor.ps1 -Incident oom -AutoFix
+
+@on-call-infra
+```
+
+### PagerDuty Payload
+```json
+{
+  "routing_key": "{PAGERDUTY_SERVICE_KEY}",
+  "event_action": "trigger",
+  "dedup_key": "vram-critical-{{labels.instance}}",
+  "payload": {
+    "summary": "VRAM > 85% on RTX 5060",
+    "severity": "critical",
+    "source": "Grafana",
+    "component": "gpu",
+    "group": "infrastructure",
+    "class": "oom",
+    "custom_details": {
+      "vram_percent": "{{ $value }}",
+      "loaded_models": "{{ models }}",
+      "oom_5m": "{{ oom_count }}",
+      "runbook": "docs/runbooks/oncall-runbook.md#oom"
+    }
+  },
+  "images": [{
+    "src": "{{ grafana_panel_url }}",
+    "alt": "VRAM Usage Panel"
+  }]
+}
+```
+
+### Escalation
+- 0-5 min: On-call infra → runbook executor
+- 5-10 min: Infra lead → evaluate full unload
+- 10+ min: Engineering manager → cloud failover decision
+
+---
+
+## P1: Docker Model Runner Down
+
+### Slack Message
+```
+🚨 P1 · DMR DOWN
+Docker Model Runner unreachable.
+
+Status: {status}
+Fallback: Ollama at localhost:11434 — {ollama_status}
+Downtime: {duration}
+
+Runbook: docs/runbooks/oncall-runbook.md#dmr-down
+Executor: scripts/runbook-executor.ps1 -Incident dmr-down -AutoFix
+
+@on-call-infra
+```
+
+### PagerDuty Payload
+```json
+{
+  "routing_key": "{PAGERDUTY_SERVICE_KEY}",
+  "event_action": "trigger",
+  "dedup_key": "dmr-down-{{labels.instance}}",
+  "payload": {
+    "summary": "Docker Model Runner is down",
+    "severity": "critical",
+    "source": "Grafana",
+    "component": "dmr",
+    "group": "infrastructure",
+    "class": "service_down",
+    "custom_details": {
+      "dmr_status": "unreachable",
+      "ollama_status": "{{ ollama_status }}",
+      "duration": "{{ duration }}",
+      "runbook": "docs/runbooks/oncall-runbook.md#dmr-down"
+    }
+  }
+}
+```
+
+### Escalation
+- 0-5 min: On-call infra → docker model stop/start
+- 5-10 min: Infra lead → Docker Desktop restart
+- 10+ min: CTO → cloud-only mode declaration
+
+---
+
+## P2: Circuit Breaker Open
+
+### Slack Message
+```
+⚠️ P2 · CIRCUIT BREAKER OPEN
+{count} breaker(s) open for: {models}
+
+Failures (24h): {failure_count}
+Last error: {last_error}
+
+Reset: scripts/runbook-executor.ps1 -Incident circuit-breaker -ModelName <model>
+
+@on-call-infra
+```
+
+### PagerDuty Payload
+```json
+{
+  "routing_key": "{PAGERDUTY_SERVICE_KEY}",
+  "event_action": "trigger",
+  "dedup_key": "cb-open-{{labels.model}}",
+  "payload": {
+    "summary": "Circuit breaker open for {{labels.model}}",
+    "severity": "warning",
+    "source": "Grafana",
+    "component": "model",
+    "group": "ai",
+    "class": "circuit_breaker",
+    "custom_details": {
+      "model": "{{labels.model}}",
+      "failure_count": "{{ failure_count }}"
+    }
+  }
+}
+```
+
+### Escalation
+- 0-15 min: On-call infra → evaluate and reset
+- 15+ min: Infra lead → investigate root cause
+
+---
+
+## P2: Brute Force Login
+
+### Slack Message
+```
+⚠️ P2 · BRUTE FORCE DETECTED
+Login failure rate: {rate}/min
+Blocked IPs: {blocked_ips}
+
+Source IPs: {ip_list}
+Admin email targeted: {target}
+
+Runbook: docs/runbooks/incident-runbook.md#login-brute-force
+
+@on-call-security
+```
+
+### PagerDuty Payload
+```json
+{
+  "routing_key": "{PAGERDUTY_SERVICE_KEY}",
+  "event_action": "trigger",
+  "dedup_key": "bruteforce-{{source_ip}}",
+  "payload": {
+    "summary": "Brute force login detected",
+    "severity": "warning",
+    "source": "Grafana",
+    "component": "auth",
+    "group": "security",
+    "class": "brute_force"
+  }
+}
+```
+
+### Escalation
+- 0-15 min: On-call security → verify IP blocks
+- 15+ min: Security lead → permanent blocklist + law enforcement report
+
+---
+
+## Grafana Alert Notification Channel Setup
+
+### Slack Webhook
+```json
+{
+  "type": "slack",
+  "settings": {
+    "url": "https://hooks.slack.com/services/{TEAM}/{TOKEN}",
+    "recipient": "#hostamar-alerts"
+  }
+}
+```
+
+### PagerDuty Integration
+```json
+{
+  "type": "pagerduty",
+  "settings": {
+    "integrationKey": "{PAGERDUTY_SERVICE_KEY}",
+    "severity": "critical"
+  }
+}
+```
+
+### Alertmanager (if using Prometheus)
+```yaml
+receivers:
+  - name: 'slack-p1'
+    slack_configs:
+      - channel: '#hostamar-alerts'
+        title: '🚨 {{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.description }}'
+        send_resolved: true
+  - name: 'pagerduty-p1'
+    pagerduty_configs:
+      - routing_key: '{PAGERDUTY_SERVICE_KEY}'
+        severity: critical
+        description: '{{ .CommonAnnotations.summary }}'
+```

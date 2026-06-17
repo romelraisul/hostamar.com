@@ -1,0 +1,205 @@
+{
+  "info": {
+    "name": "Hostamar Admin Test Plan",
+    "description": "Automated tests for admin routes: access control, model safety, billing, and observability.\n\nPrerequisites:\n- Dev server running at http://localhost:3000\n- Docker Model Runner at http://localhost:12434/engines/v1\n- Admin credentials (update COLLECTION_VARIABLES below)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "dmrUrl", "value": "http://localhost:12434/engines/v1", "type": "string" },
+    { "key": "adminEmail", "value": "admin@hostamar.com", "type": "string" },
+    { "key": "adminPassword", "value": "EQDTvtbrSUw5ARudl9kC", "type": "string" },
+    { "key": "csrfToken", "value": "", "type": "string" },
+    { "key": "sessionToken", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Access Control",
+      "item": [
+        {
+          "name": "GET /admin/chat — unauthenticated (should 302)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 302 redirect', () => { pm.response.to.have.status(302) });",
+            "pm.test('Redirects to /login', () => { pm.expect(pm.response.headers.get('location')).to.include('/login') });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/chat" }
+        },
+        {
+          "name": "POST /api/admin/chat — unauthenticated (should 302)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 302 redirect', () => { pm.response.to.have.status(302) });"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/chat", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"message\":\"test\"}" } }
+        },
+        {
+          "name": "POST /api/auth/login — wrong password (should 401)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401 unauthorized', () => { pm.response.to.have.status(401) });"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/login", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"email\":\"admin@hostamar.com\",\"password\":\"wrong-password\"}" } }
+        },
+        {
+          "name": "POST /api/auth/login — correct password (should 200)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 success', () => { pm.response.to.have.status(200) });",
+            "pm.test('Sets session cookie', () => { pm.expect(pm.cookies.has('next-auth.session-token')).to.be.true });",
+            "pm.collectionVariables.set('sessionToken', pm.cookies.get('next-auth.session-token'));"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/login", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"email\":\"{{adminEmail}}\",\"password\":\"{{adminPassword}}\"}" } }
+        },
+        {
+          "name": "GET /admin/chat — authenticated (should 200)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/chat" }
+        }
+      ]
+    },
+    {
+      "name": "2. Model API",
+      "item": [
+        {
+          "name": "GET /api/admin/chat — list models (should 200)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });",
+            "pm.test('Returns models', () => { pm.expect(pm.response.json().availableModels.length).to.be.at.least(3) });",
+            "pm.test('Connected to DMR', () => { pm.expect(pm.response.json().status).to.eql('connected') });",
+            "pm.test('Has smollm3 model', () => { const models = pm.response.json().availableModels; pm.expect(models.some(m => m.id.includes('smollm3'))).to.be.true });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/chat" }
+        },
+        {
+          "name": "POST /api/admin/chat — smollm3 (should respond < 30s)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });",
+            "pm.test('Has response', () => { pm.expect(pm.response.json().response).to.not.be.empty });",
+            "pm.test('Response time < 30s', () => { pm.expect(pm.response.responseTime).to.be.below(30000) });"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/chat", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"message\":\"Say hello in 5 words\",\"model\":\"smollm3:F16\"}" }, "timeout": 30000 }
+        },
+        {
+          "name": "POST /api/admin/chat — qwen3.6 (should timeout gracefully)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });",
+            "pm.test('Returns fallback', () => { pm.expect(pm.response.json().fallback).to.be.true });",
+            "pm.test('Suggest using small model', () => { pm.expect(pm.response.json().response).to.include('smaller model') });"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/chat", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"message\":\"Write a detailed analysis of the video platform market in 2026\",\"model\":\"qwen3.6:27B\"}" }, "timeout": 130000 }
+        },
+        {
+          "name": "POST /api/admin/chat — invalid model (should 400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => { pm.response.to.have.status(400) });",
+            "pm.test('Model not available', () => { pm.expect(pm.response.json().error).to.include('not available') });"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/chat", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"message\":\"hi\",\"model\":\"nonexistent-model\"}" } }
+        },
+        {
+          "name": "POST /api/admin/chat — rate limited (rapid fire 25x)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const responses = [];",
+            "for (let i = 0; i < 25; i++) {",
+            "  const res = await pm.sendRequest({",
+            "    url: pm.collectionVariables.get('baseUrl') + '/api/admin/chat',",
+            "    method: 'POST',",
+            "    header: { 'Content-Type': 'application/json' },",
+            "    body: JSON.stringify({ message: 'ping', model: 'smollm3:F16' })",
+            "  });",
+            "  responses.push(res.code);",
+            "}",
+            "const rateLimited = responses.filter(c => c === 429 || c === 302);",
+            "pm.test('Rate limited at least once', () => { pm.expect(rateLimited.length).to.be.at.least(1) });"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/chat", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"message\":\"p\",\"model\":\"smollm3:F16\"}" } }
+        },
+        {
+          "name": "POST /api/admin/automation — marketing agent (should succeed)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });",
+            "pm.test('Task completed', () => { pm.expect(pm.response.json().tasks[0].status).to.eql('completed') });",
+            "pm.test('Has marketing result', () => { pm.expect(pm.response.json().tasks[0].result).to.not.be.empty });"
+          ]}}],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/admin/automation", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\"task\":\"Suggest 2 strategies for Hostamar\",\"agent\":\"marketing\"}" }, "timeout": 60000 }
+        }
+      ]
+    },
+    {
+      "name": "3. Model Safety (VRAM/Circuit Breaker)",
+      "item": [
+        {
+          "name": "GET /api/admin/chat — check modelStatus",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "const body = pm.response.json();",
+            "pm.test('DMR connected', () => { pm.expect(body.status).to.eql('connected') });",
+            "pm.test('Has modelStatus', () => { pm.expect(Object.keys(body.modelStatus).length).to.be.at.least(3) });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/admin/chat" }
+        },
+        {
+          "name": "GET /admin/models — UI page loads",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });",
+            "pm.test('Contains VRAM info', () => { pm.expect(pm.response.text()).to.include('VRAM') });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/models" }
+        }
+      ]
+    },
+    {
+      "name": "4. Billing Security",
+      "item": [
+        {
+          "name": "GET /admin/subscriptions (should 302 or 401 re-auth)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Redirected or re-auth', () => { pm.expect([302, 401]).to.include(pm.response.code) });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/admin/subscriptions" }
+        }
+      ]
+    },
+    {
+      "name": "5. Observability",
+      "item": [
+        {
+          "name": "GET /api/health — system health (should 200)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/health" }
+        },
+        {
+          "name": "GET /monitor — monitoring page (should 200)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/monitor" }
+        }
+      ]
+    },
+    {
+      "name": "6. Environment Validation",
+      "item": [
+        {
+          "name": "Docker Model Runner — list models",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });",
+            "const models = pm.response.json().data || [];",
+            "const modelNames = models.map(m => m.id);",
+            "pm.test('Has smollm3', () => { pm.expect(modelNames.some(n => n.includes('smollm3'))).to.be.true });",
+            "pm.test('Has qwen3.6', () => { pm.expect(modelNames.some(n => n.includes('qwen3.6'))).to.be.true });"
+          ]}}],
+          "request": { "method": "GET", "url": "{{dmrUrl}}/models" }
+        },
+        {
+          "name": "Ollama — list models",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => { pm.response.to.have.status(200) });",
+            "pm.test('Has models', () => { pm.expect(pm.response.json().models?.length).to.be.at.least(1) });"
+          ]}}],
+          "request": { "method": "GET", "url": "http://localhost:11434/api/tags" }
+        }
+      ]
+    }
+  ]
+}

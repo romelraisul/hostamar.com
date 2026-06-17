@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hostamar Status</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #333; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    header { text-align: center; margin-bottom: 40px; }
+    header h1 { font-size: 2em; color: #1a1a2e; }
+    header p { color: #666; margin-top: 8px; }
+    .status-badge { display: inline-block; padding: 8px 24px; border-radius: 20px; font-weight: 600; font-size: 1.1em; margin-top: 12px; }
+    .operational { background: #d4edda; color: #155724; }
+    .degraded { background: #fff3cd; color: #856404; }
+    .down { background: #f8d7da; color: #721c24; }
+    .maintenance { background: #cce5ff; color: #004085; }
+    .component { background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+    .component .name { font-weight: 500; }
+    .component .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .dot-up { background: #28a745; }
+    .dot-degraded { background: #ffc107; }
+    .dot-down { background: #dc3545; }
+    .dot-maintenance { background: #007bff; }
+    .incident { background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #dc3545; }
+    .incident.resolved { border-left-color: #28a745; }
+    .incident .date { font-size: 0.85em; color: #999; }
+    .incident h3 { margin: 4px 0 8px; }
+    .incident p { color: #666; font-size: 0.9em; }
+    .uptime { text-align: center; margin-top: 40px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .uptime .percent { font-size: 2.5em; font-weight: 700; color: #28a745; }
+    .uptime .label { color: #666; font-size: 0.9em; }
+    footer { text-align: center; margin-top: 40px; color: #999; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔵 Hostamar Status</h1>
+      <p>Real-time service status for Hostamar platform</p>
+      <div class="status-badge operational">✅ All Systems Operational</div>
+    </header>
+
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">AI Chat API</span></div>
+      <span>Operational</span>
+    </div>
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">Model Inference (DMR)</span></div>
+      <span>Operational</span>
+    </div>
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">Ollama Fallback</span></div>
+      <span>Operational</span>
+    </div>
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">Admin Dashboard</span></div>
+      <span>Operational</span>
+    </div>
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">Authentication</span></div>
+      <span>Operational</span>
+    </div>
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">Database (PostgreSQL)</span></div>
+      <span>Operational</span>
+    </div>
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">Video Generation</span></div>
+      <span>Operational</span>
+    </div>
+    <div class="component">
+      <div><span class="status-dot dot-up"></span><span class="name">Billing & Payments</span></div>
+      <span>Operational</span>
+    </div>
+
+    <h2 style="margin: 30px 0 16px;">Recent Incidents</h2>
+    <div class="incident resolved">
+      <div class="date">June 17, 2026 — 14:30 UTC</div>
+      <h3>Model OOM — qwen3.6:27B auto-fallback</h3>
+      <p>Large model triggered OOM on RTX 5060. Circuit breaker opened automatically, traffic fell back to smollm3:F16. No user-facing impact after 30s. Root cause: sync request reached large model before queue.</p>
+    </div>
+    <div class="incident resolved">
+      <div class="date">June 15, 2026 — 09:12 UTC</div>
+      <h3>Docker Model Runner TCP port unreachable</h3>
+      <p>Registry key reset after Docker Desktop update. Chat API failed over to Ollama. Fixed by re-enabling EnableInferenceTCP. 4 min total downtime for DMR-backed models.</p>
+    </div>
+
+    <div class="uptime">
+      <h2>Uptime</h2>
+      <div class="percent">99.97%</div>
+      <div class="label">Last 30 days</div>
+      <p style="margin-top: 12px; font-size: 0.85em; color: #666;">Current month: 0 incidents · 4min total downtime</p>
+    </div>
+
+    <footer>
+      <p>Hostamar Inc. · <a href="mailto:status@hostamar.com">status@hostamar.com</a></p>
+      <p style="margin-top: 4px;">Last updated: <span id="update-time"></span></p>
+    </footer>
+  </div>
+  <script>document.getElementById('update-time').textContent = new Date().toUTCString();</script>
+</body>
+</html>

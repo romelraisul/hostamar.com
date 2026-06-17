@@ -1,0 +1,142 @@
+{
+  "groups": [
+    {
+      "name": "model_health",
+      "interval": "30s",
+      "rules": [
+        {
+          "alert": "VRAMCriticallyHigh",
+          "expr": "vram_usage_bytes / 8e9 * 100 > 85",
+          "for": "30s",
+          "labels": { "severity": "critical", "team": "infra" },
+          "annotations": {
+            "summary": "GPU VRAM > 85% on RTX 5060",
+            "description": "Current usage: {{ $value | humanizePercentage }}. Immediate OOM risk for model loading."
+          }
+        },
+        {
+          "alert": "VRAMWarning",
+          "expr": "vram_usage_bytes / 8e9 * 100 > 65",
+          "for": "2m",
+          "labels": { "severity": "warning", "team": "infra" },
+          "annotations": {
+            "summary": "GPU VRAM > 65%",
+            "description": "Current usage: {{ $value | humanizePercentage }}. Unload unused models."
+          }
+        },
+        {
+          "alert": "ModelOOMRateHigh",
+          "expr": "rate(model_oom_errors_total[5m]) > 0.1",
+          "for": "1m",
+          "labels": { "severity": "critical", "team": "infra" },
+          "annotations": {
+            "summary": "Model OOM errors detected",
+            "description": "OOM rate: {{ $value }} errors/sec. Check nvidia-smi and docker model status."
+          }
+        },
+        {
+          "alert": "CircuitBreakerOpen",
+          "expr": "circuit_breaker_state{state=\"open\"} >= 2",
+          "for": "1m",
+          "labels": { "severity": "warning", "team": "infra" },
+          "annotations": {
+            "summary": "Multiple circuit breakers open",
+            "description": "{{ $value }} model(s) blocked. Reset from admin UI after investigating root cause."
+          }
+        },
+        {
+          "alert": "ModelLatencyDegraded",
+          "expr": "model_latency_seconds > 60",
+          "for": "2m",
+          "labels": { "severity": "warning", "team": "infra" },
+          "annotations": {
+            "summary": "Model latency exceeds 60s",
+            "description": "Model {{ $labels.model }} has {{ $value }}s avg latency. Consider circuit breaker or fallback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "admin_security",
+      "interval": "1m",
+      "rules": [
+        {
+          "alert": "BruteForceLogin",
+          "expr": "rate(admin_login_failures_total[5m]) > 0.5",
+          "for": "1m",
+          "labels": { "severity": "critical", "team": "security" },
+          "annotations": {
+            "summary": "Possible brute force attack on admin login",
+            "description": "Login failure rate: {{ $value }} failures/sec. Check middleware IP blocks."
+          }
+        },
+        {
+          "alert": "AdminActionFailureSpike",
+          "expr": "rate(admin_actions_total{success=\"false\"}[15m]) > 0.1",
+          "for": "2m",
+          "labels": { "severity": "warning", "team": "security" },
+          "annotations": {
+            "summary": "Admin action failures spiking",
+            "description": "Failure rate: {{ $value }} failures/sec. Review audit log for suspicious activity."
+          }
+        },
+        {
+          "alert": "SubscriptionCancellationRate",
+          "expr": "rate(admin_actions_total{action=\"subscription_cancel\"}[1h]) > 5",
+          "for": "5m",
+          "labels": { "severity": "warning", "team": "billing" },
+          "annotations": {
+            "summary": "Unusual subscription cancellation rate",
+            "description": "{{ $value }} cancellations/hour. Investigate if this is expected."
+          }
+        }
+      ]
+    },
+    {
+      "name": "infrastructure",
+      "interval": "30s",
+      "rules": [
+        {
+          "alert": "DockerModelRunnerDown",
+          "expr": "up{job=\"dmr\"} == 0",
+          "for": "30s",
+          "labels": { "severity": "critical", "team": "infra" },
+          "annotations": {
+            "summary": "Docker Model Runner is unreachable",
+            "description": "Chat API will fall back to Ollama. Run 'docker model status' to investigate."
+          }
+        },
+        {
+          "alert": "OllamaDown",
+          "expr": "up{job=\"ollama\"} == 0",
+          "for": "30s",
+          "labels": { "severity": "critical", "team": "infra" },
+          "annotations": {
+            "summary": "Ollama service is unreachable",
+            "description": "All local model inference will fail. Run 'docker ps | Select-String ollama' to investigate."
+          }
+        },
+        {
+          "alert": "HighQueueDepth",
+          "expr": "async_queue_depth > 50",
+          "for": "2m",
+          "labels": { "severity": "warning", "team": "infra" },
+          "annotations": {
+            "summary": "Async job queue depth > 50",
+            "description": "{{ $value }} jobs queued. Scale workers or investigate throughput bottleneck."
+          }
+        },
+        {
+          "alert": "DatabaseConnectionPoolExhausted",
+          "expr": "pg_connection_pool_used / pg_connection_pool_max * 100 > 85",
+          "for": "1m",
+          "labels": { "severity": "critical", "team": "infra" },
+          "annotations": {
+            "summary": "PostgreSQL connection pool > 85%",
+            "description": "Pool usage: {{ $value | humanizePercentage }}. Scale pool or investigate connection leaks."
+          }
+        }
+      ]
+    }
+  ]
+}
