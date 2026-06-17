@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
   images: {
     // Enable Vercel Edge CDN image optimization (requires `sharp` which is bundled with Next.js)
     // Disabling unoptimized: true allows Next.js Image Optimization API to work on Vercel Edge
