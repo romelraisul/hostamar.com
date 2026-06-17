@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hostamar AI Browser</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+    }
+    .header {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .header p {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .content {
+      padding: 16px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: white;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+    }
+    .btn-outline:hover {
+      background: #f3f4f6;
+    }
+    .info {
+      padding: 12px;
+      background: #eff6ff;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #1e40af;
+      line-height: 1.5;
+    }
+    .footer {
+      text-align: center;
+      padding: 12px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .footer a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🇧🇩 Hostamar AI</h1>
+    <p>বাংলায় ওয়েব সারাংশ</p>
+  </div>
+  <div class="content">
+    <button class="btn btn-primary" id="summarize">সাম্প্রতিক পৃষ্ঠা সারাংশ করুন</button>
+    <button class="btn btn-outline" id="openBrowser">পূর্ণ ব্রাউজার খুলুন</button>
+    <div class="info">
+      যেকোনো পৃষ্ঠায় ডান-ক্লিক করুন → "Hostamar দিয়ে সারাংশ করুন" সিলেক্ট করুন।
+    </div>
+  </div>
+  <div class="footer">
+    Powered by <a href="https://hostamar.com" target="_blank">hostamar.com</a>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
