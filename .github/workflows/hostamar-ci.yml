@@ -299,6 +299,9 @@ jobs:
             fi
           done
 
+      - name: Create reports directory
+        run: mkdir -p reports
+
       - name: Run smoke tests (Newman)
         run: |
           newman run tests/admin-test-plan.postman_collection.json \
@@ -310,7 +313,7 @@ jobs:
       - name: Run post-deploy verification
         shell: pwsh
         run: |
-          .\scripts\post-deploy-verify.ps1 -BaseUrl "${{ secrets.PROD_BASE_URL }}" -AdminPassword "${{ secrets.ADMIN_PASSWORD }}"
+          .\scripts\post-deploy-verify.ps1 -BaseUrl "${{ secrets.PROD_BASE_URL }}" -AdminPassword "${{ secrets.ADMIN_PASSWORD }}" -SkipLocalChecks
 
       - name: Upload verification reports
         if: always()

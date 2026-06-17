@@ -2,7 +2,8 @@ param(
   [string]$BaseUrl = "https://hostamar.com",
   [string]$AdminPassword = $env:ADMIN_PASSWORD,
   [int]$PollTimeoutSec = 600,
-  [int]$PollIntervalSec = 6
+  [int]$PollIntervalSec = 6,
+  [switch]$SkipLocalChecks
 )
 
 $start = Get-Date
@@ -41,7 +42,9 @@ foreach ($h in $headersToCheck) {
 
 $pdvResult = @{ success = $false; output = $null }
 try {
-  $pdvOut = & ".\scripts\post-deploy-verify.ps1" -BaseUrl $BaseUrl -AdminPassword $AdminPassword 2>&1
+  $pdvArgs = @{ BaseUrl = $BaseUrl; AdminPassword = $AdminPassword }
+  if ($SkipLocalChecks) { $pdvArgs.SkipLocalChecks = $true }
+  $pdvOut = & ".\scripts\post-deploy-verify.ps1" @pdvArgs 2>&1
   $pdvResult.success = ($LASTEXITCODE -eq 0)
   $pdvResult.output = ($pdvOut | Out-String)
 } catch {

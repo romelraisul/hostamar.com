@@ -14,6 +14,8 @@
     Admin email for login test
 .PARAMETER AdminPassword
     Admin password for login test
+.PARAMETER SkipLocalChecks
+    Skip checks that require local Docker services (DMR, Ollama, DB). Use in CI.
 .PARAMETER ReportFile
     Path to write JSON report (default: reports/post-deploy-report.json)
 #>
@@ -23,8 +25,12 @@ param(
     [string]$DmrUrl = "http://localhost:12434/engines/v1",
     [string]$AdminEmail = "admin@hostamar.com",
     [string]$AdminPassword = "",
-    [string]$ReportFile = "reports/post-deploy-report.json"
+    [string]$ReportFile = "reports/post-deploy-report.json",
+    [switch]$SkipLocalChecks
 )
+
+# Auto-detect CI
+if ($env:GITHUB_ACTIONS -eq "true") { $SkipLocalChecks = $true }
 
 $ErrorActionPreference = "Stop"
 $results = @()
@@ -71,14 +77,16 @@ Check "Health endpoint" {
     if (-not $res) { throw "No response" }
 }
 
-Check "Docker Model Runner" {
-    $res = Invoke-RestMethod -Uri "$DmrUrl/models" -TimeoutSec $TimeoutSec
-    if ($res.data.Count -lt 3) { throw "Expected >= 3 models, got $($res.data.Count)" }
-}
+if (-not $SkipLocalChecks) {
+    Check "Docker Model Runner" {
+        $res = Invoke-RestMethod -Uri "$DmrUrl/models" -TimeoutSec $TimeoutSec
+        if ($res.data.Count -lt 3) { throw "Expected >= 3 models, got $($res.data.Count)" }
+    }
 
-Check "Ollama running" {
-    $res = Invoke-RestMethod -Uri "http://localhost:11434/api/tags" -TimeoutSec $TimeoutSec
-    if ($res.models.Count -lt 1) { throw "No models found" }
+    Check "Ollama running" {
+        $res = Invoke-RestMethod -Uri "http://localhost:11434/api/tags" -TimeoutSec $TimeoutSec
+        if ($res.models.Count -lt 1) { throw "No models found" }
+    }
 }
 
 # ── Authentication ──
