@@ -274,13 +274,19 @@ jobs:
 
           if [ "$CODE" = "403" ] || echo "$BODY" | grep -qi "denied"; then
             echo ""
-            echo "⚠️  Alert rules import requires Admin role on the Grafana API key."
+            echo "⚠️  Alert rules import returned 'Access denied' (HTTP 403)."
+            echo ""
+            echo "The dashboard import works, so the Cloud-level API key has limited scope."
+            echo "Alert rules require a key created INSIDE the Grafana stack, not at cloud level."
             echo ""
             echo "To fix:"
-            echo "  1. Go to Grafana Cloud → Admin → API Keys"
-            echo "  2. Create a new key with name 'hostamar-ci' and role 'Admin'"
-            echo "  3. Save the key as GitHub secret GRAFANA_API_KEY"
-            echo "  4. Re-run this workflow"
+            echo "  1. Go to your Grafana instance: ${{ secrets.GRAFANA_URL }}"
+            echo "  2. Administration → Users and access → Service accounts → Add service account"
+            echo "     (Name: hostamar-ci, Role: Admin)"
+            echo "  3. Create a token for the service account and copy it"
+            echo "  4. Save as GitHub secret:"
+            echo "     gh secret set GRAFANA_API_KEY --repo romelraisul/hostamar.com --body \"<token>\""
+            echo "  5. Re-run this workflow"
             exit 0
           fi
 
@@ -329,7 +335,7 @@ jobs:
             status=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.PROD_BASE_URL }}/login" || echo "000")
             if [ "$status" = "200" ]; then
               echo "Site is up!"
-              exit 0
+            exit 0
             fi
             echo "Attempt $i: status=$status — waiting 10s..."
             sleep 10
