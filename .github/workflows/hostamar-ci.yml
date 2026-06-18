@@ -442,8 +442,8 @@ jobs:
             exit 0
           fi
           echo "Posting to Slack webhook..."
-          # Write payload to file to avoid shell quoting issues
-          echo "${{ steps.payload.outputs.payload }}" > /tmp/slack-payload.json
+          # Write payload using printf to avoid shell interpretation of special chars
+          printf '%s' "${{ steps.payload.outputs.payload }}" > /tmp/slack-payload.json
           curl -v -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
             -d @/tmp/slack-payload.json \
@@ -488,7 +488,7 @@ jobs:
           COMMIT="${{ github.sha }}"
           PAYLOAD=$(jq -n --arg text "Reminder: DB deploy still awaiting approval on *${BRANCH}* (commit ${COMMIT}): $RUN_URL" '{text:$text}')
           echo "Posting Slack reminder..."
-          echo "$PAYLOAD" > /tmp/slack-reminder.json
+          printf '%s' "$PAYLOAD" > /tmp/slack-reminder.json
           curl -v -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
             -d @/tmp/slack-reminder.json \
