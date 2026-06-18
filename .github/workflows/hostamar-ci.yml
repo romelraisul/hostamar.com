@@ -379,6 +379,26 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"name":"slack-hostamar"}' | jq '. + {"note": "If 404, test from Grafana UI instead"}'
 
+      - name: Apply notification policy
+        run: |
+          BASE="${{ secrets.GRAFANA_URL }}"
+          AUTH="Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
+
+          echo "=== Checking current notification policy ==="
+          curl -s -H "$AUTH" "${BASE}/api/v1/provisioning/policies" | jq '.receiver, .routes // empty'
+
+          echo "=== Applying notification policy (routes by severity) ==="
+          RESP=$(curl -s -w "\n%{http_code}" -X PUT "${BASE}/api/v1/provisioning/policies" \
+            -H "$AUTH" -H "Content-Type: application/json" \
+            -d @monitoring/grafana-notification-policy.json)
+          BODY=$(echo "$RESP" | head -n -1)
+          CODE=$(echo "$RESP" | tail -n 1)
+          if [ "$CODE" = "200" ] || [ "$CODE" = "202" ]; then
+            echo "  ✅ Policy applied"
+          else
+            echo "  Response ($CODE): $BODY"
+          fi
+
   deploy-db:
     name: Apply DB Migrations
     runs-on: ubuntu-latest
