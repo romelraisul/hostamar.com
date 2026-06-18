@@ -259,7 +259,7 @@ jobs:
           curl -s -X POST "${{ secrets.GRAFANA_URL }}/api/ruler/grafana/api/v1/rules/hostamar" \
             -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d @monitoring/grafana-alert-rules.json
+            -d @monitoring/grafana-alert-tuning-wrapped.json
 
   deploy-db:
     name: Apply DB Migrations
