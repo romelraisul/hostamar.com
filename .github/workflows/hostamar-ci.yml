@@ -12,6 +12,7 @@ on:
       - 'tests/**'
       - 'monitoring/**'
       - 'database/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [main]
   schedule:
@@ -243,7 +244,7 @@ jobs:
     name: Import Grafana Dashboard
     runs-on: ubuntu-latest
     needs: [integration-tests]
-    if: true
+    if: ${{ true }}
     steps:
       - uses: actions/checkout@v4
 
