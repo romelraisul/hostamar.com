@@ -346,30 +346,31 @@ jobs:
           BASE="${{ secrets.GRAFANA_URL }}"
           AUTH="Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
 
-          echo "=== Finding existing Slack contact point ==="
-          EXISTING=$(curl -s -H "$AUTH" "${BASE}/api/alert-notifications" | jq '.[] | select(.name=="slack-hostamar")')
-          UID=$(echo "$EXISTING" | jq -r '.uid // empty')
+          PAYLOAD=$(jq -n --arg url "$SLACK_WEBHOOK_URL" '{
+            name: "slack-hostamar",
+            type: "slack",
+            is_default: false,
+            settings: {url: $url, recipient: "", icon_emoji: ":grafana:", username: "Grafana"}
+          }')
 
-          if [ -n "$UID" ]; then
-            echo "Updating existing contact point (uid=$UID)..."
-            curl -s -X PUT "${BASE}/api/alert-notifications/${UID}" \
-              -H "$AUTH" -H "Content-Type: application/json" \
-              -d "$(jq -n --arg url "$SLACK_WEBHOOK_URL" '{
-                name: "slack-hostamar",
-                type: "slack",
-                is_default: false,
-                settings: {url: $url, recipient: "", icon_emoji: ":grafana:", username: "Grafana"}
-              }')" | jq '{name, uid, type, is_default}'
+          echo "=== Creating/updating Slack contact point ==="
+          RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/alert-notifications" \
+            -H "$AUTH" -H "Content-Type: application/json" -d "$PAYLOAD")
+          BODY=$(echo "$RESP" | head -n -1)
+          CODE=$(echo "$RESP" | tail -n 1)
+          echo "  POST /api/alert-notifications -> HTTP $CODE"
+
+          if echo "$BODY" | grep -qi "name already exists"; then
+            UID=$(curl -s -H "$AUTH" "${BASE}/api/alert-notifications" | jq -r '.[] | select(.name=="slack-hostamar") | .uid' 2>/dev/null || echo "")
+            if [ -n "$UID" ]; then
+              echo "  Found existing (uid=$UID), updating..."
+              curl -s -X PUT "${BASE}/api/alert-notifications/${UID}" \
+                -H "$AUTH" -H "Content-Type: application/json" -d "$PAYLOAD" | jq '{name, uid, type, is_default}'
+            fi
+          elif [ "$CODE" = "200" ] || [ "$CODE" = "201" ]; then
+            echo "  ✅ Created: $(echo "$BODY" | jq -r '.name') (uid=$(echo "$BODY" | jq -r '.uid'))"
           else
-            echo "Creating new contact point..."
-            curl -s -X POST "${BASE}/api/alert-notifications" \
-              -H "$AUTH" -H "Content-Type: application/json" \
-              -d "$(jq -n --arg url "$SLACK_WEBHOOK_URL" '{
-                name: "slack-hostamar",
-                type: "slack",
-                is_default: false,
-                settings: {url: $url, recipient: "", icon_emoji: ":grafana:", username: "Grafana"}
-              }')" | jq '{name, uid, type, is_default}'
+            echo "  Response: $BODY"
           fi
 
       - name: Send Slack test notification
