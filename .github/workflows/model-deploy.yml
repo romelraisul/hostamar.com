@@ -23,12 +23,12 @@ jobs:
       - name: SSH deploy to home server
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.HOME_HOST }}
+          host: ${{ secrets.HOME_HOST_SSH || 'ssh.api.hostamar.com' }}
           username: ${{ secrets.HOME_USER }}
           key: ${{ secrets.HOME_SSH_KEY }}
           script: |
             docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:canary
             docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:stable
-            cd /home/youruser/hostamar
-            docker-compose pull
-            docker-compose up -d
+            cd /home/${{ secrets.HOME_USER }}/hostamar
+            docker compose pull
+            docker compose up -d

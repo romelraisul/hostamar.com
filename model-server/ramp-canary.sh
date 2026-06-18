@@ -4,9 +4,11 @@
 
 set -euo pipefail
 
+HOME_USER="${HOME_USER:-romel}"  # fallback if not set
+
 TARGET="${1:-canary}"
 WAIT_MIN="${2:-10}"
-COMPOSE_FILE="/home/youruser/hostamar/docker-compose.yml"
+COMPOSE_FILE="/home/${HOME_USER}/hostamar/docker-compose.yml"
 HEALTH_ENDPOINT="http://localhost/health"
 METRICS_ENDPOINT="http://localhost/metrics"
 
@@ -47,8 +49,8 @@ curl -sf "$METRICS_ENDPOINT" | grep -E 'hostamar_requests_total|hostamar_latency
 # If stable, promote canary to stable
 if [ "$TARGET" = "stable" ]; then
     log "Promoting canary to stable..."
-    docker tag ghcr.io/youruser/hostamar-model:canary ghcr.io/youruser/hostamar-model:stable
-    docker push ghcr.io/youruser/hostamar-model:stable
+    docker tag ghcr.io/romelraisul/hostamar-model:canary ghcr.io/romelraisul/hostamar-model:stable
+    docker push ghcr.io/romelraisul/hostamar-model:stable
     log "Promoted!"
 fi
 
