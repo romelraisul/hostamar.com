@@ -400,19 +400,35 @@ jobs:
           fi
 
   notify-approvers:
-    name: Notify approvers of pending DB deploy
+    name: Notify Approvers (Slack)
     runs-on: ubuntu-latest
     needs: [integration-tests]
     if: ${{ github.ref_name == 'main' && always() }}
     steps:
-      - name: Notify Slack
+      - name: Build Slack payload
+        id: payload
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BRANCH="${{ github.ref_name || github.head_ref || 'unknown' }}"
+          COMMIT="${{ github.sha }}"
+          PAYLOAD=$(jq -n \
+            --arg text "DB deploy awaiting approval on *${BRANCH}* (commit ${COMMIT}): $RUN_URL" \
+            --arg blocks '[{"type":"section","text":{"type":"mrkdwn","text":"*DB deploy awaiting approval* \nBranch: '"$BRANCH"' \nCommit: '"$COMMIT"' \nRun: '"$RUN_URL"'"}}]' \
+            '{text:$text,blocks:($blocks|fromjson)}')
+          echo "payload=$PAYLOAD" >> $GITHUB_OUTPUT
+
+      - name: Post to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          payload=$(jq -n --arg text "DB deploy awaiting approval: $RUN_URL" '{text:$text}')
-          curl -s -X POST "$SLACK_WEBHOOK_URL" -H 'Content-type: application/json' -d "$payload"
-          echo "Notified Slack: $RUN_URL"
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "No SLACK_WEBHOOK_URL secret set; skipping Slack notification."
+            exit 0
+          fi
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            -d "${{ steps.payload.outputs.payload }}" \
+            --fail || echo "Slack notify returned non-zero exit code (non-fatal)."
 
   deploy-db:
     name: Apply DB Migrations
