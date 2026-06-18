@@ -442,12 +442,14 @@ jobs:
             exit 0
           fi
           echo "Posting to Slack webhook..."
+          # Write payload to file to avoid shell quoting issues
+          echo "${{ steps.payload.outputs.payload }}" > /tmp/slack-payload.json
           curl -v -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
-            -d "${{ steps.payload.outputs.payload }}" \
+            -d @/tmp/slack-payload.json \
             --fail || {
               echo "Slack notify failed with exit code $?"
-              echo "Response above shows the error detail"
+              cat /tmp/slack-payload.json
               exit 0  # Don't fail the workflow
             }
 
@@ -486,11 +488,13 @@ jobs:
           COMMIT="${{ github.sha }}"
           PAYLOAD=$(jq -n --arg text "Reminder: DB deploy still awaiting approval on *${BRANCH}* (commit ${COMMIT}): $RUN_URL" '{text:$text}')
           echo "Posting Slack reminder..."
+          echo "$PAYLOAD" > /tmp/slack-reminder.json
           curl -v -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
-            -d "$PAYLOAD" \
+            -d @/tmp/slack-reminder.json \
             --fail || {
               echo "Slack re-notify failed with exit code $?"
+              cat /tmp/slack-reminder.json
               exit 0  # Don't fail the workflow
             }
 
