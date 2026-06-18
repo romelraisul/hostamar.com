@@ -505,7 +505,7 @@ jobs:
       - name: Run smoke tests (Newman)
         run: |
           newman run tests/admin-test-plan.postman_collection.json \
-            --folder "6. Environment Validation" \
+            --folder "5. Observability" \
             --env-var "baseUrl=${{ secrets.PROD_BASE_URL }}" \
             --reporters cli,json \
             --reporter-json-export reports/newman-critical.json
