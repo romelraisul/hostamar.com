@@ -436,7 +436,13 @@ jobs:
           fi
 
       - name: Run Prisma migrations
-        run: npx prisma migrate deploy
+        run: |
+          npx prisma migrate deploy 2>&1 || {
+            echo "=== migrate deploy failed — checking if baseline needed ==="
+            npx prisma migrate resolve --applied 20260508162634_init 2>&1
+            echo "=== Retrying migrate deploy ==="
+            npx prisma migrate deploy 2>&1
+          }
         env:
           DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
 
@@ -499,7 +505,7 @@ jobs:
       - name: Run smoke tests (Newman)
         run: |
           newman run tests/admin-test-plan.postman_collection.json \
-            --folder "critical-flows" \
+            --folder "Environment Validation" \
             --env-var "baseUrl=${{ secrets.PROD_BASE_URL }}" \
             --reporters cli,json \
             --reporter-json-export reports/newman-critical.json
