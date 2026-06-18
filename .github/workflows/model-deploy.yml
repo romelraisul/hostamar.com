@@ -37,7 +37,8 @@ jobs:
       - name: SSH deploy to home server
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.HOME_HOST_SSH || 'ssh.ai.hostamar.com' }}
+          host: ${{ secrets.HOME_HOST_SSH }}
+          port: ${{ secrets.HOME_SSH_PORT || '2222' }}
           username: ${{ secrets.HOME_USER }}
           key: ${{ secrets.HOME_SSH_KEY }}
           script: |
