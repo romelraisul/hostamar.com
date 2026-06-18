@@ -399,10 +399,25 @@ jobs:
             echo "  Response ($CODE): $BODY"
           fi
 
+  notify-approvers:
+    name: Notify approvers of pending DB deploy
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: ${{ github.ref_name == 'main' && always() }}
+    steps:
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          payload=$(jq -n --arg text "DB deploy awaiting approval: $RUN_URL" '{text:$text}')
+          curl -s -X POST "$SLACK_WEBHOOK_URL" -H 'Content-type: application/json' -d "$payload"
+          echo "Notified Slack: $RUN_URL"
+
   deploy-db:
     name: Apply DB Migrations
     runs-on: ubuntu-latest
-    needs: [integration-tests]
+    needs: [notify-approvers]
     if: ${{ github.ref_name == 'main' && always() }}
     environment: production
     steps:
