@@ -405,14 +405,20 @@ jobs:
     needs: [integration-tests]
     if: ${{ github.ref_name == 'main' && always() }}
     steps:
-      - name: Build Slack payload
-        id: payload
+      - name: Post to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
         run: |
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          BRANCH="${{ github.ref_name }}"
-          COMMIT="${{ github.sha }}"
-          # Build compact JSON without newlines for GitHub Actions output compatibility
-          PAYLOAD=$(jq -c -n \
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "No SLACK_WEBHOOK_URL secret set; skipping Slack notification."
+            exit 0
+          fi
+          echo "Posting to Slack webhook..."
+          # Build JSON directly with jq using env vars (no shell expansion issues)
+          PAYLOAD=$(jq -n \
             --arg run_url "$RUN_URL" \
             --arg branch "$BRANCH" \
             --arg commit "$COMMIT" \
@@ -426,24 +432,7 @@ jobs:
                 }
               }]
             }')
-          # Use heredoc to safely write multiline value to GITHUB_OUTPUT
-          {
-            echo 'payload<<EOF'
-            echo "$PAYLOAD"
-            echo 'EOF'
-          } >> $GITHUB_OUTPUT
-
-      - name: Post to Slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "No SLACK_WEBHOOK_URL secret set; skipping Slack notification."
-            exit 0
-          fi
-          echo "Posting to Slack webhook..."
-          # Write payload using printf to avoid shell interpretation of special chars
-          printf '%s' "${{ steps.payload.outputs.payload }}" > /tmp/slack-payload.json
+          printf '%s' "$PAYLOAD" > /tmp/slack-payload.json
           curl -v -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
             -d @/tmp/slack-payload.json \
