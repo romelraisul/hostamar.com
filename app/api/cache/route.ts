@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { responseCache } from '@/lib/cache'
-import { verifyToken } from '@/lib/auth'
+import { verifyToken } from '@/lib/auth-utils'
 
 export async function GET() {
   const stats = responseCache.stats()

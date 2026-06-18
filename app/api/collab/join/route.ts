@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
+import { verifyToken } from '@/lib/auth-utils'
 import { joinSession } from '@/lib/collab'
 
 export async function POST(req: NextRequest) {
