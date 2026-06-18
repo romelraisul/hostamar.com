@@ -369,16 +369,15 @@ jobs:
             -H "$AUTH" -H "Content-Type: application/json" -d "$PAYLOAD" \
             | jq '{name, uid, type}'
 
-      - name: Send Slack test notification
+      - name: Send Slack test notification (optional)
+        continue-on-error: true
         run: |
-          curl -s -X POST "${{ secrets.GRAFANA_URL }}/api/v1/provisioning/contact-points/test" \
+          echo "Contact point 'slack-hostamar' created."
+          echo "Send a test from Grafana UI: Alerting → Contact points → slack-hostamar → Test"
+          curl -s -X POST "${{ secrets.GRAFANA_URL }}/api/alert-notifications/test" \
             -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg url "${{ secrets.SLACK_WEBHOOK_URL }}" '{
-              name: "slack-hostamar",
-              type: "slack",
-              settings: {url: $url, icon_emoji: ":grafana:", username: "Grafana"}
-            }')" | jq .
+            -d '{"name":"slack-hostamar"}' | jq '. + {"note": "If 404, test from Grafana UI instead"}'
 
   deploy-db:
     name: Apply DB Migrations
