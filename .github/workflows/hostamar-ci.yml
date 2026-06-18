@@ -257,10 +257,32 @@ jobs:
 
       - name: Import alert rules
         run: |
-          curl -s -X POST "${{ secrets.GRAFANA_URL }}/api/ruler/grafana/api/v1/rules/hostamar" \
+          echo "=== Checking ruler config access ==="
+          GET_RESP=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.GRAFANA_URL }}/api/ruler/configs" \
+            -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}")
+          echo "GET /api/ruler/configs -> HTTP $GET_RESP"
+
+          echo "=== Importing alert rules ==="
+          RESP=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.GRAFANA_URL }}/api/ruler/grafana/api/v1/rules/hostamar" \
             -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d @monitoring/grafana-alert-tuning-wrapped.json
+            -d @monitoring/grafana-alert-tuning-wrapped.json)
+          BODY=$(echo "$RESP" | head -n -1)
+          CODE=$(echo "$RESP" | tail -n 1)
+          echo "POST /api/ruler/grafana/api/v1/rules/hostamar -> HTTP $CODE"
+          echo "Response: $BODY"
+
+          if [ "$CODE" = "403" ] || echo "$BODY" | grep -qi "denied"; then
+            echo ""
+            echo "⚠️  Alert rules import requires Admin role on the Grafana API key."
+            echo ""
+            echo "To fix:"
+            echo "  1. Go to Grafana Cloud → Admin → API Keys"
+            echo "  2. Create a new key with name 'hostamar-ci' and role 'Admin'"
+            echo "  3. Save the key as GitHub secret GRAFANA_API_KEY"
+            echo "  4. Re-run this workflow"
+            exit 0
+          fi
 
   deploy-db:
     name: Apply DB Migrations
