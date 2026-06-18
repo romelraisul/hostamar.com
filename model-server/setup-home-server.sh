@@ -7,7 +7,7 @@ set -euo pipefail
 # =============================================================================
 # CONFIGURATION — EDIT THESE VALUES BEFORE RUNNING
 # =============================================================================
-HOME_USER="youruser"                    # Linux username on home server
+HOME_USER="romel"                    # Linux username on home server
 HOME_DIR="/home/${HOME_USER}/hostamar"  # App directory
 REPO_DIR="${HOME}/hostamar.com"         # Where repo is cloned (assumed)
 # =============================================================================
@@ -140,6 +140,6 @@ log "Traefik dashboard:  http://localhost:8080 (disable in production!)"
 echo
 log "=== Next steps ==="
 log "1. Set GitHub secrets (HOME_HOST, HOME_USER, HOME_SSH_KEY, GHCR_TOKEN) in repo"
-log "2. Trigger CI: gh workflow run model-deploy.yml --ref main -R romelraisul/hostamar.com"
+log "2. Trigger CI: gh workflow run model-deploy.yml --ref main -R YOUR_LINUX_USERNAMEraisul/hostamar.com"
 log "3. Configure DNS/TLS (Let's Encrypt or Cloudflare Tunnel)"
 log "4. Harden SSH and firewall (see docs/approval-flow.md)"
