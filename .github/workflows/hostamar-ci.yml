@@ -411,7 +411,8 @@ jobs:
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           BRANCH="${{ github.ref_name }}"
           COMMIT="${{ github.sha }}"
-          PAYLOAD=$(jq -n \
+          # Build compact JSON without newlines for GitHub Actions output compatibility
+          PAYLOAD=$(jq -c -n \
             --arg run_url "$RUN_URL" \
             --arg branch "$BRANCH" \
             --arg commit "$COMMIT" \
@@ -421,11 +422,16 @@ jobs:
                 type: "section",
                 text: {
                   type: "mrkdwn",
-                  text: "*DB deploy awaiting approval*\nBranch: \($branch)\nCommit: \($commit)\nRun: \($run_url)"
+                  text: "*DB deploy awaiting approval*\\nBranch: \($branch)\\nCommit: \($commit)\\nRun: \($run_url)"
                 }
               }]
             }')
-          echo "payload=$PAYLOAD" >> $GITHUB_OUTPUT
+          # Use heredoc to safely write multiline value to GITHUB_OUTPUT
+          {
+            echo 'payload<<EOF'
+            echo "$PAYLOAD"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
 
       - name: Post to Slack
         env:
