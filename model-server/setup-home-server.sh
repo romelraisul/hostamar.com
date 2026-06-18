@@ -79,7 +79,33 @@ if [ -f "${REPO_DIR}/model-server/ramp-canary.sh" ]; then
   log "Copied ramp-canary.sh"
 fi
 
-# -----------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+# 3b. Configure Cloudflare Tunnel SSH ingress (for CI deploy)
+# -------------------------------------------------------------------------------
+log "Configuring Cloudflare Tunnel for SSH access..."
+if command -v cloudflared >/dev/null 2>&1; then
+  CF_CONFIG="/etc/cloudflared/config.yml"
+  if [ -f "$CF_CONFIG" ]; then
+    # Check if SSH ingress already exists
+    if ! grep -q "ssh.ai.hostamar.com" "$CF_CONFIG"; then
+      tee -a "$CF_CONFIG" <<'EOF'
+  - hostname: ssh.ai.hostamar.com
+    service: ssh://localhost:22
+EOF
+      log "Added SSH ingress to tunnel config"
+      systemctl restart cloudflared
+      log "Restarted cloudflared"
+    else
+      log "SSH ingress already configured"
+    fi
+  else
+    log "No cloudflared config found at $CF_CONFIG — skipping SSH tunnel setup"
+  fi
+else
+  log "cloudflared not installed — skipping SSH tunnel setup"
+fi
+
+# ----------------------------------------------------------------------------->
 # 4. Configure systemd service
 # -----------------------------------------------------------------------------
 log "Enabling systemd service..."
