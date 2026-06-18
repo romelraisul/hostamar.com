@@ -339,6 +339,46 @@ jobs:
             echo "   Check the API responses above for details."
           fi
 
+      - name: Create Slack contact point
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          BASE="${{ secrets.GRAFANA_URL }}"
+          AUTH="Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
+
+          echo "=== Finding existing Slack contact point ==="
+          EXISTING=$(curl -s -H "$AUTH" "${BASE}/api/alert-notifications" | jq '.[] | select(.name=="slack-hostamar")')
+          UID=$(echo "$EXISTING" | jq -r '.uid // empty')
+
+          if [ -n "$UID" ]; then
+            echo "Updating existing contact point (uid=$UID)..."
+            curl -s -X PUT "${BASE}/api/alert-notifications/${UID}" \
+              -H "$AUTH" -H "Content-Type: application/json" \
+              -d "$(jq -n --arg url "$SLACK_WEBHOOK_URL" '{
+                name: "slack-hostamar",
+                type: "slack",
+                is_default: false,
+                settings: {url: $url, recipient: "", icon_emoji: ":grafana:", username: "Grafana"}
+              }')" | jq '{name, uid, type, is_default}'
+          else
+            echo "Creating new contact point..."
+            curl -s -X POST "${BASE}/api/alert-notifications" \
+              -H "$AUTH" -H "Content-Type: application/json" \
+              -d "$(jq -n --arg url "$SLACK_WEBHOOK_URL" '{
+                name: "slack-hostamar",
+                type: "slack",
+                is_default: false,
+                settings: {url: $url, recipient: "", icon_emoji: ":grafana:", username: "Grafana"}
+              }')" | jq '{name, uid, type, is_default}'
+          fi
+
+      - name: Send Slack test notification
+        run: |
+          curl -s -X POST "${{ secrets.GRAFANA_URL }}/api/alert-notifications/test" \
+            -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"name":"slack-hostamar"}' | jq .
+
   deploy-db:
     name: Apply DB Migrations
     runs-on: ubuntu-latest
