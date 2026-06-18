@@ -257,36 +257,79 @@ jobs:
 
       - name: Import alert rules
         run: |
-          echo "=== Checking ruler config access ==="
-          GET_RESP=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.GRAFANA_URL }}/api/ruler/configs" \
-            -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}")
-          echo "GET /api/ruler/configs -> HTTP $GET_RESP"
+          BASE="${{ secrets.GRAFANA_URL }}"
+          AUTH="Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
+          IMPORTED=false
 
-          echo "=== Importing alert rules ==="
-          RESP=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.GRAFANA_URL }}/api/ruler/grafana/api/v1/rules/hostamar" \
-            -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d @monitoring/grafana-alert-tuning-wrapped.json)
-          BODY=$(echo "$RESP" | head -n -1)
-          CODE=$(echo "$RESP" | tail -n 1)
-          echo "POST /api/ruler/grafana/api/v1/rules/hostamar -> HTTP $CODE"
-          echo "Response: $BODY"
+          diagnostics() {
+            echo "=== Diagnostic: probing alerting endpoints ==="
+            for ep in \
+              "/api/alertmanager/grafana/config" \
+              "/api/v1/provisioning/alert-rules" \
+              "/api/ruler/configs" \
+              "/api/ruler/grafana/api/v1/rules"; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" "${BASE}${ep}" -H "$AUTH")
+              echo "  GET $ep -> HTTP $code"
+            done
+          }
 
-          if [ "$CODE" = "403" ] || echo "$BODY" | grep -qi "denied"; then
+          # Strategy 1: Grafana Alerting Provisioning API (Grafana 11+)
+          echo "=== Trying provisioning API ==="
+          for rule_file in monitoring/grafana-alert-tuning.json monitoring/grafana-alert-tuning-wrapped.json; do
+            if [ ! -f "$rule_file" ]; then continue; fi
+            RULES=$(cat "$rule_file")
+            if echo "$RULES" | jq -e '.groups' > /dev/null 2>&1; then
+              RULES=$(echo "$RULES" | jq '.groups[] | .rules[] | {rule: .}')
+            fi
+            echo "$RULES" | jq -c '.[] // .' | while read -r rule; do
+              TITLE=$(echo "$rule" | jq -r '.rule.title // .title // "unknown"')
+              echo "  Creating rule: $TITLE"
+              RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/v1/provisioning/alert-rules" \
+                -H "$AUTH" -H "Content-Type: application/json" -d "$rule")
+              BODY=$(echo "$RESP" | head -n -1)
+              CODE=$(echo "$RESP" | tail -n 1)
+              echo "    POST /api/v1/provisioning/alert-rules -> HTTP $CODE"
+              if [ "$CODE" = "200" ] || [ "$CODE" = "201" ] || [ "$CODE" = "202" ]; then
+                echo "    ✅ Created: $(echo "$BODY" | jq -r '.title // .uid // "ok"')"
+                IMPORTED=true
+              elif [ "$CODE" != "404" ] && [ "$CODE" != "403" ]; then
+                echo "    Response: $BODY"
+              fi
+            done
+          done
+
+          # Strategy 2: Ruler API fallback
+          if [ "$IMPORTED" = false ]; then
+            echo "=== Ruler API fallback ==="
+            if [ -f monitoring/grafana-alert-tuning-wrapped.json ]; then
+              RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/ruler/grafana/api/v1/rules/hostamar" \
+                -H "$AUTH" -H "Content-Type: application/json" \
+                -d @monitoring/grafana-alert-tuning-wrapped.json)
+              BODY=$(echo "$RESP" | head -n -1)
+              CODE=$(echo "$RESP" | tail -n 1)
+              echo "  POST /api/ruler/grafana/api/v1/rules/hostamar -> HTTP $CODE"
+              if [ "$CODE" = "200" ] || [ "$CODE" = "201" ] || [ "$CODE" = "202" ]; then
+                echo "  ✅ Rules imported via ruler API"
+                IMPORTED=true
+              else
+                echo "  Response: $BODY"
+              fi
+            fi
+          fi
+
+          if [ "$IMPORTED" = false ]; then
+            diagnostics
             echo ""
-            echo "⚠️  Alert rules import returned 'Access denied' (HTTP 403)."
+            echo "⚠️  Could not import alert rules through any API."
+            echo "   Your Grafana instance may need Alerting enabled,"
+            echo "   or the Service Account token needs additional permissions."
             echo ""
-            echo "The dashboard import works, so the Cloud-level API key has limited scope."
-            echo "Alert rules require a key created INSIDE the Grafana stack, not at cloud level."
+            echo "   To verify manually:"
+            echo "   1. Open your Grafana instance and check Alerting → Alert rules"
+            echo "   2. Create a rule manually to confirm alerting is enabled"
+            echo "   3. Under Administration → Service accounts, confirm 'hostamar-ci' has role 'Admin'"
             echo ""
-            echo "To fix:"
-            echo "  1. Go to your Grafana instance: ${{ secrets.GRAFANA_URL }}"
-            echo "  2. Administration → Users and access → Service accounts → Add service account"
-            echo "     (Name: hostamar-ci, Role: Admin)"
-            echo "  3. Create a token for the service account and copy it"
-            echo "  4. Save as GitHub secret:"
-            echo "     gh secret set GRAFANA_API_KEY --repo romelraisul/hostamar.com --body \"<token>\""
-            echo "  5. Re-run this workflow"
+            echo "   Once alerting is verified, re-run this workflow."
             exit 0
           fi
 
