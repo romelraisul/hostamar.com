@@ -257,80 +257,84 @@ jobs:
 
       - name: Import alert rules
         run: |
+          set -e
           BASE="${{ secrets.GRAFANA_URL }}"
           AUTH="Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
           IMPORTED=false
 
-          diagnostics() {
-            echo "=== Diagnostic: probing alerting endpoints ==="
-            for ep in \
-              "/api/alertmanager/grafana/config" \
-              "/api/v1/provisioning/alert-rules" \
-              "/api/ruler/configs" \
-              "/api/ruler/grafana/api/v1/rules"; do
-              code=$(curl -s -o /dev/null -w "%{http_code}" "${BASE}${ep}" -H "$AUTH")
-              echo "  GET $ep -> HTTP $code"
-            done
-          }
+          echo "=== Finding datasource and folder ==="
+          DS_UID=$(curl -s -H "$AUTH" "${BASE}/api/datasources" | jq -r '.[] | select(.type=="prometheus") | .uid // .name' | head -1)
+          echo "Prometheus datasource UID: $DS_UID"
 
-          # Strategy 1: Grafana Alerting Provisioning API (Grafana 11+)
-          echo "=== Trying provisioning API ==="
-          for rule_file in monitoring/grafana-alert-tuning.json monitoring/grafana-alert-tuning-wrapped.json; do
-            if [ ! -f "$rule_file" ]; then continue; fi
-            RULES=$(cat "$rule_file")
-            if echo "$RULES" | jq -e '.groups' > /dev/null 2>&1; then
-              RULES=$(echo "$RULES" | jq '.groups[] | .rules[] | {rule: .}')
-            fi
-            echo "$RULES" | jq -c '.[] // .' | while read -r rule; do
-              TITLE=$(echo "$rule" | jq -r '.rule.title // .title // "unknown"')
-              echo "  Creating rule: $TITLE"
-              RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/v1/provisioning/alert-rules" \
-                -H "$AUTH" -H "Content-Type: application/json" -d "$rule")
-              BODY=$(echo "$RESP" | head -n -1)
-              CODE=$(echo "$RESP" | tail -n 1)
-              echo "    POST /api/v1/provisioning/alert-rules -> HTTP $CODE"
-              if [ "$CODE" = "200" ] || [ "$CODE" = "201" ] || [ "$CODE" = "202" ]; then
-                echo "    ✅ Created: $(echo "$BODY" | jq -r '.title // .uid // "ok"')"
-                IMPORTED=true
-              elif [ "$CODE" != "404" ] && [ "$CODE" != "403" ]; then
-                echo "    Response: $BODY"
-              fi
-            done
-          done
+          FOLDER_UID=$(curl -s -H "$AUTH" "${BASE}/api/folders" | jq -r '.[0].uid // empty')
+          echo "First folder UID: ${FOLDER_UID:-none}"
 
-          # Strategy 2: Ruler API fallback
-          if [ "$IMPORTED" = false ]; then
-            echo "=== Ruler API fallback ==="
-            if [ -f monitoring/grafana-alert-tuning-wrapped.json ]; then
-              RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/ruler/grafana/api/v1/rules/hostamar" \
-                -H "$AUTH" -H "Content-Type: application/json" \
-                -d @monitoring/grafana-alert-tuning-wrapped.json)
-              BODY=$(echo "$RESP" | head -n -1)
-              CODE=$(echo "$RESP" | tail -n 1)
-              echo "  POST /api/ruler/grafana/api/v1/rules/hostamar -> HTTP $CODE"
-              if [ "$CODE" = "200" ] || [ "$CODE" = "201" ] || [ "$CODE" = "202" ]; then
-                echo "  ✅ Rules imported via ruler API"
-                IMPORTED=true
-              else
-                echo "  Response: $BODY"
-              fi
-            fi
+          if [ -z "$FOLDER_UID" ]; then
+            echo "Creating alert rule folder..."
+            FOLDER_RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/folders" \
+              -H "$AUTH" -H "Content-Type: application/json" \
+              -d '{"title":"hostamar-alerts"}')
+            FOLDER_BODY=$(echo "$FOLDER_RESP" | head -n -1)
+            FOLDER_CODE=$(echo "$FOLDER_RESP" | tail -n 1)
+            FOLDER_UID=$(echo "$FOLDER_BODY" | jq -r '.uid // empty')
+            echo "  POST /api/folders -> HTTP $FOLDER_CODE, uid=$FOLDER_UID"
           fi
 
+          echo "=== Creating alert rules via provisioning API ==="
+          cat monitoring/grafana-alert-tuning.json | jq -c '.[]' | while read -r rule; do
+            TITLE=$(echo "$rule" | jq -r '.alert')
+            GROUP=$(echo "$rule" | jq -r '.group')
+            EXPR=$(echo "$rule" | jq -r '.expr')
+            FOR_DUR=$(echo "$rule" | jq -r '."for"')
+            LABELS=$(echo "$rule" | jq '.labels')
+            ANNOTS=$(echo "$rule" | jq '.annotations')
+
+            PAYLOAD=$(jq -n \
+              --arg title "$TITLE" \
+              --arg group "$GROUP" \
+              --arg expr "$EXPR" \
+              --arg for "$FOR_DUR" \
+              --arg folder "$FOLDER_UID" \
+              --arg ds "$DS_UID" \
+              --argjson labels "$LABELS" \
+              --argjson annots "$ANNOTS" \
+            '{
+              title: $title,
+              ruleGroup: $group,
+              folderUID: $folder,
+              noDataState: "NoData",
+              execErrState: "Alerting",
+              for: $for,
+              labels: $labels,
+              annotations: $annots,
+              condition: "A",
+              data: [
+                {
+                  refId: "A",
+                  relativeTimeRange: {from: 600, to: 0},
+                  datasourceUid: $ds,
+                  model: {expr: $expr, intervalMs: 10000}
+                }
+              ]
+            }')
+            echo "  Creating: $TITLE"
+            RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/v1/provisioning/alert-rules" \
+              -H "$AUTH" -H "Content-Type: application/json" -d "$PAYLOAD")
+            BODY=$(echo "$RESP" | head -n -1)
+            CODE=$(echo "$RESP" | tail -n 1)
+            if [ "$CODE" = "200" ] || [ "$CODE" = "201" ] || [ "$CODE" = "202" ]; then
+              echo "    ✅ Created: $(echo "$BODY" | jq -r '.title')"
+              IMPORTED=true
+            else
+              echo "    ❌ HTTP $CODE: $BODY"
+            fi
+          done
+
           if [ "$IMPORTED" = false ]; then
-            diagnostics
             echo ""
-            echo "⚠️  Could not import alert rules through any API."
-            echo "   Your Grafana instance may need Alerting enabled,"
-            echo "   or the Service Account token needs additional permissions."
-            echo ""
-            echo "   To verify manually:"
-            echo "   1. Open your Grafana instance and check Alerting → Alert rules"
-            echo "   2. Create a rule manually to confirm alerting is enabled"
-            echo "   3. Under Administration → Service accounts, confirm 'hostamar-ci' has role 'Admin'"
-            echo ""
-            echo "   Once alerting is verified, re-run this workflow."
-            exit 0
+            echo "⚠️  Could not import alert rules via provisioning API."
+            echo "   Grafana responded but rules were not created."
+            echo "   Check the API responses above for details."
           fi
 
   deploy-db:
