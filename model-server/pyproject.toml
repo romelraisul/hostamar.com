@@ -1,0 +1,21 @@
+[project]
+name = "hostamar-model-server"
+version = "0.1.0"
+description = "Hostamar model inference server"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.109",
+    "uvicorn[standard]>=0.27",
+    "torch>=2.2",
+    "torchvision>=0.17",
+    "prometheus-client>=0.19",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.uvicorn]
+host = "0.0.0.0"
+port = 8000
+workers = 1
