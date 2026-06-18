@@ -281,7 +281,9 @@ jobs:
           fi
 
           echo "=== Creating alert rules via provisioning API ==="
-          cat monitoring/grafana-alert-tuning.json | jq -c '.[]' | while read -r rule; do
+          IMPORTED=false
+          while read -r rule; do
+            [ -z "$rule" ] && continue
             TITLE=$(echo "$rule" | jq -r '.alert')
             GROUP=$(echo "$rule" | jq -r '.group')
             EXPR=$(echo "$rule" | jq -r '.expr')
@@ -328,7 +330,7 @@ jobs:
             else
               echo "    ❌ HTTP $CODE: $BODY"
             fi
-          done
+          done < <(jq -c '.[]' monitoring/grafana-alert-tuning.json)
 
           if [ "$IMPORTED" = false ]; then
             echo ""
