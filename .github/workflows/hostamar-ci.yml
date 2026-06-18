@@ -243,7 +243,7 @@ jobs:
     name: Import Grafana Dashboard
     runs-on: ubuntu-latest
     needs: [integration-tests]
-    if: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && !inputs.skip_grafana }}
+    if: ${{ github.ref_name == 'main' && !inputs.skip_grafana }}
     steps:
       - uses: actions/checkout@v4
 
@@ -265,7 +265,7 @@ jobs:
     name: Apply DB Migrations
     runs-on: ubuntu-latest
     needs: [integration-tests]
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.ref_name == 'main' && !inputs.skip_grafana }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -286,7 +286,7 @@ jobs:
     name: Post-Deploy Verification
     runs-on: ubuntu-latest
     needs: [deploy-grafana, deploy-db]
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.ref_name == 'main' && !inputs.skip_grafana }}
     environment: production
     steps:
       - uses: actions/checkout@v4
