@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { comparePassword, signToken } from '@/lib/auth'
+import { comparePassword, signToken } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
