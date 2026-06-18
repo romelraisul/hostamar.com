@@ -345,40 +345,40 @@ jobs:
         run: |
           BASE="${{ secrets.GRAFANA_URL }}"
           AUTH="Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}"
+          CONTACT_NAME="slack-hostamar"
 
-          PAYLOAD=$(jq -n --arg url "$SLACK_WEBHOOK_URL" '{
-            name: "slack-hostamar",
+          PAYLOAD=$(jq -n --arg name "$CONTACT_NAME" --arg url "$SLACK_WEBHOOK_URL" '{
+            name: $name,
             type: "slack",
-            is_default: false,
             settings: {url: $url, recipient: "", icon_emoji: ":grafana:", username: "Grafana"}
           }')
 
-          echo "=== Creating/updating Slack contact point ==="
-          RESP=$(curl -s -w "\n%{http_code}" -X POST "${BASE}/api/alert-notifications" \
-            -H "$AUTH" -H "Content-Type: application/json" -d "$PAYLOAD")
-          BODY=$(echo "$RESP" | head -n -1)
-          CODE=$(echo "$RESP" | tail -n 1)
-          echo "  POST /api/alert-notifications -> HTTP $CODE"
+          echo "=== Checking existing Slack contact point ==="
+          EXISTING=$(curl -s -H "$AUTH" "${BASE}/api/v1/provisioning/contact-points" \
+            | jq -r --arg n "$CONTACT_NAME" '.[] | select(.name==$n) | .uid' 2>/dev/null || echo "")
+          echo "Existing UID: ${EXISTING:-none}"
 
-          if echo "$BODY" | grep -qi "name already exists"; then
-            UID=$(curl -s -H "$AUTH" "${BASE}/api/alert-notifications" | jq -r '.[] | select(.name=="slack-hostamar") | .uid' 2>/dev/null || echo "")
-            if [ -n "$UID" ]; then
-              echo "  Found existing (uid=$UID), updating..."
-              curl -s -X PUT "${BASE}/api/alert-notifications/${UID}" \
-                -H "$AUTH" -H "Content-Type: application/json" -d "$PAYLOAD" | jq '{name, uid, type, is_default}'
-            fi
-          elif [ "$CODE" = "200" ] || [ "$CODE" = "201" ]; then
-            echo "  ✅ Created: $(echo "$BODY" | jq -r '.name') (uid=$(echo "$BODY" | jq -r '.uid'))"
-          else
-            echo "  Response: $BODY"
+          if [ -n "$EXISTING" ]; then
+            echo "=== Deleting existing (to recreate) ==="
+            curl -s -X DELETE "${BASE}/api/v1/provisioning/contact-points/${EXISTING}" \
+              -H "$AUTH" | jq '{message}'
           fi
+
+          echo "=== Creating Slack contact point ==="
+          curl -s -X POST "${BASE}/api/v1/provisioning/contact-points" \
+            -H "$AUTH" -H "Content-Type: application/json" -d "$PAYLOAD" \
+            | jq '{name, uid, type}'
 
       - name: Send Slack test notification
         run: |
-          curl -s -X POST "${{ secrets.GRAFANA_URL }}/api/alert-notifications/test" \
+          curl -s -X POST "${{ secrets.GRAFANA_URL }}/api/v1/provisioning/contact-points/test" \
             -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"name":"slack-hostamar"}' | jq .
+            -d "$(jq -n --arg url "${{ secrets.SLACK_WEBHOOK_URL }}" '{
+              name: "slack-hostamar",
+              type: "slack",
+              settings: {url: $url, icon_emoji: ":grafana:", username: "Grafana"}
+            }')" | jq .
 
   deploy-db:
     name: Apply DB Migrations
