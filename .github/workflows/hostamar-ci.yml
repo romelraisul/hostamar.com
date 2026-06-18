@@ -513,7 +513,7 @@ jobs:
       - name: Run post-deploy verification
         shell: pwsh
         run: |
-          .\scripts\post-deploy-verify.ps1 -BaseUrl "${{ secrets.PROD_BASE_URL }}" -AdminPassword "${{ secrets.ADMIN_PASSWORD }}" -SkipLocalChecks
+          .\scripts\post-deploy-verify.ps1 -BaseUrl "${{ secrets.PROD_BASE_URL }}" -SkipLocalChecks
 
       - name: Upload verification reports
         if: always()
