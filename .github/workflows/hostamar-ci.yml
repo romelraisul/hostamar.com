@@ -411,7 +411,20 @@ jobs:
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           BRANCH="${{ github.ref_name }}"
           COMMIT="${{ github.sha }}"
-          PAYLOAD=$(printf '{"text":"DB deploy awaiting approval on *%s* (commit %s): %s"}' "$BRANCH" "$COMMIT" "$RUN_URL")
+          PAYLOAD=$(jq -n \
+            --arg run_url "$RUN_URL" \
+            --arg branch "$BRANCH" \
+            --arg commit "$COMMIT" \
+            '{
+              text: "DB deploy awaiting approval on *\($branch)* (commit \($commit)): \($run_url)",
+              blocks: [{
+                type: "section",
+                text: {
+                  type: "mrkdwn",
+                  text: "*DB deploy awaiting approval*\nBranch: \($branch)\nCommit: \($commit)\nRun: \($run_url)"
+                }
+              }]
+            }')
           echo "payload=$PAYLOAD" >> $GITHUB_OUTPUT
 
       - name: Post to Slack
@@ -438,6 +451,8 @@ jobs:
 
       - name: Check run job status
         id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           RUN_ID=${{ github.run_id }}
           OWNER=${{ github.repository_owner }}
