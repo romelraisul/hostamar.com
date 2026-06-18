@@ -1,5 +1,6 @@
 import { withAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
+import crypto from 'crypto'
 
 // Admin IP allowlist (empty = all IPs allowed with valid auth)
 const ADMIN_IP_ALLOWLIST: string[] = [
@@ -61,6 +62,53 @@ function recordLoginAttempt(ip: string, success: boolean) {
   loginAttempts.set(ip, entry)
 }
 
+// Canary/feature flag evaluation
+const CANARY_PERCENT = Number(process.env.CANARY_PERCENT || '0')
+const FEATURE_FLAG = process.env.FEATURE_FLAG || 'admin_new_model_routing'
+
+function hashToPercent(key: string): number {
+  const h = crypto.createHash('sha256').update(key).digest()
+  return (h.readUInt32BE(0) / 0xffffffff) * 100
+}
+
+function checkCanary(req: NextRequest, response: NextResponse): void {
+  response.headers.set('x-feature-flag', FEATURE_FLAG)
+
+  if (CANARY_PERCENT <= 0) {
+    response.headers.set('x-canary', '0')
+    return
+  }
+
+  const force = req.cookies.get('x-canary')?.value === '1' ||
+                req.headers.get('x-canary') === '1'
+  if (force) {
+    response.headers.set('x-canary', '1')
+    response.cookies.set('x-canary', '1', {
+      httpOnly: false, sameSite: 'lax', maxAge: 604800
+    })
+    return
+  }
+
+  const userId = req.headers.get('x-user-id') ||
+                req.cookies.get('user_id')?.value
+  const sessionId = req.cookies.get('next-auth.session-token')?.value ||
+                    req.cookies.get('__Secure-next-auth.session-token')?.value
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ||
+             req.headers.get('x-real-ip') || ''
+
+  const key = userId || sessionId || ip || Math.random().toString()
+  const pct = hashToPercent(key)
+
+  if (pct < CANARY_PERCENT) {
+    response.headers.set('x-canary', '1')
+    response.cookies.set('x-canary', '1', {
+      httpOnly: false, sameSite: 'lax', maxAge: 604800
+    })
+  } else {
+    response.headers.set('x-canary', '0')
+  }
+}
+
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token
@@ -77,20 +125,17 @@ export default withAuth(
           { status: 429 }
         )
       }
-      // Note: recordLoginAttempt should be called in the login API route itself
       return NextResponse.next()
     }
 
     // Protected admin routes
     if (url.pathname.startsWith('/admin')) {
-      // Must be authenticated
       if (!token) {
         const loginUrl = new URL('/login', url)
         loginUrl.searchParams.set('callbackUrl', url.pathname)
         return NextResponse.redirect(loginUrl)
       }
 
-      // Optional: IP allowlist
       if (!ipInAllowlist(ip)) {
         return NextResponse.json(
           { error: 'Access denied from this IP address' },
@@ -98,7 +143,6 @@ export default withAuth(
         )
       }
 
-      // Admin role check (using customer ID prefix or email)
       const isAdmin = token.email === 'admin@hostamar.com' || 
                       (token.id as string)?.startsWith('admin-')
 
@@ -109,7 +153,6 @@ export default withAuth(
         )
       }
 
-      // Sensitive admin routes require re-authentication
       const sensitivePaths = ['/admin/subscriptions', '/admin/settings', '/api/admin/manual-payments']
       const needsReAuth = sensitivePaths.some(p => url.pathname.startsWith(p))
       
@@ -129,7 +172,6 @@ export default withAuth(
       const { pathname } = url
       const key = `${ip}:${pathname}`
       
-      // Specific rate limits per endpoint
       const limits: Record<string, number> = {
         '/api/admin/automation': 10,
         '/api/admin/chat': 20,
@@ -139,10 +181,9 @@ export default withAuth(
       }
 
       const limit = Object.entries(limits).find(([path]) => pathname.startsWith(path))?.[1] || 30
-      // Note: detailed rate limiting is handled in each API route via lib/rate-limit.ts
     }
 
-    // Security headers
+    // Security headers + canary evaluation
     const response = NextResponse.next()
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -151,6 +192,8 @@ export default withAuth(
     if (process.env.NODE_ENV === 'production') {
       response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
     }
+
+    checkCanary(req, response)
 
     return response
   },
