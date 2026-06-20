@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  # traefik:
+    image: # traefik:
+    # command:
+      --providers.docker=true"
+      --entrypoints.web.address=:80"
+      --api.insecure=true" # disable in prod or secure it
+    ports:
+      80:80"
+      8080:8080" # traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  model-stable:
+    image: ghcr.io/romelraisul/hostamar-model:stable
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    labels:
+      traefik.http.routers.hostamar.rule=Host(`ai.hostamar.com`)"
+      traefik.http.services.hostamar.loadbalancer.server.port=8000"
+
+  model-canary:
+    image: ghcr.io/romelraisul/hostamar-model:canary
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    labels:
+      traefik.http.routers.hostamar-canary.rule=Headers(`X-Canary`,`1`)"
+      traefik.http.routers.hostamar-canary.entrypoints=web"
+      traefik.http.services.hostamar-canary.loadbalancer.server.port=8000"

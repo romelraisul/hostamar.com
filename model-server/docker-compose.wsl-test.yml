@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  model-stable:
+    image: ghcr.io/romelraisul/hostamar-model:stable
+    ports:
+      - "8000:8000"
+
+  model-canary:
+    image: ghcr.io/romelraisul/hostamar-model:canary
+    ports:
+      - "8001:8000"

@@ -46,9 +46,13 @@ jobs:
           port: ${{ secrets.HOME_SSH_PORT || '22' }}
           username: ${{ secrets.HOME_USER }}
           key: ${{ secrets.HOME_SSH_KEY }}
+          envs: GHCR_TOKEN
           script: |
+            echo $GHCR_TOKEN | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:canary
             docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:stable
-            cd /home/${{ secrets.HOME_USER }}/hostamar
-            docker compose pull
-            docker compose up -d
+            cd /home/${{ secrets.HOME_USER }}/hostamar/deploy
+            docker compose -f docker-compose.vps.yml pull
+            docker compose -f docker-compose.vps.yml up -d
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

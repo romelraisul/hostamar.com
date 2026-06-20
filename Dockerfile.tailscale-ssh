@@ -1,0 +1,16 @@
+FROM tailscale/tailscale:latest
+
+RUN apk add --no-cache openssh-server
+
+# Allow root login with key (we'll run commands as root, but the action uses root)
+RUN sed -i 's/^#PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config && \
+    sed -i 's/^#PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    echo "StrictModes no" >> /etc/ssh/sshd_config
+
+# Create a copy of containerboot that also starts SSH
+RUN cp /usr/local/bin/containerboot /usr/local/bin/containerboot-orig
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
