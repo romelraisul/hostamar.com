@@ -68,7 +68,7 @@ fi
 # 5. Check video is served via Next.js
 echo "--- Step 5: Check video serving ---"
 if [ -n "$VIDEO_FILE" ]; then
-  HTTP_CODE=$(docker exec hostamar-app sh -c "wget -q -O /dev/null -w '%{http_code}' http://localhost:3000/videos/$VIDEO_FILE 2>/dev/null" || echo "000")
+  HTTP_CODE=$(docker exec hostamar-app sh -c "wget -q -T 5 -O /dev/null http://127.0.0.1:3000/videos/$VIDEO_FILE 2>/dev/null && echo 200 || echo 000")
   if [ "$HTTP_CODE" = "200" ]; then
     pass "Video served at /videos/$VIDEO_FILE (HTTP 200)"
   else
