@@ -1,13 +1,12 @@
 # Dockerfile
-FROM python:3.11-slim
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime as base
 
 WORKDIR /app
-COPY pyproject.toml poetry.lock* /app/
-RUN apt-get update && apt-get install -y build-essential curl && rm -rf /var/lib/apt/lists/*
-RUN pip install --upgrade pip
-RUN pip install fastapi uvicorn[standard] torch torchvision --no-cache-dir
-# add prometheus client
-RUN pip install prometheus-client
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Install Python deps (torch/torchvision already in base)
+COPY pyproject.toml /app/
+RUN pip install --no-cache-dir fastapi uvicorn[standard] prometheus-client
 
 COPY . /app
 ENV PYTHONUNBUFFERED=1
