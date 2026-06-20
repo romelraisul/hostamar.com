@@ -1,0 +1,27 @@
+[Unit]
+Description=Hostamar health supervisor — monitor and restart Docker containers
+Documentation=https://github.com/romelraisul/hostamar.com
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStart=/home/romel/hostamar.com/scripts/hostamar-healthcheck.sh
+Restart=always
+RestartSec=10
+# Crash-loop detection: if it restarts >5 times in 30s, stop trying
+StartLimitIntervalSec=30
+StartLimitBurst=5
+
+# Logging — journald catches everything
+StandardOutput=journal
+StandardError=journal
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
