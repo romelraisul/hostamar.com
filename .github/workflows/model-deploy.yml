@@ -39,20 +39,32 @@ jobs:
       - name: Connect to Tailnet
         run: |
           sudo tailscale up --authkey ${{ secrets.TAILSCALE_AUTH_KEY }} --hostname gh-runner-hostamar
-      - name: SSH deploy to home server
+      - name: GHCR login on host
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOME_HOST_SSH }}
           port: ${{ secrets.HOME_SSH_PORT || '22' }}
           username: ${{ secrets.HOME_USER }}
           key: ${{ secrets.HOME_SSH_KEY }}
+          timeout: 30s
+          command_timeout: 2m
           envs: GHCR_TOKEN
           script: |
             echo $GHCR_TOKEN | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      - name: Pull and deploy model containers
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOME_HOST_SSH }}
+          port: ${{ secrets.HOME_SSH_PORT || '22' }}
+          username: ${{ secrets.HOME_USER }}
+          key: ${{ secrets.HOME_SSH_KEY }}
+          timeout: 30s
+          command_timeout: 30m
+          script: |
             docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:canary
             docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:stable
             cd /home/${{ secrets.HOME_USER }}/hostamar/deploy
             docker compose -f docker-compose.vps.yml pull
             docker compose -f docker-compose.vps.yml up -d
-        env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
