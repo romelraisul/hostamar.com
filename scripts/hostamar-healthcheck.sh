@@ -33,7 +33,12 @@ alert_if_flapping() {
   count=$(wc -l < "$file")
   if [ "$count" -gt 3 ]; then
     log "ALERT $name restarted $count times in 10 min — possible crash loop"
-    # Future: POST to Slack/Discord webhook here
+    # Slack webhook (configure SLACK_WEBHOOK_URL env var)
+    if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+      curl -sf -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"🚨 Hostamar ALERT: $name restarted $count times in 10 min — possible crash loop\"}" \
+        "$SLACK_WEBHOOK_URL" 2>/dev/null || log "Slack alert failed"
+    fi
   fi
 }
 

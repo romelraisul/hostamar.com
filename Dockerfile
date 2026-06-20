@@ -11,10 +11,13 @@ RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
+RUN apk add --no-cache openssl libc6-compat
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -37,6 +40,12 @@ RUN mkdir -p .next && chown nextjs:nodejs .next
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy video proxy server and patch server.js to start it alongside Next.js
+COPY --chown=nextjs:nodejs video-server.js ./video-server.js
+COPY --chown=nextjs:nodejs scripts/patch-server.js ./patch-server.js
+RUN mkdir -p /app/videos && chown nextjs:nodejs /app/videos
+RUN node patch-server.js && rm patch-server.js
 
 # Prisma native engine + generated client — required because standalone
 # output's static-trace-based tree-shaking cannot follow Prisma's runtime
