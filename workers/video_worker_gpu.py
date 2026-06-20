@@ -23,6 +23,9 @@ from typing import Any
 import httpx
 from bullmq import Worker
 
+# CPU video generator (no GPU needed)
+from workers.cpu_video_generator import generate_video as _generate_via_cpu_sync
+
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
@@ -87,18 +90,24 @@ HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN", "")
 # + CUDA 12.8; worker image has torch 2.4+cu124 which only knows sm_50..sm_90
 # — verified by direct GPU compute test). When a newer torch wheel exists,
 # promote "local" to the front and re-test.
-# Provider order — "local" tries first on machines with a working GPU stack
-# (RTX 5060 sm_120 + torch nightly cu128). Falls back to cloud APIs.
+# Provider order — "cpu" runs first (works without GPU or cloud APIs),
+# then falls back to cloud providers.
 PROVIDER_PRIORITY = [
-    os.getenv("VIDEO_PROVIDER_PRIMARY", "huggingface"),  # local was first; flip if torch cu128 is working
+    "cpu",  # Pillow + FFmpeg, works on any machine
+    "huggingface",
     "replicate",
     "fal",
     "local",  # WIP — needs full cu128 stack including nvidia-cuda-cupti
 ]
 
-# Callback into Node app. In docker-compose the app service is reachable at
-# http://app:3000 and the internal endpoint is /api/worker/video-update.
-APP_CALLBACK_URL = os.getenv("APP_CALLBACK_URL", "http://app:3000/api/worker/video-update")
+# Callback into Node app. The docker compose DNS exposes the app at
+# "hostamar-app:3000" (not "app:3000" — those containers aren't in the
+# same compose project, so the "app" service alias doesn't resolve).
+_configured = os.getenv("APP_CALLBACK_URL", "")
+if _configured and "app:3000" in _configured and "hostamar-app" not in _configured:
+    logger.warning("ignoring APP_CALLBACK_URL=%s (bad hostname), using hostamar-app:3000", _configured)
+    _configured = ""
+APP_CALLBACK_URL = _configured or "http://hostamar-app:3000/api/worker/video-update"
 WORKER_SHARED_SECRET = os.getenv("WORKER_SHARED_SECRET", "")
 
 # ---------------------------------------------------------------------------
@@ -507,6 +516,10 @@ async def generate_video(options: dict[str, Any]) -> dict[str, Any]:
 
     for p in providers:
         try:
+            if p == "cpu":
+                return await asyncio.to_thread(
+                    _generate_via_cpu_sync, prompt, style, duration, aspect_ratio
+                )
             if p == "local":
                 return await generate_via_local(prompt, style, duration, aspect_ratio)
             if p == "huggingface":
@@ -560,8 +573,39 @@ async def process_video_job(job, token: str | None = None) -> dict[str, Any]:
             "style": data.get("style", "cinematic"),
             "duration": data.get("duration", 5),
             "aspect_ratio": data.get("aspectRatio") or data.get("aspect_ratio", "16:9"),
-            "provider": data.get("provider", "replicate"),
+            "provider": data.get("provider", "cpu"),
         })
+
+        # 2.5 Upload video to app for frontend serving
+        video_url = result.get("videoUrl", "")
+        if video_url:
+            filename = video_url.rsplit("/", 1)[-1] if "/" in video_url else video_url
+            local_path = f"/tmp/hostamar-videos/{filename}"
+            if os.path.exists(local_path):
+                try:
+                    upload_url = f"http://hostamar-app:8899/upload/{filename}"
+                    async with httpx.AsyncClient(timeout=30) as client:
+                        with open(local_path, "rb") as f:
+                            upload_resp = await client.post(upload_url, content=f.read())
+                    if upload_resp.is_success:
+                        logger.info("uploaded %s to app", filename)
+                    else:
+                        logger.warning("upload %s returned %s", filename, upload_resp.status_code)
+                except Exception as e:
+                    logger.warning("upload failed for %s: %s", filename, e)
+
+                # Also upload thumbnail if present
+                thumb_path = local_path.replace(".mp4", ".jpg")
+                if os.path.exists(thumb_path):
+                    try:
+                        thumb_upload_url = f"http://hostamar-app:8899/upload/{filename.replace('.mp4', '.jpg')}"
+                        async with httpx.AsyncClient(timeout=30) as client:
+                            with open(thumb_path, "rb") as f:
+                                thumb_resp = await client.post(thumb_upload_url, content=f.read())
+                        if thumb_resp.is_success:
+                            logger.info("uploaded thumbnail for %s", filename)
+                    except Exception:
+                        pass
 
         try:
             await job.update_progress(90)

@@ -11,16 +11,12 @@ import prisma from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// Whitelist of columns guaranteed to exist on the Video table. We discovered
-// the DB schema is materially different from prisma/schema.prisma (e.g. no
-// `prompt`, `error`, `progress`, `provider`, `completedAt`, `videoUrl` cols).
-// Rather than migrating, we constrain the callback to this safe subset.
-// To extend: ALTER TABLE "Video" ADD COLUMN ... then add the name here.
+// Whitelist of DB columns that may be written by the worker callback.
+// Maps the worker's payload keys directly to Video table columns.
 const VIDEO_UPDATE_WHITELIST = new Set([
   'status',
-  'url',           // worker reports 'url' from generate_via_huggingface
-  'videoUrl',      // worker reports 'videoUrl' from generate_via_replicate/fal
-  'thumbnailUrl',
+  'url',           // worker reports 'url' or 'videoUrl' — both map here
+  'thumbnailUrl',  // same column name in DB and worker
   'duration',
 ])
 
@@ -46,8 +42,6 @@ export async function POST(request: Request) {
   const {
     videoId, jobId, status,
     videoUrl, thumbnailUrl, duration,
-    // Accepted but not persisted: error, provider, progress, completedAt.
-    // Workers log those for observability.
   } = body || {}
 
   if (!videoId || !status) {
@@ -65,17 +59,14 @@ export async function POST(request: Request) {
 
   // ---- build safe payload ------------------------------------------------
   const incoming: Record<string, any> = { status: status.toLowerCase() }
-  if (typeof videoUrl === 'string') incoming.videoUrl = videoUrl
+  // Worker sends 'videoUrl'; DB column is 'url'
+  if (typeof videoUrl === 'string') incoming.url = videoUrl
   if (typeof thumbnailUrl === 'string') incoming.thumbnailUrl = thumbnailUrl
   if (typeof duration === 'number') incoming.duration = duration
 
   const data: Record<string, any> = {}
   for (const [k, v] of Object.entries(incoming)) {
     if (VIDEO_UPDATE_WHITELIST.has(k)) data[k] = v
-  }
-  // When worker reports a real videoUrl, sync it to `url` column too (url is NOT NULL)
-  if (incoming.videoUrl && !incoming.url) {
-    data.url = incoming.videoUrl
   }
 
   // ---- update ------------------------------------------------------------

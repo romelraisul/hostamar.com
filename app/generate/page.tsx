@@ -80,6 +80,26 @@ export default function GeneratePage() {
 
       setProgress(100)
       setGeneratedUrl(`/dashboard/videos?id=${data.videoId}`)
+
+      // Start polling for actual video URL (appears after worker completes)
+      const pollInterval = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/videos/status/${data.videoId}`)
+          if (!pollRes.ok) return
+          const pollData = await pollRes.json()
+          if (pollData.status === 'completed' && pollData.url && !pollData.url.startsWith('pending:')) {
+            clearInterval(pollInterval)
+            // Show a playable preview inline (replaces the dashboard link)
+            setGeneratedUrl(pollData.url)
+          }
+        } catch {
+          /* retry */
+        }
+      }, 3000)
+
+      // Stop polling after 5 minutes
+      setTimeout(() => clearInterval(pollInterval), 300_000)
+
       router.push(`/dashboard/videos?id=${data.videoId}`)
     } catch (e: any) {
       clearInterval(interval)
@@ -266,12 +286,34 @@ export default function GeneratePage() {
             </button>
 
             {generatedUrl && !isGenerating && (
-              <a
-                href={generatedUrl}
-                className="block text-center py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition"
-              >
-                ✅ ভিডিও দেখুন
-              </a>
+              <>
+                {generatedUrl.endsWith('.mp4') ? (
+                  <div className="mt-4">
+                    <video
+                      src={generatedUrl}
+                      controls
+                      className="w-full rounded-xl shadow-lg"
+                      style={{ maxHeight: '70vh' }}
+                    >
+                      আপনার ব্রাউজার ভিডিও সাপোর্ট করে না
+                    </video>
+                    <a
+                      href={generatedUrl}
+                      download
+                      className="mt-2 block text-center py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition text-sm"
+                    >
+                      ⬇️ ডাউনলোড করুন
+                    </a>
+                  </div>
+                ) : (
+                  <a
+                    href={generatedUrl}
+                    className="block text-center py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+                  >
+                    ✅ ভিডিও দেখুন
+                  </a>
+                )}
+              </>
             )}
           </div>
         </div>
