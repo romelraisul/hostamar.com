@@ -1,0 +1,104 @@
+name: CI Production — deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag to deploy (default: release-latest commit)'
+        required: false
+        default: ''
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="release-${GITHUB_SHA::7}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Deploying tag: $TAG to ${{ github.event.inputs.environment }}"
+
+      - name: Build and push image
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/hostamar-app:${{ steps.tag.outputs.tag }}"
+          docker build -t "$IMAGE" .
+          echo "$GHCR_PAT" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+          docker push "$IMAGE"
+
+      - name: Deploy to staging
+        if: github.event.inputs.environment == 'staging'
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.PROD_USER }}/hostamar.com
+            git fetch origin main
+            git checkout staging || git checkout -b staging
+            git pull origin staging || true
+            docker compose pull
+            docker compose up -d --remove-orphans
+            bash scripts/post-deploy-checks.sh
+
+      - name: Manual approval for production
+        if: github.event.inputs.environment == 'production'
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ secrets.GHCR_PAT }}
+          approvers: ${{ github.actor }}
+          minimum-approvals: 1
+          issue-title: "Deploy ${{ steps.tag.outputs.tag }} to production"
+          issue-body: "Approve deployment of ${{ steps.tag.outputs.tag }} to production."
+
+      - name: Deploy to production
+        if: github.event.inputs.environment == 'production'
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.PROD_USER }}/hostamar.com
+            git fetch origin main
+            git checkout main
+            git pull origin main
+            docker pull ghcr.io/${{ github.repository_owner }}/hostamar-app:${{ steps.tag.outputs.tag }}
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker exec -t $$(docker compose ps -q app) sh -c "npx prisma migrate deploy || true"
+            bash scripts/post-deploy-checks.sh
+
+      - name: Notify Slack
+        if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          STATUS="${{ job.status }}"
+          ENV="${{ github.event.inputs.environment }}"
+          TAG="${{ steps.tag.outputs.tag }}"
+          MSG="Deploy to ${ENV} (${TAG}): ${STATUS}"
+          if [ -n "$SLACK_WEBHOOK" ]; then
+            curl -sf -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"${MSG}\"}" "$SLACK_WEBHOOK" || true
+          fi
+          echo "$MSG"
