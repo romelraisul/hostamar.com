@@ -63,8 +63,24 @@ jobs:
           timeout: 30s
           command_timeout: 30m
           script: |
-            docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:canary
+            set -e
+            for i in 1 2 3; do
+              docker pull ghcr.io/${{ github.repository_owner }}/hostamar-model:canary && break
+              echo "pull attempt $i failed, retrying..."
+              sleep 5
+            done
             docker rm -f hostamar-model 2>/dev/null || true
             docker run -d --name hostamar-model --restart unless-stopped \
               -p 127.0.0.1:8000:8000 \
               ghcr.io/${{ github.repository_owner }}/hostamar-model:canary
+            echo "Waiting for container..."
+            for i in $(seq 1 12); do
+              if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+                echo "Health check passed"
+                exit 0
+              fi
+              sleep 5
+            done
+            echo "Health check failed after 60s"
+            docker logs hostamar-model --tail 20
+            exit 1
