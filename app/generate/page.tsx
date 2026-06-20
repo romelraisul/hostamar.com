@@ -27,6 +27,7 @@ export default function GeneratePage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
+  const [stage, setStage] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
 
   const filtered = category === 'all'
@@ -81,21 +82,28 @@ export default function GeneratePage() {
       setProgress(100)
       setGeneratedUrl(`/dashboard/videos?id=${data.videoId}`)
 
-      // Start polling for actual video URL (appears after worker completes)
+      // Start polling for actual video URL and progress (appears after worker completes)
       const pollInterval = setInterval(async () => {
         try {
           const pollRes = await fetch(`/api/videos/status/${data.videoId}`)
           if (!pollRes.ok) return
           const pollData = await pollRes.json()
+          setProgress(pollData.progress ?? 0)
+          setStage(pollData.stage ?? '')
           if (pollData.status === 'completed' && pollData.url && !pollData.url.startsWith('pending:')) {
             clearInterval(pollInterval)
+            setProgress(100)
+            setStage('completed')
             // Show a playable preview inline (replaces the dashboard link)
             setGeneratedUrl(pollData.url)
+          } else if (pollData.status === 'failed') {
+            clearInterval(pollInterval)
+            setError('ভিডিও তৈরি ব্যর্থ হয়েছে')
           }
         } catch {
           /* retry */
         }
-      }, 3000)
+      }, 2000)
 
       // Stop polling after 5 minutes
       setTimeout(() => clearInterval(pollInterval), 300_000)
@@ -278,12 +286,28 @@ export default function GeneratePage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  AI ভিডিও তৈরি হচ্ছে... {Math.round(progress)}%
+                  <span>AI ভিডিও তৈরি হচ্ছে...</span>
                 </>
               ) : (
                 <>🎬 AI দিয়ে ভিডিও তৈরি করুন</>
               )}
             </button>
+
+            {/* Progress bar (visible during generation) */}
+            {isGenerating && progress > 0 && (
+              <div className="mt-4 space-y-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${Math.min(progress, 100)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span>{stage ? stage.charAt(0).toUpperCase() + stage.slice(1) : 'Starting...'}</span>
+                  <span>{Math.round(progress)}%</span>
+                </div>
+              </div>
+            )}
 
             {generatedUrl && !isGenerating && (
               <>
