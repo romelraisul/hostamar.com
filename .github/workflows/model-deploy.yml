@@ -33,6 +33,12 @@ jobs:
     if: ${{ inputs.skip_deploy != true }}
     runs-on: ubuntu-latest
     steps:
+      - name: Install Tailscale
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+      - name: Connect to Tailnet
+        run: |
+          sudo tailscale up --authkey ${{ secrets.TAILSCALE_AUTH_KEY }} --hostname gh-runner-hostamar
       - name: SSH deploy to home server
         uses: appleboy/ssh-action@v0.1.7
         with:
