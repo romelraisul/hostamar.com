@@ -23,7 +23,7 @@ async function main() {
   const records = await prisma.video.findMany({
     where: {
       OR: [
-        { videoUrl: null },
+        { url: null },
         { thumbnailUrl: null },
       ],
     },
@@ -51,13 +51,13 @@ async function main() {
     const thumbnailUrl = `${VIDEO_BASE}/${stem}.jpg`
 
     console.log(`  ${DRY_RUN ? 'WOULD' : 'WILL'}  update ${r.id}`)
-    console.log(`         videoUrl:     ${videoUrl}`)
+    console.log(`         url:          ${videoUrl}`)
     console.log(`         thumbnailUrl: ${thumbnailUrl}`)
 
     if (!DRY_RUN) {
       await prisma.video.update({
         where: { id: r.id },
-        data: { videoUrl, thumbnailUrl },
+        data: { url: videoUrl, thumbnailUrl },
       })
       updated++
     } else {
