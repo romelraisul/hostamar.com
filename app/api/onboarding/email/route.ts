@@ -44,14 +44,14 @@ export async function POST(req: NextRequest) {
   // Hash the email for storage (never store raw)
   const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex')
 
-  // Store via Prisma (upsert — idempotent)
+  // Store via raw SQL (table created by migration 005)
   try {
     const prisma = (await import('@/lib/prisma')).default
-    await prisma.onboardingEmail.upsert({
-      where: { emailHash },
-      update: { source: source || 'onboarding', optedIn: true, updatedAt: new Date() },
-      create: { emailHash, source: source || 'onboarding', optedIn: true },
-    })
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "OnboardingEmail" ("emailHash", "source", "optedIn") VALUES ($1, $2, $3)
+       ON CONFLICT ("emailHash") DO UPDATE SET "source" = $2, "optedIn" = $3, "updatedAt" = now()`,
+      emailHash, source || 'onboarding', true
+    )
     return NextResponse.json({ ok: true })
   } catch (err: any) {
     // If table doesn't exist yet, fail gracefully
