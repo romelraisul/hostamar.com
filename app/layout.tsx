@@ -5,6 +5,7 @@ import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import ThemeToggle from '@/components/ThemeToggle'
+import OnboardingModal from '@/components/OnboardingModal'
 import { cookies } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
 
@@ -128,11 +129,24 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Analytics (Plausible or GA4 — set NEXT_PUBLIC_ANALYTICS_PROVIDER) */}
+        {process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER === 'plausible' && (
+          <script defer data-domain="hostamar.com" src="https://plausible.io/js/script.js" />
+        )}
+        {process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER === 'ga4' && process.env.NEXT_PUBLIC_GA4_ID && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA4_ID}`} />
+            <script dangerouslySetInnerHTML={{
+              __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA4_ID}');`
+            }} />
+          </>
+        )}
       </head>
       <body>
         <Providers>
           {children}
           <ThemeToggle />
+          <OnboardingModal />
         </Providers>
 
         <script
