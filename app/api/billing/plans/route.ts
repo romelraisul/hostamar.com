@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
-import stripe, { PLANS } from '@/lib/stripe'
 import prisma from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+const { default: stripe, PLANS } = require('@/lib/stripe') as typeof import('@/lib/stripe')
 
 /**
  * GET /api/billing/plans
