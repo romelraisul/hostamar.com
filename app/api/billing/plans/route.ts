@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 import prisma from '@/lib/prisma'
+import { PLANS } from '@/lib/stripe'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const { default: stripe, PLANS } = require('@/lib/stripe') as typeof import('@/lib/stripe')
-
 /**
  * GET /api/billing/plans
- * Returns available subscription plans.
+ * Returns available subscription plans (no auth required).
  */
 export async function GET() {
   const plans = Object.entries(PLANS).map(([slug, plan]) => ({
@@ -22,10 +21,8 @@ export async function GET() {
 }
 
 /**
- * POST /api/billing/create-checkout
+ * POST /api/billing/plans
  * Creates a Stripe Checkout Session for the given price ID.
- *
- * Body: { priceId: string, successUrl?: string, cancelUrl?: string }
  */
 export async function POST(req: NextRequest) {
   const user = await getAuthUser()
@@ -40,24 +37,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'priceId required' }, { status: 400 })
   }
 
-  // Verify the price ID is valid
   const plan = Object.values(PLANS).find(p => p.priceId === priceId)
   if (!plan) {
     return NextResponse.json({ error: 'invalid priceId' }, { status: 400 })
   }
 
   try {
-    // Get or create Stripe customer
+    const { default: getStripe } = await import('@/lib/stripe')
+    const stripe = getStripe()
+
     const customer = await prisma.customer.findUnique({ where: { id: user.id } })
     let stripeCustomerId = customer?.stripeCustomerId
 
     if (!stripeCustomerId) {
-      const stripeCustomer = await stripe.customers.create({
+      const sc = await stripe.customers.create({
         email: user.email,
         name: user.name,
         metadata: { userId: user.id },
       })
-      stripeCustomerId = stripeCustomer.id
+      stripeCustomerId = sc.id
       await prisma.customer.update({
         where: { id: user.id },
         data: { stripeCustomerId },

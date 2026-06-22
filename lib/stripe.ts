@@ -1,15 +1,27 @@
+/**
+ * Lazy Stripe client singleton.
+ * Only creates the client when first accessed, not at import time.
+ * This prevents build failures on Vercel where STRIPE_SECRET_KEY is not set.
+ */
 import Stripe from 'stripe'
 
-/**
- * Singleton Stripe client.
- * Import this instead of creating a new instance each request.
- */
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia',
-  typescript: true,
-})
+let stripeInstance: Stripe | null = null
 
-export default stripe
+export function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const key = process.env.STRIPE_SECRET_KEY
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY is not set')
+    }
+    stripeInstance = new Stripe(key, {
+      apiVersion: '2025-02-24.acacia',
+      typescript: true,
+    })
+  }
+  return stripeInstance
+}
+
+export default getStripe
 
 /** Stripe price IDs mapped to plan slugs */
 export const PLANS: Record<string, { priceId: string; name: string; credits: number }> = {

@@ -1,132 +1,60 @@
-import { Queue, Worker, Job } from 'bullmq'
-import Redis from 'ioredis'
+import { Queue } from 'bullmq'
 
-const redisUrl = process.env.BULLMQ_REDIS_URL || process.env.UPSTASH_REDIS_REST_URL || 'redis://redis:6379'
-// Normalise http://redis:6379 → redis://redis:6379 (ioredis needs the redis:// scheme)
-const normalised = redisUrl.startsWith('http://')
-  ? 'redis://' + redisUrl.slice(7)
-  : redisUrl.startsWith('https://')
-  ? 'rediss://' + redisUrl.slice(8)
-  : redisUrl
+/**
+ * Adds a video generation job to the BullMQ queue.
+ * Uses environment variable for Redis URL, falls back gracefully if not set.
+ */
 
-const redisConnection = new Redis(normalised, {
-  maxRetriesPerRequest: null,
-  retryStrategy: (times) => Math.min(times * 50, 2000),
-  enableReadyCheck: true,
-  lazyConnect: true,
-})
+function getRedisUrl(): string | null {
+  const url = process.env.BULLMQ_REDIS_URL || process.env.UPSTASH_REDIS_REST_URL
+  if (!url) return null
 
-export interface VideoGenerationJob {
-  videoId: string
-  prompt: string
-  style: string
-  duration: number
-  userId: string
-  priority: number
+  // Normalise schemes for ioredis
+  if (url.startsWith('http://')) return 'redis://' + url.slice(7)
+  if (url.startsWith('https://')) return 'rediss://' + url.slice(8)
+  return url
 }
 
-export interface PaymentJob {
-  paymentId: string
-  amount: number
-  method: 'bkash' | 'nagad' | 'rocket' | 'crypto'
-  userId: string
-}
+let videoQueue: Queue | null = null
 
-export interface EmailJob {
-  to: string
-  subject: string
-  template: string
-  data: Record<string, any>
-}
+function getQueue(): Queue | null {
+  if (videoQueue) return videoQueue
 
-export interface AnalyticsJob {
-  event: string
-  userId: string
-  properties: Record<string, any>
-}
+  const redisUrl = getRedisUrl()
+  if (!redisUrl) {
+    console.warn('[queue] No Redis URL configured — queue disabled')
+    return null
+  }
 
-export const queueNames = {
-  VIDEO_GENERATION: 'video-generation',
-  PAYMENT_PROCESSING: 'payment-processing',
-  EMAIL_SENDING: 'email-sending',
-  ANALYTICS_TRACKING: 'analytics-tracking',
-  WEBHOOK_DELIVERY: 'webhook-delivery',
-} as const
-
-function createQueue(name: string) {
-  return new Queue(name, {
-    connection: redisConnection,
-    defaultJobOptions: {
-      removeOnComplete: 100,
-      removeOnFail: 50,
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000,
+  try {
+    videoQueue = new Queue('video-generation', {
+      connection: { url: redisUrl },
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: 50,
+        removeOnFail: 100,
       },
-    },
-  })
+    })
+    return videoQueue
+  } catch (err) {
+    console.warn('[queue] Failed to create queue:', err)
+    return null
+  }
 }
 
-export const videoQueue = createQueue(queueNames.VIDEO_GENERATION)
-export const paymentQueue = createQueue(queueNames.PAYMENT_PROCESSING)
-export const emailQueue = createQueue(queueNames.EMAIL_SENDING)
-export const analyticsQueue = createQueue(queueNames.ANALYTICS_TRACKING)
-export const webhookQueue = createQueue(queueNames.WEBHOOK_DELIVERY)
+export async function addVideoJob(data: Record<string, unknown>) {
+  const queue = getQueue()
+  if (!queue) {
+    console.warn('[queue] Queue not available — job not enqueued')
+    return null
+  }
 
-export async function addVideoJob(data: VideoGenerationJob, priority = 0) {
-  return videoQueue.add('generate', data, { priority })
-}
-
-export async function addPaymentJob(data: PaymentJob) {
-  return paymentQueue.add('process', data)
-}
-
-export async function addEmailJob(data: EmailJob) {
-  return emailQueue.add('send', data)
-}
-
-export async function addAnalyticsJob(data: AnalyticsJob) {
-  return analyticsQueue.add('track', data)
-}
-
-export async function addWebhookJob(data: { url: string; payload: any; retries: number }) {
-  return webhookQueue.add('deliver', data, { attempts: 5 })
-}
-
-// Worker setup (run separately)
-export function createWorkers() {
-  const workers = [
-    new Worker(queueNames.VIDEO_GENERATION, async (job) => {
-      const { videoId, prompt, style, duration, userId } = job.data
-      // Call Replicate/Fal.ai API
-      console.log(`Generating video ${videoId}`)
-      // Implementation here
-    }, { connection: redisConnection }),
-
-    new Worker(queueNames.PAYMENT_PROCESSING, async (job) => {
-      const { paymentId, amount, method, userId } = job.data
-      // Process payment via bKash/Nagad/Rocket API
-      console.log(`Processing payment ${paymentId}`)
-    }, { connection: redisConnection }),
-
-    new Worker(queueNames.EMAIL_SENDING, async (job) => {
-      const { to, subject, template, data } = job.data
-      // Send via SendGrid/Resend
-      console.log(`Sending email to ${to}`)
-    }, { connection: redisConnection }),
-
-    new Worker(queueNames.ANALYTICS_TRACKING, async (job) => {
-      const { event, userId, properties } = job.data
-      // Send to PostHog/Analytics
-      console.log(`Tracking ${event} for user ${userId}`)
-    }, { connection: redisConnection }),
-
-    new Worker(queueNames.WEBHOOK_DELIVERY, async (job) => {
-      const { url, payload, retries } = job.data
-      // Deliver webhook with retry logic
-      console.log(`Delivering webhook to ${url}`)
-    }, { connection: redisConnection }),
-  ]
-  return workers
+  try {
+    const job = await queue.add('video-generation', data)
+    return job
+  } catch (err) {
+    console.error('[queue] Failed to add job:', err)
+    return null
+  }
 }
