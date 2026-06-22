@@ -7,6 +7,7 @@
     }
   ],
   "routes": [
+    { "src": "/api/auth/error", "dest": "/login?error=CredentialsSignin", "status": 302 },
     { "src": "/qr/(.*)", "dest": "/qr/$1" },
     { "src": "/login", "dest": "/login" },
     { "src": "/app-redirect", "dest": "/app-redirect" },
@@ -15,9 +16,6 @@
     { "src": "/api/health", "dest": "/api/health" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/" }
-  ],
-  "redirects": [
-    { "source": "/api/auth/error", "destination": "/login?error=CredentialsSignin", "permanent": false }
   ],
   "headers": [
     {
