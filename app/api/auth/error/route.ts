@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
-  const error = url.searchParams.get('error') || 'true'
-  return NextResponse.redirect(new URL(`/login?error=${error}`, req.url))
+  const error = url.searchParams.get('error') || 'CredentialsSignin'
+  // Use 302 (not 307) to force browser to navigate to login page
+  return NextResponse.redirect(new URL(`/login?error=${error}`, req.url), 302)
 }
