@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
   "routes": [
     { "src": "/api/auth/error", "dest": "/login?error=CredentialsSignin", "status": 302 },
     { "src": "/qr/(.*)", "dest": "/qr/$1" },
