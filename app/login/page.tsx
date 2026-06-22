@@ -14,8 +14,13 @@ export default function LoginPage() {
   // Check URL for auth error param (from NextAuth error redirect)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('error') === 'true') {
-      setError('ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।')
+    if (params.get('error')) {
+      const err = params.get('error')
+      if (err === 'CredentialsSignin' || err === 'true') {
+        setError('ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।')
+      } else {
+        setError('লগইন করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।')
+      }
     }
   }, [])
 
