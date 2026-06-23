@@ -1,0 +1,29 @@
+name: RC Validate (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      rc:
+        required: false
+        type: string
+
+jobs:
+  validate-rc:
+    runs-on: ubuntu-latest
+    outputs:
+      rc: ${{ inputs.rc }}
+    steps:
+      - name: Validate RC input
+        run: |
+          set -euo pipefail
+          RC="${{ inputs.rc }}"
+          if [ -n "$RC" ]; then
+            if ! [[ "$RC" =~ ^[0-9]+$ ]]; then
+              echo "Invalid rc value: '$RC'. The rc input must be a positive integer (e.g., 1)." >&2
+              exit 1
+            fi
+            echo "Validated rc: $RC"
+          else
+            echo "No rc provided; continuing."
+          fi
+        shell: bash
