@@ -25,6 +25,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate RC input (reusable guard)
+        uses: ./.github/workflows/rc-validate.yml
+        with:
+          rc: ${{ env.RELEASE_CANDIDATE || '' }}
+
       - name: Set tag
         id: tag
         run: |

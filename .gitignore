@@ -60,4 +60,5 @@ docker-compose.override.yml
 ssl/
 
 # Netlify
-.netlify/
+.netlify/.cloudflared/.api_token
+.env.migrate
