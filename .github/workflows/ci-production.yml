@@ -15,6 +15,10 @@ on:
         options:
           - staging
           - production
+      rc:
+        description: 'Optional release-candidate suffix (positive integer, e.g., 1). Appends -rcN to the tag.'
+        required: false
+        default: ''
 
 jobs:
   deploy:
@@ -28,7 +32,7 @@ jobs:
       - name: Validate RC input (reusable guard)
         uses: ./.github/workflows/rc-validate.yml
         with:
-          rc: ${{ env.RELEASE_CANDIDATE || '' }}
+          rc: ${{ github.event.inputs.rc || '' }}
 
       - name: Set tag
         id: tag
@@ -36,6 +40,10 @@ jobs:
           TAG="${{ github.event.inputs.tag }}"
           if [ -z "$TAG" ]; then
             TAG="release-${GITHUB_SHA::7}"
+          fi
+          RC="${{ github.event.inputs.rc }}"
+          if [ -n "$RC" ]; then
+            TAG="${TAG}-rc${RC}"
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Deploying tag: $TAG to ${{ github.event.inputs.environment }}"
