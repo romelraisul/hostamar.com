@@ -4,6 +4,12 @@ services:
   app:
     image: ghcr.io/romelraisul/hostamar-app:${TAG:-latest}
     env_file: .env
+    environment:
+      # Defense-in-depth: pin NEXTAUTH values from env explicitly so that
+      # an accidentally-stale .env cannot resurrect the
+      # NEXTAUTH_URL=localhost bug. These take precedence over env_file.
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
     ports:
       - "3000:3000"
     depends_on:
