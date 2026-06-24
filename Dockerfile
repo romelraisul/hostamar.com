@@ -23,7 +23,7 @@ ENV STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
 # Harden: bake NEXTAUTH values at build time when supplied via --build-arg.
 # If not supplied, the image keeps the existing runtime-only behavior (env_file).
 ARG NEXTAUTH_URL
-ENV NEXTAUTH_URL=$NEXTAUTH_URL_ENV
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ARG NEXTAUTH_SECRET
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 RUN npm run build
