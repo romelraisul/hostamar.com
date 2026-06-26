@@ -1,18 +1,18 @@
-version: "3.8"
-
 services:
   ssh-gateway:
     image: tsl0922/ttyd:latest
     restart: unless-stopped
-    command: ["ttyd", "-p", "7681", "bash"]
+    command: ["-p", "7681", "bash"]
+    environment:
+      - TTYD_ARGS=--port 7681
     ports:
       - "127.0.0.1:7681:7681"
-    volumes:
-      - /home/romel/ceo-secrets/ttyd-credentials:/etc/ttyd/credentials:ro
     user: "1000:1000"
-    networks:
-      - default_hostamar-network
-
-networks:
-  default_hostamar-network:
-    external: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7681/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
