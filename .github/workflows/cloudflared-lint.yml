@@ -1,0 +1,31 @@
+name: Cloudflared Config Lint
+
+on:
+  pull_request:
+    paths:
+      - 'ops/cloudflared/**'
+
+jobs:
+  lint-cloudflared-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate config contains production hostnames and service target
+        run: |
+          set -euo pipefail
+          FILE=ops/cloudflared/config.yml
+          if [ ! -f "$FILE" ]; then
+            echo "ERROR: $FILE not found"
+            exit 1
+          fi
+          if ! grep -E "hostname: (hostamar.com|www.hostamar.com)" "$FILE" >/dev/null; then
+            echo "ERROR: config.yml missing production hostnames hostamar.com or www.hostamar.com"
+            exit 1
+          fi
+          if ! grep -E "service: http://hostamar-app:3000" "$FILE" >/dev/null; then
+            echo "ERROR: config.yml service target is not http://hostamar-app:3000"
+            exit 1
+          fi
+          echo "cloudflared config lint passed"
