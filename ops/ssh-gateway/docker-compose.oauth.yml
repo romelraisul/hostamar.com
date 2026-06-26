@@ -24,7 +24,7 @@ services:
     networks:
       - ssh-gateway
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7681/ || exit 1"]
+      test: ["CMD-SHELL", "cat < /dev/null > /dev/tcp/127.0.0.1/7681 || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

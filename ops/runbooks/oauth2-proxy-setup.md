@@ -31,3 +31,12 @@ Rollback
 Notes
 - No host bind mounts are used; the stack is minimal and read-only where possible.
 - Replace `yourdomain.com` with an allowed email domain once testing is complete.
+
+2026-06-26 Deployment record
+
+- Deployed oauth2-proxy + ttyd ssh-gateway scaffold (non-bind-mount, read-only).
+- GitHub OAuth flow validated: romelraisul@gmail.com authenticated successfully; oauth2-proxy redirected and ttyd served shell via WebSocket.
+- Public ingress for ssh.hostamar.com was disabled during hardening; re-enabled behind oauth2-proxy.
+- Healthcheck changed to TCP probe to avoid unauthenticated HTTP checks failing.
+- Mitigation: no host SSH keys are mounted; container runs read-only with tmpfs for /tmp.
+- Next steps: enable Cloudflare Access or rotate oauth2-proxy client secret periodically; enable Access logging and alerting.
