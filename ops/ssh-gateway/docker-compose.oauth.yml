@@ -6,17 +6,8 @@ services:
       - ssh-gateway
     ports:
       - "127.0.0.1:4180:4180"
-    environment:
-      - OAUTH2_PROXY_PROVIDER=github
-      - OAUTH2_PROXY_CLIENT_ID=__REPLACE__
-      - OAUTH2_PROXY_CLIENT_SECRET=__REPLACE__
-      - OAUTH2_PROXY_COOKIE_SECRET=__REPLACE__
-      - OAUTH2_PROXY_EMAIL_DOMAINS=yourdomain.com
-      - OAUTH2_PROXY_UPSTREAMS=http://ssh-gateway:7681/
-      - OAUTH2_PROXY_HTTP_ADDRESS=0.0.0.0:4180
-      - OAUTH2_PROXY_EMAIL_DOMINS=*
-      - OAUTH2_PROXY_AUTH_ONLY=true
-      - OAUTH2_PROXY_REDIRECT_URL=https://ssh.hostamar.com/oauth2/callback
+    env_file:
+      - /home/romel/ceo-secrets/oauth2-proxy.env
     networks:
       - ssh-gateway
 
