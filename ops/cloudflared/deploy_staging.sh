@@ -4,12 +4,12 @@ set -euo pipefail
 # ops/cloudflared/deploy_staging.sh
 # Usage:
 #   ./ops/cloudflared/deploy_staging.sh
-#   ./ops/cloudflared/deploy_staging.sh --compose-file ./ops/cloudflared/docker-compose.cloudflared.yml --cred /home/romel/.cloudflared/tunnel-config/credentials.json --uid 1000 --gid 1000 --staging-url https://staging.hostamar.com/api/health
+#   ./ops/cloudflared/deploy_staging.sh --compose-file ./ops/cloudflared/docker-compose.cloudflared.yml --cred /home/romel/.cloudflared/tunnel-config/credentials.json --cred-uid 1000 --cred-gid 1000 --staging-url https://staging.hostamar.com/api/health
 
 COMPOSE_FILE="${COMPOSE_FILE:-./ops/cloudflared/docker-compose.cloudflared.yml}"
 CREDENTIAL_PATH="${CREDENTIAL_PATH:-/home/romel/.cloudflared/tunnel-config/credentials.json}"
-UID="${UID:-1000}"
-GID="${GID:-1000}"
+CRED_UID="${CRED_UID:-1000}"
+CRED_GID="${CRED_GID:-1000}"
 STAGING_URL="${STAGING_URL:-https://staging.hostamar.com/api/health}"
 CONTAINER_NAME="${CONTAINER_NAME:-cloudflared}"
 HEALTH_ENDPOINT_LOCAL="http://127.0.0.1:8080/ready"
@@ -21,8 +21,8 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --compose-file) COMPOSE_FILE="$2"; shift 2 ;;
     --cred) CREDENTIAL_PATH="$2"; shift 2 ;;
-    --uid) UID="$2"; shift 2 ;;
-    --gid) GID="$2"; shift 2 ;;
+    --cred-uid) CRED_UID="$2"; shift 2 ;;
+    --cred-gid) CRED_GID="$2"; shift 2 ;;
     --staging-url) STAGING_URL="$2"; shift 2 ;;
     --container) CONTAINER_NAME="$2"; shift 2 ;;
     --help) sed -n '1,120p' "$0"; exit 0 ;;
@@ -33,7 +33,7 @@ done
 echo "Staging deploy script starting: $(date)"
 echo "Compose: $COMPOSE_FILE"
 echo "Credentials: $CREDENTIAL_PATH"
-echo "Container user UID:GID: ${UID}:${GID}"
+echo "Container credential UID:GID: ${CRED_UID}:${CRED_GID}"
 echo "Staging health URL: $STAGING_URL"
 
 # Preconditions
@@ -49,12 +49,12 @@ fi
 
 # Ensure ownership and permissions
 echo "Setting ownership and permissions on credentials"
-sudo chown "${UID}:${GID}" "$CREDENTIAL_PATH"
+sudo chown "${CRED_UID}:${CRED_GID}" "$CREDENTIAL_PATH"
 sudo chmod 600 "$CREDENTIAL_PATH"
 
 # Start compose
 echo "Starting cloudflared via docker compose"
-docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+DOCKER_HOST= docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
 # Wait for container to appear
 echo "Waiting for container ${CONTAINER_NAME} to start..."
@@ -76,7 +76,7 @@ while true; do
   # prefer Docker health status if available
   HEALTH_JSON=$(docker inspect --format='{{json .State.Health}}' "${CONTAINER_NAME}" 2>/dev/null || true)
   if [ -n "$HEALTH_JSON" ] && [ "$HEALTH_JSON" != "null" ]; then
-    STATUS=$(echo "$HEALTH_JSON" | awk -F'"' '/\"Status\":/ {print $4; exit}')
+    STATUS=$(echo "$HEALTH_JSON" | awk -F'"' '/"Status":/ {print $4; exit}')
     echo "Docker health status: ${STATUS}"
     if [ "$STATUS" = "healthy" ]; then
       break
