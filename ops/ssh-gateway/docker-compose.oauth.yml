@@ -14,10 +14,9 @@ services:
   ssh-gateway:
     image: tsl0922/ttyd:latest
     restart: unless-stopped
-    command: ["ttyd", "-p", "7681", "bash"]
+    command: ["ttyd", "-W", "--interface", "0.0.0.0", "-p", "7681", "bash"]
     expose:
       - "7681"
-    read_only: true
     tmpfs:
       - /tmp
     user: "1000:1000"
