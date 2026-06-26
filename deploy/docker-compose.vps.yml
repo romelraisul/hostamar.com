@@ -1,0 +1,133 @@
+# =============================================================================
+# Hostamar — Docker Compose for VPS Production Deployment
+# =============================================================================
+# Usage:
+#   docker compose -f docker-compose.vps.yml --env-file .env.production up -d
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # Next.js Application
+  # ===========================================================================
+  hostamar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hostamar:latest
+    container_name: hostamar-app
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - R2_ENDPOINT=${R2_ENDPOINT}
+      - R2_ACCESS_KEY=${R2_ACCESS_KEY}
+      - R2_SECRET_KEY=${R2_SECRET_KEY}
+      - R2_BUCKET=${R2_BUCKET}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
+      - REPLICATE_API_KEY=${REPLICATE_API_KEY}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-https://hostamar.com}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://hostamar.com}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://hostamar.com}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN:-}
+      - NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY:-}
+      - NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST:-https://app.posthog.com}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=${AZURE_AI_FOUNDRY_PROJECT_ENDPOINT:-}
+      - EVAL_MODELS=${EVAL_MODELS:-gpt-4o}
+    env_file:
+      - .env.production
+    volumes:
+      - hostamar-data:/app/data
+      - hostamar-prisma:/app/prisma
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - hostamar-network
+
+  # ===========================================================================
+  # Nginx Reverse Proxy with Certbot SSL
+  # ===========================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: hostamar-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - certbot-www:/var/www/certbot:rw
+      - certbot-etc:/etc/letsencrypt:rw
+    depends_on:
+      hostamar:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - hostamar-network
+
+  # ===========================================================================
+  # Certbot — SSL Certificate Management
+  # ===========================================================================
+  certbot:
+    image: certbot/certbot:latest
+    container_name: hostamar-certbot
+    restart: unless-stopped
+    volumes:
+      - certbot-www:/var/www/certbot:rw
+      - certbot-etc:/etc/letsencrypt:rw
+      - ./ssl:/etc/nginx/ssl:rw
+    entrypoint: >
+      sh -c "trap exit TERM; while :; do
+        certbot renew --webroot -w /var/www/certbot --quiet;
+        sleep 12h & wait $${!};
+      done;"
+    depends_on:
+      - nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    networks:
+      - hostamar-network
+
+volumes:
+  hostamar-data:
+    driver: local
+  hostamar-prisma:
+    driver: local
+  certbot-www:
+    driver: local
+  certbot-etc:
+    driver: local
+
+networks:
+  hostamar-network:
+    driver: bridge
