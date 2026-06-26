@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  ssh-gateway:
+    image: tsl0922/ttyd:latest
+    restart: unless-stopped
+    command: ["ttyd", "-p", "7681", "bash"]
+    ports:
+      - "127.0.0.1:7681:7681"
+    volumes:
+      - /home/romel/ceo-secrets/ttyd-credentials:/etc/ttyd/credentials:ro
+    user: "1000:1000"
+    networks:
+      - default_hostamar-network
+
+networks:
+  default_hostamar-network:
+    external: true

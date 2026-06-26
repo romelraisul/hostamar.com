@@ -2,7 +2,7 @@
 # Place this file at /etc/cloudflared/config.yml when deploying the tunnel container/service.
 
 tunnel: 19c220ee-37ae-4fad-9c99-495f0e154b12
-credentials-file: /credentials.json
+credentials-file: /etc/cloudflared/credentials.json
 
 ingress:
   - hostname: hostamar.com
@@ -19,6 +19,8 @@ ingress:
     service: http://hostamar-app:3000
   - hostname: api.hostamar.com
     service: http://hostamar-app:3000
+  - hostname: ssh.hostamar.com
+    service: http://ssh-gateway:7681
   - service: http_status:404
 
 originRequest:
