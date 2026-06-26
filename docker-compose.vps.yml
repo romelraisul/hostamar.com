@@ -1,0 +1,78 @@
+name: hostamar-vps
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hostamar
+      POSTGRES_USER: hostamar
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hostamar-secret}
+    volumes:
+      - vps-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hostamar -d hostamar"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - vps-internal
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - vps-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - vps-internal
+
+  app:
+    image: hostamar-app:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://hostamar:${POSTGRES_PASSWORD:-hostamar-secret}@postgres:5432/hostamar
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me}
+    ports:
+      - "3000:3000"
+    networks:
+      - vps-internal
+      - vps-external
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ops/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - vps-ssl:/etc/letsencrypt:ro
+    depends_on:
+      - app
+    networks:
+      - vps-internal
+      - vps-external
+
+volumes:
+  vps-postgres:
+  vps-redis:
+  vps-ssl:
+
+networks:
+  vps-internal:
+    internal: true
+  vps-external:
+    driver: bridge

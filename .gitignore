@@ -72,3 +72,15 @@ archive/
 .vercel
 .cache
 .temp
+
+# Credentials and secrets
+**/htpasswd
+**/.env.local
+**/.env.*.local
+ceo-secrets/
+logs/
+**/id_ed25519
+**/id_ed25519.pub
+**/*.pem
+**/*.key
+.env.run

@@ -1,4 +1,6 @@
-/** @type {import('next').NextConfig} */
+const path = require('path')
+const { withSentryConfig } = require('@sentry/nextjs')
+
 const nextConfig = {
   reactStrictMode: true,
   images: {
@@ -20,9 +22,11 @@ const nextConfig = {
     optimizeCss: false,
     scrollRestoration: true,
   },
+  webpack: (config) => {
+    config.resolve.alias['@'] = path.resolve(__dirname, '.')
+    return config
+  },
 }
-
-const { withSentryConfig } = require('@sentry/nextjs')
 
 module.exports = withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG || 'hostamar',

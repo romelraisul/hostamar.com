@@ -1,0 +1,15 @@
+[Unit]
+Description=Hostamar Uptime Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/romel/hostamar-build
+ExecStart=/home/romel/hostamar-build/ops/monitoring/uptime-monitor.py
+Restart=always
+RestartSec=30
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
