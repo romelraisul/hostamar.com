@@ -1,0 +1,25 @@
+[Unit]
+Description=Cloudflare Tunnel (cloudflared)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cloudflared
+Group=cloudflared
+RuntimeDirectory=cloudflared
+Environment=CONFIG_FILE=/etc/cloudflared/config.yml
+ExecStart=/usr/local/bin/cloudflared --config ${CONFIG_FILE} run
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+TimeoutStartSec=30
+KillMode=process
+LimitNOFILE=65536
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
