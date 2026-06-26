@@ -7,12 +7,17 @@ Files and locations
 - **Credentials**: place the tunnel credentials JSON at `/home/romel/.cloudflared/tunnel-config/credentials.json` (or update `credentials-file` in config)
 
 Permissions and ownership
-- Ensure the credentials file is readable by the cloudflared runtime user but not world-readable:
+- **systemd (recommended for production)**: run cloudflared as a dedicated `cloudflared` user.
   ```bash
   sudo chown root:cloudflared /home/romel/.cloudflared/tunnel-config/credentials.json
   sudo chmod 640 /home/romel/.cloudflared/tunnel-config/credentials.json
   ```
-- If cloudflared runs as a container with a non-root user, set the file owner/UID to match the container user or mount with correct ownership.
+- **Docker container (current setup)**: the image runs as UID 65532 (`nobody`), so the credentials file must remain world-readable:
+  ```bash
+  sudo chown root:root /home/romel/.cloudflared/tunnel-config/credentials.json
+  sudo chmod 644 /home/romel/.cloudflared/tunnel-config/credentials.json
+  ```
+  Do NOT use `640` with the container setup or the tunnel will fail with permission denied.
 
 Ingress mapping
 - The config routes both `hostamar.com` and `www.hostamar.com` to the internal service `http://hostamar-app:3000`.
