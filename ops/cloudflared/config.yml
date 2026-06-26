@@ -9,6 +9,12 @@ ingress:
     service: http://hostamar-app:3000
   - hostname: www.hostamar.com
     service: http://hostamar-app:3000
+  - hostname: ai.hostamar.com
+    service: http://hostamar-app:3000
+  - hostname: admin.hostamar.com
+    service: http://hostamar-app:3000
+  - hostname: staging.hostamar.com
+    service: http://hostamar-app:3000
   - service: http_status:404
 
 originRequest:
