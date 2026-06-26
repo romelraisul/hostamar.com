@@ -2,7 +2,7 @@ services:
   ssh-gateway:
     image: tsl0922/ttyd:latest
     restart: unless-stopped
-    command: ["-p", "7681", "bash"]
+    command: ["ttyd", "-p", "7681", "bash"]
     environment:
       - TTYD_ARGS=--port 7681
     ports:
