@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  pgbouncer:
+    image: edoburu/pgbouncer:1.16.0
+    restart: unless-stopped
+    ports:
+      - "6432:6432"
+    environment:
+      - DATABASE_URL=postgres://hostamar:REPLACE_PASSWORD@hostamar-postgres:5432/hostamar
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    networks:
+      - hostamar-network
+
+networks:
+  hostamar-network:
+    external: true
