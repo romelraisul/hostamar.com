@@ -20,7 +20,7 @@ ingress:
   - hostname: api.hostamar.com
     service: http://hostamar-app:3000
   - hostname: ssh.hostamar.com
-    service: http://127.0.0.1:4180
+    service: http://oauth2-proxy:4180
   - service: http_status:404
 
 originRequest:
