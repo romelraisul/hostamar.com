@@ -1,0 +1,18 @@
+[Unit]
+Description=Cloudflared healthcheck for hostamar
+After=network-online.target
+Wants=cloudflared.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/env bash -c '\
+  set -euo pipefail; \
+  HEALTH_URL="http://127.0.0.1:8080/ready"; \
+  if curl -fsS --max-time 5 "$HEALTH_URL" >/dev/null; then \
+    exit 0; \
+  else \
+    echo "cloudflared healthcheck failed"; \
+    systemctl restart cloudflared.service; \
+    exit 1; \
+  fi'
