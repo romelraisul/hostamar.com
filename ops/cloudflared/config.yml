@@ -15,10 +15,8 @@ ingress:
     service: http://hostamar-app:3000
   - hostname: staging.hostamar.com
     service: http://hostamar-app:3000
-  - hostname: www.staging.hostamar.com
+  - hostname: staging-www.hostamar.com
     service: http://hostamar-app:3000
-  - hostname: ssh.ai.hostamar.com
-    service: ssh://hostamar-ssh:22
   - service: http_status:404
 
 originRequest:
@@ -27,5 +25,5 @@ originRequest:
 
 # Notes:
 # - Ensure the credentials-file path matches the mounted file inside the container.
-# - The service target must match the service name in your compose/network (hostamar-app:3000 or hostamar-ssh:22).
+# - The service target must match the service name in your compose/network (hostamar-app:3000).
 # - Do not commit real credentials to git.
