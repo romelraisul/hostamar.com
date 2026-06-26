@@ -1,0 +1,44 @@
+services:
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    restart: unless-stopped
+    depends_on:
+      - ssh-gateway
+    ports:
+      - "127.0.0.1:4180:4180"
+    environment:
+      - OAUTH2_PROXY_PROVIDER=github
+      - OAUTH2_PROXY_CLIENT_ID=__REPLACE__
+      - OAUTH2_PROXY_CLIENT_SECRET=__REPLACE__
+      - OAUTH2_PROXY_COOKIE_SECRET=__REPLACE__
+      - OAUTH2_PROXY_EMAIL_DOMAINS=yourdomain.com
+      - OAUTH2_PROXY_UPSTREAMS=http://ssh-gateway:7681/
+      - OAUTH2_PROXY_HTTP_ADDRESS=0.0.0.0:4180
+      - OAUTH2_PROXY_EMAIL_DOMINS=*
+      - OAUTH2_PROXY_AUTH_ONLY=true
+      - OAUTH2_PROXY_REDIRECT_URL=https://ssh.hostamar.com/oauth2/callback
+    networks:
+      - ssh-gateway
+
+  ssh-gateway:
+    image: tsl0922/ttyd:latest
+    restart: unless-stopped
+    command: ["ttyd", "-p", "7681", "bash"]
+    expose:
+      - "7681"
+    read_only: true
+    tmpfs:
+      - /tmp
+    user: "1000:1000"
+    networks:
+      - ssh-gateway
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7681/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  ssh-gateway:
+    external: true
+    name: default_hostamar-network
