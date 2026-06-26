@@ -11,6 +11,7 @@ HEALTH_URLS = [
     ('hostamar', 'https://hostamar.com/api/health'),
     ('staging', 'https://staging.hostamar.com/api/health'),
     ('staging-www', 'https://staging-www.hostamar.com/api/health'),
+    ('api', 'https://api.hostamar.com/api/health'),
 ]
 
 def check(url):
