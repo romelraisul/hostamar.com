@@ -19,8 +19,6 @@ ingress:
     service: http://hostamar-app:3000
   - hostname: api.hostamar.com
     service: http://hostamar-app:3000
-  - hostname: ssh.hostamar.com
-    service: http://ssh-gateway:7681
   - service: http_status:404
 
 originRequest:
