@@ -1,0 +1,39 @@
+# =============================================================================
+# Hostamar — Setup Container (Docker-outside-of-Docker)
+# =============================================================================
+# This image runs the full VPS setup from inside a container.
+# It mounts the host Docker socket so it can build/deploy on the host.
+#
+# Usage:
+#   docker run --rm \
+#     -v /var/run/docker.sock:/var/run/docker.sock \
+#     -v /opt/hostamar:/opt/hostamar \
+#     -e DEPLOY_DIR=/opt/hostamar \
+#     -e DATABASE_URL=... \
+#     -e NEXTAUTH_SECRET=... \
+#     -e NEXTAUTH_URL=https://hostamar.com \
+#     hostamar/setup:latest
+# =============================================================================
+FROM docker:24-cli
+
+# Install required tools
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    jq \
+    openssl \
+    ca-certificates \
+    && update-ca-certificates
+
+WORKDIR /opt/hostamar
+
+# Copy setup entrypoint
+COPY entrypoint-setup.sh /usr/local/bin/entrypoint-setup.sh
+RUN chmod +x /usr/local/bin/entrypoint-setup.sh
+
+# Use host Docker socket by default (overridable)
+ENV DOCKER_HOST=unix:///var/run/docker.sock
+
+ENTRYPOINT ["/usr/local/bin/entrypoint-setup.sh"]
+CMD []
