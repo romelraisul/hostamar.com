@@ -23,3 +23,10 @@ INSTALL_NOW.md
 RESEARCH_PLAN_AZURE_FOUNDRY.md
 FOUNDRY_DEPLOY_STEPS.md
 hostamar-platform.tgz
+
+comfyui/
+
+*.tar.gz
+*.zip
+hostamar-platform.tgz
+demo/

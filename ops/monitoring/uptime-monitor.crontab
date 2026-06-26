@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# Run uptime monitor every minute, logging to file
+* * * * * cd /home/romel/hostamar-build && /home/romel/hostamar-build/ops/monitoring/uptime-monitor.py --once >> /home/romel/logs/uptime-monitor.log 2>&1

@@ -3,8 +3,8 @@
 # =============================================================================
 # Stage 1: Install dependencies
 # =============================================================================
-FROM node:22-alpine AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:22-bookworm-slim AS deps
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
@@ -12,20 +12,17 @@ RUN npm ci --legacy-peer-deps
 # =============================================================================
 # Stage 2: Build Next.js app + compile worker
 # =============================================================================
-FROM node:22-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-
-# Enable standalone output (next.config.js doesn't set output: 'standalone')
 ENV NEXT_PRIVATE_STANDALONE=1
 
 # Generate Prisma client first, then build Next.js
-# DATABASE_URL can be a dummy for prisma generate (only needs schema)
-ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+ENV DATABASE_URL=postgresql://dummy:***@localhost:5432/dummy
 RUN npx prisma generate
 RUN npm run build
 
@@ -39,12 +36,11 @@ RUN npm install -g tsup 2>/dev/null; mkdir -p dist/workers; tsup workers/video-g
 # =============================================================================
 # Stage 3: Production runner (minimal image)
 # =============================================================================
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 # ffmpeg is required by the video-generation worker
-# openssl + libc6-compat required by Prisma client (alpine musl compatibility)
-RUN apk add --no-cache ffmpeg openssl libc6-compat
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
