@@ -1,26 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser } from '@/lib/get-auth-user'
-import { prisma } from '@/lib/prisma'
+
+const DEMO_CUSTOMER_ID = '00000000-0000-0000-0000-000000000001'
+const DEFAULT_CREDITS = 1000
+const DEFAULT_BALANCE = 1000
 
 export async function GET(req: NextRequest) {
-  try {
-    const user = await getAuthUser(req)
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
+  const customerId = req.headers.get('x-user-id') || req.headers.get('authorization')?.replace('Bearer ', '') || DEMO_CUSTOMER_ID
 
-    const customer = await prisma.customer.findUnique({
-      where: { id: user.id },
-      select: { credits: true, balance: true },
-    })
+  return NextResponse.json({
+    success: true,
+    credits: DEFAULT_CREDITS,
+    balance: DEFAULT_BALANCE,
+    customerId,
+    mode: 'demo',
+  })
+}
 
-    if (!customer) {
-      return NextResponse.json({ success: false, error: 'Customer not found' }, { status: 404 })
-    }
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}))
+  const action = typeof body.action === 'string' ? body.action : null
 
-    return NextResponse.json({ success: true, credits: customer.credits, balance: customer.balance })
-  } catch (error) {
-    console.error('Game balance error:', error)
-    return NextResponse.json({ success: false, error: 'Failed to fetch balance' }, { status: 500 })
+  if (action === 'reset') {
+    return NextResponse.json({ success: true, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE, mode: 'demo' })
   }
+
+  return NextResponse.json({ success: true, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE, mode: 'demo' })
 }
