@@ -80,13 +80,17 @@ export async function middleware(request: NextRequest) {
     '/api/dashboard/videos',
     '/api/game/balance',
     '/api/game/spin',
+    '/api/ai/browser/search',
+    '/api/browser/proxy',
+    '/api/browser/screenshot',
+    '/api/browser/summarize',
   ]
   if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
     return NextResponse.next()
   }
 
   // Public page paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate']
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide']
   for (const p of publicPaths) {
     if (pathname === p || pathname.startsWith(p + '/')) {
       return NextResponse.next()
