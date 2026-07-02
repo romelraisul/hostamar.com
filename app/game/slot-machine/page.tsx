@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Coins, Play } from 'lucide-react'
-import { useLocale } from '@/lib/locale-context'
 
 type BalanceResponse = {
   success: boolean
@@ -26,7 +25,6 @@ type SpinResponse = {
 const REEL_SYMBOLS = ['🍒', '🍋', '🍇', '🔔', '⭐', '💎']
 
 export default function SlotMachinePage() {
-  const { t } = useLocale()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [credits, setCredits] = useState(1000)
   const [balance, setBalance] = useState(0)
@@ -34,7 +32,7 @@ export default function SlotMachinePage() {
   const [message, setMessage] = useState('')
   const [spinning, setSpinning] = useState(false)
   const [token, setToken] = useState('')
-  const [authError, setAuthError] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'error'>('idle')
 
   useEffect(() => {
     if (typeof document === 'undefined') return
@@ -42,7 +40,7 @@ export default function SlotMachinePage() {
     if (value) {
       setToken(value)
     } else {
-      setAuthError(true)
+      setStatus('error')
     }
   }, [])
 
@@ -53,8 +51,10 @@ export default function SlotMachinePage() {
 
   const refreshBalance = async () => {
     try {
+      const headers: Record<string, string> = {}
+      if (token) headers['Authorization'] = `Bearer ${token}`
       const res = await fetch('/api/game/balance', {
-        headers: { Authorization: 'Bearer ' + token },
+        headers,
         cache: 'no-store',
       })
       const data = (await res.json()) as BalanceResponse
@@ -73,12 +73,13 @@ export default function SlotMachinePage() {
     setMessage('Spinning...')
     const seed = Date.now()
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (token) headers['Authorization'] = `Bearer ${token}`
       const res = await fetch('/api/game/spin', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token,
-        },
+        headers,
         body: JSON.stringify({ bet, seed }),
       })
 
@@ -225,14 +226,7 @@ export default function SlotMachinePage() {
                   onClick={spin}
                   className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-2 font-semibold hover:from-purple-600 hover:to-pink-600 transition disabled:opacity-50"
                 >
-                  {spinning ? (
-                    'Spinning...'
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4" />
-                      Spin
-                    </>
-                  )}
+                  {spinning ? 'Spinning...' : <><Play className="w-4 h-4" /> Spin</>}
                 </button>
               </div>
 

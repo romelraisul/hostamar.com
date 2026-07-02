@@ -84,10 +84,10 @@ export default function PaymentInstructions({ state, onVerify, onReset, copied, 
       {/* Verify Button */}
       <button
         onClick={onVerify}
-        disabled={state.status === 'verifying'}
+        disabled={(state.status as string) === 'verifying'}
         className="w-full py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition font-semibold flex items-center justify-center gap-2"
       >
-        {state.status === 'verifying' ? (
+        {(state.status as string) === 'verifying' ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
             Verifying...

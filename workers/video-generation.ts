@@ -4,7 +4,7 @@
  * BullMQ worker that listens for 'generate-video' jobs.
  * Workflow:
  *   1. Receive job: {script, style, voiceOver, duration, userId}
- *   2. Generate images via Replicate (flux-schnell)
+ *   2. Generate images via ComfyUI (local SDXL Turbo)
  *   3. Assemble video with ffmpeg (images + voiceOver + text overlays)
  *   4. Upload result to R2
  *   5. Update job progress throughout
@@ -18,7 +18,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import { getRedisConnection, QUEUE_NAMES, type VideoGenerationJobData } from '@/lib/queue';
-import { generateImages, getPrediction } from '@/lib/replicate';
+import { generateImagesLocal } from '@/lib/comfyui';
 import { uploadFromPath } from '@/lib/r2';
 import { prisma } from '@/lib/prisma';
 
@@ -64,7 +64,7 @@ const STYLE_PRESETS: Record<string, {
 const worker = new Worker<VideoGenerationJobData>(
   QUEUE_NAMES.VIDEO_GENERATION,
   async (job: Job<VideoGenerationJobData>) => {
-    const { script, style, voiceOver, duration, userId, previewId } = job.data;
+    const { script, style, voiceOver, duration, userId, previewId, videoId } = job.data;
 
     console.log(`[VideoGen Worker] Starting job ${job.id} for user ${userId}`);
     console.log(`[VideoGen Worker] Style: ${style}, Duration: ${duration}s`);
@@ -78,7 +78,7 @@ const worker = new Worker<VideoGenerationJobData>(
     await fs.mkdir(workDir, { recursive: true });
 
     try {
-      // --- Phase 2: Generate images with Replicate ---
+      // --- Phase 2: Generate images with ComfyUI (Local) ---
       await job.updateProgress(15);
       await updateJobStatus(job, userId, previewId, 'generating_images');
 
@@ -87,18 +87,20 @@ const worker = new Worker<VideoGenerationJobData>(
 
       // Generate scene images (1 image per 5 seconds of video, minimum 2)
       const numImages = Math.max(2, Math.ceil(duration / 5));
-      console.log(`[VideoGen Worker] Generating ${numImages} images via Replicate...`);
+      console.log(`[VideoGen Worker] Generating ${numImages} images via ComfyUI (Local)...`);
 
       const imagePromises: Promise<string[]>[] = [];
       for (let i = 0; i < numImages; i++) {
-        const scenePrompt = `${imagePrompt} — scene ${i + 1}: ${getSceneDescription(script, i, numImages)}`;
+        const scenePrompt = `${imagePrompt} \u2014 scene ${i + 1}: ${getSceneDescription(script, i, numImages)}`;
         imagePromises.push(
-          generateImages(scenePrompt, {
-            num_outputs: 1,
+          generateImagesLocal({
+            prompt: scenePrompt,
+            negativePrompt: 'blurry, low quality, ugly, distorted, watermark, text',
             width: 1920,
             height: 1080,
-            num_inference_steps: 4,
-            output_format: 'png',
+            steps: 4, // SDXL Turbo is fast - 4 steps is enough
+            cfg: 1.0,
+            outputFormat: 'png',
           })
         );
       }
@@ -106,7 +108,7 @@ const worker = new Worker<VideoGenerationJobData>(
       const imageResults = await Promise.all(imagePromises);
       const imageUrls = imageResults.flat();
 
-      console.log(`[VideoGen Worker] Generated ${imageUrls.length} images`);
+      console.log(`[VideoGen Worker] Generated ${imageUrls.length} images via ComfyUI`);
 
       // Download images locally for ffmpeg assembly
       await job.updateProgress(40);
@@ -168,8 +170,21 @@ const worker = new Worker<VideoGenerationJobData>(
       console.log(`[VideoGen Worker] Uploaded to R2: ${uploadResult.url}`);
 
       // --- Phase 6: Update DB records ---
-      await job.updateProgress(100);
-      await updateJobStatus(job, userId, previewId, 'complete', uploadResult.url);
+      await job.updateProgress(100)
+      await updateJobStatus(job, userId, previewId, 'complete', uploadResult.url)
+
+      if (videoId) {
+        await prisma.video.update({
+          where: { id: videoId as string },
+          data: {
+            url: uploadResult.url,
+            status: 'ready',
+            fileSize: await getVideoFileSize(outputPath),
+          },
+        }).catch((err) => {
+          console.error(`[VideoGen Worker] Failed to update video ${videoId}:`, err.message)
+        })
+      }
 
       // Update VideoQueue record if one exists
       if (previewId) {
@@ -227,7 +242,8 @@ interface AssembleParams {
 
 async function assembleVideo(params: AssembleParams): Promise<void> {
   const { imagePaths, voiceOverPath, outputPath, duration, filters, audioFade, job } = params;
-  const { execa } = await import('execa');
+  const execaMod = await import('execa');
+  const execa = (execaMod as any).default || (execaMod as any).execa || execaMod;
 
   // Calculate display duration per image
   const imageDuration = duration / imagePaths.length;
@@ -248,69 +264,46 @@ async function assembleVideo(params: AssembleParams): Promise<void> {
   await fs.writeFile(concatFile, concatLines.join('\n'));
 
   // Build ffmpeg command
-  const filterParts: string[] = [];
+    const filterParts: string[] = [];
 
-  // Add image scaling to 1920x1080
-  filterParts.push('[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,format=yuv420p[v]');
+    // Add image scaling to 1920x1080
+    filterParts.push('[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,format=yuv420p[v]');
 
-  // Apply style filters
-  if (filters.length > 0) {
-    filterParts.push(`[v]${filters.join(',')}[vf]`);
-    filterParts.push('[vf]');
-  } else {
-    filterParts.push('[v]');
-  }
+    // Apply style filters
+    if (filters.length > 0) {
+      filterParts.push(`[v]${filters.join(',')}[vf]`);
+    } else {
+      filterParts.push('[v]copy[vf]');
+    }
 
-  // Fade in/out audio
-  const audioFadeIn = `[1:a]afade=t=in:st=0:d=${audioFade}[a0]`;
-  const audioFadeOut = `[a0]afade=t=out:st=${duration - audioFade}:d=${audioFade}[a]`;
-  filterParts.push(audioFadeIn);
-  filterParts.push(audioFadeOut);
+    // Fade in/out audio
+    const audioFadeIn = `[1:a]afade=t=in:st=0:d=${audioFade}[a0]`;
+    const audioFadeOut = `[a0]afade=t=out:st=${duration - audioFade}:d=${audioFade}[a]`;
+    filterParts.push(audioFadeIn);
+    filterParts.push(audioFadeOut);
 
-  const filterComplex = filterParts.join(';');
+    const filterComplex = filterParts.join(';');
 
-  const args = [
-    '-y', // overwrite output
-    '-f', 'concat',
-    '-safe', '0',
-    '-i', concatFile,
-    '-i', voiceOverPath,
-    '-filter_complex', filterComplex,
-    '-map', '[a]' as string,
-    '-map', '0:v' as string,
-    '-c:v', 'libx264',
-    '-preset', 'medium',
-    '-crf', '23',
-    '-c:a', 'aac',
-    '-b:a', '128k',
-    '-pix_fmt', 'yuv420p',
-    '-shortest',
-    '-t', String(duration),
-    '-movflags', '+faststart',
-    outputPath,
-  ];
-
-  // Remove the quotes from map args — they're actual ffmpeg arguments
-  const ffmpegArgs = [
-    '-y',
-    '-f', 'concat',
-    '-safe', '0',
-    '-i', concatFile,
-    '-i', voiceOverPath,
-    '-filter_complex', filterComplex,
-    '-map', '[a]',
-    '-map', '0:v',
-    '-c:v', 'libx264',
-    '-preset', 'medium',
-    '-crf', '23',
-    '-c:a', 'aac',
-    '-b:a', '128k',
-    '-pix_fmt', 'yuv420p',
-    '-shortest',
-    '-t', String(duration),
-    '-movflags', '+faststart',
-    outputPath,
-  ];
+    const ffmpegArgs = [
+        '-y',
+        '-f', 'concat',
+        '-safe', '0',
+        '-i', concatFile,
+        '-i', voiceOverPath,
+        '-filter_complex', filterComplex,
+        '-map', '[a]',
+        '-map', '[vf]',
+        '-c:v', 'libx264',
+        '-preset', 'medium',
+        '-crf', '23',
+        '-c:a', 'libmp3lame',
+        '-b:a', '128k',
+        '-pix_fmt', 'yuv420p',
+        '-shortest',
+        '-t', String(duration),
+        '-movflags', '+faststart',
+        outputPath,
+      ];
 
   console.log(`[VideoGen Worker] Running ffmpeg with ${imagePaths.length} images, ${duration}s duration`);
 
@@ -352,25 +345,36 @@ async function downloadFile(url: string, destPath: string): Promise<void> {
 }
 
 async function createSilentAudio(outputPath: string, durationSec: number): Promise<void> {
-  const { execa } = await import('execa');
-  await execa(FFMPEG_PATH, [
+  const execaMod2 = await import('execa');
+  const execa2 = (execaMod2 as any).default || (execaMod2 as any).execa || execaMod2;
+  await execa2(FFMPEG_PATH, [
     '-y',
     '-f', 'lavfi',
     '-i', 'anullsrc=r=44100:cl=stereo',
     '-t', String(durationSec),
-    '-c:a', 'aac',
+    '-c:a', 'libmp3lame',
     '-b:a', '128k',
     outputPath,
   ]);
 }
 
 function getSceneDescription(script: string, sceneIndex: number, totalScenes: number): string {
-  const words = script.split(/\s+/);
-  const wordsPerScene = Math.max(1, Math.floor(words.length / totalScenes));
-  const start = sceneIndex * wordsPerScene;
-  const end = Math.min(start + wordsPerScene, words.length);
-  const sceneWords = words.slice(start, end);
-  return sceneWords.join(' ') || script.slice(0, 100);
+  const words = script.split(/\s+/)
+  const wordsPerScene = Math.max(1, Math.floor(words.length / totalScenes))
+  const start = sceneIndex * wordsPerScene
+  const end = Math.min(start + wordsPerScene, words.length)
+  const sceneWords = words.slice(start, end)
+  return sceneWords.join(' ') || script.slice(0, 100)
+}
+
+async function getVideoFileSize(filePath: string): Promise<number | undefined> {
+  try {
+    const fsp = await import('fs/promises')
+    const stats = await fsp.stat(filePath as any)
+    return Number(stats.size)
+  } catch {
+    return undefined
+  }
 }
 
 async function updateJobStatus(
@@ -420,6 +424,12 @@ worker.on('failed', (job: Job | undefined, err: Error) => {
 worker.on('error', (err: Error) => {
   console.error('[VideoGen Worker] Worker error:', err.message);
 });
+
+// Keep the process alive - BullMQ worker should keep event loop running
+// But add a heartbeat to ensure it stays alive
+setInterval(() => {
+  // Heartbeat - just keeps the process alive
+}, 30000);
 
 // Handle graceful shutdown
 process.on('SIGINT', async () => {

@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
+import { verifyToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateMarketingVideo, generateVideoScript, suggestVideoTopics } from '@/lib/video-generator'
 
 // POST: Create new video generation request
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    // Use custom JWT auth (consistent with /api/auth/me)
+    const authToken = req.cookies.get('auth_token')?.value
+    const decoded = authToken ? verifyToken(authToken) : null
+    
+    if (!decoded?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await req.json().catch(() => ({}))
-    const { templateId, prompt, title, topic } = body
+    const { templateId, prompt, title, topic, description, language } = body
 
     if (!templateId || !prompt) {
       return NextResponse.json({ error: 'Template and prompt required' }, { status: 400 })
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     // Check customer subscription
     const customer = await prisma.customer.findUnique({
-      where: { id: session.user.id },
+      where: { id: decoded.id },
       include: { subscriptions: { orderBy: { createdAt: 'desc' }, take: 1 } }
     })
 
@@ -53,6 +55,8 @@ export async function POST(req: NextRequest) {
         prompt,
         templateId,
         topic: topic || '',
+        description: description || null,
+        language: language || 'bn',
         duration: 30,
         status: 'processing',
         customer: { connect: { id: customer.id } }
@@ -89,8 +93,11 @@ export async function POST(req: NextRequest) {
 // GET: List user's videos
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    // Use custom JWT auth (consistent with /api/auth/me)
+    const authToken = req.cookies.get('auth_token')?.value
+    const decoded = authToken ? verifyToken(authToken) : null
+
+    if (!decoded?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -100,7 +107,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
 
-    const where: any = { customerId: session.user.id }
+    const where: any = { customerId: decoded.id }
     if (status) where.status = status
 
     const [videos, total] = await Promise.all([

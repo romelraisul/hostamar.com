@@ -22,6 +22,7 @@ const nextConfig = {
     optimizeCss: false,
     scrollRestoration: true,
   },
+  output: 'standalone',
   webpack: (config) => {
     config.resolve.alias['@'] = path.resolve(__dirname, '.')
     return config

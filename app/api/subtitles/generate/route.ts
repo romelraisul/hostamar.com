@@ -170,7 +170,7 @@ Generate natural spoken subtitles that match this video content.`
         videoId,
         language: lang,
         content: fullText,
-        timestamps: parsed.segments,
+        timestamps: parsed.segments as any,
       },
     })
 

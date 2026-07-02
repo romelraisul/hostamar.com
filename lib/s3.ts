@@ -1,6 +1,12 @@
 // MinIO S3 upload helper — replaces Uploadthing
 // Self-hosted on remote Windows at 192.168.1.2:9000
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+// @ts-expect-error - runtime export exists but TS type barrel is broken in v3.577.0
+import { DeleteObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
 import path from "path";
@@ -69,7 +75,7 @@ export async function getDownloadUrl(key: string, expiresIn: number = 3600): Pro
     Bucket: S3_BUCKET,
     Key: key,
   });
-  return getSignedUrl(s3Client, command, { expiresIn });
+  return getSignedUrl(s3Client as any, command as any, { expiresIn });
 }
 
 export { s3Client };

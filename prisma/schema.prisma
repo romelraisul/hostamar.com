@@ -1,3 +1,4 @@
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
@@ -8,30 +9,73 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- NextAuth PrismaAdapter models ---
+// Following canonical @auth/prisma-adapter schema for password-reset (VerificationToken)
+// and OAuth account linking (Account/Session). Customer table kept untouched so existing users continue to work.
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 // User/Customer Model
 model Customer {
   id            String   @id @default(cuid())
   email         String   @unique
   name          String
   password      String
+  emailVerified DateTime?
   resetToken    String?
   resetTokenExpiry DateTime?
+  role          String   @default("customer") // "customer" | "admin" | "superadmin"
   phone         String?
   stage        String?   @default("lead")
   source       String?   @default("website")
   score        Int?      @default(0)
+  credits      Int       @default(0)
   notes        String?
   referralCode String?   @unique
   referredBy   String?
   referralBonus Float?  @default(0)
-  balance       Float?  @default(0)
+  balance       Float?   @default(0)
 
-  // Relations
+  // relationships
   business      Business?
   subscriptions Subscription[]
   videos        Video[]
   services      Service[]
   payments      Payment[]
+  transactions  Transaction[]
   orders        Order[]
   notifications    Notification[]
   leads         Lead[]
@@ -41,12 +85,13 @@ model Customer {
   activityLogs     ActivityLog[]
   campaigns        Campaign[]
   userProgress     UserProgress[]
+  previews         Preview[]
+  conversations     Conversation[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
-// Business Profile
 model Business {
   id            String   @id @default(cuid())
   customerId    String   @unique
@@ -57,7 +102,7 @@ model Business {
   description   String?
   website       String?
   logo          String?
-  brandColor    String   @default("#3B82F6")
+  brandColor    String  @default("#3B82F6")
 
   facebook      String?
   instagram     String?
@@ -71,7 +116,6 @@ model Business {
   updatedAt     DateTime @updatedAt
 }
 
-// Subscription Plans
 model Subscription {
   id            String   @id @default(cuid())
   customerId    String   @unique
@@ -92,7 +136,6 @@ model Subscription {
   updatedAt     DateTime @updatedAt
 }
 
-// Generated Videos
 model Video {
   id            String   @id @default(cuid())
   customerId    String
@@ -105,20 +148,20 @@ model Video {
   templateId    String?
 
   duration      Int
-  format        String   @default("mp4")
-  resolution    String   @default("1080p")
+  format        String  @default("mp4")
+  resolution    String  @default("1080p")
   fileSize      Int?
 
   url           String?
   thumbnailUrl  String?
 
   topic         String?
-  language      String   @default("bn")
-  status        String   @default("processing")
+  language      String  @default("bn")
+  status        String  @default("processing")
 
-  downloads     Int      @default(0)
-  views         Int      @default(0)
-  shares        Int      @default(0)
+  downloads     Int     @default(0)
+  views         Int     @default(0)
+  shares         Int     @default(0)
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -127,7 +170,51 @@ model Video {
   @@index([createdAt])
 }
 
-// Services
+model Preview {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  subtitles     Subtitle[]
+
+  videoId       String?
+  title         String?
+  description   String?
+  duration      Int?
+  prompt        String?
+  style         String?
+  mood          String?
+  topic         String?
+  script        String?
+  status        String  @default("pending")
+  renderStatus  String?
+  renderError   String?
+  errorMessage  String?
+  thumbnailUrl  String?
+  videoUrl      String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerId, status])
+}
+
+model Subtitle {
+  id         String   @id @default(cuid())
+  previewId  String?
+  preview    Preview? @relation(fields: [previewId], references: [id], onDelete: Cascade)
+
+  videoId    String?
+  language   String?  @default("bn")
+  content    String?
+  timestamps Json?
+  text       String?
+  start      Float    @default(0)
+  end        Float    @default(0)
+
+  createdAt  DateTime @default(now())
+}
+
 model Service {
   id            String   @id @default(cuid())
   customerId    String
@@ -145,7 +232,6 @@ model Service {
 
   price         Float
   billingCycle  String   @default("monthly")
-
   createdAt     DateTime @default(now())
   expiresAt     DateTime?
   updatedAt     DateTime @updatedAt
@@ -153,7 +239,6 @@ model Service {
   @@index([customerId, status])
 }
 
-// Video Generation Queue
 model VideoQueue {
   id            String   @id @default(cuid())
   customerId    String
@@ -162,11 +247,16 @@ model VideoQueue {
   topic         String
   priority      Int      @default(5)
   status        String   @default("pending")
+  type          String?  @default("video")
 
   attempts      Int      @default(0)
   maxAttempts   Int      @default(3)
   error         String?
 
+  renderStatus  String?
+  renderError   String?
+  videoUrl      String?
+  thumbnailUrl  String?
   videoId       String?
 
   createdAt     DateTime @default(now())
@@ -175,10 +265,9 @@ model VideoQueue {
   @@index([status, priority])
 }
 
-// System Logs
 model ActivityLog {
-  id            String   @id @default(cuid())
-  customerId    String?
+  id        String   @id @default(cuid())
+  customerId String?
   customer      Customer? @relation(fields: [customerId], references: [id])
 
   action        String
@@ -193,7 +282,6 @@ model ActivityLog {
   @@index([createdAt])
 }
 
-// Payments
 model Payment {
   id            String   @id @default(cuid())
   customerId    String
@@ -214,7 +302,6 @@ model Payment {
   endsAt        DateTime?
 
   webhookSent   Boolean  @default(false)
-
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -223,11 +310,34 @@ model Payment {
   @@index([createdAt])
 }
 
-// Notifications
+model Transaction {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  amount        Float
+  currency      String   @default("BDT")
+  status        String   @default("pending")
+  gateway       String
+  gatewayTrxId  String?
+  cardType      String?
+  cardBrand     String?
+  sessionKey    String?
+  videoPackage  String?
+  creditsAdded  Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([gatewayTrxId])
+  @@index([createdAt])
+}
+
 model Notification {
   id        String   @id @default(cuid())
   customerId String
-  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer  Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   type      String
   title     String
@@ -240,7 +350,6 @@ model Notification {
   @@index([customerId, createdAt])
 }
 
-// Referrals
 model Referral {
   id          String   @id @default(cuid())
   referrerId  String
@@ -256,7 +365,6 @@ model Referral {
   @@index([referredId])
 }
 
-// Orders - mapped to payments
 model Order {
   id          String   @id @default(cuid())
   customerId  String
@@ -268,13 +376,12 @@ model Order {
   currency    String   @default("BDT")
 
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 
   @@index([customerId, status])
   @@index([createdAt])
 }
 
-// Lead model for CRM
 model Lead {
   id          String   @id @default(cuid())
   customerId  String?
@@ -284,9 +391,9 @@ model Lead {
   email       String?
   phone       String?
   company     String?
-  source      String   @default("manual")
-  status      String   @default("new")
-  score       Int      @default(0)
+  source      String  @default("manual")
+  status      String  @default("new")
+  score       Int     @default(0)
   tags        String?
   notes       String?
 
@@ -296,7 +403,7 @@ model Lead {
   convertedAt   DateTime?
 
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 
   logs        LeadLog[]
   followUps   FollowUp[]
@@ -306,7 +413,6 @@ model Lead {
   @@index([source])
 }
 
-// Lead log for activity tracking
 model LeadLog {
   id        String   @id @default(cuid())
   leadId    String
@@ -321,7 +427,6 @@ model LeadLog {
   @@index([leadId])
 }
 
-// Campaign model for marketing
 model Campaign {
   id            String   @id @default(cuid())
   customerId    String?
@@ -335,39 +440,37 @@ model Campaign {
   startDate     DateTime?
   endDate       DateTime?
 
-  status        String   @default("draft")
-  reachedCount  Int      @default(0)
+  status      String  @default("draft")
+  reachedCount  Int     @default(0)
   respondedCount Int     @default(0)
   convertedCount Int     @default(0)
 
-  createdAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([status])
 }
 
-// Follow-up tasks
 model FollowUp {
-  id            String   @id @default(cuid())
-  leadId        String?
-  lead          Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  customerId    String?
+  id          String   @id @default(cuid())
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  customerId  String?
 
   followUpType  String
   scheduledFor  DateTime
   notes         String?
-  priority      String   @default("medium")
-  status        String   @default("pending")
+  priority      String  @default("medium")
+  status      String  @default("pending")
   completedAt   DateTime?
 
-  createdAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([scheduledFor])
   @@index([status])
 }
 
-// Outreach logs
 model OutreachLog {
   id          String   @id @default(cuid())
   leadId      String?
@@ -375,7 +478,7 @@ model OutreachLog {
   customerId  String?
 
   channel     String
-  direction   String   @default("outbound")
+  direction   String  @default("outbound")
   subject     String?
   message     String?
   status      String
@@ -388,7 +491,6 @@ model OutreachLog {
   @@index([createdAt])
 }
 
-// Pipeline snapshots for analytics
 model PipelineSnapshot {
   id            String   @id @default(cuid())
 
@@ -402,7 +504,6 @@ model PipelineSnapshot {
   createdAt     DateTime @default(now())
 }
 
-// User progress tracking for OSSU courses
 model UserProgress {
   id          String   @id @default(cuid())
   userId      String
@@ -413,7 +514,7 @@ model UserProgress {
   quizScore   Int?     @default(0)
 
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 
   @@unique([userId, courseId, lessonId], name: "userId_courseId_lessonId")
   @@index([userId])
@@ -421,12 +522,23 @@ model UserProgress {
   @@index([courseId, completed])
 }
 
-// Beta cohort signup invite model
 enum BetaStatus {
   PENDING
   ACTIVE
   USED
   EXPIRED
+}
+
+model RateLimitEvent {
+  id        String   @id @default(cuid())
+  bucket    String   // "ip:path" hash
+  ip        String
+  path      String
+  method    String   @default("GET")
+  createdAt DateTime @default(now())
+
+  @@index([bucket, createdAt])
+  @@index([ip, createdAt])
 }
 
 model BetaInvite {
@@ -441,9 +553,35 @@ model BetaInvite {
   usedAt          DateTime?
   expiresAt       DateTime?
 
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([status])
   @@index([createdAt])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String    @default("New conversation")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customer Customer @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId, createdAt])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  role           String
+  content        String
+  model          String?
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId, createdAt])
 }
