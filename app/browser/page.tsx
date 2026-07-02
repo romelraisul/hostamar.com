@@ -26,7 +26,6 @@ type HistoryItem = {
   visitedAt: number;
 };
 
-const SEARXNG_BASE = 'http://searxng:5013';
 const CAMOFOX_BASE = 'http://localhost:4000';
 
 export default function BrowserPage() {
@@ -169,12 +168,21 @@ export default function BrowserPage() {
     setSearching(true);
     setError('');
     try {
-      const res = await fetch(
-        `${SEARXNG_BASE}/search?q=${encodeURIComponent(query)}&format=json`
-      );
+      const res = await fetch('/api/ai/browser/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, maxResults: 10 }),
+      });
       if (!res.ok) throw new Error('Search service unavailable');
       const data = await res.json();
-      setSearchResults(data.results || []);
+      const sourceResults = Array.isArray(data.links) ? data.links : [];
+      const enriched = sourceResults.map((item: any) => ({
+        title: item.title || item.url,
+        url: item.url,
+        content: item.snippet || item.title || '',
+        source: 'web',
+      }));
+      setSearchResults(enriched);
       setView('search');
     } catch (e: any) {
       setError(e?.message || 'Search failed');
@@ -191,7 +199,7 @@ export default function BrowserPage() {
     {
       icon: Search,
       title: 'Smart Search',
-      desc: 'SearXNG-powered private web search results.',
+      desc: 'AI-powered web search with cited sources.',
     },
     {
       icon: Brain,
@@ -293,9 +301,9 @@ export default function BrowserPage() {
                     <button
                       key={item.id}
                       onClick={() => {
-                                setUrl(item.url);
-                                handleNavigate(item.url);
-                              }}
+                        setUrl(item.url);
+                        handleNavigate(item.url);
+                      }}
                       className="w-full text-left flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2 hover:bg-white/[0.06] transition"
                     >
                       <div className="min-w-0">
@@ -321,69 +329,69 @@ export default function BrowserPage() {
                 <input
                   value={view === 'search' ? searchQuery : url}
                   onChange={(e) => {
-                            if (view === 'search') setSearchQuery(e.target.value);
-                            else setUrl(e.target.value);
-                          }}
+                    if (view === 'search') setSearchQuery(e.target.value);
+                    else setUrl(e.target.value);
+                  }}
                   onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              if (view === 'search') handleSearch();
-                              else handleNavigate();
-                            }
-                          }}
+                    if (e.key === 'Enter') {
+                      if (view === 'search') handleSearch();
+                      else handleNavigate();
+                    }
+                  }}
                   placeholder={view === 'search' ? 'Search the web...' : 'Enter URL...'}
                   className="w-full bg-transparent text-white placeholder-gray-500 text-sm sm:text-base focus:outline-none"
                 />
-                              </div>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => {
-                                    if (view === 'search') {
-                                      handleSearch();
-                                    } else {
-                                      handleNavigate();
-                                    }
-                                  }}
-                                  className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-cyan-500 rounded-xl text-sm font-semibold hover:opacity-90 transition flex items-center gap-2"
-                                >
-                                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                                  <span className="hidden sm:inline">Go</span>
-                                </button>
-                                {view === 'browser' && url && (
-                                  <>
-                                    <button
-                                      onClick={handleScreenshot}
-                                      disabled={loadingScreenshot}
-                                      className="px-3 py-2 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition disabled:opacity-60"
-                                    >
-                                      {loadingScreenshot ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                      ) : (
-                                        'Screenshot'
-                                      )}
-                                    </button>
-                                    <button
-                                      onClick={handleSummarize}
-                                      disabled={loadingSummary}
-                                      className="px-3 py-2 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition disabled:opacity-60 flex items-center gap-2"
-                                    >
-                                      {loadingSummary ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                      ) : (
-                                        <Brain className="w-4 h-4" />
-                                      )}
-                                      <span className="hidden sm:inline">Summarize</span>
-                                    </button>
-                                  </>
-                                )}
-                                <button
-                                  onClick={() => setView('home')}
-                                  className="px-3 py-2 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition"
-                                >
-                                  Home
-                                </button>
-                              </div>
-                            </div>
                           </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                if (view === 'search') {
+                                  handleSearch();
+                                } else {
+                                  handleNavigate();
+                                }
+                              }}
+                              className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-cyan-500 rounded-xl text-sm font-semibold hover:opacity-90 transition flex items-center gap-2"
+                            >
+                              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                              <span className="hidden sm:inline">Go</span>
+                            </button>
+                            {view === 'browser' && url && (
+                              <>
+                                <button
+                                  onClick={handleScreenshot}
+                                  disabled={loadingScreenshot}
+                                  className="px-3 py-2 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition disabled:opacity-60"
+                                >
+                                  {loadingScreenshot ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    'Screenshot'
+                                  )}
+                                </button>
+                                <button
+                                  onClick={handleSummarize}
+                                  disabled={loadingSummary}
+                                  className="px-3 py-2 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition disabled:opacity-60 flex items-center gap-2"
+                                >
+                                  {loadingSummary ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Brain className="w-4 h-4" />
+                                  )}
+                                  <span className="hidden sm:inline">Summarize</span>
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => setView('home')}
+                              className="px-3 py-2 border border-white/10 rounded-xl text-sm hover:bg-white/5 transition"
+                            >
+                              Home
+                            </button>
+                          </div>
+                        </div>
+                      </div>
 
           <div className="mt-4 grid lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
@@ -416,9 +424,9 @@ export default function BrowserPage() {
                     <button
                       key={idx}
                       onClick={() => {
-                                setUrl(result.url || '');
-                                handleNavigate(result.url || '');
-                              }}
+                        setUrl(result.url || '');
+                        handleNavigate(result.url || '');
+                      }}
                       className="w-full text-left bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/[0.06] transition"
                     >
                       <div className="text-yellow-400 text-sm hover:underline truncate">
@@ -461,7 +469,7 @@ export default function BrowserPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder="Search SearXNG..."
+                    placeholder="Search the web..."
                     className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/60"
                   />
                   <button
