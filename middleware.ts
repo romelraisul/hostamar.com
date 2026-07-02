@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Public API paths — no auth needed (include all NextAuth endpoints + custom auth)
+  // Public API paths — no auth needed (include all NextAuth endpoints + custom auth + video public APIs)
   const publicApiPaths = [
     '/api/auth/login',
     '/api/auth/register',
@@ -75,6 +75,9 @@ export async function middleware(request: NextRequest) {
     '/api/auth/csrf',
     '/api/auth/session',
     '/api/admin',
+    '/api/ai/videos/generate',
+    '/api/video/status',
+    '/api/dashboard/videos',
   ]
   if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
     return NextResponse.next()
