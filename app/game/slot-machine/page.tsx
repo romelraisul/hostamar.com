@@ -31,39 +31,26 @@ export default function SlotMachinePage() {
   const [bet, setBet] = useState(10)
   const [message, setMessage] = useState('')
   const [spinning, setSpinning] = useState(false)
-  const [token, setToken] = useState('')
-  const [status, setStatus] = useState<'idle' | 'error'>('idle')
 
   useEffect(() => {
-    if (typeof document === 'undefined') return
-    const value = document.cookie.split('; ').find((c) => c.startsWith('auth_token='))?.split('=')[1]
-    if (value) {
-      setToken(value)
-    } else {
-      setStatus('error')
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!token) return
     refreshBalance()
-  }, [token])
+  }, [])
 
   const refreshBalance = async () => {
     try {
-      const headers: Record<string, string> = {}
-      if (token) headers['Authorization'] = `Bearer ${token}`
-      const res = await fetch('/api/game/balance', {
-        headers,
-        cache: 'no-store',
-      })
-      const data = (await res.json()) as BalanceResponse
-      if (data.success) {
-        setCredits(data.credits)
-        setBalance(data.balance)
+      const res = await fetch('/api/game/balance')
+      if (!res.ok) {
+        const errorData = (await res.json()) as { error?: string; success?: boolean }
+        console.error('Failed to load balance:', res.status, errorData)
+        return
       }
-    } catch {
-      // keep default
+      const data = (await res.json()) as { success?: boolean; credits?: number; balance?: number }
+      if (data.success) {
+        setCredits(typeof data.credits === 'number' ? data.credits : 1000)
+        setBalance(typeof data.balance === 'number' ? data.balance : 0)
+      }
+    } catch (error) {
+      console.error('Failed to load balance:', error)
     }
   }
 
@@ -73,13 +60,9 @@ export default function SlotMachinePage() {
     setMessage('Spinning...')
     const seed = Date.now()
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      }
-      if (token) headers['Authorization'] = `Bearer ${token}`
       const res = await fetch('/api/game/spin', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bet, seed }),
       })
 
@@ -95,7 +78,8 @@ export default function SlotMachinePage() {
       setCredits(data.credits)
       setBalance(data.balance)
       setMessage(data.message)
-    } catch {
+    } catch (error) {
+      console.error('Spin failed:', error)
       setMessage('Network error')
     } finally {
       setSpinning(false)
