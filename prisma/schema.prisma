@@ -87,6 +87,8 @@ model Customer {
   userProgress     UserProgress[]
   previews         Preview[]
   conversations     Conversation[]
+  gameBalances      GameBalance[]
+  gameSpins         GameSpin[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -584,4 +586,35 @@ model Message {
   createdAt      DateTime @default(now())
 
   @@index([conversationId, createdAt])
+}
+
+model GameBalance {
+  id         String    @id @default(cuid())
+  customerId String    @unique
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  credits    Int       @default(1000)
+  balance    Float     @default(1000)
+  mode       String    @default("demo")
+  updatedAt  DateTime  @updatedAt
+
+  spins      GameSpin[]
+
+  @@index([customerId])
+}
+model GameSpin {
+  id           String    @id @default(cuid())
+  balanceId    String
+  customerId   String
+  balance      GameBalance @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+  customer     Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  bet          Int
+  reels        String[]
+  won          Boolean   @default(false)
+  multiplier   Int       @default(0)
+  amount       Float     @default(0)
+  message      String?
+  createdAt    DateTime  @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([balanceId, createdAt])
 }

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
 
 const SYMBOLS = ['🍒', '🍋', '🍇', '🔔', '⭐', '💎']
 const MIN_BET = 1
 const MAX_BET = 100
 const DEFAULT_CREDITS = 1000
 const DEFAULT_BALANCE = 1000
+const HEADER_KEYS = ['x-user-id', 'authorization', 'cookie'] as const
 
 function seededRng(seed: number) {
   return function () {
@@ -35,14 +37,26 @@ function evaluateWin(reels: string[], bet: number): { won: boolean; multiplier: 
   return { won: false, multiplier: 0, amount: 0, message: 'No luck this time. Try again!' }
 }
 
-export async function GET(req: NextRequest) {
-  try {
-    const credits = DEFAULT_CREDITS
-    const balance = DEFAULT_BALANCE
-    return NextResponse.json({ success: true, credits, balance, mode: 'demo' })
-  } catch (error) {
-    return NextResponse.json({ success: true, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE }, { status: 200 })
+function extractCustomerId(req: NextRequest): string | null {
+  for (const key of HEADER_KEYS) {
+    const raw = req.headers.get(key)
+    if (!raw) continue
+    if (key === 'authorization' && raw.startsWith('Bearer ')) return raw.slice(7).trim() || null
+    if (key === 'cookie') {
+      const match = raw.match(/(?:^|;\s*)customerId=([^;\s]*)/)
+      if (match?.[1]) return decodeURIComponent(match[1])
+      continue
+    }
+    const trimmed = raw.trim()
+    if (trimmed) return trimmed
   }
+  return null
+}
+
+export async function GET() {
+  const credits = DEFAULT_CREDITS
+  const balance = DEFAULT_BALANCE
+  return NextResponse.json({ success: true, credits, balance, mode: 'demo' })
 }
 
 export async function POST(req: NextRequest) {
@@ -55,22 +69,57 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE, error: `Bet must be between ${MIN_BET} and ${MAX_BET}` }, { status: 400 })
     }
 
+    const customerId = extractCustomerId(req) || '00000000-0000-0000-0000-000000000001'
+    let credits = DEFAULT_CREDITS
+    let balance = DEFAULT_BALANCE
+    let mode = 'demo'
+    let balanceId = customerId
+
+    try {
+      const existing = await prisma.gameBalance.findUnique({ where: { customerId } }).catch(() => null)
+      if (existing) {
+        credits = existing.credits
+        balance = existing.balance
+        mode = 'pinned'
+        balanceId = existing.customerId
+      }
+    } catch (dbError) {
+      console.error('game spin balance lookup failed', dbError)
+    }
+
     const reels = spinReels(seed)
     const result = evaluateWin(reels, bet)
-
-    const credits = Math.max(0, DEFAULT_CREDITS - bet + result.amount)
-    let balance = DEFAULT_BALANCE
+    credits = Math.max(0, credits - bet + result.amount)
     if (result.won) {
-      balance = DEFAULT_BALANCE + result.amount
+      balance = balance + result.amount
     } else {
-      balance = DEFAULT_BALANCE - bet
+      balance = Math.max(0, balance - bet)
     }
 
-    if (!result.won) {
-      balance = Math.max(0, balance)
+    try {
+      await prisma.gameBalance.upsert({
+        where: { customerId },
+        update: { credits, balance, mode: 'pinned' },
+        create: { customerId, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE, mode: 'fresh' },
+      }).catch(() => {})
+
+      await prisma.gameSpin.create({
+        data: {
+          balanceId,
+          customerId,
+          bet,
+          reels,
+          won: result.won,
+          multiplier: result.multiplier,
+          amount: result.amount,
+          message: result.message,
+        },
+      }).catch(() => {})
+    } catch (dbError) {
+      console.error('game spin persistence failed', dbError)
     }
 
-    return NextResponse.json({ success: true, reels, bet, ...result, credits, balance, mode: 'demo' })
+    return NextResponse.json({ success: true, reels, bet, ...result, credits, balance, mode, customerId })
   } catch (error) {
     return NextResponse.json({ success: true, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE, error: 'Failed to process spin' }, { status: 200 })
   }
