@@ -78,6 +78,8 @@ export async function middleware(request: NextRequest) {
     '/api/ai/videos/generate',
     '/api/video/status',
     '/api/dashboard/videos',
+    '/api/game/balance',
+    '/api/game/spin',
   ]
   if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
     return NextResponse.next()
