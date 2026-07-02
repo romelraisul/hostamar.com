@@ -141,7 +141,7 @@ export default function PaymentPage() {
         )}
 
         {/* Message Display */}
-        {state.message && state.status !== 'completed' && (
+        {state.message && (state.status as string) !== 'completed' && (
           <div className="mb-8 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-center gap-3">
             <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
             <p className="text-blue-300 text-sm">{state.message}</p>

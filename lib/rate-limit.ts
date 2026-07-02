@@ -1,93 +1,96 @@
-// ⚠️ In-Memory Rate Limiter (Serverless Warning)
-// On Vercel/ serverless, each invocation has its own memory.
-// This limiter only works per-instance, NOT globally.
-// For production scaling, replace with Vercel KV or Edge Config:
-//   https://vercel.com/docs/storage/edge-config
-// Or use the @upstash/ratelimit package with Redis.
+/**
+ * Rate-limit service backed by Postgres RateLimitEvent table.
+ *
+ * Sliding-window counter per (ip, path-template) bucket.
+ * Cheap because it's a COUNT(*) + INSERT — no external service.
+ *
+ * Free-tier friendly: no Redis/Upstash required.
+ */
+import { prisma } from '@/lib/prisma'
 
-interface RateLimitConfig {
-  maxRequests: number;
-  windowMs: number;
+export interface RateLimitConfig {
+  /** friendly bucket id — e.g. "auth.signup", "auth.login" */
+  bucket: string
+  /** max events allowed in the window */
+  limit: number
+  /** window length in milliseconds */
+  windowMs: number
 }
 
-interface RateLimitInfo {
-  requests: number[];
+export interface RateLimitResult {
+  allowed: boolean
+  remaining: number
+  resetAt: number // ms epoch
 }
 
-const store = new Map<string, RateLimitInfo>();
+/**
+ * Check rate limit and record the event atomically.
+ *
+ * Counts existing events in the window then inserts the new one. Race-safe
+ * enough for HTTP traffic — slight overshoot is acceptable and prevents
+ * the classic "check then act" pitfall because we record before returning.
+ */
+export async function checkRateLimit(
+  ip: string,
+  cfg: RateLimitConfig,
+  path: string = '/',
+  method: string = 'GET'
+): Promise<RateLimitResult> {
+  const now = Date.now()
+  const windowStart = new Date(now - cfg.windowMs)
+  const bucket = `${ip}:${cfg.bucket}`
 
-export function rateLimit(config: RateLimitConfig) {
-  const { maxRequests, windowMs } = config;
-
-  return function rateLimitMiddleware(
-    req: { ip: string },
-    res: {
-      statusCode: number;
-      setHeader: (key: string, value: string) => void;
-      end: (data?: string) => void;
+  // Count current events in window
+  const count = await prisma.rateLimitEvent.count({
+    where: {
+      bucket,
+      createdAt: { gte: windowStart },
     },
-    next: () => void
-  ) {
-    const ip = req.ip || 'unknown';
-    const now = Date.now();
-    const windowStart = now - windowMs;
+  })
 
-    let entry = store.get(ip);
+  // Record this attempt FIRST — prevents burst-twice-on-busy-thread
+  await prisma.rateLimitEvent.create({
+    data: {
+      bucket,
+      ip,
+      path,
+      method,
+    },
+  })
 
-    if (!entry) {
-      entry = { requests: [] };
-      store.set(ip, entry);
-    }
+  // Opportunistic cleanup: 1% chance to gc old rows so the table doesn't grow
+  // forever. Cheap and self-healing.
+  if (Math.random() < 0.01) {
+    const cutoff = new Date(now - cfg.windowMs * 10)
+    prisma.rateLimitEvent
+      .deleteMany({ where: { createdAt: { lt: cutoff } } })
+      .catch(() => {}) // fire and forget
+  }
 
-    // Remove timestamps outside the current window
-    entry.requests = entry.requests.filter(
-      (timestamp) => timestamp > windowStart
-    );
+  const allowed = count < cfg.limit
+  const remaining = Math.max(0, cfg.limit - count - 1)
+  const resetAt = now + cfg.windowMs
 
-    if (entry.requests.length >= maxRequests) {
-      const oldestInWindow = entry.requests[0];
-      const retryAfterMs = oldestInWindow + windowMs - now;
-      const retryAfterSec = Math.ceil(retryAfterMs / 1000);
-
-      res.setHeader('Retry-After', String(retryAfterSec));
-      res.setHeader('X-RateLimit-Limit', String(maxRequests));
-      res.setHeader('X-RateLimit-Remaining', '0');
-      res.setHeader('X-RateLimit-Reset', String(oldestInWindow + windowMs));
-      res.statusCode = 429;
-      res.end(
-        JSON.stringify({
-          error: 'Too Many Requests',
-          retryAfter: retryAfterSec,
-        })
-      );
-      return;
-    }
-
-    entry.requests.push(now);
-
-    res.setHeader('X-RateLimit-Limit', String(maxRequests));
-    res.setHeader(
-      'X-RateLimit-Remaining',
-      String(maxRequests - entry.requests.length)
-    );
-    res.setHeader(
-      'X-RateLimit-Reset',
-      String(now + windowMs)
-    );
-
-    next();
-  };
+  return { allowed, remaining, resetAt }
 }
 
-// Cleanup old entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of store.entries()) {
-    const hasRecentRequests = entry.requests.some(
-      (ts) => ts > now - 86400000
-    );
-    if (!hasRecentRequests) {
-      store.delete(ip);
-    }
-  }
-}, 60000);
+// Pre-baked configs for common endpoints
+export const RATE_LIMITS = {
+  signup: { bucket: 'auth.signup', limit: 5, windowMs: 60 * 60 * 1000 },       // 5/hour
+  login: { bucket: 'auth.login', limit: 10, windowMs: 15 * 60 * 1000 },        // 10/15min
+  forgotPassword: { bucket: 'auth.forgot', limit: 3, windowMs: 60 * 60 * 1000 },// 3/hour
+  apiGeneral: { bucket: 'api.general', limit: 300, windowMs: 60 * 1000 },      // 300/min
+} as const
+
+/**
+ * Extract client IP from request headers. Trusts X-Forwarded-For only
+ * when Cloudflare Tunnel sets a single CF-Connecting-IP header
+ * (we always see these on the app side of the tunnel).
+ */
+export function getClientIp(req: Request): string {
+  const cfIp = req.headers.get('cf-connecting-ip')
+  if (cfIp) return cfIp
+  const xff = req.headers.get('x-forwarded-for')
+  if (xff) return xff.split(',')[0].trim()
+  return '0.0.0.0'
+}

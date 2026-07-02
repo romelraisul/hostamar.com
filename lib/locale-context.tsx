@@ -32,14 +32,14 @@ export function LocaleProvider({
   children: React.ReactNode
 }) {
   const locale = initialLocale || 'en'
-  const isRTL = locale === 'ur'
-  const dir = isRTL ? 'rtl' as const : 'ltr' as const
+  const isRTL = false // bn is LTR, no RTL locales currently
+  const dir = 'ltr' as const
 
   const setLocale = useCallback((newLocale: Locale) => {
     if (typeof document !== 'undefined') {
       document.cookie = `locale=${newLocale};path=/;max-age=31536000`
       document.documentElement.lang = newLocale
-      document.documentElement.dir = newLocale === 'ur' ? 'rtl' : 'ltr'
+      document.documentElement.dir = 'ltr'
       window.location.reload()
     }
   }, [])

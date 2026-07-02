@@ -1,9 +1,13 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from './prisma'
 
 export const authOptions: NextAuthOptions = {
+  // Adapter is used for password-reset flow (VerificationToken) only.
+  // Session strategy stays JWT to preserve existing sessions.
+  adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   
   session: {
@@ -90,12 +94,15 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.email = user.email
         token.name = user.name
+        // @ts-ignore — next-auth User shape varies; role read in app/apis via session callback
+        token.role = (user as any).role || 'customer'
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id as string
+        (session.user as any).role = (token as any).role || 'customer'
         session.user.email = token.email as string
         session.user.name = token.name as string
       }

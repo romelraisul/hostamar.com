@@ -1,0 +1,1 @@
+DATABASE_URL=echo "PASSWD_LEN: $(echo -n hostamar123 

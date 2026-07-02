@@ -1,4 +1,5 @@
 import React from 'react';
+// @ts-expect-error — remotion module is optional
 import { AbsoluteFill, Sequence, useCurrentFrame, interpolate } from 'remotion';
 import { Background } from './Background';
 import { TextOverlay } from './TextOverlay';

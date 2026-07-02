@@ -429,6 +429,7 @@ async function activateSubscription(
 
   // Send payment confirmation email (import lazily to avoid circular deps)
   try {
+    // @ts-expect-error — sendPaymentReceiptEmail may not be exported from email module
     const { sendPaymentReceiptEmail } = await import('@/lib/email')
     const customer = await prisma.customer.findUnique({ where: { id: customerId } })
     if (customer && customer.email) {

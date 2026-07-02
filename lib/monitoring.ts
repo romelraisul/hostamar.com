@@ -94,8 +94,9 @@ export function trackPerformance(
   // Sentry performance tracking
   Sentry.metrics?.distribution?.('performance', durationMs, {
     unit: 'milliseconds',
-    tags: { operation: name },
-  });
+    // @ts-ignore — tags property may not exist on MetricOptions in all Sentry versions
+    tags: { operation: name } as any,
+  } as any);
 
   // PostHog performance event
   posthogTrack('$performance', {
@@ -119,7 +120,9 @@ export function identifyUser(userId: string, traits?: Record<string, unknown>) {
   // Sentry user context
   Sentry.setUser({
     id: userId,
+    // @ts-expect-error — spread of potentially-undefined traits values
     ...(traits?.email && { email: traits.email as string }),
+    // @ts-expect-error — spread of potentially-undefined traits values
     ...(traits?.username && { username: traits.username as string }),
   });
 

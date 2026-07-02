@@ -15,8 +15,7 @@ interface ReferralData {
   totalBonus: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const gtag: (...args: any[]) => void;
+declare const gtag: (...args: unknown[]) => void;
 
 export default function ReferralPage() {
   const { t } = useLocale()
@@ -53,7 +52,7 @@ export default function ReferralPage() {
           url: referralData?.referralLink
         })
       } else {
-        await navigator.clipboard.writeText(referralData?.referralLink)
+        await navigator.clipboard.writeText(referralData?.referralLink ?? '')
       }
       setCopied(true)
       setTimeout(() => setCopied(false), 2500)
@@ -63,7 +62,7 @@ export default function ReferralPage() {
       }
     } catch (err) {
       const textarea = document.createElement('textarea')
-      textarea.value = referralData?.referralLink
+      textarea.value = referralData?.referralLink ?? ''
       document.body.appendChild(textarea)
       textarea.select()
       document.execCommand('copy')

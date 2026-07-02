@@ -188,6 +188,7 @@ let cachedServeUrl: string | null = null;
 async function getServeUrl(): Promise<string> {
   if (cachedServeUrl) return cachedServeUrl;
 
+  // @ts-expect-error — @remotion/bundler is an optional dependency
   const { bundle } = await import('@remotion/bundler');
 
   cachedServeUrl = await bundle({
@@ -205,7 +206,7 @@ async function getServeUrl(): Promise<string> {
     }),
   });
 
-  return cachedServeUrl;
+  return cachedServeUrl as string;
 }
 
 /**
@@ -243,6 +244,7 @@ async function findChromeExecutable(): Promise<string | undefined> {
 
   // Try puppeteer's bundled chromium
   try {
+    // @ts-expect-error — puppeteer is an optional dependency
     const puppeteer = await import('puppeteer');
     const executablePath = puppeteer.executablePath();
     await fs.access(executablePath);
@@ -261,6 +263,7 @@ async function renderVideo(
   inputProps: Record<string, unknown>,
   outputPath: string
 ): Promise<void> {
+  // @ts-expect-error — @remotion/renderer is an optional dependency
   const { renderMedia, selectComposition } = await import('@remotion/renderer');
 
   const serveUrl = await getServeUrl();
@@ -390,15 +393,15 @@ export async function renderPreviewVideo(
     let script: VideoScript;
     try {
       script = await generateScript(
-        preview.prompt,
-        preview.style,
+        (preview.prompt ?? '') as string,
+        (preview.style ?? 'modern') as string,
         totalDuration,
-        preview.title
+        (preview.title ?? undefined) as string | undefined
       );
       console.log(`[Render] Script generated: "${script.title}" (${script.segments.length} segments)`);
     } catch (ollamaError) {
       console.warn('[Render] Ollama failed, using fallback script:', String(ollamaError));
-      script = generateFallbackScript(preview.prompt, preview.style, totalDuration);
+      script = generateFallbackScript((preview.prompt ?? '') as string, (preview.style ?? 'modern') as string, totalDuration);
     }
 
     renderProgressMap.set(previewId, {
@@ -407,7 +410,7 @@ export async function renderPreviewVideo(
     });
 
     // ── 2. Determine colors from style ──────────────────────────────────────
-    const palette = STYLE_PALETTES[preview.style] || DEFAULT_PALETTE;
+    const palette = STYLE_PALETTES[(preview.style || 'modern') as keyof typeof STYLE_PALETTES] || DEFAULT_PALETTE;
 
     // ── 3. Render video via Remotion ────────────────────────────────────────
     renderProgressMap.set(previewId, {

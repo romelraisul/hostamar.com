@@ -178,6 +178,7 @@ function CustomerDetailModal({
   customer: Customer
   onClose: () => void 
 }) {
+  const { t } = useLocale()
   const [customerDetails, setCustomerDetails] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 

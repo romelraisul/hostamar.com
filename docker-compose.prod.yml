@@ -5,7 +5,6 @@
 # =============================================================================
 
 services:
-
   # ---------------------------------------------------------------------------
   # Redis 7 — BullMQ job queue backend
   # ---------------------------------------------------------------------------
@@ -13,6 +12,8 @@ services:
     image: redis:7-alpine
     container_name: hostamar-redis
     restart: unless-stopped
+    networks:
+      - hostamar-network
     volumes:
       - redis-data:/data
     healthcheck:
@@ -32,6 +33,10 @@ services:
     image: postgres:16-alpine
     container_name: hostamar-postgres
     restart: unless-stopped
+    networks:
+      hostamar-network:
+        aliases:
+          - postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-hostamar}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hostamar}
@@ -58,6 +63,8 @@ services:
     container_name: hostamar-app
     ports:
       - "3000:3000"
+    networks:
+      - hostamar-network
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
@@ -74,8 +81,8 @@ services:
       - NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY}
       - NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-ollama:11434}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-hermes3:latest}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-model:8000}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3.6:27b}
       - NODE_ENV=production
     depends_on:
       redis:
@@ -100,6 +107,8 @@ services:
       dockerfile: Dockerfile
     container_name: hostamar-worker
     command: ["node", "dist/workers/video-generation.js"]
+    networks:
+      - hostamar-network
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
@@ -112,8 +121,8 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-ollama:11434}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-hermes3:latest}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-model:8000}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3.6:27b}
       - NODE_ENV=production
     depends_on:
       redis:
@@ -133,17 +142,18 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: hostamar-ollama
-    ports:
-      - "127.0.0.1:11434:11434"
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 8G
+          memory: 24G
     volumes:
       - ollama-data:/root/.ollama
     networks:
       - hostamar-network
+    # qwen3.6:27b pulled into ollama-data volume. For NEW model pulls, switch to
+    # `network_mode: host` so the container can reach the public Ollama registry, do
+    # the pull, switch back to `hostamar-network`.
     environment:
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_MAX_LOADED_MODELS=1
@@ -153,10 +163,50 @@ services:
       - OLLAMA_NOHISTORY=false
       - OLLAMA_KEEP_ALIVE=5m0s
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:11434/ || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+          test: ["CMD-SHELL", "ollama list || exit 1"]
+          interval: 30s
+          timeout: 5s
+          retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Prometheus — Prometheus — Metrics collection & alerting
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hostamar-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts:/etc/prometheus/alerts:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+    networks:
+      - hostamar-network
+
+  # ---------------------------------------------------------------------------
+  # Grafana — Dashboards & visualization
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana-enterprise:latest
+    container_name: hostamar-grafana
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - hostamar-network
 
 # ---------------------------------------------------------------------------
 # Named Volumes
@@ -168,6 +218,10 @@ volumes:
     driver: local
   ollama-data:
     driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
 
 # ---------------------------------------------------------------------------
 # Networks
@@ -175,4 +229,4 @@ volumes:
 networks:
   hostamar-network:
     external: true
-    name: flociops-assistant_hostamar-network
+    name: hostamar-network
