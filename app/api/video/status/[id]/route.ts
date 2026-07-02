@@ -12,7 +12,6 @@ export async function GET(
       return NextResponse.json({ error: 'Preview ID is required' }, { status: 400 });
     }
 
-    // Get DB record — check Video model first, then Preview
     const video = await prisma.video.findUnique({
       where: { id: previewId },
       select: {
