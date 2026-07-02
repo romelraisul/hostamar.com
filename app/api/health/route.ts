@@ -1,38 +1,35 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
+  let database: { connected: boolean; error?: string } = { connected: false }
   try {
-    // Check database connection
-    await prisma.$connect();
-    const customerCount = await prisma.customer.count();
-    
-    // System info
-    const healthData = {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      database: {
-        connected: true,
-        customers: customerCount
-      },
-      environment: {
-        nodeEnv: process.env.NODE_ENV,
-        nextAuthUrl: process.env.NEXTAUTH_URL || 'not set'
-      },
-      version: '1.0.0'
-    };
-
-    return NextResponse.json(healthData, { status: 200 });
+    await prisma.$connect()
+    await prisma.customer.count()
+    database = { connected: true }
   } catch (error) {
-    return NextResponse.json(
-      {
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    database.error = error instanceof Error ? error.message : 'Unknown error'
   } finally {
-    await prisma.$disconnect();
+    try {
+      await prisma.$disconnect()
+    } catch {
+      // ignore shutdown issues in health checks
+    }
   }
+
+  const payload = {
+    status: database.connected ? 'healthy' : 'unhealthy',
+    timestamp: new Date().toISOString(),
+    database,
+    environment: {
+      nodeEnv: process.env.NODE_ENV,
+      nextAuthUrl: process.env.NEXTAUTH_URL || 'not set',
+      databaseUrlSet: Boolean(process.env.DATABASE_URL),
+    },
+    version: '1.0.0',
+  }
+
+  return NextResponse.json(payload, { status: database.connected ? 200 : 503 })
 }
