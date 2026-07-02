@@ -1,27 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
-// No import of @/lib/video-renderer — Remotion FFmpeg binaries can't build on Vercel.
-// Render progress is tracked in the DB by the local render worker.
-
-/**
- * GET /api/video/status/[id]
- *
- * Polls render status for a Preview record.
- * Returns current status, videoUrl, thumbnailUrl, and progress.
- */
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const previewId = params.id;
+    const previewId = params.id
 
     if (!previewId) {
       return NextResponse.json({ error: 'Preview ID is required' }, { status: 400 });
     }
 
-    // Get DB record
+    // Get DB record — check Video model first, then Preview
+    const video = await prisma.video.findUnique({
+      where: { id: previewId },
+      select: {
+        id: true,
+        status: true,
+        url: true,
+        thumbnailUrl: true,
+        title: true,
+        duration: true,
+        prompt: true,
+        templateId: true,
+        updatedAt: true,
+      },
+    })
+
+    if (video) {
+      const status = video.status
+      const progress =
+        status === 'ready' || status === 'complete' ? 1.0 :
+        status === 'failed' ? 0 :
+        status === 'processing' || status === 'generating' ? 0.5 :
+        status === 'queued' ? 0.1 : 0
+
+      return NextResponse.json({
+        success: true,
+        previewId: video.id,
+        status,
+        progress: Math.round(progress * 100),
+        videoUrl: video.url || null,
+        thumbnailUrl: video.thumbnailUrl || null,
+        error: null,
+        title: video.title,
+        duration: video.duration,
+        prompt: video.prompt,
+        style: null,
+        templateId: video.templateId || null,
+        updatedAt: video.updatedAt?.toISOString() || null,
+      });
+    }
+
     const preview = await prisma.preview.findUnique({
       where: { id: previewId },
       select: {
@@ -36,26 +67,23 @@ export async function GET(
         style: true,
         updatedAt: true,
       },
-    });
+    })
 
     if (!preview) {
-      return NextResponse.json({ error: 'Preview not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 });
     }
 
-    // Calculate progress from DB state
-    const status = preview.renderStatus;
-    const progress = (
+    const status = preview.renderStatus
+    const progress =
       status === 'complete' ? 1.0 :
       status === 'failed' ? 0 :
       status === 'generating' ? 0.5 :
-      status === 'queued' ? 0.1 :
-      0
-    );
+      status === 'queued' ? 0.1 : 0
 
     return NextResponse.json({
       success: true,
       previewId: preview.id,
-      status: preview.renderStatus,
+      status,
       progress: Math.round(progress * 100),
       videoUrl: preview.videoUrl || null,
       thumbnailUrl: preview.thumbnailUrl || null,
@@ -63,7 +91,8 @@ export async function GET(
       title: preview.title,
       duration: preview.duration,
       prompt: preview.prompt,
-      style: preview.style,
+      style: preview.style || null,
+      templateId: null,
       updatedAt: preview.updatedAt?.toISOString() || null,
     });
   } catch (error: any) {
