@@ -12,27 +12,48 @@ export default function GamePage() {
             LuckyStar Game
           </div>
           <div className="ml-auto flex gap-4 text-sm items-center">
-            <span className="text-purple-400 font-semibold">Popular Games</span>
+            <span className="text-purple-400 font-semibold">Choose a game</span>
           </div>
         </nav>
       </header>
 
       <section className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-center">Popular Games</h1>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { name: 'Slot Machine', icon: '🎰', desc: 'Spin and win big!', href: '/game/slot-machine' },
-            { name: 'Roulette', icon: '🎡', desc: 'Place your bets', href: '#' },
-            { name: 'Blackjack', icon: '♠️', desc: 'Beat the dealer', href: '#' },
-            { name: 'Poker', icon: '🃏', desc: 'Texas Hold em', href: '#' },
-          ].map((game, i) => (
-            <a href={game.href} key={i} className="block bg-white/5 border border-white/10 rounded-xl p-6 text-center hover:bg-white/10 transition group">
-              <div className="text-6xl mb-4 group-hover:scale-110 transition">{game.icon}</div>
-              <h3 className="text-xl font-bold mb-2">{game.name}</h3>
-              <p className="text-gray-400 mb-4">{game.desc}</p>
-              <span className="inline-block w-full py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition">Play Now</span>
-            </a>
-          ))}
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold mb-3">Pick your game</h1>
+            <p className="text-gray-400">Start with Slot Machine, then try the others.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              { name: 'Slot Machine', icon: '🎰', desc: 'Spin the reels and chase multipliers.', href: '/game/slot-machine', status: 'Playable' },
+              { name: 'Roulette', icon: '🎡', desc: 'Place your bets and test your luck.', href: '/game/roulette', status: 'Coming soon' },
+              { name: 'Blackjack', icon: '♠️', desc: 'Beat the dealer with strategy.', href: '/game/blackjack', status: 'Coming soon' },
+              { name: 'Poker', icon: '🃏', desc: 'Texas Hold’em style showdown.', href: '/game/poker', status: 'Coming soon' },
+            ].map((game, i) => (
+              <a
+                href={game.href}
+                key={i}
+                className="group block bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-5xl mb-4 group-hover:scale-110 transition">{game.icon}</div>
+                    <h3 className="text-xl font-bold">{game.name}</h3>
+                    <p className="text-gray-400 mt-1">{game.desc}</p>
+                  </div>
+                  <span className="shrink-0 text-xs px-2 py-1 rounded-full border border-white/10 text-gray-300">
+                    {game.status}
+                  </span>
+                </div>
+                <div className="mt-5">
+                  <span className="inline-block w-full py-2 bg-purple-500/20 text-purple-400 rounded-xl text-center hover:bg-purple-500/30 transition">
+                    {game.status === 'Playable' ? 'Play now' : 'Notify me'}
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
