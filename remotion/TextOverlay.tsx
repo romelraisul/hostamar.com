@@ -1,4 +1,5 @@
 import React from 'react';
+// @ts-expect-error — remotion module is optional
 import { useCurrentFrame, interpolate, spring, AbsoluteFill } from 'remotion';
 
 interface TextOverlayProps {

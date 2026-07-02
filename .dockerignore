@@ -30,3 +30,4 @@ comfyui/
 *.zip
 hostamar-platform.tgz
 demo/
+redis-bridge/node_modules

@@ -1,27 +1,93 @@
 'use client'
 
-import { useLocale } from '@/lib/locale-context'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+import { PRODUCTS } from '@/lib/products'
 
 export default function Navbar() {
-  const { t, isRTL } = useLocale()
-
   return (
-    <nav className={`bg-white/80 backdrop-blur-sm border-b border-gray-200 dark:bg-slate-900/90 dark:border-slate-700 ${isRTL ? 'text-right' : ''}`}>
-      <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+    <nav className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-30">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">H</span>
           </div>
-          <span className="text-xl font-bold text-gray-900 dark:text-white">Hostamar</span>
+          <span className="text-xl font-bold text-gray-900">Hostamar</span>
+        </Link>
+
+        {/* Center links — Products dropdown is the key affordance */}
+        <div className="hidden md:flex items-center gap-1">
+          {/* Products dropdown */}
+          <div className="relative group">
+            <button
+              className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg inline-flex items-center gap-1"
+              type="button"
+            >
+              Products <ChevronDown className="w-4 h-4" />
+            </button>
+
+            {/* Dropdown panel: opens on hover (md+) and on focus-within (a11y). */}
+            <div
+              className="absolute left-0 top-full pt-2 hidden group-hover:block group-focus-within:block z-40"
+              role="menu"
+            >
+              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-[640px] grid grid-cols-2 gap-2">
+                <Link
+                  href="/products"
+                  className="col-span-2 px-3 py-2 mb-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 flex items-center justify-between"
+                  role="menuitem"
+                >
+                  <span className="font-bold text-gray-900">🛠 সব পণ্য দেখুন</span>
+                  <span className="text-xs text-blue-700">6টি →</span>
+                </Link>
+                {PRODUCTS.map((p) => (
+                  <Link
+                    key={p.slug}
+                    href={`/products/${p.slug}`}
+                    className="px-3 py-2 rounded-lg hover:bg-gray-50 flex items-start gap-3"
+                    role="menuitem"
+                  >
+                    <span className="text-2xl">{p.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-gray-900 text-sm">{p.nameBn}</span>
+                        <span className="text-xs text-gray-400">{p.badge}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 line-clamp-1">{p.taglineBn}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Secondary links */}
+          <Link href="/pricing" className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg">
+            Pricing
+          </Link>
+          <Link href="/prompts" className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg">
+            Prompts
+          </Link>
+          <Link href="/blog" className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg">
+            Blog
+          </Link>
         </div>
-        <div className="flex items-center gap-4">
-          <a href="#pricing" className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400">{t('nav.pricing')}</a>
-          <a href="#features" className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400">{t('nav.features')}</a>
-          <LanguageSwitcher />
-          <a href="/login" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            {t('nav.startFree')}
-          </a>
+
+        {/* Right side */}
+        <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className="hidden sm:inline-block px-3 py-2 text-gray-700 hover:text-blue-600 font-medium"
+          >
+            লগইন
+          </Link>
+          <Link
+            href="/signup"
+            className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 text-sm"
+          >
+            ফ্রি শুরু করুন
+          </Link>
         </div>
       </div>
     </nav>

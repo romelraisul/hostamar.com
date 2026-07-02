@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server'
 import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { NextRequest } from 'next/server'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const rl = await checkRateLimit(ip, RATE_LIMITS.signup, '/api/auth/signup', 'POST')
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many signup attempts from this address. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
     const { email, password, name, businessName, industry, inviteCode, refCode } = body
 

@@ -6,6 +6,8 @@ interface VideoPreviewProps {
   isGenerating: boolean
   generatedUrl: string | null
   progress: number
+  statusText?: string
+  error?: string | null
 }
 
 function ProgressIndicator({ progress }: { progress: number }) {
@@ -65,9 +67,39 @@ function EmptyPreview() {
   )
 }
 
-export default function VideoPreview({ isGenerating, generatedUrl, progress }: VideoPreviewProps) {
+export default function VideoPreview({ isGenerating, generatedUrl, progress, statusText, error }: VideoPreviewProps) {
   if (isGenerating) {
-    return <ProgressIndicator progress={progress} />
+    return (
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl">
+        <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-xl overflow-hidden">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+            <div className="bg-white/20 rounded-full h-3 overflow-hidden">
+              <div className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${Math.min(progress, 100)}%` }} />
+            </div>
+            <p className="text-white text-sm mt-2 font-medium">{Math.round(progress)}% সম্পন্ন...</p>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-white font-medium text-lg">AI কাজ করছে...</p>
+              <p className="text-blue-200 text-sm mt-1">
+                {progress < 30 ? 'ভিডিও স্ক্রিপ্ট লেখা হচ্ছে...' :
+                 progress < 60 ? 'ভিডিও জেনারেট হচ্ছে...' :
+                 progress < 90 ? 'অডিও যোগ করা হচ্ছে...' : 'শেষ স্পর্শ দেওয়া হচ্ছে...'}
+              </p>
+              {statusText && (
+                <p className="text-white/80 text-xs mt-2">Status: {statusText}</p>
+              )}
+            </div>
+          </div>
+        </div>
+        {error && (
+          <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+      </div>
+    )
   }
 
   if (generatedUrl) {

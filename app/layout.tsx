@@ -119,13 +119,12 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const cookieStore = await cookies()
-  const locale = (cookieStore.get('locale')?.value || 'en') as Locale
-  const isBengali = locale === 'bn'
-  const isUrdu = locale === 'ur'
-  const htmlFontClass = isBengali ? notoBengali.variable : isUrdu ? '' : ''
+    const locale = (cookieStore.get('locale')?.value || 'en') as Locale
+    const isBengali = locale === 'bn'
+    const htmlFontClass = isBengali ? notoBengali.variable : ''
 
-  return (
-    <html lang={locale} dir={isUrdu ? 'rtl' : 'ltr'} className={isBengali ? notoBengali.variable : ''}>
+    return (
+      <html lang={locale} dir="ltr" className={isBengali ? notoBengali.variable : ''}>
       <head>
         <meta charSet="utf-8" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -137,7 +136,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Hostamar" />
         <meta property="og:site_name" content="Hostamar" />
-        <meta property="og:locale" content={isBengali ? 'bn_BD' : isUrdu ? 'ur_PK' : 'en_US'} />
+        <meta property="og:locale" content={isBengali ? 'bn_BD' : 'en_US'} />
         <meta property="og:type" content="website" />
         {/* Preconnect to critical origins for performance */}
         <link rel="dns-prefetch" href={SITE_URL} />

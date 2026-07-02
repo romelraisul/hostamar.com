@@ -10,11 +10,11 @@ export async function comparePassword(plainPassword: string, hashedPassword: str
   return bcrypt.compare(plainPassword, hashedPassword)
 }
 
-export function signToken(payload: { id: string; email: string; name: string }): string {
+export function signToken(payload: { id: string; email: string; name: string; role?: string }): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
 }
 
-export function verifyToken(token: string): { id: string; email: string; name: string } | null {
+export function verifyToken(token: string): { id: string; email: string; name: string; role?: string } | null {
   try {
     return jwt.verify(token, JWT_SECRET) as { id: string; email: string; name: string }
   } catch {

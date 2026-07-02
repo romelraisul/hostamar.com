@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
 import { useLocale } from "@/lib/locale-context"
 
 export default function LoginPage() {
@@ -19,17 +18,19 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: "/dashboard"
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       })
 
-      if (result?.error) {
-        setError(t('login.errorInvalid') || "ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।")
-      } else if (result?.ok) {
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || t('login.errorInvalid') || "ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।")
+      } else {
         router.push("/dashboard")
+        router.refresh()
       }
     } catch (err) {
       setError(t('login.errorGeneric') || "লগইন করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।")

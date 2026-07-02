@@ -1,43 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import jwt from 'jsonwebtoken'
+import { randomBytes } from 'crypto'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret'
+const RESET_TTL_MS = 60 * 60 * 1000 // 1 hour
 
+/**
+ * POST /api/auth/forgot-password
+ * Body: { email }
+ *
+ * Creates a VerificationToken row (identifier=email, token=randomhex, expires=now+1h)
+ * and emails the user a reset link. Does NOT reveal whether the email exists.
+ */
 export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json()
-    if (!email) {
+    if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
+    const normalized = email.trim().toLowerCase()
 
-    const customer = await prisma.customer.findUnique({ where: { email } })
+    const customer = await prisma.customer.findUnique({ where: { email: normalized } })
     if (!customer) {
-      // Don't reveal whether email exists
-      return NextResponse.json({ success: true, message: 'If the email exists, a reset link has been sent.' })
+      return NextResponse.json({
+        success: true,
+        message: 'If the email exists, a reset link has been sent.',
+      })
     }
 
-    // Generate reset token (1-hour expiry)
-    const resetToken = jwt.sign(
-      { id: customer.id, purpose: 'reset-password' },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    )
-
-    const resetTokenExpiry = new Date(Date.now() + 3600000)
-    await prisma.customer.update({
-      where: { id: customer.id },
-      data: { resetToken, resetTokenExpiry },
+    // Prune any prior tokens for this email to keep the table tight
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: normalized },
     })
 
-    // Try to send email via nodemailer
+    const token = randomBytes(32).toString('hex')
+    const expires = new Date(Date.now() + RESET_TTL_MS)
+    await prisma.verificationToken.create({
+      data: { identifier: normalized, token, expires },
+    })
+
     const appUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-    const resetUrl = `${appUrl}/reset-password?token=${resetToken}`
+    const resetUrl = `${appUrl}/reset-password?token=${token}`
 
     try {
       const { sendEmail } = require('@/lib/email')
       await sendEmail({
-        to: email,
+        to: normalized,
         subject: 'Reset your Hostamar password',
         html: `
           <h2>Password Reset</h2>
@@ -49,11 +56,15 @@ export async function POST(req: NextRequest) {
         `,
       })
     } catch {
-      // Email may not be configured — log reset URL for development
       if (process.env.NODE_ENV === 'development') console.log('Password reset URL:', resetUrl)
     }
 
-    return NextResponse.json({ success: true, message: 'If the email exists, a reset link has been sent.', resetUrl: process.env.NODE_ENV === 'development' ? resetUrl : undefined })
+    return NextResponse.json({
+      success: true,
+      message: 'If the email exists, a reset link has been sent.',
+      // Expose URL in dev only so user can test without SMTP
+      resetUrl: process.env.NODE_ENV === 'development' ? resetUrl : undefined,
+    })
   } catch (error: any) {
     console.error('Forgot password error:', error?.message || error)
     return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })

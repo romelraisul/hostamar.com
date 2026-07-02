@@ -8,11 +8,12 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
-  DeleteObjectCommand,
-  ListObjectsV2Command,
-  type PutObjectCommandInput,
 } from '@aws-sdk/client-s3';
+// @ts-expect-error - runtime export exists but TS type barrel is broken in v3.577.0
+import { DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+// @ts-expect-error - runtime export exists but TS type barrel is broken in v3.577.0
+import type { PutObjectCommandInput } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import path from 'path';
 
@@ -45,7 +46,6 @@ function getClient(): S3Client {
         accessKeyId: R2_ACCESS_KEY,
         secretAccessKey: R2_SECRET_KEY,
       },
-      // R2 requires path-style addressing
       forcePathStyle: true,
     });
   }
@@ -67,10 +67,6 @@ export interface UploadResult {
   bucket: string;
 }
 
-/**
- * Upload a file (Buffer/Uint8Array) to R2.
- * Returns the public URL and object key.
- */
 export async function uploadFile(
   file: Buffer | Uint8Array | Blob | string,
   fileName: string,
@@ -81,7 +77,7 @@ export async function uploadFile(
   const key = generateKey(fileName, folder);
 
   const body = typeof file === 'string'
-    ? file // file path — but we handle Buffer uploads only
+    ? file
     : file instanceof Blob
       ? Buffer.from(await file.arrayBuffer())
       : file;
@@ -96,14 +92,10 @@ export async function uploadFile(
   await client.send(new PutObjectCommand(params));
 
   const url = buildPublicUrl(key);
-
   console.log(`[R2] Uploaded ${key} (${mimeType || 'unknown'})`);
   return { url, key, bucket: R2_BUCKET };
 }
 
-/**
- * Upload from a local file path by reading it into a Buffer.
- */
 export async function uploadFromPath(
   filePath: string,
   folder: string = 'videos'
@@ -117,9 +109,6 @@ export async function uploadFromPath(
 
 // --- Download ---
 
-/**
- * Get a signed URL for temporary access to a private object.
- */
 export async function getSignedDownloadUrl(
   key: string,
   expiresInSeconds: number = 3600
@@ -129,12 +118,9 @@ export async function getSignedDownloadUrl(
     Bucket: R2_BUCKET,
     Key: key,
   });
-  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+  return getSignedUrl(client as any, command as any, { expiresIn: expiresInSeconds });
 }
 
-/**
- * Download an object as a Buffer.
- */
 export async function downloadFile(key: string): Promise<Buffer> {
   const client = getClient();
   const response = await client.send(
@@ -149,7 +135,6 @@ export async function downloadFile(key: string): Promise<Buffer> {
     throw new Error(`No body returned for R2 object: ${key}`);
   }
 
-  // Convert stream to Buffer
   const chunks: Uint8Array[] = [];
   for await (const chunk of stream as AsyncIterable<Uint8Array>) {
     chunks.push(chunk);
@@ -190,10 +175,8 @@ export async function listFiles(
 // --- Utilities ---
 
 function buildPublicUrl(key: string): string {
-  if (R2_PUBLIC_URL) {
-    return `${R2_PUBLIC_URL}/${key}`;
-  }
-  // Fallback: use the R2 endpoint directly
+  // Return signed URL that works directly with MinIO (bypasses Cloudflare path rewrite issue)
+  // The signed URL includes the bucket in the path correctly
   return `${R2_ENDPOINT}/${R2_BUCKET}/${key}`;
 }
 

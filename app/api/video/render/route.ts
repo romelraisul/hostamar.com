@@ -1,11 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/get-auth-user';
-import { prisma } from '@/lib/prisma';
-
-// Video rendering runs on the local Windows machine via cron worker.
-// This API route creates the DB entry and returns — actual rendering
-// is handled by the local render-worker.ts script.
-// No import of @remotion/renderer here avoids FFmpeg binary build errors.
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
+import { prisma } from '@/lib/prisma'
+import { enqueueVideoGeneration } from '@/lib/queue'
 
 /**
  * POST /api/video/render
@@ -31,7 +27,15 @@ export async function POST(req: NextRequest) {
     // Verify preview exists and belongs to user
     const preview = await prisma.preview.findUnique({
       where: { id: previewId },
-      select: { id: true, customerId: true, renderStatus: true },
+      select: { 
+        id: true, 
+        customerId: true, 
+        renderStatus: true,
+        script: true,
+        style: true,
+        duration: true,
+        title: true,
+      },
     });
 
     if (!preview) {
@@ -57,13 +61,18 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Mark as queued for local render worker
+    // Get script from preview or use title as fallback
+    const script = preview.script || preview.title || 'Generate a video from this preview';
+    const style = preview.style || 'modern';
+    const duration = preview.duration || 30;
+
+    // Mark preview as queued
     await prisma.preview.update({
       where: { id: previewId },
       data: { renderStatus: 'queued' },
     });
 
-    // Add to video queue for local worker
+    // Add to Prisma VideoQueue for legacy worker compatibility
     await prisma.videoQueue.create({
       data: {
         customerId: authUser.id,
@@ -74,10 +83,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Also enqueue to BullMQ for new ComfyUI worker
+    const bullJob = await enqueueVideoGeneration({
+      script,
+      style,
+      voiceOver: '', // No voiceover for now
+      duration,
+      userId: authUser.id,
+      previewId,
+    });
+
+    console.log(`[Video Render API] Enqueued BullMQ job ${bullJob.id} for preview ${previewId}`);
+
     return NextResponse.json({
       success: true,
       status: 'queued',
-      message: 'Queued for local render worker',
+      message: 'Queued for video generation worker',
+      jobId: bullJob.id,
     });
   } catch (error: any) {
     console.error('[Video Render API] Error:', error?.message || error);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || 'http://localhost:11435'
+const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://hostamar-ollama:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_PREVIEW_MODEL || 'hermes3:latest'
 
 export async function POST(req: NextRequest) {

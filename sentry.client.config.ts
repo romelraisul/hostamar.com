@@ -34,6 +34,7 @@ if (SENTRY_DSN) {
         : []),
     ],
     // Performance monitoring
+    // @ts-expect-error — enableWebVitals may not exist on all Sentry option types
     enableWebVitals: true,
   });
 }

@@ -35,24 +35,24 @@ const server = http.createServer((req, res) => {
   // Check if file exists in .next/static
   let filePath = path.join(__dirname, '.next', 'static', reqPath);
   
-  // Handle API routes proxy (redirect to Vercel)
-  if (reqPath.startsWith('/api/') || reqPath.startsWith('/_next/')) {
-    const options = {
-      hostname: 'hostamar-local-8i0q2d0bg-romelraisul-8939s-projects.vercel.app',
-      port: 443,
-      path: req.url,
-      method: req.method,
-      headers: req.headers
-    };
+  // Handle API routes proxy (redirect to Vercel) - EXCEPT storage which runs locally
+    if ((reqPath.startsWith('/api/') && !reqPath.startsWith('/api/storage/')) || reqPath.startsWith('/_next/')) {
+      const options = {
+        hostname: 'hostamar-local-8i0q2d0bg-romelraisul-8939s-projects.vercel.app',
+        port: 443,
+        path: req.url,
+        method: req.method,
+        headers: req.headers
+      };
     
-    const https = require('https');
-    const proxyReq = https.request(options, (proxyRes) => {
-      res.writeHead(proxyRes.statusCode, proxyRes.headers);
-      proxyRes.pipe(res);
-    });
-    req.pipe(proxyReq);
-    return;
-  }
+      const https = require('https');
+      const proxyReq = https.request(options, (proxyRes) => {
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        proxyRes.pipe(res);
+      });
+      req.pipe(proxyReq);
+      return;
+    }
   
   // Serve static files
   fs.readFile(filePath, (err, content) => {

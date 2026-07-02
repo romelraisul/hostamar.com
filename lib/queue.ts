@@ -3,16 +3,23 @@
  *
  * Central queue configuration with Redis connection and default job options.
  * Supports local Redis (redis://localhost:6379) for dev, override via REDIS_URL in prod.
+ *
+ * Failover: if REDIS_URL points at the WSL-bridge tunnel and it's unreachable,
+ * the worker (lib/redis-failover.ts) selects the fallback URL. We read the
+ * selected URL via getSelectedRedisUrl() below.
  */
 import { Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq';
 import Redis from 'ioredis';
+import { startRedisFailover, getActiveRedis, onFailoverEvent } from './redis-failover';
 
 // --- Redis Connection ---
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+// Failover-aware URL selector. At boot, picks PRIMARY if reachable, else FALLBACK.
+// Hot-swapping is provided via onFailover callback (BullMQ retries with attempts:3).
+let selectedUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
 function createRedisConnection(): Redis {
-  const connection = new Redis(REDIS_URL, {
+  const connection = new Redis(selectedUrl, {
     maxRetriesPerRequest: null, // BullMQ manages its own retries
     enableReadyCheck: false,
     retryStrategy(times) {
@@ -20,7 +27,7 @@ function createRedisConnection(): Redis {
       return Math.min(times * 1000, 30000);
     },
     reconnectOnError(err) {
-      const targetErrors = ['READONLY', 'ETIMEDOUT', 'ECONNREFUSED'];
+      const targetErrors = ['READONLY', 'ETIMEDOUT', 'ECONNREFUSED', 'EPIPE'];
       return targetErrors.some((e) => err.message.includes(e));
     },
   });
@@ -37,6 +44,35 @@ function createRedisConnection(): Redis {
 }
 
 let redisConnection: Redis | null = null;
+
+/**
+ * Boot the failover module so selectedUrl reflects the live Redis target,
+ * not the env-var-driven default. Called once at app/worker startup.
+ */
+export async function initRedis(): Promise<void> {
+  try {
+    const active = await startRedisFailover()
+    selectedUrl = (active.options as any).host
+      ? `${active.options.host}:${(active.options as any).port}`
+      : selectedUrl
+    // If failover kicked in to a different URL, switch to that one
+    const fbUrl = process.env.REDIS_FALLBACK_URL || ''
+    const activeOptions = active.options as any
+    if (activeOptions.url && activeOptions.url !== selectedUrl) {
+      selectedUrl = activeOptions.url
+    }
+    onFailoverEvent((newUrl) => {
+      console.warn('[Queue] Redis failover — bullmq will retry on next disconnect', { newUrl })
+      selectedUrl = newUrl
+      // Drop the cached connection so the next getRedisConnection() picks up the new URL.
+      redisConnection?.disconnect()
+      redisConnection = null
+    })
+    console.log('[Queue] Redis initialized', { url: selectedUrl })
+  } catch (e) {
+    console.warn('[Queue] initRedis failed, falling back to REDIS_URL env', (e as Error).message)
+  }
+}
 
 export function getRedisConnection(): Redis {
   if (!redisConnection) {
@@ -105,12 +141,13 @@ export function getQueueEvents(name: string): QueueEvents {
 // --- Helper: Enqueue a video generation job ---
 
 export interface VideoGenerationJobData {
-  script: string;
-  style: string;
-  voiceOver: string;
-  duration: number;
-  userId: string;
-  previewId?: string; // optional link to Preview record
+  script: string
+  style: string
+  voiceOver: string
+  duration: number
+  userId: string
+  previewId?: string
+  videoId?: string
 }
 
 export async function enqueueVideoGeneration(

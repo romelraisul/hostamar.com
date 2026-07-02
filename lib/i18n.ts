@@ -609,7 +609,6 @@ const en: Record<string, string> = {
   'payment.tryAgain': 'Try Again',
   'payment.successful': 'Payment Successful!',
   'payment.creditsAdded': 'credits added to your account',
-  'payment.goToDashboard': 'Go to Dashboard',
 
   // ---- Forgot Password ----
   'forgotPassword.title': 'Forgot Password',
@@ -1469,7 +1468,6 @@ const bn: Record<string, string> = {
   'payment.tryAgain': 'আবার চেষ্টা করুন',
   'payment.successful': 'পেমেন্ট সফল!',
   'payment.creditsAdded': 'ক্রেডি আপনার অ্যাকাউন্টে যোগ হয়েছে',
-  'payment.goToDashboard': 'ড্যাশবোর্ডে যান',
 
   // ---- Forgot Password ----
   'forgotPassword.title': 'পাসওয়ার্ড ভুলে গেছেন',
@@ -2329,7 +2327,6 @@ const ur: Record<string, string> = {
   'payment.tryAgain': 'دوبارہ کوشش کریں',
   'payment.successful': 'ادائیگی کامیاب!',
   'payment.creditsAdded': 'آپ کے اکاؤنٹ میں کریڈٹ شامل کر دیا گیا ہے',
-  'payment.goToDashboard': 'ڈیش بورڈ پر جائیں',
 
   // ---- Forgot Password ----
   'forgotPassword.title': 'پاس ورڈ بھول گئے',

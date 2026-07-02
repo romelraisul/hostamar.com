@@ -1,29 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-/**
- * Verify a JWT using Web Crypto API (Edge Runtime compatible).
- * Falls back to returning null on any error — no Node.js deps needed.
- */
-async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string } | null> {
+// Track request metrics for Prometheus
+import { incrementRequestCount } from '@/lib/metrics-store'
+
+async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string } | null> {
   try {
-    const secret = process.env.JWT_SECRET
+    const secret = process.env.NEXTAUTH_SECRET
     if (!secret || !token) return null
 
     // Decode the JWT payload without verification (just read contents)
     const parts = token.split('.')
     if (parts.length !== 3) return null
-    
-    const payload = JSON.parse(atob(parts[1]))
-    
+
+    // Use base64url decode compatible with Edge Runtime
+    const base64Url = parts[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
+    const payload = JSON.parse(atob(padded))
+
     // Check expiration
     if (payload.exp && Date.now() >= payload.exp * 1000) return null
-    
+
     // Return payload if it matches expected shape
     if (payload.id && payload.email) {
       return {
         id: String(payload.id),
         email: String(payload.email),
         name: String(payload.name || ''),
+        role: String(payload.role || 'customer'),
       }
     }
     return null
@@ -31,40 +35,65 @@ async function verifyTokenEdge(token: string): Promise<{ id: string; email: stri
     return null
   }
 }
-
 export async function middleware(request: NextRequest) {
-  const token = request.cookies.get('auth_token')?.value
+  // Check for custom JWT auth token (set by /api/auth/login)
+  const authToken = request.cookies.get('auth_token')?.value
   const { pathname } = request.nextUrl
 
-  // Public paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog']
-  const publicApiPaths = ['/api/auth/login', '/api/auth/register', '/api/health', '/api/auth/signup']
-  
-  for (const p of publicPaths) {
-    if (pathname === p || pathname.startsWith(p + '/')) {
-      if (pathname.startsWith('/api/') && !publicApiPaths.some(ap => pathname.startsWith(ap))) {
-        break
-      }
-      return NextResponse.next()
-    }
-  }
-  for (const ap of publicApiPaths) {
-    if (pathname.startsWith(ap)) {
-      return NextResponse.next()
-    }
+  // Track API request metrics (skip metrics endpoint to avoid recursion)
+  if (pathname.startsWith('/api/') && pathname !== '/api/metrics') {
+    incrementRequestCount(request.method, pathname)
   }
 
   // Static assets — always allow
-  if (pathname.startsWith('/_next/') || pathname.startsWith('/static/') || pathname === '/favicon.ico' || pathname.startsWith('/manifest.json') || pathname.startsWith('/opengraph-image')) {
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/static/') ||
+    pathname === '/favicon.ico' ||
+    pathname.startsWith('/manifest.json') ||
+    pathname.startsWith('/opengraph-image')
+  ) {
     return NextResponse.next()
+  }
+
+  // Public API paths — no auth needed (include all NextAuth endpoints + custom auth)
+  const publicApiPaths = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/health',
+    '/api/auth/signup',
+    '/api/auth/forgot-password',
+    '/api/auth/forgot',
+    '/api/auth/reset',
+    '/api/auth/reset-password',
+    '/api/storage',
+    '/api/metrics',
+    '/api/auth/providers',
+    '/api/auth/callback',
+    '/api/auth/signin',
+    '/api/auth/signout',
+    '/api/auth/csrf',
+    '/api/auth/session',
+    '/api/admin',
+  ]
+  if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
+    return NextResponse.next()
+  }
+
+  // Public page paths — no auth needed
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate']
+  for (const p of publicPaths) {
+    if (pathname === p || pathname.startsWith(p + '/')) {
+      return NextResponse.next()
+    }
   }
 
   // API routes — validate token
   if (pathname.startsWith('/api/')) {
-    if (!token) {
+    if (!authToken) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
-    const payload = await verifyTokenEdge(token)
+    const payload = await verifyTokenEdge(authToken)
     if (!payload) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -73,18 +102,22 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-email', payload.email)
     requestHeaders.set('x-user-name', payload.name)
     return NextResponse.next({
-      request: { headers: requestHeaders }
+      request: { headers: requestHeaders },
     })
   }
 
   // Protected pages — redirect to login
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-    if (!token) {
+    if (!authToken) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    const payload = await verifyTokenEdge(token)
+    const payload = await verifyTokenEdge(authToken)
     if (!payload) {
       return NextResponse.redirect(new URL('/login', request.url))
+    }
+    // /admin area requires elevated role
+    if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
 

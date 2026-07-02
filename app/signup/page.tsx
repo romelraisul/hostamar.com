@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { useLocale } from "@/lib/locale-context"
@@ -12,8 +12,17 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [inviteCode, setInviteCode] = useState(new URLSearchParams(window.location.search).get("invite") || "")
-  const [refCode] = useState(new URLSearchParams(window.location.search).get("ref") || "")
+  const [inviteCode, setInviteCode] = useState("")
+  const [refCode, setRefCode] = useState("")
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    setInviteCode(params.get("invite") || "")
+    setRefCode(params.get("ref") || "")
+    setHydrated(true)
+  }, [])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 

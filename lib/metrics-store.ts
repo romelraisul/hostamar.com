@@ -48,3 +48,41 @@ export function getGauge(name: string): number {
 export function getAllGauges(): Map<string, number> {
   return gaugeValues;
 }
+
+/** Generate all metrics in Prometheus exposition format */
+export function getAllMetrics(): string {
+  const lines: string[] = [];
+
+  // ── hostamar_uptime_seconds (gauge) ──────────────────────────────────
+  lines.push('# HELP hostamar_uptime_seconds Server uptime in seconds');
+  lines.push('# TYPE hostamar_uptime_seconds gauge');
+  lines.push(`hostamar_uptime_seconds ${getUptimeSeconds()}`);
+
+  // ── hostamar_http_requests_total (counter, method + path labels) ────
+  lines.push(
+    '# HELP hostamar_http_requests_total Total HTTP requests by method and path',
+  );
+  lines.push('# TYPE hostamar_http_requests_total counter');
+  const requestMetrics = getAllRequestMetrics();
+  if (requestMetrics.length === 0) {
+    lines.push('hostamar_http_requests_total{method="GET",path="/"} 0');
+  } else {
+    for (const { method, path, count } of requestMetrics) {
+      lines.push(
+        `hostamar_http_requests_total{method="${method}",path="${path}"} ${count}`,
+      );
+    }
+  }
+
+  // ── Gauges ───────────────────────────────────────────────────────────
+  for (const [name, value] of gaugeValues.entries()) {
+    lines.push(`# HELP ${name} Custom gauge metric`);
+    lines.push(`# TYPE ${name} gauge`);
+    lines.push(`${name} ${value}`);
+  }
+
+  // Trailing newline required by Prometheus exposition format
+  lines.push('');
+
+  return lines.join('\n');
+}
