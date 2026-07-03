@@ -75,12 +75,34 @@ export async function checkRateLimit(
 }
 
 // Pre-baked configs for common endpoints
-export const RATE_LIMITS = {
+const DEFAULT_LIMITS = {
   signup: { bucket: 'auth.signup', limit: 5, windowMs: 60 * 60 * 1000 },       // 5/hour
   login: { bucket: 'auth.login', limit: 10, windowMs: 15 * 60 * 1000 },        // 10/15min
   forgotPassword: { bucket: 'auth.forgot', limit: 3, windowMs: 60 * 60 * 1000 },// 3/hour
   apiGeneral: { bucket: 'api.general', limit: 300, windowMs: 60 * 1000 },      // 300/min
-} as const
+} as const satisfies Record<string, RateLimitConfig>
+
+export const RATE_LIMITS = (() => {
+  const signupLimit = Number(process.env.SIGNUP_RATE_LIMIT)
+  const signupWindow = Number(process.env.SIGNUP_RATE_LIMIT_WINDOW_MS)
+  const loginLimit = Number(process.env.LOGIN_RATE_LIMIT)
+  const loginWindow = Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS)
+
+  return {
+    signup: {
+      ...DEFAULT_LIMITS.signup,
+      ...(Number.isFinite(signupLimit) && signupLimit > 0 ? { limit: signupLimit } : {}),
+      ...(Number.isFinite(signupWindow) && signupWindow > 0 ? { windowMs: signupWindow } : {}),
+    },
+    login: {
+      ...DEFAULT_LIMITS.login,
+      ...(Number.isFinite(loginLimit) && loginLimit > 0 ? { limit: loginLimit } : {}),
+      ...(Number.isFinite(loginWindow) && loginWindow > 0 ? { windowMs: loginWindow } : {}),
+    },
+    forgotPassword: DEFAULT_LIMITS.forgotPassword,
+    apiGeneral: DEFAULT_LIMITS.apiGeneral,
+  }
+})()
 
 /**
  * Extract client IP from request headers. Trusts X-Forwarded-For only

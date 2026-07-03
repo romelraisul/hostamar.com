@@ -123,6 +123,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-model:8000}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3.6:27b}
+      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://flociops-searxng:8080}
       - NODE_ENV=production
     depends_on:
       redis:
