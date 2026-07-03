@@ -50,6 +50,7 @@ model VerificationToken {
 
 // User/Customer Model
 model Customer {
+  customerId   String   @unique @default(cuid())
   id            String   @id @default(cuid())
   email         String   @unique
   name          String
