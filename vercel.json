@@ -189,6 +189,5 @@
   ],
   "regions": [
     "iad1"
-  ],
-  "nodeVersion": "22.x"
+  ]
 }
