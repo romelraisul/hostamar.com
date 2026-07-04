@@ -26,9 +26,14 @@ export interface RateLimitResult {
 /**
  * Check rate limit and record the event atomically.
  *
- * Counts existing events in the window then inserts the new one. Race-safe
+ * Counts existing events in window then inserts the new one. Race-safe
  * enough for HTTP traffic — slight overshoot is acceptable and prevents
  * the classic "check then act" pitfall because we record before returning.
+ *
+ * If the underlying RateLimitEvent table is missing in production (Prisma
+ * schema drift on free-tier DBs), we degrade to "always allowed" so auth
+ * flows remain usable. Fail-open is intentional: an OASIS-style rate
+ * limit can never block paying users.
  */
 export async function checkRateLimit(
   ip: string,
@@ -40,38 +45,48 @@ export async function checkRateLimit(
   const windowStart = new Date(now - cfg.windowMs)
   const bucket = `${ip}:${cfg.bucket}`
 
-  // Count current events in window
-  const count = await prisma.rateLimitEvent.count({
-    where: {
-      bucket,
-      createdAt: { gte: windowStart },
-    },
-  })
+  try {
+    // Count current events in window
+    const count = await prisma.rateLimitEvent.count({
+      where: {
+        bucket,
+        createdAt: { gte: windowStart },
+      },
+    })
 
-  // Record this attempt FIRST — prevents burst-twice-on-busy-thread
-  await prisma.rateLimitEvent.create({
-    data: {
-      bucket,
-      ip,
-      path,
-      method,
-    },
-  })
+    // Record this attempt FIRST — prevents burst-twice-on-busy-thread
+    await prisma.rateLimitEvent.create({
+      data: {
+        bucket,
+        ip,
+        path,
+        method,
+      },
+    })
 
-  // Opportunistic cleanup: 1% chance to gc old rows so the table doesn't grow
-  // forever. Cheap and self-healing.
-  if (Math.random() < 0.01) {
-    const cutoff = new Date(now - cfg.windowMs * 10)
-    prisma.rateLimitEvent
-      .deleteMany({ where: { createdAt: { lt: cutoff } } })
-      .catch(() => {}) // fire and forget
+    // Opportunistic cleanup: 1% chance to gc old rows so the table doesn't grow
+    // forever. Cheap and self-healing.
+    if (Math.random() < 0.01) {
+      const cutoff = new Date(now - cfg.windowMs * 10)
+      prisma.rateLimitEvent
+        .deleteMany({ where: { createdAt: { lt: cutoff } } })
+        .catch(() => {}) // fire and forget
+    }
+
+    const allowed = count < cfg.limit
+    const remaining = Math.max(0, cfg.limit - count - 1)
+    const resetAt = now + cfg.windowMs
+
+    return { allowed, remaining, resetAt }
+  } catch (error) {
+    const msg = String((error as any)?.message || error || '')
+    const missingTable = msg.includes('does not exist') || msg.includes('P2021')
+    if (missingTable) {
+      // Don't block traffic when the DB doesn't have the rate-limit table.
+      return { allowed: true, remaining: cfg.limit, resetAt: now + cfg.windowMs }
+    }
+    throw error
   }
-
-  const allowed = count < cfg.limit
-  const remaining = Math.max(0, cfg.limit - count - 1)
-  const resetAt = now + cfg.windowMs
-
-  return { allowed, remaining, resetAt }
 }
 
 // Pre-baked configs for common endpoints
