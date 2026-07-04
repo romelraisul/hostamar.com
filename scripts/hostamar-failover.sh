@@ -98,7 +98,7 @@ cloudflare_update() {
     local record_id="$2"
     local proxied="${3:-true}"
 
-    log "DNS: updating ${LOCAL_RECORD_NAME} → ${target} (proxied=${proxied})"
+    log "DNS: updating local record -> target (proxied=${proxied})
 
     result=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${record_id}" \
         -H "Authorization: Bearer *** \
