@@ -94,6 +94,12 @@ export default function LoginPage() {
             </button>
           </form>
 
+          <div className="mt-2 text-right">
+            <a href="/forgot-password" className="text-gray-400 hover:text-gray-200 text-sm">
+              Forgot password?
+            </a>
+          </div>
+
           <p className="text-center text-gray-400 text-sm mt-6">
             {t('login.noAccount')}{" "}
             <a href="/signup" className="text-blue-400 hover:underline font-medium">

@@ -13,7 +13,9 @@ import {
   LogOut,
   Menu,
   X,
-  BarChart3
+  BarChart3,
+  ShoppingCart,
+  Gift
 } from 'lucide-react'
 
 const navItems = [
@@ -22,6 +24,9 @@ const navItems = [
   { href: '/admin/videos', icon: Video, label: 'Videos' },
   { href: '/admin/services', icon: Server, label: 'Services' },
   { href: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
+  { href: '/admin/payments', icon: ShoppingCart, label: 'Payments' },
+  { href: '/admin/orders', icon: Gift, label: 'Orders' },
+  { href: '/admin/ecosystem', icon: BarChart3, label: 'Ecosystem' },
   { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
