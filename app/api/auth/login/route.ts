@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { comparePassword, signToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
+import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,17 +25,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await prisma.customer.findUnique({
-      where: { email }
-    })
-    if (!user) {
+    let userRow: any = null
+    try {
+      userRow = await prisma.$queryRaw<any[]>`
+        SELECT id, email, name, password, "role"
+        FROM "Customer"
+        WHERE email = ${email}
+        LIMIT 1;
+      `
+    } catch (rawError) {
+      console.error('Login raw query failed:', rawError)
+    }
+
+    if (!userRow?.[0]) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       )
     }
 
-    const isValid = await comparePassword(password, user.password)
+    const user = userRow[0]
+    let isValid = false
+    try {
+      isValid = await comparePassword(password, user.password)
+    } catch (compareError) {
+      console.error('Password compare failed:', compareError)
+      isValid = bcrypt.compareSync(password, user.password)
+    }
+
     if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -42,10 +60,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const token = signToken({ id: user.id, email: user.email, name: user.name, role: (user as any).role || 'customer' })
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role || 'customer',
+    })
 
     const response = NextResponse.json(
-      { user: { id: user.id, name: user.name, email: user.email }, token }
+      {
+        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        token,
+      }
     )
 
     response.cookies.set('auth_token', token, {

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/auth'
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    await requireAdmin()
+    await requireAdmin(req)
 
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(req.url)
     const limit = Math.min(Number(searchParams.get('limit') || 100), 500)
 
     const dbConfigured = !!process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    await requireAdmin()
-    const body = await request.json()
+    await requireAdmin(req)
+    const body = await req.json()
 
     const dbConfigured = !!process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
     if (!dbConfigured) {
