@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/auth'
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    await requireAdmin()
-    const { searchParams } = new URL(request.url)
+    await requireAdmin(req)
+    const { searchParams } = new URL(req.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')))
     const skip = (page - 1) * limit
