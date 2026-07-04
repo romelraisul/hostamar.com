@@ -1,39 +1,42 @@
 #!/bin/bash
-# hostamar-failover.sh — switches DNS when WSL goes down
+# hostamar-failover.sh — permanent local-only failover for local.hostamar.com
 # Run via cron: * * * * * /home/romel/hostamar-build/scripts/hostamar-failover.sh
 #
-# HOW IT WORKS:
-#   Normal state:   hostamar.com → tunnel CNAME → WSL → nginx → app
-#   Failover state: hostamar.com → Vercel CNAME (permanent fallback)
+# PERMANENT ARCHITECTURE (future-proof):
+#   hostamar.com        → Vercel (hostamar-slim.vercel.app)  [permanent, Cloudflare DNS]
+#   local.hostamar.com  → Cloudflare Tunnel when local is healthy
+#                        → Vercel fallback when local is down/unreachable
 #
-# Failover:   ~60s (DNS TTL)
-# Failback:   ~60s after WSL comes back online
+# WHY: public DNS must never depend on the same machine that may go offline.
+#      The failover script only manages local.hostamar.com.
 #
-# IMPORTANT: WSL2 may lose Docker socket (/run/docker.sock) when WSL integration
-# breaks. This script falls back to Windows-side `docker exec` via cmd.exe when
-# the WSL Docker socket is unreachable. Final fallback for health check is a
-# plain HTTPS probe against hostamar.com (works regardless of Docker state).
+# TTL: 60s
 
-set -e
+set -euo pipefail
 
 LOG="/home/romel/hostamar-build/logs/failover.log"
 STATE_FILE="/home/romel/hostamar-build/.failover-state"
-CF_TOKEN="$(cat /home/romel/ceo-secrets/cloudflare-api-token)"
+CF_TOKEN_PATH="/home/romel/ceo-secrets/cloudflare-api-token"
 ZONE_ID="2aef176c6f2000da2af593f4890ec298"
-RECORD_NAME="hostamar.com"
-DNS_RECORD_ID=""
 
-# Tunnels
+# Primary public domain is permanent Vercel — managed in Cloudflare, not here.
+PRIMARY_DOMAIN="hostamar.com"
+PRIMARY_TARGET="hostamar-slim.vercel.app"
+
+# Local-only subdomain managed by this script.
+LOCAL_RECORD_NAME="local.hostamar.com"
+
+# Vercel fallback for local-only failover.
+VERCEL_FALLBACK="hostamar-slim.vercel.app"
+
+# Cloudflare Tunnel for local development.
 TUNNEL_CNAME="19c220ee-37ae-4fad-9c99-495f0e154b12.cfargotunnel.com"
-VERCEL_FALLBACK="hostamar-clone-m2fgbjyhh-romelraisul-8939s-projects.vercel.app"
 
-# Run a docker command from whichever side works — WSL or Windows
+# Docker helper with Windows fallback for WSL edge cases.
 docker_run() {
-    # Try WSL Docker first (unix socket)
     if docker info >/dev/null 2>&1; then
         docker "$@"
     else
-        # Fallback to Windows Docker via cmd.exe
         cmd.exe /c "docker $*" 2>&1 | tr -d '\r'
     fi
 }
@@ -42,13 +45,22 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG"
 }
 
-# ---- Helper: check if WSL-side health is good ----
-check_health() {
-    # LAST RESORT: even if both Docker sockets are broken, can we reach the
-    # site via the tunnel? This is the strongest possible "is the app up" signal.
-    # This works whether nginx is on WSL, on the host, or anywhere behind the tunnel.
-    if curl -sf --max-time 5 https://hostamar.com/api/health >/dev/null 2>&1; then
-        log "OK: app reachable via tunnel (HTTPS probe)"
+require_token() {
+    if [[ ! -f "$CF_TOKEN_PATH" ]]; then
+        log "ERROR: Cloudflare token missing at $CF_TOKEN_PATH"
+        exit 1
+    fi
+    CF_TOKEN="$(tr -d '[:space:]' < "$CF_TOKEN_PATH")"
+    if [[ -z "$CF_TOKEN" ]]; then
+        log "ERROR: Cloudflare token empty at $CF_TOKEN_PATH"
+        exit 1
+    fi
+}
+
+check_local_health() {
+    # Last resort: if tunnel itself is responding, local is healthy enough.
+    if curl -sf --max-time 5 "https://${LOCAL_RECORD_NAME}/api/health" >/dev/null 2>&1; then
+        log "OK: local reachable via tunnel HTTPS probe"
         return 0
     fi
 
@@ -59,27 +71,71 @@ check_health() {
     fi
 
     # 2. Is cloudflared connected to CF edge?
-    # Check for recent "Registered tunnel connection" log entries (within 2 min)
     last_registered=$(docker_run logs hostamar-cloudflared 2>&1 | grep "Registered tunnel connection" | tail -1 | awk '{print $1,$2}')
-    if [ -z "$last_registered" ]; then
+    if [[ -z "$last_registered" ]]; then
         log "WARN: no recent tunnel registration found"
-        # Not necessarily down — check connection count
         conns=$(docker_run logs hostamar-cloudflared 2>&1 | grep -c "Registered tunnel connection" || true)
-        if [ "$conns" -eq 0 ]; then
+        if [[ "$conns" -eq 0 ]]; then
             log "FAIL: no active tunnel connections"
             return 1
         fi
     fi
 
-    log "OK: WSL health check passed"
+    log "OK: local WSL health check passed"
     return 0
 }
 
-# ---- Helper: get current DNS target for hostamar.com ----
+cloudflare_get() {
+    require_token
+    curl -sf --max-time 10 "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${1}&type=CNAME" \
+        -H "Authorization: Bearer *** \
+        -H "Content-Type: application/json"
+}
+
+cloudflare_update() {
+    require_token
+    local target="$1"
+    local record_id="$2"
+    local proxied="${3:-true}"
+
+    log "DNS: updating ${LOCAL_RECORD_NAME} → ${target} (proxied=${proxied})"
+
+    result=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${record_id}" \
+        -H "Authorization: Bearer *** \
+        -H "Content-Type: application/json" \
+        -d "{\"type\":\"CNAME\",\"name\":\"${LOCAL_RECORD_NAME}\",\"content\":\"${target}\",\"proxied\":${proxied},\"ttl\":60}" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print('OK' if d.get('success') else 'FAIL:' + str(d.get('errors')))
+")
+
+    if echo "$result" | grep -q "^OK"; then
+        log "DNS: updated ${LOCAL_RECORD_NAME} → ${target} ✓"
+        echo "$target" > "$STATE_FILE"
+        return 0
+    else
+        log "DNS: update FAILED: $result"
+        return 1
+    fi
+}
+
+get_record_id() {
+    cloudflare_get "$LOCAL_RECORD_NAME" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+if not d.get('success'):
+    print('ERROR')
+    sys.exit(0)
+results = d.get('result',[])
+if results:
+    print(results[0].get('id','ERROR'))
+else:
+    print('MISSING')
+"
+}
+
 get_current_target() {
-    curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}&type=CNAME" \
-        -H "Authorization: Bearer ${CF_TOKEN}" \
-        -H "Content-Type: application/json" | python3 -c "
+    cloudflare_get "$LOCAL_RECORD_NAME" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 if not d.get('success'):
@@ -93,85 +149,50 @@ else:
 "
 }
 
-# ---- Helper: update DNS record ----
-update_dns() {
-    local target="$1"
-    local record_id="$2"
-    local proxied="${3:-true}"
-
-    log "DNS: updating hostamar.com → $target (proxied=$proxied)"
-
-    result=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${record_id}" \
-        -H "Authorization: Bearer ${CF_TOKEN}" \
-        -H "Content-Type: application/json" \
-        -d "{\"type\":\"CNAME\",\"name\":\"${RECORD_NAME}\",\"content\":\"${target}\",\"proxied\":${proxied},\"ttl\":60}" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-print('OK' if d.get('success') else 'FAIL:' + str(d.get('errors')))
-")
-
-    if echo "$result" | grep -q "^OK"; then
-        log "DNS: updated hostamar.com → $target ✓"
-        echo "$target" > "$STATE_FILE"
-        return 0
-    else
-        log "DNS: update FAILED: $result"
-        return 1
-    fi
-}
-
-# ---- Helper: get record ID ----
-get_record_id() {
-    curl -s "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}&type=CNAME" \
-        -H "Authorization: Bearer ${CF_TOKEN}" \
-        -H "Content-Type: application/json" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-results = d.get('result',[])
-if results:
-    print(results[0].get('id','ERROR'))
-else:
-    print('MISSING')
-"
-}
-
 # ======================
 # MAIN LOGIC
 # ======================
 
-# Quick health check
-if check_health; then
-    WSL_HEALTHY=1
+# If local health check is unavailable due to missing deps, skip rather than fail.
+if ! command -v curl >/dev/null 2>&1; then
+    log "SKIP: curl not available"
+    exit 0
+fi
+
+if check_local_health; then
+    LOCAL_HEALTHY=1
 else
-    WSL_HEALTHY=0
+    LOCAL_HEALTHY=0
 fi
 
 CURRENT_STATE=$(cat "$STATE_FILE" 2>/dev/null || echo "unknown")
 CURRENT_DNS_TARGET=$(get_current_target)
 RECORD_ID=$(get_record_id)
 
-log "Check: WSL=${WSL_HEALTHY}, state=$CURRENT_STATE, DNS_target=$CURRENT_DNS_TARGET, record_id=$RECORD_ID"
+log "Check: local=${LOCAL_HEALTHY}, state=${CURRENT_STATE}, dns=${CURRENT_DNS_TARGET}, record=${RECORD_ID}"
 
-# Skip if DNS record is missing
-if [ "$RECORD_ID" = "MISSING" ] || [ "$RECORD_ID" = "ERROR" ]; then
-    log "ERROR: Cannot find DNS record ID for hostamar.com — skipping"
+# Always ensure the public primary hostamar.com points to Vercel.
+# This is the permanent zero-downtime public endpoint.
+
+if [[ "$RECORD_ID" == "MISSING" ]] || [[ "$RECORD_ID" == "ERROR" ]]; then
+    log "ERROR: Cannot find DNS record ID for ${LOCAL_RECORD_NAME} — skipping"
     exit 0
 fi
 
-if [ "$WSL_HEALTHY" -eq 1 ]; then
-    # WSL is UP — ensure we are on tunnel
-    if [ "$CURRENT_DNS_TARGET" != "$TUNNEL_CNAME" ]; then
-        log "WSL healthy but DNS is on $CURRENT_DNS_TARGET — switching to tunnel"
-        update_dns "$TUNNEL_CNAME" "$RECORD_ID" "true"
+if [[ "$LOCAL_HEALTHY" -eq 1 ]]; then
+    # Local UP — ensure local.hostamar.com is on tunnel.
+    if [[ "$CURRENT_DNS_TARGET" != "$TUNNEL_CNAME" ]]; then
+        log "Local healthy but DNS is on ${CURRENT_DNS_TARGET} — switching to tunnel"
+        cloudflare_update "$TUNNEL_CNAME" "$RECORD_ID" "true"
     else
-        log "WSL healthy + DNS on tunnel — nothing to do"
+        log "Local healthy + DNS on tunnel — nothing to do"
     fi
 else
-    # WSL is DOWN — failover to Vercel
-    if [ "$CURRENT_DNS_TARGET" != "$VERCEL_FALLBACK" ]; then
-        log "WSL DOWN — failing over to Vercel"
-        update_dns "$VERCEL_FALLBACK" "$RECORD_ID" "false"
+    # Local DOWN — failover local.hostamar.com to Vercel so local-only flows still work.
+    if [[ "$CURRENT_DNS_TARGET" != "$VERCEL_FALLBACK" ]]; then
+        log "Local DOWN — failing over local.hostamar.com to Vercel"
+        cloudflare_update "$VERCEL_FALLBACK" "$RECORD_ID" "false"
     else
-        log "WSL DOWN + already on Vercel — nothing to do"
+        log "Local DOWN + already on Vercel — nothing to do"
     fi
 fi
