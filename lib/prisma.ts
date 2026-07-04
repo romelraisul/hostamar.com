@@ -1,3 +1,6 @@
+// MUST be imported before @prisma/client so the bootstrap overrides
+// node:dns.lookup before any neon-style TCP socket is created.
+import './dns-bootstrap'
 import { PrismaClient } from '@prisma/client'
 
 // Prisma Client with Neon serverless connection pooling
