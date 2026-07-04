@@ -124,7 +124,7 @@ export default async function RootLayout({
     const htmlFontClass = isBengali ? notoBengali.variable : ''
 
     return (
-      <html lang={locale} dir="ltr" className={isBengali ? notoBengali.variable : ''}>
+      <html lang={locale} dir="ltr" className={htmlFontClass}>
       <head>
         <meta charSet="utf-8" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
