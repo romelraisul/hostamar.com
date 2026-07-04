@@ -98,7 +98,7 @@ cloudflare_update() {
     local record_id="$2"
     local proxied="${3:-true}"
 
-    log "DNS: updating local record -> target (proxied=${proxied})
+    log "DNS: updating local record -> target (proxied=${proxied})"
 
     result=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${record_id}" \
         -H "Authorization: Bearer *** \
@@ -110,7 +110,7 @@ print('OK' if d.get('success') else 'FAIL:' + str(d.get('errors')))
 ")
 
     if echo "$result" | grep -q "^OK"; then
-        log "DNS: updated ${LOCAL_RECORD_NAME} → ${target} ✓"
+        log "DNS: updated ${LOCAL_RECORD_NAME} -> ${target} OK"
         echo "$target" > "$STATE_FILE"
         return 0
     else
