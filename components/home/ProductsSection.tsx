@@ -26,10 +26,10 @@ export default function ProductsSection() {
             <Link
               key={p.slug}
               href={`/products/${p.slug}`}
-              className="group block bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-blue-400 hover:shadow-xl transition-all overflow-hidden"
+              className="group block card card-hover overflow-hidden"
             >
               {/* Gradient hero */}
-              <div className={`bg-gradient-to-br ${p.gradient} p-6 text-white relative`}>
+              <div className={`product-card-gradient bg-gradient-to-br ${p.gradient} p-6 text-white relative`}>
                 <span className="absolute top-3 right-3 text-2xl">{p.emoji}</span>
                 <span className="inline-block text-xs px-2 py-0.5 rounded-full border bg-white/20 backdrop-blur-sm border-white/30">
                   {p.badge}
@@ -40,8 +40,8 @@ export default function ProductsSection() {
 
               {/* Body */}
               <div className="p-6">
-                <p className="text-gray-700 dark:text-gray-300 font-medium mb-3">{p.taglineBn}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">{p.description}</p>
+                <p className="text-gray-700 font-medium mb-3">{p.taglineBn}</p>
+                <p className="text-sm text-gray-500 mb-4 line-clamp-3">{p.description}</p>
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs px-2 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
