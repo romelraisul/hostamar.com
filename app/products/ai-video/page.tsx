@@ -1,9 +1,9 @@
 'use client'
 import Link from 'next/link'
-import { PRODUCTS, getProduct } from '@/lib/products'
+import { getProduct } from '@/lib/products'
 
-export default function AIBrowserProductPage() {
-  const p = getProduct('ai-browser')
+export default function AIVideoProductPage() {
+  const p = getProduct('ai-video')
   if (!p) return null
   return (
     <div className="min-h-screen bg-white">
@@ -24,4 +24,5 @@ export default function AIBrowserProductPage() {
         </div>
       </div>
     </div>
-  )}
+  )
+}

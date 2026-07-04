@@ -6,7 +6,7 @@ import { PRODUCTS } from '@/lib/products'
 
 export default function Navbar() {
   return (
-    <nav className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-30">
+    <nav className="nav-glass sticky top-0 z-30">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2">
@@ -16,18 +16,17 @@ export default function Navbar() {
           <span className="text-xl font-bold text-gray-900">Hostamar</span>
         </Link>
 
-        {/* Center links — Products dropdown is the key affordance */}
+        {/* Center links */}
         <div className="hidden md:flex items-center gap-1">
           {/* Products dropdown */}
           <div className="relative group">
             <button
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg inline-flex items-center gap-1"
+              className="nav-link inline-flex items-center gap-1"
               type="button"
             >
               Products <ChevronDown className="w-4 h-4" />
             </button>
 
-            {/* Dropdown panel: opens on hover (md+) and on focus-within (a11y). */}
             <div
               className="absolute left-0 top-full pt-2 hidden group-hover:block group-focus-within:block z-40"
               role="menu"
@@ -63,15 +62,9 @@ export default function Navbar() {
           </div>
 
           {/* Secondary links */}
-          <Link href="/pricing" className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg">
-            Pricing
-          </Link>
-          <Link href="/prompts" className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg">
-            Prompts
-          </Link>
-          <Link href="/blog" className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium rounded-lg">
-            Blog
-          </Link>
+          <Link href="/pricing" className="nav-link">Pricing</Link>
+          <Link href="/prompts" className="nav-link">Prompts</Link>
+          <Link href="/blog" className="nav-link">Blog</Link>
         </div>
 
         {/* Right side */}
@@ -84,12 +77,12 @@ export default function Navbar() {
           </Link>
           <Link
             href="/signup"
-            className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 text-sm"
+            className="btn-primary text-sm"
           >
             ফ্রি শুরু করুন
           </Link>
         </div>
       </div>
     </nav>
-  )
+
 }
