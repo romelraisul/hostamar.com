@@ -31,7 +31,7 @@ async function callKai9000(messages: any[]) {
   if (!KAI9000_API_URL) {
     throw new Error('KAI9000_API_URL is not configured')
   }
-  const authHeader = KAI9000_API_KEY ? 'Bearer ' + KAI9000_API_KEY : undefined
+  const authHeader = KAI9000_API_KEY ? `Bearer ${KAI9000_API_KEY}` : undefined
   const response = await fetch(`${KAI9000_API_URL}/v1/chat/completions`, {
     method: 'POST',
     headers: {
