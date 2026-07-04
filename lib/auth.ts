@@ -16,13 +16,13 @@ export function signToken(payload: { id: string; email: string; name: string; ro
 
 export function verifyToken(token: string): { id: string; email: string; name: string; role?: string } | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { id: string; email: string; name: string }
+    return jwt.verify(token, JWT_SECRET) as { id: string; email: string; name: string; role?: string }
   } catch {
     return null
   }
 }
 
-export async function getAuthUser() {
+export async function getAuthUser(req?: { headers: { get(name: string): string | null } }) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.email) {
@@ -42,8 +42,20 @@ export async function getAuthUser() {
     name: customer.name,
     email: customer.email,
     phone: customer.phone,
+    role: (customer.role || 'customer').toLowerCase(),
     customer,
   }
+}
+
+export async function requireAdmin() {
+  const user = await getAuthUser()
+  if (!user) {
+    throw new Error('Unauthorized', { cause: { status: 401 } })
+  }
+  if (user.role !== 'admin' && user.role !== 'superadmin') {
+    throw new Error('Forbidden', { cause: { status: 403 } })
+  }
+  return user
 }
 
 export type AuthUser = Exclude<Awaited<ReturnType<typeof getAuthUser>>, null>
