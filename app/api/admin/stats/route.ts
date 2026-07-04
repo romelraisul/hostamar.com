@@ -1,26 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/auth'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    await requireAdmin()
-
-    const session = await getServerSession(authOptions)
-    const currentEmail = session?.user?.email
-
-    const user = currentEmail
-      ? await prisma.customer.findUnique({
-          where: { email: currentEmail },
-          include: { orders: true, subscriptions: true, videos: true },
-        })
-      : null
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+    const user = await requireAdmin(req)
 
     const stats = {
       totalCustomers: await prisma.customer.count(),
