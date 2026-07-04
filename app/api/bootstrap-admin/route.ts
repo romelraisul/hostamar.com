@@ -22,21 +22,27 @@ export async function POST(req: NextRequest) {
 
     try {
       const existing = await prisma.$queryRaw<any[]>`
-        SELECT id, "customerId", email, name, password, "role"
+        SELECT id, email, name, password, "role"
         FROM "Customer"
         WHERE email = ${email}
         LIMIT 1;
       `
       if (existing[0]) {
-        customerId = existing[0].customerId || existing[0].id
+        customerId = existing[0].id
         created = false
+        // Promote to admin role if needed
+        try {
+          await prisma.$executeRaw`UPDATE "Customer" SET "role" = 'admin' WHERE id = ${customerId} AND "role" <> 'admin';`
+        } catch (e) {
+          console.error('Bootstrap role-update error:', e)
+        }
       } else {
         const id = `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
         customerId = id
         created = true
         await prisma.$executeRaw`
-          INSERT INTO "Customer" ("customerId", id, email, name, password, "role", "emailVerified", "createdAt", "updatedAt")
-          VALUES (${id}, ${id}, ${email}, ${name}, ${hashed}, 'admin', NOW(), NOW());
+          INSERT INTO "Customer" (id, email, name, password, "role", "emailVerified", "createdAt", "updatedAt")
+          VALUES (${id}, ${email}, ${name}, ${hashed}, 'admin', NOW(), NOW());
         `
       }
     } catch (rawError) {
