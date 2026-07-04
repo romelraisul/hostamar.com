@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { requireAdmin } from '@/lib/auth'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
+    await requireAdmin()
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')))
@@ -41,8 +43,9 @@ export async function GET(request: Request) {
         hasMore: skip + limit < total,
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Admin customers fetch error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const status = error?.cause?.status || 500
+    return NextResponse.json({ error: error?.message || 'Internal server error' }, { status })
   }
 }
