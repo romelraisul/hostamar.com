@@ -84,3 +84,22 @@ logs/
 **/*.pem
 **/*.key
 .env.run
+.env.*.bak
+.env*.bak.*
+*.env.bak
+
+# Local-only ComfyUI model artifacts (hundreds of MB each; never push)
+comfyui/models/
+
+# One-off debug/admin scripts kept at repo root for posterity
+create-admin.js
+tmp-*.js
+tmp-create-*.js
+tmp-diag-*.js
+tmp-fix-*.js
+
+# Ad-hoc shell utilities
+bin/
+
+# Railway exclude hints file
+.railexclude

@@ -1,5 +1,15 @@
 const path = require('path')
-const { withSentryConfig } = require('@sentry/nextjs')
+
+let withSentryConfig = null
+try {
+  const mod = require('@sentry/nextjs')
+  const maybe = mod.default || mod
+  if (typeof maybe === 'function') {
+    withSentryConfig = maybe
+  }
+} catch (e) {
+  // Ignore missing/unsupported Sentry wrapper.
+}
 
 const nextConfig = {
   reactStrictMode: true,
@@ -29,13 +39,15 @@ const nextConfig = {
   },
 }
 
-module.exports = withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG || 'hostamar',
-  project: process.env.SENTRY_PROJECT || 'hostamar',
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  tunnelRoute: '/monitoring',
-  hideSourceMaps: true,
-  disableLogger: true,
-  automaticVercelMonitors: true,
-})
+module.exports = withSentryConfig
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG || 'hostamar',
+      project: process.env.SENTRY_PROJECT || 'hostamar',
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      tunnelRoute: '/monitoring',
+      hideSourceMaps: true,
+      disableLogger: true,
+      automaticVercelMonitors: true,
+    })
+  : nextConfig
