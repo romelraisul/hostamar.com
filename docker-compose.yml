@@ -109,15 +109,16 @@ services:
     env_file:
       - .env.docker
     environment:
-      - DATABASE_URL=postgresql://hostamar:***@postgres:5432/hostamar
+      - DATABASE_URL=postgresql://hostamar:hostamar@postgres:5432/hostamar
       - REDIS_URL=redis://redis:6379
       - R2_ENDPOINT=http://hostamar-minio:9000
       - R2_ACCESS_KEY=minioadmin
-      - R2_SECRET_KEY=***
+      - R2_SECRET_KEY=minioadmin
       - R2_BUCKET=hostamar-videos
       - R2_PUBLIC_URL=http://hostamar-minio:9000/hostamar-videos
       - OLLAMA_HOST=http://hostamar-model:8000
       - OLLAMA_MODEL=qwen3.6:27b
+      - KILOCODE_BASE_URL=https://api.kilo.ai/api/gateway
       - NODE_ENV=production
     depends_on:
       redis:
@@ -164,6 +165,27 @@ services:
       nginx-proxy:
         condition: service_started
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: hostamar-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "11125:11125"
+    volumes:
+      - mailpit-data:/data
+    networks:
+      - hostamar-network
+    environment:
+      - MP_SMTP_AUTH=optional
+      - MP_MAX_MESSAGES=1000
+      - MP_DATA_DIR=/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8025 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 volumes:
   postgres-data:
     driver: local
@@ -176,6 +198,8 @@ volumes:
   hostamar-data:
     driver: local
   hostamar-prisma:
+    driver: local
+  mailpit-data:
     driver: local
   cloudflared-config:
     external: true
