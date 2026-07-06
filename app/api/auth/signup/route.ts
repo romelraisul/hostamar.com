@@ -3,6 +3,7 @@ import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { NextRequest } from 'next/server'
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,6 +79,13 @@ export async function POST(request: NextRequest) {
           data: { status: 'USED', usedAt: new Date() }
         })
       }
+    }
+
+    // Send welcome email — fails gracefully (SMTP may be unset)
+    try {
+      await sendWelcomeEmail(customer.email, customer.name || customer.email.split('@')[0])
+    } catch (emailError) {
+      console.warn('[Signup] Welcome email failed:', emailError)
     }
 
     return NextResponse.json({
