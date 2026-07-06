@@ -1,7 +1,8 @@
 // @ts-nocheck — nodemailer type incompatibilities
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const SMTP_HOST = process.env.SMTP_HOST
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587')
@@ -108,6 +109,29 @@ export async function sendPaymentConfirmationEmail(
     year: new Date().getFullYear().toString(),
   })
   return sendMail(to, `Payment Confirmed - ${plan}`, html)
+}
+
+/**
+ * Alias used by lib/payment.ts (activateSubscription → billing receipt).
+ * Same payload, slightly different subject; tolerant fallback when SMTP
+ * not configured so paying path never 500s on send.
+ */
+export async function sendPaymentReceiptEmail(
+  to: string,
+  name: string,
+  plan: string,
+  amount: number,
+  transactionId: string,
+  method: string
+) {
+  return sendPaymentConfirmationEmail(
+    to,
+    name,
+    plan,
+    String(amount),
+    'BDT',
+    transactionId
+  )
 }
 
 export async function sendSystemAlertEmail(

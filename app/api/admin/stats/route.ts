@@ -32,6 +32,26 @@ export async function GET(req: NextRequest) {
         business: await prisma.order.count({ where: { plan: 'BUSINESS' } }),
         enterprise: await prisma.order.count({ where: { plan: 'ENTERPRISE' } }),
       },
+      // Subscription tier & status breakdown (works even if plan enum is
+      // free-form string in schema; uses actual Prisma strings).
+      tierBreakdown: {
+        plans: {
+          FREE: await prisma.subscription.count({ where: { plan: 'FREE' } }),
+          STARTER: await prisma.subscription.count({ where: { plan: 'STARTER' } }),
+          GROWTH: await prisma.subscription.count({ where: { plan: 'GROWTH' } }),
+          PRO: await prisma.subscription.count({ where: { plan: 'PRO' } }),
+          BUSINESS: await prisma.subscription.count({ where: { plan: 'BUSINESS' } }),
+        },
+        statuses: {
+          trialing: await prisma.subscription.count({ where: { status: 'trialing' } }),
+          active: await prisma.subscription.count({ where: { status: 'active' } }),
+          canceled: await prisma.subscription.count({ where: { status: 'canceled' } }),
+          past_due: await prisma.subscription.count({ where: { status: 'past_due' } }),
+        },
+        pendingPayments: await prisma.transaction.count({
+          where: { status: { in: ['pending', 'pending_verification'] } },
+        }),
+      },
     }
 
     return NextResponse.json({ success: true, data: stats })
