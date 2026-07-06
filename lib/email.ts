@@ -20,7 +20,8 @@ function getTransporter() {
     transporter = nodemailer.createTransport({
       host: SMTP_HOST,
       port: SMTP_PORT,
-      secure: SMTP_PORT === 465,
+      secure: SMTP_PORT === 465, // true for 465 (implicit SSL), false for 587 (STARTTLS)
+      requireTLS: SMTP_PORT === 587, // force TLS on port 587
       auth: {
         user: SMTP_USER,
         pass: SMTP_PASS,
@@ -273,3 +274,26 @@ export async function sendSubscriptionReminderEmail(to: string, name: string, pl
 </html>`
   return sendMail(to, `Subscription Renewal in ${daysLeft} Days`, html)
 }
+
+export async function sendBetaInviteEmail(to: string, name: string, inviteCode: string) {
+  const html = loadTemplate('welcome', {
+      name,
+      appUrl: APP_URL,
+      year: new Date().getFullYear().toString(),
+    })
+
+    // Wrap with invite code banner since we don't have a dedicated template
+    const inviteBanner = `
+      <div style="background:#f0f7ff;border:1px solid #dbeafe;border-radius:8px;padding:20px;margin:16px 0;text-align:center">
+        <p style="margin:0 0 8px;color:#1e40af;font-size:14px;font-weight:600">Your Beta Invite Code</p>
+        <p style="margin:0;font-size:28px;font-weight:700;color:#1e3a5f;letter-spacing:2px">${inviteCode}</p>
+        <p style="margin:8px 0 0;color:#6b7280;font-size:12px">10% off · 30 days validity</p>
+      </div>
+    `
+    const bodyStart = html.indexOf('<tr><td style="padding:40px 32px">')
+    const enhancedHtml = bodyStart > -1
+      ? html.slice(0, bodyStart + 27) + inviteBanner + html.slice(bodyStart + 27)
+      : html
+
+    return sendMail(to, `Your Hostamar Beta Invite: ${inviteCode}`, enhancedHtml)
+  }

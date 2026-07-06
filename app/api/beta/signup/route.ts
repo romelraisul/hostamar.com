@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import * as crypto from 'crypto';
+import { sendBetaInviteEmail } from '@/lib/email';
 
 function generateInviteCode(): string {
-  // Generate a secure 8-character alphanumeric code
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Ambiguous chars (0/O, 1/I) excluded
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const buffer = crypto.randomBytes(8);
   let code = '';
   for (let i = 0; i < 8; i++) {
@@ -28,49 +28,26 @@ export async function POST(request: Request) {
   try {
     const { name, email, phone } = await request.json();
 
-    // Validate required fields
     if (!name || !email) {
-      return NextResponse.json(
-        { success: false, error: 'Name and email are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Name and email are required' }, { status: 400 });
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid email address' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Invalid email address' }, { status: 400 });
     }
 
-    // Check if this email already has a pending invite
     const existingInvite = await prisma.betaInvite.findFirst({
-      where: {
-        email: email.toLowerCase().trim(),
-        status: { in: ['PENDING', 'ACTIVE'] }
-      }
+      where: { email: email.toLowerCase().trim(), status: { in: ['PENDING', 'ACTIVE'] } }
     });
 
     if (existingInvite) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'An active invite already exists for this email',
-          code: existingInvite.code,
-        },
-        { status: 409 }
-      );
+      return NextResponse.json({ success: false, error: 'An active invite already exists for this email', code: existingInvite.code }, { status: 409 });
     }
 
-    // Generate unique invite code
     const code = await generateUniqueCode();
-
-    // Default expiry: 30 days from now
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // Create the beta invite
     const invite = await prisma.betaInvite.create({
       data: {
         code,
@@ -83,27 +60,41 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        invite: {
-          id: invite.id,
-          code: invite.code,
-          name: invite.name,
-          email: invite.email,
-          status: invite.status,
-          discountPercent: invite.discountPercent,
-          expiresAt: invite.expiresAt,
-          createdAt: invite.createdAt,
-        },
+    // Track in CRM
+    await prisma.lead.create({
+      data: {
+        name,
+        email: email.toLowerCase().trim(),
+        phone: phone || null,
+        source: 'beta-signup',
+        status: 'new',
+        notes: `Beta invite: ${code} | 10% off | Expires: ${expiresAt.toISOString().split('T')[0]}`,
       },
-      { status: 201 }
-    );
-  } catch (e) {
+    }).catch((leadError: any) => console.warn('[Beta Signup] CRM Lead failed:', leadError?.message));
+
+    // Email the invite code — fails gracefully
+    try {
+      await sendBetaInviteEmail(invite.email, invite.name || invite.email.split('@')[0], code);
+    } catch (emailError: any) {
+      console.warn('[Beta Signup] Invite email failed:', emailError?.message);
+    }
+
+    return NextResponse.json({
+      success: true,
+      invite: {
+        id: invite.id,
+        code: invite.code,
+        name: invite.name,
+        email: invite.email,
+        status: invite.status,
+        discountPercent: invite.discountPercent,
+        expiresAt: invite.expiresAt,
+        createdAt: invite.createdAt,
+      },
+    }, { status: 201 });
+
+  } catch (e: any) {
     console.error('Beta signup error:', e);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create beta invite' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to create beta invite' }, { status: 500 });
   }
 }
