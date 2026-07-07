@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   // Force read of current process env at runtime
   const env: Record<string, string> = {}
@@ -9,5 +11,9 @@ export async function GET() {
       ? `present (${val.length} chars)`
       : val
   }
-  return NextResponse.json(env)
+  return NextResponse.json({
+    phase: process.env.NEXT_PHASE || 'runtime',
+    isBuild: !!process.env.NEXT_PHASE,
+    env,
+  })
 }
