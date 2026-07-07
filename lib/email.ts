@@ -9,6 +9,9 @@ const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587')
 const SMTP_USER = process.env.SMTP_USER
 const SMTP_PASS = process.env.SMTP_PASS
 const SMTP_FROM = process.env.SMTP_FROM || 'noreply@hostamar.com'
+const BREVO_SMTP_KEY = process.env.BREVO_SMTP_KEY
+const BREVO_SMTP_HOST = process.env.BREVO_SMTP_HOST
+const BREVO_SMTP_PORT = parseInt(process.env.BREVO_SMTP_PORT || '587')
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
 let transporter: nodemailer.Transporter | null = null
@@ -20,11 +23,31 @@ function getTransporter() {
     transporter = nodemailer.createTransport({
       host: SMTP_HOST,
       port: SMTP_PORT,
-      secure: SMTP_PORT === 465, // true for 465 (implicit SSL), false for 587 (STARTTLS)
-      requireTLS: SMTP_PORT === 587, // force TLS on port 587
+      secure: Number(SMTP_PORT) === 465,
+      requireTLS: Number(SMTP_PORT) !== 465,
+      pool: true,
+      maxConnections: 5,
+      connectTimeout: 10000,
+      socketTimeout: 15000,
       auth: {
         user: SMTP_USER,
         pass: SMTP_PASS,
+      },
+    })
+    return transporter
+  }
+
+  if (BREVO_SMTP_KEY && BREVO_SMTP_HOST) {
+    transporter = nodemailer.createTransport({
+      host: BREVO_SMTP_HOST,
+      port: Number(BREVO_SMTP_PORT) || 587,
+      secure: false,
+      requireTLS: true,
+      connectTimeout: 10000,
+      socketTimeout: 15000,
+      auth: {
+        user: 'apikey',
+        pass: BREVO_SMTP_KEY,
       },
     })
     return transporter
