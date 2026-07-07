@@ -16,11 +16,15 @@ export async function POST(request: NextRequest) {
     const result = await sendWelcomeEmail(to, name)
 
     return NextResponse.json({
-      success: result.success,
-      fallback: result.fallback,
-      message: result.fallback
+      success: result?.success ?? false,
+      fallback: result?.fallback ?? false,
+      error: (result as any)?.error || undefined,
+      message: result?.fallback
         ? 'SMTP not configured, email logged to console'
         : 'Test email sent successfully',
+      devHint: process.env.NODE_ENV !== 'production' && !result?.success
+        ? 'Brevo is blocking IP. Whitelist your IP at https://app.brevo.com/security/authorised_ips'
+        : undefined,
     })
   } catch (error) {
     console.error('Test email error:', error)
