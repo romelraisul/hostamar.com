@@ -62,7 +62,7 @@ export async function GET() {
 
     return NextResponse.json({
       ip,
-      ipAdd: { ok: addOk, status: addRes.status, body: addText.slice(0, 200) },
+      ipAdd: { ok: addOk, status: addStatus, body: addText.slice(0, 200) },
       emailResult,
       note: 'Visit this URL once. If addOk=false the IP was already in allowlist or format invalid. emailResult.ok=true means working.',
     })
