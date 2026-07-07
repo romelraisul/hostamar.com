@@ -12,6 +12,7 @@ const SMTP_FROM = process.env.SMTP_FROM || 'noreply@hostamar.com'
 const BREVO_SMTP_KEY = process.env.BREVO_SMTP_KEY
 const BREVO_SMTP_HOST = process.env.BREVO_SMTP_HOST
 const BREVO_SMTP_PORT = parseInt(process.env.BREVO_SMTP_PORT || '587')
+const BREVO_API_KEY = process.env.BREVO_API_KEY
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
 let transporter: nodemailer.Transporter | null = null
@@ -68,6 +69,37 @@ function loadTemplate(name: string, replacements: Record<string, string> = {}): 
 }
 
 async function sendMail(to: string, subject: string, html: string) {
+  // Try Brevo REST API first (bypasses IP restrictions)
+  if (BREVO_API_KEY) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 12000)
+
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': BREVO_API_KEY,
+        },
+        body: JSON.stringify({
+          sender: { name: 'Hostamar', email: SMTP_FROM },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html,
+        }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+
+      if (response.ok) return { success: true, fallback: false }
+      const err = await response.text()
+      console.error('[Email] Brevo REST API error:', err)
+    } catch (error) {
+      console.error('[Email] Brevo REST API failed:', error)
+    }
+  }
+
+  // Fallback to direct SMTP transporter
   const transport = getTransporter()
 
   if (!transport) {
@@ -77,15 +109,18 @@ async function sendMail(to: string, subject: string, html: string) {
   }
 
   try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 12000)
     await transport.sendMail({
       from: SMTP_FROM,
       to,
       subject,
       html,
     })
+    clearTimeout(timeout)
     return { success: true, fallback: false }
   } catch (error) {
-    console.error('[Email] Send failed:', error)
+    console.error('[Email] SMTP send failed:', error)
     return { success: false, fallback: false, error }
   }
 }
