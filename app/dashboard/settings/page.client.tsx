@@ -7,6 +7,7 @@ import ProfileTab from '@/components/dashboard/settings/ProfileTab'
 import BusinessTab from '@/components/dashboard/settings/BusinessTab'
 import PasswordTab from '@/components/dashboard/settings/PasswordTab'
 import NotificationsTab from '@/components/dashboard/settings/NotificationsTab'
+import TwitterTab from '@/components/dashboard/settings/TwitterTab'
 import SaveButton from '@/components/dashboard/settings/SaveButton'
 import type { Profile, Business } from '@/components/dashboard/settings/types'
 
@@ -123,8 +124,9 @@ export default function SettingsPage() {
               <PasswordTab passwords={passwords} setPasswords={setPasswords} />
             )}
             {activeTab === 'notifications' && (
-              <NotificationsTab notifications={notifications} setNotifications={setNotifications} />
-            )}
+                          <NotificationsTab notifications={notifications} setNotifications={setNotifications} />
+                        )}
+                        {activeTab === 'twitter' && <TwitterTab />}
 
             <SaveButton saving={saving} onSave={handleSave} />
           </div>
