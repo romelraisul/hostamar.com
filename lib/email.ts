@@ -69,11 +69,11 @@ function loadTemplate(name: string, replacements: Record<string, string> = {}): 
 }
 
 async function sendMail(to: string, subject: string, html: string) {
-  // Try Brevo REST API first (bypasses IP restrictions)
+  // Try Brevo REST API first (HTTP, bypasses IP restrictions)
   if (BREVO_API_KEY) {
     try {
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 12000)
+      const timeout = setTimeout(() => controller.abort(), 8000)
 
       const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
@@ -82,7 +82,7 @@ async function sendMail(to: string, subject: string, html: string) {
           'api-key': BREVO_API_KEY,
         },
         body: JSON.stringify({
-          sender: { name: 'Hostamar', email: SMTP_FROM },
+          sender: { name: 'Hostamar', email: 'romelraisul@gmail.com' },
           to: [{ email: to }],
           subject,
           htmlContent: html,
@@ -94,34 +94,12 @@ async function sendMail(to: string, subject: string, html: string) {
       if (response.ok) return { success: true, fallback: false }
       const err = await response.text()
       console.error('[Email] Brevo REST API error:', err)
+      // Don't fall through to SMTP — Brevo REST is our primary and Gmail SMTP times out from Railway
+      return { success: false, fallback: false, error: err }
     } catch (error) {
       console.error('[Email] Brevo REST API failed:', error)
+      return { success: false, fallback: false, error: String(error) }
     }
-  }
-
-  // Fallback to direct SMTP transporter
-  const transport = getTransporter()
-
-  if (!transport) {
-    console.log(`[Email] SMTP not configured. Would send to ${to}: ${subject}`)
-    console.log(`[Email] Body preview: ${html.slice(0, 200)}...`)
-    return { success: false, fallback: true }
-  }
-
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 12000)
-    await transport.sendMail({
-      from: SMTP_FROM,
-      to,
-      subject,
-      html,
-    })
-    clearTimeout(timeout)
-    return { success: true, fallback: false }
-  } catch (error) {
-    console.error('[Email] SMTP send failed:', error)
-    return { success: false, fallback: false, error }
   }
 }
 
