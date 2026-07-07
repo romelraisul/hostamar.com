@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  return NextResponse.json({
-    BREVO_API_KEY: process.env.BREVO_API_KEY ? `present (${process.env.BREVO_API_KEY.length} chars) starts=${process.env.BREVO_API_KEY.slice(0, 10)}` : 'MISSING',
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    NODE_ENV: process.env.NODE_ENV,
-    PORT: process.env.PORT,
-    DATABASE_URL_HOST: process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).host : 'no DATABASE_URL',
-  })
+  // Force read of current process env at runtime
+  const env: Record<string, string> = {}
+  for (const key of Object.keys(process.env)) {
+    const val = process.env[key] || ''
+    env[key] = key.includes('KEY') || key.includes('SECRET') || key.includes('TOKEN') || key.includes('PASS')
+      ? `present (${val.length} chars)`
+      : val
+  }
+  return NextResponse.json(env)
 }
