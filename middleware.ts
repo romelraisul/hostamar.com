@@ -86,6 +86,7 @@ export async function middleware(request: NextRequest) {
     '/api/browser/screenshot',
     '/api/browser/summarize',
     '/api/email/setup-brevo',
+    '/api/debug/env',
   ]
   if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
     return NextResponse.next()
