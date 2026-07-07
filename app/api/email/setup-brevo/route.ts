@@ -4,6 +4,9 @@
 
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     // 1. Discover the server's outbound IP by hitting an external service from within.
