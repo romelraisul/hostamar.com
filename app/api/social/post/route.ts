@@ -66,26 +66,32 @@ async function postToFacebook(message: string, imageUrl?: string) {
   }
 }
 
-// Twitter/X Auto-Post via OAuth 1.0a (user-context, allows posting)
-async function postToTwitter(message: string) {
+// Twitter/X Auto-Post via OAuth 2.0 (per-user token from DB)
+async function postToTwitter(message: string, customerEmail: string) {
   try {
-    const ck = process.env.TWITTER_CONSUMER_KEY
-    const cks = process.env.TWITTER_CONSUMER_SECRET
-    const at = process.env.TWITTER_ACCESS_TOKEN
-    const ats = process.env.TWITTER_ACCESS_TOKEN_SECRET
-    if (!ck || !cks || !at || !ats) {
-      console.warn('Twitter OAuth 1.0a credentials not configured')
-      return { success: false, error: 'Twitter not configured' }
+    const customer = await prisma.customer.findUnique({
+      where: { email: customerEmail },
+      select: {
+        twitterAccessToken: true,
+        twitterAccessTokenExpiry: true,
+        twitterUsername: true,
+      },
+    })
+
+    if (!customer?.twitterAccessToken || !customer.twitterAccessTokenExpiry || customer.twitterAccessTokenExpiry < new Date()) {
+      return { success: false, error: 'Twitter not connected or token expired. Please reconnect in Settings.' }
     }
 
-    const url = 'https://api.twitter.com/2/tweets'
-    const secrets = { ck, cks, at, ats }
-    const authHeader = oauth1Sign('POST', url, { text: message.substring(0, 280) }, secrets)
+    const ck = process.env.TWITTER_CLIENT_ID
+    const cks = process.env.TWITTER_CLIENT_SECRET
+    if (!ck || !cks) {
+      return { success: false, error: 'Twitter app not configured' }
+    }
 
-    const response = await fetch(url, {
+    const response = await fetch('https://api.twitter.com/2/tweets', {
       method: 'POST',
       headers: {
-        'Authorization': authHeader,
+        'Authorization': `Bearer ${customer.twitterAccessToken}`,
         'Content-Type': 'application/json',
         'User-Agent': 'Hostamar/1.0',
       },
@@ -95,6 +101,14 @@ async function postToTwitter(message: string) {
     const data = await response.json()
     if (!response.ok) {
       console.error('Twitter API error:', data)
+      // If 401 (unauthorized/invalid token), clear the stored token
+      if (response.status === 401) {
+        await prisma.customer.update({
+          where: { email: customerEmail },
+          data: { twitterAccessToken: null, twitterAccessTokenExpiry: null, twitterUserId: null, twitterUsername: null },
+        })
+        return { success: false, error: 'Twitter token expired. Please reconnect in Settings.' }
+      }
     }
     return { success: response.ok, data }
   } catch (error) {
@@ -167,20 +181,20 @@ export async function POST(request: NextRequest) {
 
     // Post to selected platforms
     if (platforms.includes('facebook')) {
-      results.facebook = await postToFacebook(message)
-    }
-    if (platforms.includes('twitter')) {
-      // Truncate for Twitter's character limit
-      const twitterMsg = videoTitle
-        ? `${videoTitle} — ${message}`.substring(0, 280)
-        : message.substring(0, 280)
-      results.twitter = await postToTwitter(twitterMsg)
-    }
-    if (platforms.includes('linkedin')) {
-      results.linkedin = await postToLinkedIn(message)
-    }
+          results.facebook = await postToFacebook(message)
+        }
+        if (platforms.includes('twitter')) {
+          // Truncate for Twitter's character limit
+          const twitterMsg = videoTitle
+            ? `${videoTitle} — ${message}`.substring(0, 280)
+            : message.substring(0, 280)
+          results.twitter = await postToTwitter(twitterMsg, session.user.email)
+        }
+        if (platforms.includes('linkedin')) {
+          results.linkedin = await postToLinkedIn(message)
+        }
 
-    // Log post activity
+        // Log post activity
     await prisma.notification.create({
       data: {
         customerId: user.id,
@@ -211,14 +225,22 @@ export async function GET() {
     }
 
     const fbConnected = !!process.env.FB_PAGE_ID && !!process.env.FB_ACCESS_TOKEN
-    const twitterConnected = !!(process.env.TWITTER_CONSUMER_KEY && process.env.TWITTER_ACCESS_TOKEN)
     const linkedinConnected = !!process.env.LINKEDIN_ACCESS_TOKEN && !!process.env.LINKEDIN_PERSON_ID
+    const customer = await prisma.customer.findUnique({
+      where: { email: session.user.email },
+      select: { twitterUsername: true, twitterAccessToken: true, twitterAccessTokenExpiry: true },
+    })
+    const twitterConnected = !!(
+      customer?.twitterAccessToken &&
+      customer?.twitterAccessTokenExpiry &&
+      customer.twitterAccessTokenExpiry > new Date()
+    )
 
     return NextResponse.json({
       success: true,
       data: {
         facebook: { connected: fbConnected, page: process.env.FB_PAGE_NAME || null },
-        twitter: { connected: twitterConnected, handle: process.env.TWITTER_HANDLE || null },
+        twitter: { connected: twitterConnected, handle: customer?.twitterUsername || null },
         linkedin: { connected: linkedinConnected, profile: process.env.LINKEDIN_PROFILE || null }
       }
     })
