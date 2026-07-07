@@ -13,8 +13,7 @@ export async function GET() {
 
     // 2. Add the IP to Brevo's allowlist via the Brevo API.
     const apiKey = process.env.BREVO_API_KEY || ''
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (apiKey) headers['api-key'] = apiKey
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'api-key': apiKey }
 
     let addOk = false
     let addStatus = 0
@@ -30,6 +29,44 @@ export async function GET() {
       addOk = addRes.ok
     } catch (e) {
       addText = String(e)
+    }
+
+    // Fallback auth: try with Authorization Bearer
+    let bearerOk = false
+    let bearerStatus = 0
+    let bearerText = ''
+    if (!addOk && apiKey) {
+      try {
+        const r2 = await fetch('https://api.brevo.com/v3/security/authorised_ips', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({ ip: ip }),
+        })
+        bearerStatus = r2.status
+        bearerText = await r2.text()
+        bearerOk = r2.ok
+      } catch (e) {
+        bearerText = String(e)
+      }
+    }
+
+    // Last resort: POST to add-ips endpoint as form
+    let formOk = false
+    let formText = ''
+    if (!addOk && !bearerOk && apiKey) {
+      try {
+        const r3 = await fetch(`https://api.brevo.com/v3/security/authorised_ips?ip=${encodeURIComponent(ip)}`, {
+          method: 'POST',
+          headers: { 'api-key': apiKey, 'Authorization': `Bearer ${apiKey}` },
+        })
+        formText = await r3.text()
+        formOk = r3.ok
+      } catch (e) {
+        formText = String(e)
+      }
     }
 
     // 3. Immediately test the email send path.
@@ -63,8 +100,12 @@ export async function GET() {
     return NextResponse.json({
       ip,
       ipAdd: { ok: addOk, status: addStatus, body: addText.slice(0, 200) },
+      bearer: { ok: bearerOk, status: bearerStatus, body: bearerText.slice(0, 200) },
+      form: { ok: formOk, body: formText.slice(0, 200) },
       emailResult,
-      note: 'Visit this URL once. If addOk=false the IP was already in allowlist or format invalid. emailResult.ok=true means working.',
+      apiKeyPresent: !!apiKey,
+      nodeEnv: process.env.NODE_ENV,
+      note: 'addOk or bearerOk=true means IP added to Brevo whitelist. emailResult.ok=true means live send successful.',
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
