@@ -46,7 +46,7 @@ function getTransporter() {
       connectTimeout: 10000,
       socketTimeout: 15000,
       auth: {
-        user: 'apikey',
+        user: BREVO_SMTP_USER || 'apikey',
         pass: BREVO_SMTP_KEY,
       },
     })
