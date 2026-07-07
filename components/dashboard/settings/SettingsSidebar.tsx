@@ -10,6 +10,7 @@ const tabs = [
   { id: 'business', label: 'Business' },
   { id: 'password', label: 'Password' },
   { id: 'notifications', label: 'Notifications' },
+  { id: 'twitter', label: 'Twitter' },
 ]
 
 export default function SettingsSidebar({ activeTab, onTabChange }: Props) {

@@ -26,6 +26,7 @@ const en: Record<string, string> = {
   'nav.referral': 'Referral',
   'nav.settings': 'Settings',
   'dashboard.logout': 'Logout',
+  'dashboard.twitter': 'Twitter',
   'hero.badge': 'Six powerful products, one platform',
   'hero.title': 'Build. Play. Explore. Create.',
   'hero.subtitle': 'Hostamar brings together cloud hosting, AI-powered marketing, gaming, an intelligent browser, free AI chat, and a cloud development environment — all under one roof.',
