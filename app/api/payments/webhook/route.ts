@@ -158,14 +158,15 @@ export async function POST(req: NextRequest) {
       const invoice   = body.merchant_invoice as string
 
       // Verify with bKash API if configured
+      let bkashVerified: { success: boolean; status?: string; amount?: string } = { success: false }
       if (cfg.isConfigured && paymentId) {
-        const verified = await verifyBkashPayment(paymentId, cfg)
-        if (!verified.success) {
+        bkashVerified = await verifyBkashPayment(paymentId, cfg)
+        if (!bkashVerified.success) {
           console.warn('[Payments:Webhook] bKash verification failed for', paymentId)
         }
       }
 
-      const status = mapStatus(verified?.status || gatewayStatus || '')
+      const status = mapStatus(bkashVerified.status || gatewayStatus || '')
 
       // Find or create customer
       let customer = customerPhone
@@ -210,12 +211,12 @@ export async function POST(req: NextRequest) {
       const customerEmail = body.customer_email as string
 
       // Verify with Nagad API if configured
-      let verified = { success: false }
+      let nagadVerified: { success: boolean; status?: string; amount?: string } = { success: false }
       if (cfg.isConfigured && paymentRefId) {
-        verified = await verifyNagadPayment(paymentRefId, cfg)
+        nagadVerified = await verifyNagadPayment(paymentRefId, cfg)
       }
 
-      const status = mapStatus(verified.status || gatewayStatus || '')
+      const status = mapStatus(nagadVerified.status || gatewayStatus || '')
 
       // Find customer
       let customer = customerEmail
