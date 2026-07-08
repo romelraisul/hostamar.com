@@ -83,10 +83,11 @@ export async function middleware(request: NextRequest) {
     '/api/game/spin',
     '/api/ai/browser/search',
     '/api/browser/proxy',
-    '/api/browser/screenshot',
-    '/api/browser/summarize',
-    '/api/email/setup-brevo',
-    '/api/debug/env',
+        '/api/browser/screenshot',
+        '/api/browser/summarize',
+        '/api/dev/chat',
+        '/api/email/setup-brevo',
+        '/api/debug/env',
   ]
   if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
     return NextResponse.next()
