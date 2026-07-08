@@ -32,9 +32,9 @@ export async function GET(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>You've been invited to Hostamar${referrerName ? ' by ' + referrer.name : ''}</title>
+  <title>You've been invited to Hostamar${referrerName ? ' by ' + (referrer?.name ?? '') : ''}</title>
   <meta name="description" content="Join Hostamar — AI-powered video creation platform. Get ${referrerName ? 'bonus credits' : 'started for free'}!" />
-  <meta property="og:title" content="You've been invited to Hostamar${referrerName ? ' by ' + referrer.name : ''}" />
+  <meta property="og:title" content="You've been invited to Hostamar${referrerName ? ' by ' + (referrer?.name ?? '') : ''}" />
   <meta property="og:description" content="AI-powered video creation platform. Create professional videos with AI in minutes." />
   <meta property="og:type" content="website" />
   <style>
