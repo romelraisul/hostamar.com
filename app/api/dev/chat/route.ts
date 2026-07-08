@@ -3,9 +3,6 @@ import { chat as kilocodeChat } from '@/lib/kilocode-client'
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6:latest'
-const KAI9000_API_URL = process.env.KAI9000_API_URL || ''
-const KAI9000_API_KEY = process.env.KAI9000_API_KEY || ''
-const KAI9000_MODEL = process.env.KAI9000_MODEL || 'kai-9000'
 
 async function callOllama(messages: any[], model: string) {
   const response = await fetch(`${OLLAMA_HOST}/v1/chat/completions`, {
@@ -22,29 +19,11 @@ async function callOllama(messages: any[], model: string) {
   return { reply, provider: 'ollama', model }
 }
 
-async function callKai9000(messages: any[]) {
-  if (!KAI9000_API_URL) throw new Error('KAI9000_API_URL is not configured')
-  const authHeader = KAI9000_API_KEY ? `Bearer ${KAI9000_API_KEY}` : undefined
-  const response = await fetch(`${KAI9000_API_URL}/v1/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authHeader ? { Authorization: authHeader } : {}),
-    },
-    body: JSON.stringify({ model: KAI9000_MODEL, messages, stream: false, temperature: 0.7, max_tokens: 1024 }),
-  })
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => 'Kai-9000 unreachable')
-    throw new Error(`Kai-9000 failed: ${response.status} ${errorText}`)
-  }
-  const data = await response.json()
-  const reply = data.choices?.[0]?.message?.content || data.content || 'No response generated.'
-  return { reply, provider: 'kai-9000', model: KAI9000_MODEL }
-}
-
 async function callKiloCode(messages: any[]) {
   const result = await kilocodeChat(
-    messages.at(-1)?.content || '',
+    messages.findLast?.((m: any) => m.role === 'user')?.content ||
+      [...messages].reverse().find((m: any) => m.role === 'user')?.content ||
+      '',
     messages.find((m: any) => m.role === 'system')?.content,
     'kilo-auto/free',
   )
@@ -99,17 +78,12 @@ export async function POST(request: NextRequest) {
     try {
       result = await callOllama(messages, OLLAMA_MODEL)
     } catch (ollamaError: any) {
-      console.warn('[chat] Ollama down, trying Kai-9000:', ollamaError?.message)
+      console.warn('[chat] Ollama down, trying KiloCode free:', ollamaError?.message)
       try {
-        result = await callKai9000(messages)
-      } catch (kaiError: any) {
-        console.warn('[chat] Kai-9000 down, trying KiloCode free:', kaiError?.message)
-        try {
-          result = await callKiloCode(messages)
-        } catch (kcError: any) {
-          console.warn('[chat] KiloCode free down, using shim:', kcError?.message)
-          result = { reply: fallbackReply(tool, message), provider: 'shim', model: 'hostamar-fallback-shim' }
-        }
+        result = await callKiloCode(messages)
+      } catch (kcError: any) {
+        console.warn('[chat] KiloCode free down, using shim:', kcError?.message)
+        result = { reply: fallbackReply(tool, message), provider: 'shim', model: 'hostamar-fallback-shim' }
       }
     }
 
