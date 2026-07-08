@@ -59,7 +59,7 @@ services:
       - hostamar-network
     environment:
       - OLLAMA_HOST=http://hostamar-ollama:11434
-      - OLLAMA_MODEL=qwen3.6:27b
+      - OLLAMA_MODEL=hostamar:latest
       - OLLAMA_TIMEOUT=1800
     depends_on:
       - ollama
@@ -68,12 +68,22 @@ services:
     image: ollama/ollama:latest
     container_name: hostamar-ollama
     restart: unless-stopped
+    runtime: nvidia
     networks:
       - hostamar-network
     volumes:
-      - ollama-data:/root/.ollama
+      - flociops-assistant_ollama-data:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'timeout 2 bash -c \"cat < /dev/null > /dev/tcp/localhost/11434\"'"]
       interval: 30s
@@ -117,7 +127,7 @@ services:
       - R2_BUCKET=hostamar-videos
       - R2_PUBLIC_URL=http://hostamar-minio:9000/hostamar-videos
       - OLLAMA_HOST=http://hostamar-model:8000
-      - OLLAMA_MODEL=qwen3.6:27b
+      - OLLAMA_MODEL=hostamar:latest
       - KILOCODE_BASE_URL=https://api.kilo.ai/api/gateway
       - NODE_ENV=production
     depends_on:
@@ -192,7 +202,8 @@ volumes:
   redis-data:
     driver: local
   ollama-data:
-    driver: local
+    external: true
+    name: flociops-assistant_ollama-data
   minio-data:
     driver: local
   hostamar-data:
