@@ -53,10 +53,11 @@ function getRequestMetrics(): string {
     lines.push(`http_requests_total{path="${path}"} ${count}`)
   }
 
-  if (latencies.length > 0) {
+  if (latencies && latencies.length > 0) {
     const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length
     const max = Math.max(...latencies)
-    const p95 = latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)] || 0
+    const sorted = [...latencies].sort((a, b) => a - b)
+    const p95 = sorted[Math.floor(sorted.length * 0.95)] || 0
     lines.push('')
     lines.push('# HELP http_request_duration_seconds HTTP request duration')
     lines.push('# TYPE http_request_duration_seconds summary')
