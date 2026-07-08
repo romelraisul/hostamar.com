@@ -82,7 +82,7 @@ services:
       - NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-model:8000}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3.6:27b}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-hostamar:latest}
       - NODE_ENV=production
     depends_on:
       redis:
@@ -122,7 +122,7 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-model:8000}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3.6:27b}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-hostamar:latest}
       - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://flociops-searxng:8080}
       - NODE_ENV=production
     depends_on:
