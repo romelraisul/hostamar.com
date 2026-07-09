@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { generateInvoice } from '@/lib/invoice'
 
 // ============================================================================
 // POST /api/payments/webhook
@@ -195,12 +196,8 @@ export async function POST(req: NextRequest) {
       if (status === 'completed' && customer) {
         await activateSubscription(customer.id, payment, trxId || paymentId, 'bkash')
         await sendConfirmationEmail(customer.id, payment.id, 'bKash')
-        // Fire invoice generation (best-effort, non-blocking for the webhook response)
-        fetch(`${process.env.APP_URL || 'https://hostamar.com'}/api/invoices/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: trxId || paymentId }),
-        }).catch(() => {})
+        // Generate invoice INLINE (runs on Railway where DB is reachable; Vercel can't reach Neon)
+        await generateInvoice(trxId || paymentId)
       }
 
       return NextResponse.json({ success: true, status })
@@ -255,12 +252,8 @@ export async function POST(req: NextRequest) {
       if (status === 'completed' && customer) {
         await activateSubscription(customer.id, payment, txId, 'nagad')
         await sendConfirmationEmail(customer.id, payment.id, 'Nagad')
-        // Fire invoice generation (best-effort, non-blocking for the webhook response)
-        fetch(`${process.env.APP_URL || 'https://hostamar.com'}/api/invoices/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: txId }),
-        }).catch(() => {})
+        // Generate invoice INLINE (runs on Railway where DB is reachable; Vercel can't reach Neon)
+        await generateInvoice(txId)
       }
 
       return NextResponse.json({ success: true, status })
