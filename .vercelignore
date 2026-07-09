@@ -17,3 +17,5 @@ coverage/
 .nyc_output
 _docs/legacy
 docs/legacy
+node_modules
+.hermes
