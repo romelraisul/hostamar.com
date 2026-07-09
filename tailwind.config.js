@@ -33,6 +33,14 @@ module.exports = {
           800: '#1e293b',
           900: '#0f172a',
         },
+        // Bangladesh Trust Palette
+        bd: {
+          green: '#006A4E',   // Bangladesh flag green
+          red: '#F42A41',     // Bangladesh flag red
+          emerald: '#10B981', // BD emerald / success
+          zinc: '#18181B',   // dark bg
+          white: '#ffffff',
+        },
       },
       fontFamily: {
         bengali: ['var(--font-bengali)', 'Noto Sans Bengali', 'sans-serif'],
