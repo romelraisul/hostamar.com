@@ -12,6 +12,8 @@ export interface Scene {
 interface TimelineProps {
   scenes: Scene[]
   setScenes: (next: Scene[] | ((prev: Scene[]) => Scene[]) ) => void
+  selectedId?: string | null
+  onSelect?: (id: string | null) => void
 }
 
 /**
@@ -20,7 +22,7 @@ interface TimelineProps {
  * (10px = 1s, clamped 2–30s). Split logic: halve the selected scene into
  * two new scenes.
  */
-export default function Timeline({ scenes, setScenes }: TimelineProps) {
+export default function Timeline({ scenes, setScenes, selectedId, onSelect }: TimelineProps) {
   const [dragId, setDragId] = useState<string | null>(null)
   const [resizing, setResizing] = useState<string | null>(null)
 
@@ -76,20 +78,28 @@ export default function Timeline({ scenes, setScenes }: TimelineProps) {
           onDragStart={() => setDragId(s.id)}
           onDragOver={(e) => e.preventDefault()}
           onDrop={() => onDrop(s.id)}
+          onClick={() => onSelect?.(s.id)}
           onDoubleClick={() => split(s.id)}
-          title="Double-click to split · drag right edge to resize"
+          title="Double-click to split · drag right edge to resize · click to select"
           style={{ width: s.duration * 24, background: s.color }}
           className={`relative h-20 rounded-lg flex items-center justify-center text-white cursor-grab shrink-0 select-none ${
             resizing === s.id ? 'ring-2 ring-[#0E7C3A]' : ''
-          }`}
+          } ${selectedId === s.id ? 'border-2 border-[#22C55E] ring-1 ring-[#22C55E]/30' : 'border border-white/10'}`}
         >
-          <span className="text-sm px-2 text-center">
-            {s.title} {s.duration}s
-          </span>
+          <span className="px-2 text-center text-sm">{s.title} {s.duration}s</span>
           <div
             onMouseDown={(e) => onResize(s.id, e)}
-            className="absolute right-0 top-0 w-2 h-full cursor-col-resize bg-white/20 hover:bg-white/40"
+            onTouchStart={(e) => {
+              const t = e.touches[0]
+              onResize(s.id, { clientX: t.clientX } as React.MouseEvent)
+            }}
+            className="absolute right-0 top-0 h-full w-3.5 cursor-col-resize bg-white/20 hover:bg-white/40"
           />
+          {selectedId === s.id && (
+            <span className="absolute -right-px -top-px rounded-bl-lg rounded-tr-[10px] bg-[#22C55E] px-1.5 py-0.5 text-[9px] font-bold text-black">
+              SELECTED
+            </span>
+          )}
         </div>
       ))}
       <button
