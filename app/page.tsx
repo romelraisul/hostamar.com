@@ -1,12 +1,23 @@
 'use client'
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 const GREEN = "#0E7C3A";
 const RED = "#E4312B";
 
+const PRODUCTS = [
+  { href: '/generate', label: 'AI ভিডিও', desc: 'পণ্যের ছবি → ভিডিও', emoji: '🎬' },
+  { href: '/hosting', label: 'হোস্টিং', desc: 'bKash, ঢাকা CDN', emoji: '🌐' },
+  { href: '/chat', label: 'AI চ্যাট', desc: 'বাংলা AI, ভয়েস', emoji: '💬' },
+  { href: '/browser', label: 'ব্রাউজার', desc: 'ক্লাউড ব্রাউজার', emoji: '🧭' },
+  { href: '/ide', label: 'IDE', desc: 'অনলাইন কোড এডিটর', emoji: '⌨️' },
+  { href: '/gaming', label: 'গেমিং', desc: 'ক্লাউড গেম হোস্ট', emoji: '🎮' },
+];
+
 export default function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [prodOpen, setProdOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -39,26 +50,42 @@ export default function App() {
               <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 ml-1">BETA</span>
             </div>
             <nav className="hidden md:flex items-center gap-7 text-[14px] font-medium text-zinc-600">
-            <button onClick={()=>{ showToast("টেমপ্লেট সেকশনে যাচ্ছে..."); document.getElementById('templates')?.scrollIntoView({behavior:'smooth'})}} className="hover:text-zinc-900 transition bangla">টেমপ্লেট</button>
-            <button onClick={()=>{ showToast("প্রাইসিং দেখুন — bKash সাপোর্টেড"); document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}} className="hover:text-zinc-900 transition">প্রাইসিং</button>
-              <button onClick={()=>showToast("API Docs — শীঘ্রই আসছে")} className="hover:text-zinc-900 transition flex items-center gap-1">API <span className="text-[10px] bg-zinc-900 text-white px-1 rounded">NEW</span></button>
+            <div className="relative" onMouseEnter={()=>setProdOpen(true)} onMouseLeave={()=>setProdOpen(false)}>
+              <button className="hover:text-zinc-900 transition bangla inline-flex items-center gap-1">পণ্যসমূহ <span className={`text-[10px] transition ${prodOpen?'rotate-180':''}`}>▾</span></button>
+              {prodOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50">
+                  <div className="w-[440px] rounded-2xl bg-white border border-zinc-200 shadow-xl p-2 grid grid-cols-2 gap-1">
+                    {PRODUCTS.map(p=>(
+                      <Link key={p.href} href={p.href} className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-zinc-50 transition">
+                        <span className="text-[20px] leading-none mt-0.5">{p.emoji}</span>
+                        <span><span className="block bangla font-semibold text-[14px] text-zinc-900">{p.label}</span><span className="block bangla text-[12px] text-zinc-500">{p.desc}</span></span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <button onClick={()=>{ document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}} className="hover:text-zinc-900 transition bangla">প্রাইসিং</button>
+            <Link href="/generate" className="hover:text-zinc-900 transition bangla">এডিটর</Link>
             </nav>
           </div>
 
           <div className="flex items-center gap-3">
-            <button onClick={()=>showToast("লগইন ডেমো — শীঘ্রই আসছে")} className="hidden md:block text-[14px] font-medium text-zinc-600 hover:text-zinc-900">লগইন</button>
-            <button onClick={()=>showToast("ফ্রি অ্যাকাউন্ট তৈরি হচ্ছে ✨")} className="hidden md:inline-flex h-9 px-4 rounded-full text-white text-[14px] font-semibold items-center justify-center shadow-[0_8px_20px_-8px_rgba(14,124,58,0.5)] hover:brightness-[1.05] transition" style={{background: GREEN}}>
+            <Link href="/signup" className="hidden md:block text-[14px] font-medium text-zinc-600 hover:text-zinc-900">লগইন</Link>
+            <Link href="/generate" className="hidden md:inline-flex h-9 px-4 rounded-full text-white text-[14px] font-semibold items-center justify-center shadow-[0_8px_20px_-8px_rgba(14,124,58,0.5)] hover:brightness-[1.05] transition" style={{background: GREEN}}>
               ফ্রি শুরু করুন
-            </button>
+            </Link>
             <button onClick={()=>setMobileMenu(!mobileMenu)} className="md:hidden h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center">☰</button>
           </div>
         </div>
         {mobileMenu && (
-          <div className="md:hidden border-t bg-white px-5 py-4 space-y-3">
-            <button onClick={()=>{setMobileMenu(false); showToast("টেমপ্লেট সেকশনে যাচ্ছে..."); document.getElementById('templates')?.scrollIntoView({behavior:'smooth'})}} className="block py-2 bangla font-medium w-full text-left">টেমপ্লেট</button>
-            <button onClick={()=>{setMobileMenu(false); showToast("প্রাইসিং দেখুন — bKash সাপোর্টেড"); document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}} className="block py-2 bangla font-medium w-full text-left">প্রাইসিং</button>
-            <button onClick={()=>{setMobileMenu(false); showToast("API Docs — শীঘ্রই")}} className="block py-2 font-medium w-full text-left">API</button>
-            <button onClick={()=>{setMobileMenu(false); showToast("ফ্রি অ্যাকাউন্ট তৈরি হচ্ছে ✨")}} className="mt-2 flex h-11 w-full rounded-full text-white font-semibold items-center justify-center" style={{background: GREEN}}>ফ্রি শুরু করুন</button>
+          <div className="md:hidden border-t bg-white px-5 py-4 space-y-1">
+            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide pb-1">পণ্যসমূহ</div>
+            {PRODUCTS.map(p=>(
+              <Link key={p.href} href={p.href} onClick={()=>setMobileMenu(false)} className="flex items-center gap-2 py-2 bangla font-medium">{p.emoji} {p.label}</Link>
+            ))}
+            <button onClick={()=>{setMobileMenu(false); document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}} className="block py-2 bangla font-medium w-full text-left border-t border-zinc-100 mt-1 pt-3">প্রাইসিং</button>
+            <Link href="/generate" onClick={()=>setMobileMenu(false)} className="mt-2 flex h-11 w-full rounded-full text-white font-semibold items-center justify-center bangla" style={{background: GREEN}}>ফ্রি শুরু করুন</Link>
           </div>
         )}
       </header>
@@ -88,9 +115,9 @@ export default function App() {
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
-              <button onClick={()=>showToast("এডিটর খুলছে — ৩০ সেকেন্ডে ভিডিও রেডি!")} className="h-[48px] px-6 rounded-full text-white font-semibold bangla text-[15px] inline-flex items-center gap-2 shadow-[0_12px_24px_-10px_rgba(14,124,58,0.6)] hover:translate-y-[-1px] transition" style={{background: GREEN}}>
+              <Link href="/generate" className="h-[48px] px-6 rounded-full text-white font-semibold bangla text-[15px] inline-flex items-center gap-2 shadow-[0_12px_24px_-10px_rgba(14,124,58,0.6)] hover:translate-y-[-1px] transition" style={{background: GREEN}}>
                 <span>▶</span> ফ্রি ভিডিও বানান
-              </button>
+              </Link>
               <button onClick={()=>{document.getElementById('templates')?.scrollIntoView({behavior:'smooth'})}} className="h-[48px] px-6 rounded-full bg-white border border-zinc-200 font-medium text-[14px] inline-flex items-center gap-2 hover:bg-zinc-50 transition">
                 টেমপ্লেট দেখুন <span>→</span>
               </button>
@@ -330,9 +357,10 @@ export default function App() {
 
         {/* Pricing */}
         <section id="pricing" className="mt-20">
-          <div className="text-center max-w-[560px] mx-auto">
-            <h2 className="bangla text-[30px] md:text-[38px] font-bold leading-[1.1] tracking-[-0.02em]">সহজ প্রাইসিং, কোনো লুকানো ফি নেই</h2>
-            <p className="bangla mt-3 text-[14px] text-zinc-500">মাসিক বিল, যেকোনো সময় বাতিল করুন। bKash, Nagad, Rocket, কার্ড সব সাপোর্ট করে।</p>
+          <div className="text-center max-w-[620px] mx-auto">
+            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium bangla mb-4"><span className="h-2 w-2 rounded-full" style={{background:GREEN}}></span>একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট</span>
+            <h2 className="bangla text-[30px] md:text-[38px] font-bold leading-[1.1] tracking-[-0.02em]">ভিডিও কিনুন, হোস্টিং-চ্যাট ফ্রি পান</h2>
+            <p className="bangla mt-3 text-[14px] text-zinc-500">প্রতিটি প্ল্যানে AI ভিডিও + হোস্টিং + Chat + Browser + IDE একসাথে। আলাদা করে কিছু কিনতে হবে না। bKash, Nagad, Rocket সাপোর্টেড।</p>
           </div>
 
           <div className="mt-10 grid md:grid-cols-3 gap-4 md:gap-5 items-start">
@@ -344,9 +372,9 @@ export default function App() {
               </div>
               <div className="mt-4 flex items-baseline gap-1"><span className="text-[36px] font-bold tracking-tight">৳0</span><span className="text-zinc-500 text-[13px]">/মাস</span></div>
               <ul className="mt-6 space-y-2.5 text-[13px] text-zinc-600">
-                {["৩টি ভিডিও / মাস","৭২০p এক্সপোর্ট","Hostamar ওয়াটারমার্ক","১টি ব্র্যান্ড কিট"].map(f=><li key={f} className="flex gap-2"><span className="text-zinc-400">—</span><span className="bangla">{f}</span></li>)}
+                {["৫টি ভিডিও / মাস","১GB হোস্টিং ফ্রি","Chat বেসিক","৭২০p এক্সপোর্ট","১টি ব্র্যান্ড কিট"].map(f=><li key={f} className="flex gap-2"><span className="text-zinc-400">—</span><span className="bangla">{f}</span></li>)}
               </ul>
-              <button onClick={()=>showToast("ফ্রি প্ল্যান একটিভ হচ্ছে ✨")} className="mt-7 h-11 w-full rounded-full border bg-white font-medium text-[14px] flex items-center justify-center hover:bg-zinc-50">ফ্রি শুরু করুন</button>
+              <Link href="/signup" className="mt-7 h-11 w-full rounded-full border bg-white font-medium text-[14px] flex items-center justify-center hover:bg-zinc-50 bangla">ফ্রি শুরু করুন</Link>
             </div>
 
             {/* Starter Popular */}
@@ -362,11 +390,11 @@ export default function App() {
                   <span className="ml-2 text-[12px] line-through text-zinc-400">৳2,800</span>
                 </div>
                 <ul className="mt-6 space-y-2.5 text-[13px]">
-                  {["৫০টি ভিডিও / মাস","1080p, No watermark","৬টি বাংলা AI ভয়েস","অটো সাবটাইটেল + হুক","৩টি ব্র্যান্ড কিট","bKash অটো-রিনিউ"].map(f=>(
+                  {["১০টি ভিডিও / মাস","৫GB হোস্টিং ফ্রি","Chat Pro + ভয়েস","Browser + IDE অ্যাক্সেস","1080p, No watermark","bKash অটো-রিনিউ"].map(f=>(
                     <li key={f} className="flex gap-2"><span className="h-5 w-5 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style={{background:GREEN}}>✓</span><span className="bangla">{f}</span></li>
                   ))}
                 </ul>
-                <button onClick={()=>showToast("Starter প্ল্যান — bKash চেকআউটে যাচ্ছে...")} className="mt-7 h-11 w-full rounded-full text-white font-semibold text-[14px] flex items-center justify-center shadow-[0_10px_20px_-10px_rgba(14,124,58,0.7)] hover:brightness-105 transition" style={{background:GREEN}}>Starter নিন →</button>
+                <Link href="/signup?plan=starter" className="mt-7 h-11 w-full rounded-full text-white font-semibold text-[14px] flex items-center justify-center shadow-[0_10px_20px_-10px_rgba(14,124,58,0.7)] hover:brightness-105 transition bangla" style={{background:GREEN}}>Starter নিন →</Link>
                 <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-zinc-500"><span>পেমেন্ট:</span><span className="font-semibold">bKash</span><span>•</span><span className="font-semibold">Nagad</span><span>•</span><span className="font-semibold">Rocket</span></div>
               </div>
             </div>
@@ -379,9 +407,9 @@ export default function App() {
               </div>
               <div className="mt-4 flex items-baseline gap-1"><span className="text-[36px] font-bold tracking-tight">৳3,500</span><span className="text-white/50 text-[13px]">/মাস</span></div>
               <ul className="mt-6 space-y-2.5 text-[13px] text-white/70">
-                {["আনলিমিটেড ভিডিও","4K এক্সপোর্ট","API এক্সেস","টিম মেম্বার ৫ জন","প্রায়োরিটি সাপোর্ট","কাস্টম ফন্ট + লোগো"].map(f=><li key={f} className="flex gap-2"><span className="text-white/30">—</span><span className="bangla">{f}</span></li>)}
+                {["৩০টি ভিডিও / মাস","২০GB হোস্টিং ফ্রি","সব প্রোডাক্ট আনলিমিটেড","Game টুর্নামেন্ট হোস্টিং","4K এক্সপোর্ট + API","টিম ৫ জন + প্রায়োরিটি সাপোর্ট"].map(f=><li key={f} className="flex gap-2"><span className="text-white/30">—</span><span className="bangla">{f}</span></li>)}
               </ul>
-              <button onClick={()=>showToast("সেলস টিমকে মেসেজ পাঠানো হলো")} className="mt-7 h-11 w-full rounded-full bg-white text-zinc-900 font-semibold text-[14px] flex items-center justify-center hover:bg-zinc-100">সেলসের সাথে কথা বলুন</button>
+              <Link href="/signup?plan=business" className="mt-7 h-11 w-full rounded-full bg-white text-zinc-900 font-semibold text-[14px] flex items-center justify-center hover:bg-zinc-100 bangla">Business নিন →</Link>
             </div>
           </div>
 
@@ -444,10 +472,10 @@ export default function App() {
               <div>
                 <div className="font-semibold mb-3">প্রোডাক্ট</div>
                 <div className="space-y-2.5 text-zinc-500">
-                  <button onClick={()=>document.getElementById('templates')?.scrollIntoView({behavior:'smooth'})} className="block hover:text-zinc-900 text-left">টেমপ্লেট</button>
-                  <button onClick={()=>showToast("AI ভয়েস লাইব্রেরি")} className="block hover:text-zinc-900 text-left">AI ভয়েস</button>
-                  <button onClick={()=>showToast("API Docs শীঘ্রই")} className="block hover:text-zinc-900 text-left">API ডকস</button>
-                  <button onClick={()=>showToast("রোডম্যাপ দেখুন")} className="block hover:text-zinc-900 text-left">রোডম্যাপ</button>
+                  <Link href="/generate" className="block hover:text-zinc-900 text-left bangla">AI ভিডিও</Link>
+                  <Link href="/hosting" className="block hover:text-zinc-900 text-left bangla">হোস্টিং</Link>
+                  <Link href="/chat" className="block hover:text-zinc-900 text-left bangla">AI চ্যাট</Link>
+                  <Link href="/gaming" className="block hover:text-zinc-900 text-left bangla">গেমিং</Link>
                 </div>
               </div>
               <div>
