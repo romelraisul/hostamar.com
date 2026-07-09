@@ -6,49 +6,14 @@
       "use": "@vercel/next"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/qr/(.*)",
-      "dest": "/qr/$1"
+      "source": "/api/payments/manual",
+      "destination": "/api/payments/manual"
     },
     {
-      "src": "/login",
-      "dest": "/login"
-    },
-    {
-      "src": "/app-redirect",
-      "dest": "/app-redirect"
-    },
-    {
-      "src": "/dashboard/pricing",
-      "dest": "/dashboard/pricing"
-    },
-    {
-      "src": "/dashboard/payment/crypto",
-      "dest": "/dashboard/payment/crypto"
-    },
-    {
-      "src": "/api/health",
-      "dest": "/api/health"
-    },
-    {
-      "src": "/admin(.*)",
-      "dest": "/admin$1"
-    },
-    {
-      "src": "/api/admin(.*)",
-      "dest": "/api/admin/$1"
-    },
-    {
-      "src": "/api/auth/(.*)",
-      "dest": "/api/auth/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
+      "source": "/api/:path*",
+      "destination": "https://web-production-1234d.up.railway.app/api/:path*"
     }
   ],
   "headers": [
