@@ -36,10 +36,11 @@ function generateTrxId(): string {
   return `HOST${Date.now()}${randomBytes(4).toString('hex').toUpperCase()}`;
 }
 
-// Merchant numbers (configurable via .env)
-const BKASH_NUMBER = process.env.BKASH_NUMBER || '01XXXXXXXXX';
-const NAGAD_NUMBER = process.env.NAGAD_NUMBER || '01XXXXXXXXX';
-const ROCKET_NUMBER = process.env.ROCKET_NUMBER || '01XXXXXXXXX';
+// Personal receiver numbers (SEND MONEY ONLY — no business/merchant account yet).
+// Configurable via .env; defaults are the owner's personal numbers.
+const BKASH_NUMBER = process.env.BKASH_NUMBER || '01822417463';
+const NAGAD_NUMBER = process.env.NAGAD_NUMBER || '01711317101';
+const ROCKET_NUMBER = process.env.ROCKET_NUMBER || '01822417463';
 
 // USDT wallet address for receiving payments
 const USDT_WALLET = process.env.USDT_WALLET_ADDRESS || '0x16Bfd806297feaC12FC4b8A6c95079E8aADeC858';
