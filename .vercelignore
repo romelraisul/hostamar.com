@@ -19,3 +19,11 @@ _docs/legacy
 docs/legacy
 node_modules
 .hermes
+comfyui/
+**/*.safetensors
+**/*.ckpt
+**/*.pt
+**/*.pth
+**/*.bin
+**/*.gguf
+**/*.onnx

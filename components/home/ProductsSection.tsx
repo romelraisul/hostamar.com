@@ -3,17 +3,22 @@
 import Link from 'next/link'
 import { PRODUCTS } from '@/lib/products'
 
+const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
+const toBnNum = (n: number) => String(n).split('').map((d) => BN_DIGITS[+d] ?? d).join('')
+
 export default function ProductsSection() {
+  const count = PRODUCTS.length
+  const countBn = toBnNum(count)
   return (
     <section id="products" className="py-20 bg-transparent">
       <div className="max-w-6xl mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
           <div className="inline-block mb-4 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-            🛠️ ৬টি পণ্য, একটি প্ল্যাটফর্ম
+            🛠️ {countBn}টি পণ্য, একটি প্ল্যাটফর্ম
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            আপনার হাতে <span className="text-blue-600">৬টা ব্যবসার টুল</span>, একটি অ্যাকাউন্টে
+            আপনার হাতে <span className="text-blue-600">{countBn}টা ব্যবসার টুল</span>, একটি অ্যাকাউন্টে
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             AI ভিডিও বানান, ওয়েবসাইট হোস্ট করুন, চ্যাটে সহায়তা নিন, ব্রাউজারে গবেষণা করুন, গেম খেলুন, কোড লিখুন — সব <b>বাংলা</b>।
@@ -62,7 +67,7 @@ export default function ProductsSection() {
             href="/products"
             className="inline-block px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 text-blue-700 font-semibold rounded-xl transition-all border border-blue-200"
           >
-            সব ৬টি পণ্য দেখুন →
+            সব {countBn}টি পণ্য দেখুন →
           </Link>
         </div>
       </div>
