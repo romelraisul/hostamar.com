@@ -3,71 +3,50 @@
 import Link from 'next/link'
 import { PRODUCTS } from '@/lib/products'
 
-const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
-const toBnNum = (n: number) => String(n).split('').map((d) => BN_DIGITS[+d] ?? d).join('')
-
+// Secondary "Labs" strip — the homepage hero is AI Video.
+// The other tools stay discoverable here without diluting the hero story.
 export default function ProductsSection() {
-  const count = PRODUCTS.length
-  const countBn = toBnNum(count)
+  // Everything except the hero product (ai-video) lives in Labs.
+  const labs = PRODUCTS.filter((p) => p.slug !== 'ai-video').sort((a, b) => a.order - b.order)
+
   return (
-    <section id="products" className="py-20 bg-transparent">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="inline-block mb-4 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-            🛠️ {countBn}টি পণ্য, একটি প্ল্যাটফর্ম
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            আপনার হাতে <span className="text-blue-600">{countBn}টা ব্যবসার টুল</span>, একটি অ্যাকাউন্টে
+    <section id="products" className="py-14 bg-transparent border-t border-slate-200/60 dark:border-slate-800/60">
+      <div className="max-w-5xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <span className="inline-block mb-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold tracking-wide">
+            🧪 Hostamar Labs
+          </span>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+            শুধু ভিডিও না — আরও টুল একই অ্যাকাউন্টে
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            AI ভিডিও বানান, ওয়েবসাইট হোস্ট করুন, চ্যাটে সহায়তা নিন, ব্রাউজারে গবেষণা করুন, গেম খেলুন, কোড লিখুন — সব <b>বাংলা</b>।
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            হোস্টিং, চ্যাট, ব্রাউজার, গেম, IDE — সব বাংলায়, এক্সপেরিমেন্টাল
           </p>
         </div>
 
-        {/* Product Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {PRODUCTS.map((p) => (
+        <div className="flex flex-wrap justify-center gap-3">
+          {labs.map((p) => (
             <Link
               key={p.slug}
               href={`/products/${p.slug}`}
-              className="group block card card-hover overflow-hidden"
+              className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 transition-all hover:border-emerald-400 hover:shadow-sm"
             >
-              {/* Gradient hero */}
-              <div className={`product-card-gradient bg-gradient-to-br ${p.gradient} p-6 text-white relative`}>
-                <span className="absolute top-3 right-3 text-2xl">{p.emoji}</span>
-                <span className="inline-block text-xs px-2 py-0.5 rounded-full border bg-white/20 backdrop-blur-sm border-white/30">
-                  {p.badge}
-                </span>
-                <h3 className="mt-3 text-2xl font-bold">{p.nameBn}</h3>
-                <p className="text-sm opacity-90">{p.nameEn}</p>
-              </div>
-
-              {/* Body */}
-              <div className="p-6">
-                <p className="text-gray-700 font-medium mb-3">{p.taglineBn}</p>
-                <p className="text-sm text-gray-500 mb-4 line-clamp-3">{p.description}</p>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs px-2 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
-                    🧪 {p.status === 'beta' ? 'Beta' : p.status === 'live' ? 'Live' : 'Coming Soon'}
-                  </span>
-                  <span className="text-sm font-semibold text-blue-600 group-hover:translate-x-1 transition-transform">
-                    বিস্তারিত →
-                  </span>
-                </div>
-              </div>
+              <span className="text-base">{p.emoji}</span>
+              <span>{p.nameBn}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                {p.status === 'live' ? 'Live' : p.status === 'beta' ? 'Beta' : 'Soon'}
+              </span>
             </Link>
           ))}
         </div>
 
-        {/* All Products CTA */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-8">
           <Link
             href="/products"
-            className="inline-block px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 text-blue-700 font-semibold rounded-xl transition-all border border-blue-200"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
           >
-            সব {countBn}টি পণ্য দেখুন →
+            সব টুল দেখুন
+            <span aria-hidden>→</span>
           </Link>
         </div>
       </div>
