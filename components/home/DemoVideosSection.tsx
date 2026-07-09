@@ -1,92 +1,82 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useLocale } from '@/lib/locale-context'
 
-interface Demo {
-  id: string
-  title: string
-  bnTitle: string
-  url: string
-  thumbnail: string
-}
-
-const DEMOS: Demo[] = [
-  { id: 'islamic-new-year', title: 'Islamic New Year Demo', bnTitle: 'ইসলামিক নতুন বছর', url: '/demo/islamic-new-year-demo.mp4', thumbnail: '/demo/islamic-new-year-demo-thumb.jpg' },
-  { id: 'eid-celebration', title: 'Eid Celebration Demo', bnTitle: 'ঈদ উদযাপন', url: '/demo/eid-celebration-demo.mp4', thumbnail: '/demo/eid-celebration-demo-thumb.jpg' },
-  { id: 'business-promo', title: 'Business Promotion Demo', bnTitle: 'ব্যবসা প্রোমোশন', url: '/demo/business-promo-demo.mp4', thumbnail: '/demo/business-promo-demo-thumb.jpg' },
+const DEMOS = [
+  { id: 'islamic-new-year', url: '/demo/islamic-new-year-demo.mp4', thumb: '/demo/islamic-new-year-demo-thumb.jpg', titleBn: 'ইসলামিক নতুন বছর', titleEn: 'Islamic New Year' },
+  { id: 'eid-celebration', url: '/demo/eid-celebration-demo.mp4', thumb: '/demo/eid-celebration-demo-thumb.jpg', titleBn: 'ঈদ উদযাপন', titleEn: 'Eid Celebration' },
+  { id: 'business-promo', url: '/demo/business-promo-demo.mp4', thumb: '/demo/business-promo-demo-thumb.jpg', titleBn: 'ব্যবসা প্রোমোশন', titleEn: 'Business Promotion' },
 ]
 
 export default function DemoVideosSection() {
+  const { locale } = useLocale()
+  const isBengali = locale === 'bn'
   const [playing, setPlaying] = useState<string | null>(null)
-  const [broken, setBroken] = useState<Record<string, boolean>>({})
 
   return (
-    <section className="py-20 bg-gray-50 dark:bg-slate-900">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            AI Studio Demo Videos
+    <section className="bg-[#FCFCF9] px-5 py-16">
+      <div className="mx-auto max-w-[1120px]">
+        <div className="mb-10 text-center">
+          <h2 className="font-hind text-3xl font-bold tracking-tight text-[#18181B]">
+            {isBengali ? 'নিজে দেখুন, ৩০ সেকেন্ডে কি হয়' : 'See it yourself — 30 seconds'}
           </h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            Real AI-generated samples — watch how Hostamar creates professional videos in 30 seconds
+          <p className="mt-2 text-zinc-500">
+            {isBengali
+              ? 'আসল AI-জেনারেটেড স্যাম্পল — বাংলা স্ক্রিপ্ট থেকে ভিডিও'
+              : 'Real AI-generated samples — Bangla script to video'}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {DEMOS.map((demo) => (
-            <div key={demo.id} className="group">
-              <div className="aspect-video bg-gray-100 dark:bg-slate-800 rounded-xl overflow-hidden mb-4 relative">
-                {playing === demo.id && !broken[demo.id] ? (
+        <div className="grid gap-6 md:grid-cols-3">
+          {DEMOS.map((d) => (
+            <div key={d.id} className="group">
+              <div className="relative aspect-video overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100">
+                {playing === d.id ? (
                   <video
-                    src={demo.url}
+                    src={d.url}
                     controls
                     autoPlay
-                    className="w-full h-full object-cover"
-                    onError={() => setBroken((b) => ({ ...b, [demo.id]: true }))}
+                    className="h-full w-full object-cover"
                     onEnded={() => setPlaying(null)}
                   />
                 ) : (
                   <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={d.thumb}
+                      alt={d.titleEn}
+                      className="h-full w-full object-cover opacity-90 transition group-hover:opacity-70"
+                    />
                     <button
                       type="button"
-                      aria-label={`Play ${demo.title}`}
+                      aria-label={`Play ${d.titleEn}`}
                       className="absolute inset-0 flex items-center justify-center"
-                      onClick={() => setPlaying(demo.id)}
+                      onClick={() => setPlaying(d.id)}
                     >
-                      <span className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0E7C3A] shadow-lg transition group-hover:scale-110">
+                        <svg className="ml-1 h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </span>
                     </button>
-                    {broken[demo.id] || !demo.thumbnail ? (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-slate-800">
-                        <span className="text-xs text-emerald-300">{demo.bnTitle}</span>
-                      </div>
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={demo.thumbnail}
-                        alt={demo.title}
-                        className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity"
-                        onError={() => setBroken((b) => ({ ...b, [demo.id]: true }))}
-                      />
-                    )}
                   </>
                 )}
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-center">{demo.bnTitle}</h3>
+              <h3 className="mt-3 text-center font-semibold text-[#18181B]">
+                {isBengali ? d.titleBn : d.titleEn}
+              </h3>
             </div>
           ))}
         </div>
 
-        <div className="text-center mt-8">
+        <div className="mt-10 text-center">
           <Link
             href="/generate"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition"
+            className="inline-flex items-center gap-2 rounded-full bg-[#0E7C3A] px-6 py-3 font-semibold text-white transition hover:bg-[#0A5A2B]"
           >
-            Create Your Own Video
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isBengali ? 'নিজের ভিডিও বানান' : 'Make your own video'}
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </Link>
