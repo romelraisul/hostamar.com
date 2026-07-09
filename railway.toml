@@ -1,6 +1,6 @@
 [service.web]
 image.source = "nixpacks"
-startCommand = "npx prisma migrate deploy && node .next/standalone/server.js"
+startCommand = "npx prisma db execute --file=prisma/add-invoice-url.sql && node .next/standalone/server.js"
 restartPolicy = "ON_FAILURE"
 maxRestarts = 10
 
