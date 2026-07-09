@@ -99,7 +99,12 @@ export default function HeroSection() {
               <span className="h-3 w-3 rounded-full bg-[#FF5F56]" />
               <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
               <span className="h-3 w-3 rounded-full bg-[#27C93F]" />
-              <span className="ml-2 text-xs text-zinc-400">studio.hostamar.com</span>
+              <Link
+                href="/generate"
+                className="ml-2 text-xs text-zinc-400 transition hover:text-[#0E7C3A]"
+              >
+                hostamar.com/generate
+              </Link>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {['টেমপ্লেট', 'কাস্টমাইজ', 'এক্সপোর্ট'].map((step, i) => (
