@@ -1,85 +1,50 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
-import { PRODUCTS } from '@/lib/products'
+import { useLocale } from '@/lib/locale-context'
 
 export default function Navbar() {
+  const { locale } = useLocale()
+  const isBengali = locale === 'bn'
+
   return (
-    <nav className="nav-glass sticky top-0 z-30">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">H</span>
+    <nav className="sticky top-0 z-50 border-b border-zinc-100 bg-white/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-5">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0E7C3A] font-bold text-white">
+              H
+            </span>
+            <span className="text-[18px] font-bold tracking-tight text-[#18181B]">Hostamar</span>
+            <span className="ml-1 rounded-full border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium">
+              BETA
+            </span>
+          </Link>
+          <div className="hidden items-center gap-7 text-[14px] font-medium text-zinc-600 md:flex">
+            <Link href="/prompts" className="bangla transition hover:text-[#18181B]">
+              {isBengali ? 'টেমপ্লেট' : 'Templates'}
+            </Link>
+            <Link href="/pricing" className="transition hover:text-[#18181B]">
+              {isBengali ? 'প্রাইসিং' : 'Pricing'}
+            </Link>
+            <Link href="/products" className="transition hover:text-[#18181B]">
+              {isBengali ? 'Labs' : 'Labs'}
+            </Link>
           </div>
-          <span className="text-xl font-bold text-gray-900">Hostamar</span>
-        </Link>
-
-        {/* Center links */}
-        <div className="hidden md:flex items-center gap-1">
-          {/* Products dropdown */}
-          <div className="relative group">
-            <button
-              className="nav-link inline-flex items-center gap-1"
-              type="button"
-            >
-              Products <ChevronDown className="w-4 h-4" />
-            </button>
-
-            <div
-              className="absolute left-0 top-full pt-2 hidden group-hover:block group-focus-within:block z-40"
-              role="menu"
-            >
-              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-[640px] grid grid-cols-2 gap-2">
-                <Link
-                  href="/products"
-                  className="col-span-2 px-3 py-2 mb-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 flex items-center justify-between"
-                  role="menuitem"
-                >
-                  <span className="font-bold text-gray-900">🛠 সব পণ্য দেখুন</span>
-                  <span className="text-xs text-blue-700">6টি →</span>
-                </Link>
-                {PRODUCTS.map((p) => (
-                  <Link
-                    key={p.slug}
-                    href={`/products/${p.slug}`}
-                    className="px-3 py-2 rounded-lg hover:bg-gray-50 flex items-start gap-3"
-                    role="menuitem"
-                  >
-                    <span className="text-2xl">{p.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-gray-900 text-sm">{p.nameBn}</span>
-                        <span className="text-xs text-gray-400">{p.badge}</span>
-                      </div>
-                      <p className="text-xs text-gray-500 line-clamp-1">{p.taglineBn}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Secondary links */}
-          <Link href="/pricing" className="nav-link">Pricing</Link>
-          <Link href="/prompts" className="nav-link">Prompts</Link>
-          <Link href="/blog" className="nav-link">Blog</Link>
         </div>
 
-        {/* Right side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="hidden sm:inline-block px-3 py-2 text-gray-700 hover:text-blue-600 font-medium"
+            className="hidden text-[14px] font-medium text-zinc-600 hover:text-[#18181B] md:block"
           >
-            লগইন
+            {isBengali ? 'লগইন' : 'Login'}
           </Link>
           <Link
             href="/signup"
-            className="btn-primary text-sm"
+            className="inline-flex h-9 items-center justify-center rounded-full bg-[#0E7C3A] px-4 text-[14px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(14,124,58,0.5)] transition hover:bg-[#0A5A2B]"
           >
-            ফ্রি শুরু করুন
+            {isBengali ? 'ফ্রি শুরু করুন' : 'Start free'}
           </Link>
         </div>
       </div>

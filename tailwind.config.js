@@ -41,9 +41,18 @@ module.exports = {
           zinc: '#18181B',   // dark bg
           white: '#ffffff',
         },
+        // 2026 redesign palette (from prototype)
+        hostamar: {
+          primary: '#0E7C3A',     // primary green
+          primaryDark: '#0A5A2B', // hover/deep
+          accent: '#E4312B',      // accent red
+          base: '#FCFCF9',        // page base
+          ink: '#18181B',         // zinc-900 text
+        },
       },
       fontFamily: {
         bengali: ['var(--font-bengali)', 'Noto Sans Bengali', 'sans-serif'],
+        hind: ['Hind Siliguri', 'Noto Sans Bengali', 'sans-serif'],
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.6s ease-out',

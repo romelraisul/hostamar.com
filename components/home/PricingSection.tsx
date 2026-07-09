@@ -3,108 +3,129 @@
 import { useLocale } from '@/lib/locale-context'
 import CheckoutButton from '@/components/CheckoutButton'
 
+const PLANS_BN = [
+  {
+    key: 'free',
+    name: 'Free',
+    price: '৳0',
+    period: '/মাস',
+    features: ['৩টি AI ভিডিও', '৭২০p', '৫০+ টেমপ্লেট', 'bKash পেমেন্ট'],
+    cta: 'ফ্রি শুরু করুন',
+    popular: false,
+  },
+  {
+    key: 'starter',
+    name: 'Starter',
+    price: '৳2,000',
+    period: '/মাস',
+    features: ['১০০ AI ভিডিও', '১০৮০p, কোনো ওয়াটারমার্ক নয়', 'সব টেমপ্লেট', 'প্রায়োরিটি সাপোর্ট'],
+    cta: 'Starter নির্বাচন করুন',
+    popular: true,
+  },
+  {
+    key: 'business',
+    name: 'Business',
+    price: '৳3,500',
+    period: '/মাস',
+    features: ['আনলিমিটেড ভিডিও', '৪K এক্সপোর্ট', 'কাস্টম ব্র্যান্ড কিট', 'API অ্যাক্সেস'],
+    cta: 'Business নির্বাচন করুন',
+    popular: false,
+  },
+]
+const PLANS_EN = [
+  {
+    key: 'free',
+    name: 'Free',
+    price: '৳0',
+    period: '/mo',
+    features: ['3 AI videos', '720p', '50+ templates', 'bKash payment'],
+    cta: 'Start free',
+    popular: false,
+  },
+  {
+    key: 'starter',
+    name: 'Starter',
+    price: '৳2,000',
+    period: '/mo',
+    features: ['100 AI videos', '1080p, no watermark', 'All templates', 'Priority support'],
+    cta: 'Choose Starter',
+    popular: true,
+  },
+  {
+    key: 'business',
+    name: 'Business',
+    price: '৳3,500',
+    period: '/mo',
+    features: ['Unlimited videos', '4K export', 'Custom brand kit', 'API access'],
+    cta: 'Choose Business',
+    popular: false,
+  },
+]
+
 export default function PricingSection() {
-  const { t } = useLocale()
+  const { locale } = useLocale()
+  const isBengali = locale === 'bn'
+  const plans = isBengali ? PLANS_BN : PLANS_EN
+
   return (
-    <section id="pricing" className="py-20 bg-gray-50 dark:bg-slate-900">
-      <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-          {t('pricing.title')}
+    <section id="pricing" className="bg-[#FCFCF9] px-5 py-16">
+      <div className="mx-auto max-w-[1120px]">
+        <h2 className="mb-10 text-center font-hind text-3xl font-bold tracking-tight text-[#18181B]">
+          {isBengali ? 'সহজ প্রাইসিং' : 'Simple pricing'}
         </h2>
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          {/* Free */}
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-gray-200 dark:border-slate-700 text-center">
-            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{t('pricing.freeTitle')}</h3>
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-4">৳0</div>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">{t('pricing.freeDesc')}</p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.freeVideos')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.freeQuality')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.freeTemplates')}
-              </li>
-            </ul>
-            <a href="/login" className="block w-full py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700">
-              {t('pricing.freeCTA')}
-            </a>
-          </div>
-
-          {/* Starter - Most Popular */}
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border-2 border-blue-500 shadow-lg relative">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
-              {t('pricing.mostPopular')}
+        <div className="grid gap-6 md:grid-cols-3">
+          {plans.map((p) => (
+            <div
+              key={p.key}
+              className={`relative flex flex-col rounded-2xl border bg-white p-7 ${
+                p.popular ? 'border-[#0E7C3A] shadow-xl' : 'border-zinc-200'
+              }`}
+            >
+              {p.popular && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#0E7C3A] px-3 py-1 text-xs font-bold text-white">
+                  {isBengali ? 'সবচেয়ে জনপ্রিয়' : 'Most Popular'}
+                </span>
+              )}
+              <h3 className="font-hind text-xl font-bold text-[#18181B]">{p.name}</h3>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="font-hind text-4xl font-bold text-[#18181B]">{p.price}</span>
+                <span className="text-sm text-zinc-500">{p.period}</span>
+              </div>
+              <ul className="mt-6 flex-1 space-y-3">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-zinc-700">
+                    <span className="mt-0.5 text-[#0E7C3A]">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              {p.key === 'free' ? (
+                <a
+                  href="/signup"
+                  className="mt-7 block w-full rounded-full border border-zinc-300 py-3 text-center font-semibold text-[#18181B] transition hover:bg-zinc-100"
+                >
+                  {p.cta}
+                </a>
+              ) : (
+                <CheckoutButton
+                  plan={p.key as 'starter' | 'business'}
+                  label={p.cta}
+                  className="mt-7 block w-full rounded-full bg-[#0E7C3A] py-3 text-center font-semibold text-white transition hover:bg-[#0A5A2B]"
+                />
+              )}
             </div>
-            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{t('pricing.starter')}</h3>
-            <div className="text-4xl font-bold text-blue-600 mb-4">৳2,000<span className="text-lg">{t('pricing.starterPeriodShort')}</span></div>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.starterVideosCustom')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.starterQuality')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.starterTemplatesFull')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.starterSupport')}
-              </li>
-            </ul>
-            <CheckoutButton
-              plan="starter"
-              label={t('pricing.starterChoosePlan')}
-              className="block w-full py-3 rounded-lg bg-blue-600 text-white text-center hover:bg-blue-700"
-            />
-          </div>
-
-          {/* Business */}
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-gray-200 dark:border-slate-700 text-center">
-            <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{t('pricing.business')}</h3>
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-4">৳3,500<span className="text-lg">{t('pricing.businessPeriodShort')}</span></div>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.businessVideosCustom')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.businessQuality')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.businessTemplatesCustom')}
-              </li>
-              <li className="flex items-center gap-2 justify-center text-gray-700 dark:text-gray-300">
-                <span className="text-green-500">✓</span>
-                {t('pricing.businessAPI')}
-              </li>
-            </ul>
-            <CheckoutButton
-              plan="business"
-              label={t('pricing.businessContact')}
-              className="block w-full py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
-            />
-          </div>
+          ))}
         </div>
 
-        {/* Payment Methods */}
-        <div className="text-center mt-12">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">{t('pricing.paymentMethods')}</p>
-          <div className="flex justify-center gap-8 text-3xl">
-            <span className="text-green-600" title={t('pricing.bKash')}>💳</span>
-            <span className="text-purple-600" title={t('pricing.nagad')}>📱</span>
-            <span className="text-blue-600" title={t('pricing.crypto')}>🪙</span>
+        {/* Real payment wordmarks — no broken emoji */}
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <p className="text-sm text-zinc-500">
+            {isBengali ? 'লোকাল পেমেন্ট সাপোর্টেড' : 'Local payment supported'}
+          </p>
+          <div className="flex items-center gap-6 text-xl font-bold">
+            <span className="text-[#0E7C3A]">bKash</span>
+            <span className="text-[#E4312B]">Nagad</span>
+            <span className="text-[#7B2FF7]">Rocket</span>
           </div>
         </div>
       </div>

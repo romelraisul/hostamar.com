@@ -58,7 +58,7 @@ export const PRODUCTS: Product[] = [
       '৫০+ রেডিমেড বাংলা ভিডিও টেমপ্লেট — Q3 2026',
     ],
     competitorGap:
-      'বাংলাদেশে AI Video প্ল্যাটফর্ম — Runway/Sora ২০$/মাসের বিপরীতে মাত্র ৳১,০০০/মাস (EARLY50 দিয়ে)।',
+      'বাংলাদেশে AI Video প্ল্যাটফর্ম — Runway/Sora ২০$/মাসের বিপরীতে মাত্র ৳২,০০০/মাস।',
     demoUrl: '/generate',
   },
   {
