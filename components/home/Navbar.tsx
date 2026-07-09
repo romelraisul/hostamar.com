@@ -27,9 +27,40 @@ export default function Navbar() {
             <Link href="/pricing" className="transition hover:text-[#18181B]">
               {isBengali ? 'প্রাইসিং' : 'Pricing'}
             </Link>
-            <Link href="/products" className="transition hover:text-[#18181B]">
-              {isBengali ? 'Labs' : 'Labs'}
-            </Link>
+            <div className="group relative">
+              <button
+                type="button"
+                className="flex items-center gap-1 transition hover:text-[#18181B]"
+                aria-haspopup="true"
+              >
+                {isBengali ? 'পণ্যসমূহ' : 'Products'}
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="invisible absolute left-1/2 top-full z-50 w-60 -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100">
+                <div className="rounded-2xl border border-zinc-100 bg-white p-2 shadow-xl">
+                  <a href="/hosting" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
+                    {isBengali ? 'ক্লাউড হোস্টিং' : 'Cloud Hosting'}
+                  </a>
+                  <a href="/ai-chat" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
+                    {isBengali ? 'AI চ্যাট' : 'AI Chat'}
+                  </a>
+                  <a href="/browser" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
+                    {isBengali ? 'AI ব্রাউজার' : 'AI Browser'}
+                  </a>
+                  <a href="/game" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
+                    {isBengali ? 'গেম' : 'Gaming'}
+                  </a>
+                  <a href="/dev" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
+                    {isBengali ? 'Dev IDE' : 'Dev IDE'}
+                  </a>
+                  <a href="/roadmap" className="block rounded-lg px-3 py-2 text-sm text-[#0E7C3A] hover:bg-zinc-100">
+                    {isBengali ? 'রোডম্যাপ →' : 'Roadmap →'}
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

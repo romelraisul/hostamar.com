@@ -3,6 +3,7 @@ import Navbar from '@/components/home/Navbar'
 import HeroSection from '@/components/home/HeroSection'
 import BentoFeaturesSection from '@/components/home/CompetitiveEdgeSection'
 import TemplatesSection from '@/components/home/TemplatesSection'
+import DemoVideosSection from '@/components/home/DemoVideosSection'
 import PricingSection from '@/components/home/PricingSection'
 import FAQSection from '@/components/home/FAQSection'
 import Footer from '@/components/home/Footer'
@@ -47,6 +48,7 @@ export default function LandingPage() {
       <HeroSection />
       <BentoFeaturesSection />
       <TemplatesSection />
+      <DemoVideosSection />
       <PricingSection />
       <FAQSection />
       <Footer />
