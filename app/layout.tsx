@@ -20,6 +20,25 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 export const metadata: Metadata = {
   ...defaultSeo,
   metadataBase: new URL(SITE_URL),
+  title: 'AI মার্কেটিং ভিডিও বাংলাদেশ | হোস্টিং সহ - Hostamar',
+  description:
+    '50+ বাংলা টেমপ্লেট দিয়ে 30 সেকেন্ডে মার্কেটিং ভিডিও বানান। ঈদ, বৈশাখ, 11.11 - সব। bKash পেমেন্ট, BDIX হোস্টিং। ৳0 থেকে শুরু।',
+  keywords: [
+    'AI marketing video Bangladesh',
+    'বাংলা ভিডিও মেকার',
+    'ঈদ অফার ভিডিও',
+    'hosting Bangladesh bKash',
+  ],
+  openGraph: {
+    title: 'AI দিয়ে মার্কেটিং ভিডিও 30 সেকেন্ডে',
+    description: 'হোস্টিং সহ, bKash পেমেন্ট',
+    images: ['/og-image-bn.jpg'],
+    locale: 'bn_BD',
+  },
+  alternates: {
+    canonical: 'https://hostamar.com',
+    languages: { 'bn-BD': '/bn', 'en-US': '/en' },
+  },
   other: {
     'color-scheme': 'light dark',
   },
@@ -49,68 +68,88 @@ const websiteJsonLd = {
   },
 }
 
-const jsonLd = {
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'Hostamar AI Marketing + Hosting',
+  description: 'AI দিয়ে মার্কেটিং ভিডিও + BDIX হোস্টিং বাংলাদেশ',
+  brand: { '@type': 'Brand', name: 'Hostamar' },
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Free',
+      price: '0',
+      priceCurrency: 'BDT',
+      description: '3 AI videos/mo, 1GB hosting',
+    },
+    {
+      '@type': 'Offer',
+      name: 'Starter',
+      price: '2000',
+      priceCurrency: 'BDT',
+      priceValidUntil: '2026-12-31',
+      description: '100 AI videos, 10GB NVMe, .com free',
+    },
+    {
+      '@type': 'Offer',
+      name: 'Pro',
+      price: '3500',
+      priceCurrency: 'BDT',
+      description: 'Unlimited AI videos, 20GB NVMe, API',
+    },
+  ],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    reviewCount: '500',
+  },
+}
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Hostamar কি HostSeba/ExonHost এর মতো?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'না। ওরা শুধু হোস্টিং দেয়। আমরা দিই AI মার্কেটিং ভিডিও + হোস্টিং। ৳2000 এ হোস্টিং + 100 ভিডিও।',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'bKash দিয়ে পেমেন্ট করা যাবে?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'হ্যাঁ। bKash, Nagad, Rocket - সব। USD কার্ড লাগে না। 30 সেকেন্ডে একটিভ।',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'ফ্রি তে কি ওয়াটারমার্ক থাকবে?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Free তে ছোট ওয়াটারমার্ক থাকবে। ৳2000 প্ল্যানে থাকবে না।',
+      },
+    },
+  ],
+}
+
+const orgJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Hostamar',
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
-  description: 'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment',
-  sameAs: [],
-  contactPoint: {
-    '@type': 'ContactPoint',
-    contactType: 'customer support',
+  sameAs: ['https://facebook.com/romelraisul'],
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'BD',
+    addressLocality: 'Bogura',
   },
-  makesOffer: [
-    {
-      '@type': 'Offer',
-      itemOffered: {
-        '@type': 'Service',
-        name: 'Cloud Hosting',
-        description: 'VPS, RDP, Web Hosting, Storage with 99.9% uptime guarantee',
-      },
-    },
-    {
-      '@type': 'Offer',
-      itemOffered: {
-        '@type': 'Service',
-        name: 'AI Marketing Videos',
-        description: 'Auto-generate professional marketing videos for your business',
-      },
-    },
-    {
-      '@type': 'Offer',
-      itemOffered: {
-        '@type': 'Service',
-        name: 'LuckyStar Gaming',
-        description: 'Social casino gaming with friends',
-      },
-    },
-    {
-      '@type': 'Offer',
-      itemOffered: {
-        '@type': 'Service',
-        name: 'AI Browser',
-        description: 'AI-powered browsing with automation, translation and research',
-      },
-    },
-    {
-      '@type': 'Offer',
-      itemOffered: {
-        '@type': 'Service',
-        name: 'DuckAI Chat',
-        description: 'Free AI chat powered by DuckDuckGo AI',
-      },
-    },
-    {
-      '@type': 'Offer',
-      itemOffered: {
-        '@type': 'Service',
-        name: 'Dev IDE',
-        description: 'Cloud-based VS Code editor',
-      },
-    },
-  ],
+  paymentAccepted: 'bKash, Nagad, Rocket, Cash',
+  currenciesAccepted: 'BDT',
 }
 
 export default async function RootLayout({
@@ -141,13 +180,21 @@ export default async function RootLayout({
         {/* Preconnect to critical origins for performance */}
         <link rel="dns-prefetch" href={SITE_URL} />
         <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-        />
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+                />
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+                />
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+                />
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+                />
       </head>
       <body>
         <Providers>
