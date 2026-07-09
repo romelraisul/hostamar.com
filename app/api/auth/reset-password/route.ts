@@ -1,78 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
 
 /**
- * POST /api/auth/reset-password
- * Body: { token, password }
+ * POST /api/auth/reset-password  { token, password }
+ * GET  /api/auth/reset-password?token=...
  *
- * Looks up VerificationToken, validates it's for password reset (identifier=email),
- * updates Customer.passwordHash, and deletes the token (single-use).
+ * Under the Vercel-frontend / Railway-backend split the database lives only on
+ * the dedicated backend (api.hostamar.com). A Next.js filesystem route always
+ * wins over a vercel.json rewrite, so we forward to the backend and return its
+ * response. The backend holds the VerificationToken + Customer records.
  */
+const BACKEND = process.env.NEXT_PUBLIC_API_URL
+
 export async function POST(req: NextRequest) {
-  try {
-    const { token, password } = await req.json()
-    if (!token || !password) {
-      return NextResponse.json({ error: 'Token and password are required' }, { status: 400 })
+  if (BACKEND) {
+    try {
+      const res = await fetch(`${BACKEND}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: await req.text(),
+      })
+      const data = await res.json().catch(() => ({}))
+      return NextResponse.json(data, { status: res.status })
+    } catch (err) {
+      console.error('Reset-password proxy error:', (err as Error)?.message || err)
+      return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 })
     }
-
-    if (typeof password !== 'string' || password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
-    }
-
-    // Look up the token
-    const vt = await prisma.verificationToken.findUnique({ where: { token } })
-    if (!vt) {
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 })
-    }
-
-    if (vt.expires < new Date()) {
-      // Lazy cleanup
-      await prisma.verificationToken.delete({ where: { token } }).catch(() => {})
-      return NextResponse.json({ error: 'Token has expired' }, { status: 400 })
-    }
-
-    const email = vt.identifier
-    const customer = await prisma.customer.findUnique({ where: { email } })
-    if (!customer) {
-      return NextResponse.json({ error: 'Account not found' }, { status: 404 })
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12)
-    await prisma.$transaction([
-      prisma.customer.update({
-        where: { id: customer.id },
-        data: { password: hashedPassword },
-      }),
-      prisma.verificationToken.delete({ where: { token } }),
-    ])
-
-    return NextResponse.json({ success: true, message: 'Password has been reset successfully.' })
-  } catch (error: any) {
-    console.error('Reset password error:', error?.message || error)
-    return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 })
   }
+  return NextResponse.json({ error: 'Reset unavailable' }, { status: 503 })
 }
 
-/**
- * GET /api/auth/reset-password?token=...
- * Returns { valid: boolean, email?: string }
- * Used by /reset-password page to pre-validate before letting user type a new password.
- */
 export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url)
-    const token = url.searchParams.get('token')
-    if (!token) {
-      return NextResponse.json({ valid: false, error: 'Missing token' }, { status: 400 })
+  if (BACKEND) {
+    try {
+      const url = new URL(req.url)
+      const token = url.searchParams.get('token') || ''
+      const res = await fetch(
+        `${BACKEND}/api/auth/reset-password?token=${encodeURIComponent(token)}`,
+        { method: 'GET' }
+      )
+      const data = await res.json().catch(() => ({}))
+      return NextResponse.json(data, { status: res.status })
+    } catch (err) {
+      console.error('Reset-password GET proxy error:', (err as Error)?.message || err)
+      return NextResponse.json({ valid: false, error: 'Server error' }, { status: 500 })
     }
-    const vt = await prisma.verificationToken.findUnique({ where: { token } })
-    if (!vt || vt.expires < new Date()) {
-      return NextResponse.json({ valid: false, error: 'Invalid or expired token' }, { status: 400 })
-    }
-    return NextResponse.json({ valid: true, email: vt.identifier })
-  } catch (error: any) {
-    console.error('Reset password GET error:', error?.message || error)
-    return NextResponse.json({ valid: false, error: 'Server error' }, { status: 500 })
   }
+  return NextResponse.json({ valid: false, error: 'Reset unavailable' }, { status: 503 })
 }
