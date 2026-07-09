@@ -1,6 +1,6 @@
 [service.web]
 image.source = "nixpacks"
-startCommand = "node .next/standalone/server.js"
+startCommand = "npx prisma migrate deploy && node .next/standalone/server.js"
 restartPolicy = "ON_FAILURE"
 maxRestarts = 10
 

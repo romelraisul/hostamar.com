@@ -195,6 +195,12 @@ export async function POST(req: NextRequest) {
       if (status === 'completed' && customer) {
         await activateSubscription(customer.id, payment, trxId || paymentId, 'bkash')
         await sendConfirmationEmail(customer.id, payment.id, 'bKash')
+        // Fire invoice generation (best-effort, non-blocking for the webhook response)
+        fetch(`${process.env.APP_URL || 'https://hostamar.com'}/api/invoices/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: trxId || paymentId }),
+        }).catch(() => {})
       }
 
       return NextResponse.json({ success: true, status })
@@ -249,6 +255,12 @@ export async function POST(req: NextRequest) {
       if (status === 'completed' && customer) {
         await activateSubscription(customer.id, payment, txId, 'nagad')
         await sendConfirmationEmail(customer.id, payment.id, 'Nagad')
+        // Fire invoice generation (best-effort, non-blocking for the webhook response)
+        fetch(`${process.env.APP_URL || 'https://hostamar.com'}/api/invoices/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: txId }),
+        }).catch(() => {})
       }
 
       return NextResponse.json({ success: true, status })
