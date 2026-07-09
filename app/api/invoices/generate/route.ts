@@ -27,6 +27,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'orderId required' }, { status: 400 })
     }
 
+    // Self-heal: ensure the invoiceUrl column exists on the live DB (idempotent,
+    // non-destructive). Deploy-time migration can't run from the dev shell (no DB
+    // reachability), so we guarantee the column at runtime on the same connection
+    // Vercel uses for the Railway Postgres.
+    try {
+      await prisma.$executeRawUnsafe('ALTER TABLE "Payment" ADD COLUMN IF NOT EXISTS "invoiceUrl" TEXT')
+    } catch (e: any) {
+      console.warn('[Invoice:Generate] column ensure skipped:', e?.message || e)
+    }
+
     const payment = await prisma.payment.findUnique({
       where: { transactionId: orderId },
       include: { customer: true },
