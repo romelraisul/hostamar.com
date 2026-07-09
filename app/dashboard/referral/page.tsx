@@ -12,13 +12,22 @@ export default function ReferralPage() {
   const [credits, setCredits] = useState(0)
 
   useEffect(() => {
-    // Generate user-specific referral code from email
-    if (session?.user?.email) {
-      const code = session.user.email.split('@')[0].slice(0, 8) + 
-                  Math.random().toString(36).substring(2, 6).toUpperCase()
-      setReferralCode(code)
+    async function load() {
+      try {
+        const res = await fetch('/api/referral', { cache: 'no-store' })
+        if (!res.ok) return
+        const json = await res.json()
+        const d = json?.data
+        if (!d) return
+        setReferralCode(d.referralCode || '')
+        setReferralCount(d.completedCount || 0)
+        // 1 credit per completed referral, capped at bonus earned
+        setCredits(d.completedCount || 0)
+      } catch {
+        /* keep defaults */
+      }
     }
-    // TODO: Fetch actual referral count from /api/referral/stats
+    load()
   }, [session])
 
   const copyToClipboard = () => {
