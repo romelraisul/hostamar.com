@@ -16,6 +16,9 @@ export default function Footer() {
               <span className="text-xl font-bold">Hostamar</span>
             </div>
             <p className="text-gray-400">
+              {t('footer.buildPlay')}
+            </p>
+            <p className="text-gray-400 mt-2">
               {t('footer.tagline')}
             </p>
           </div>

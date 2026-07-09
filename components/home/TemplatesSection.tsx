@@ -40,7 +40,7 @@ export default function TemplatesSection() {
           {TEMPLATES.map((t) => (
             <Link
               key={t.en}
-              href="/create"
+              href="/generate"
               className="group flex flex-col items-center justify-center gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-6 text-center transition-all duration-300 hover:border-emerald-400 hover:shadow-lg hover:-translate-y-1"
             >
               <span className="text-3xl transition-transform group-hover:scale-110">{t.emoji}</span>
@@ -52,7 +52,7 @@ export default function TemplatesSection() {
 
         <div className="text-center mt-10">
           <Link
-            href="/create"
+            href="/prompts"
             className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition"
           >
             {isBengali ? 'সব টেমপ্লেট দেখুন' : 'See all templates'}

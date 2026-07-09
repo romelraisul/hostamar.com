@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Hostamar — AI Marketing Video for Bangladeshi Business',
     description:
-      'Create viral AI marketing videos in 30 seconds. Bengali-first, bKash payment, free tier. Plus hosting, AI chat, browser, games and cloud IDE.',
+      'Create viral AI marketing videos in 30 seconds. Bengali-first, 50+ festival templates, bKash/Nagad/Rocket payment, free tier from ৳0.',
     url: 'https://hostamar.com',
     siteName: 'Hostamar',
     images: [
