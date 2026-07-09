@@ -11,12 +11,14 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
 import path from "path";
 
-const S3_ENDPOINT = process.env.S3_ENDPOINT || "http://192.168.1.2:9000";
+// Prefer Cloudflare R2 (set on Vercel) then MinIO (self-hosted) then local defaults.
+// R2 is S3-compatible, so the same client works with R2_* creds.
+const S3_ENDPOINT = process.env.R2_ENDPOINT || process.env.S3_ENDPOINT || "http://192.168.1.2:9000";
 const S3_REGION = process.env.S3_REGION || "auto";
-const S3_ACCESS_KEY = process.env.S3_ACCESS_KEY || "minioadmin";
-const S3_SECRET_KEY = process.env.S3_SECRET_KEY || "minioadmin";
-const S3_BUCKET = process.env.S3_BUCKET || "hostamar";
-const S3_PUBLIC_URL = process.env.S3_PUBLIC_URL || "http://192.168.1.2:9000";
+const S3_ACCESS_KEY = process.env.R2_ACCESS_KEY || process.env.S3_ACCESS_KEY || "minioadmin";
+const S3_SECRET_KEY = process.env.R2_SECRET_KEY || process.env.S3_SECRET_KEY || "minioadmin";
+const S3_BUCKET = process.env.R2_BUCKET || process.env.S3_BUCKET || "hostamar";
+const S3_PUBLIC_URL = process.env.R2_PUBLIC_URL || process.env.S3_PUBLIC_URL || "http://192.168.1.2:9000";
 
 const s3Client = new S3Client({
   endpoint: S3_ENDPOINT,
