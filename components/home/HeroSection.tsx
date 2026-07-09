@@ -1,41 +1,10 @@
 'use client'
 import { useLocale } from '@/lib/locale-context'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-
-const EN_PHRASES = ['in 30 seconds', 'without a designer', 'in Bangla', 'for ৳0']
-const BN_PHRASES = ['৩০ সেকেন্ডে', 'ডিজাইনার ছাড়াই', 'বাংলায়', '৳0 এ']
 
 export default function HeroSection() {
   const { locale } = useLocale()
   const isBengali = locale === 'bn'
-  const phrases = isBengali ? BN_PHRASES : EN_PHRASES
-
-  const [idx, setIdx] = useState(0)
-  const [text, setText] = useState('')
-  const [deleting, setDeleting] = useState(false)
-
-  useEffect(() => {
-    const current = phrases[idx]
-    const speed = deleting ? 45 : 90
-    const timeout = setTimeout(() => {
-      if (!deleting) {
-        const next = current.slice(0, text.length + 1)
-        setText(next)
-        if (next === current) {
-          setTimeout(() => setDeleting(true), 1300)
-        }
-      } else {
-        const next = current.slice(0, text.length - 1)
-        setText(next)
-        if (next === '') {
-          setDeleting(false)
-          setIdx((i) => (i + 1) % phrases.length)
-        }
-      }
-    }, speed)
-    return () => clearTimeout(timeout)
-  }, [text, deleting, idx, phrases])
 
   return (
     <>
@@ -50,7 +19,7 @@ export default function HeroSection() {
           <div className="mb-6 flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              {isBengali ? 'হোস্টামার — বাংলাদেশি ব্যবসার জন্য একটি প্ল্যাটফর্ম' : 'Hostamar — One Platform for Bangladeshi Business'}
+              {isBengali ? 'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও' : 'AI Marketing Video for Bangladeshi Business'}
             </span>
           </div>
 
@@ -58,33 +27,42 @@ export default function HeroSection() {
             {/* Left - Copy */}
             <div className="lg:col-span-7 text-center lg:text-left">
               <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
-                {isBengali ? 'আপনার পণ্য এখনই ভাইরাল ভিডিও' : 'Turn Your Product Into a Viral Video'}
+                {isBengali ? 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও' : 'AI Video for Bangladeshi Business'}
                 <br />
-                <span className="bg-gradient-to-r from-emerald-400 to-emerald-200 bg-clip-text text-transparent">
-                  {text}
-                  <span className="ml-0.5 inline-block w-[2px] animate-pulse bg-emerald-400 align-middle" style={{ height: '0.9em' }} />
+                <span className="text-zinc-400 text-xl sm:text-2xl lg:text-3xl font-semibold">
+                  {isBengali ? '৩০ সেকেন্ডে রেডি' : 'Ready in 30 Seconds'}
                 </span>
+                <span className="ml-0.5 inline-block w-[2px] animate-pulse bg-emerald-400 align-middle" style={{ height: '0.9em' }} />
               </h1>
 
               <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base lg:mx-0">
                 {isBengali
-                  ? 'AI মার্কেটিং ভিডিও, হোস্টিং আর আরও অনেক কিছু — এক একাউন্টেই। HostSeba/ExonHost শুধু হোস্টিং দেয়; আমরা দিই AI ভিডিও + হোস্টিং + bKash পেমেন্ট।'
-                  : 'AI marketing video, hosting and more — all under one account. HostSeba/ExonHost only do hosting; we give you AI video + hosting + bKash payment.'}
+                  ? 'একটা প্রম্পট দিন, বাংলায় ভয়েস + ক্যাপশন সহ ভাইরাল মার্কেটিং ভিডিও পান। ডিজাইনার বা এডিটর ছাড়াই — bKash দিয়ে মাসে ৳২,০০০ থেকে।'
+                  : 'One prompt → a viral marketing video with Bangla voice + captions. No designer, no editor — all under one account, bKash from ৳2,000/month.'}
               </p>
 
+              {/* Social proof — one line */}
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-semibold text-zinc-300 sm:text-sm lg:justify-start">
+                <span className="text-emerald-400">৫০০+</span> Creators
+                <span className="text-zinc-600">•</span>
+                <span className="text-emerald-400">১০k+</span> Videos
+                <span className="text-zinc-600">•</span>
+                <span className="text-emerald-400">৪.৮★</span> Rating
+              </div>
+
               {/* CTAs */}
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
                 <Link
-                  href="/create"
+                  href="/generate"
                   className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-8 text-sm font-bold text-black hover:bg-zinc-200 transition"
                 >
                   {isBengali ? 'ফ্রিতে ভিডিও বানান — ৳0' : 'Create Free Video — ৳0'}
                 </Link>
                 <Link
-                  href="/products"
+                  href="/prompts"
                   className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 px-8 text-sm font-bold text-white hover:bg-zinc-800 transition"
                 >
-                  {isBengali ? 'সব পণ্য দেখুন' : 'Explore All Products'}
+                  {isBengali ? 'টেমপ্লেট দেখুন' : 'Browse Templates'}
                 </Link>
               </div>
 

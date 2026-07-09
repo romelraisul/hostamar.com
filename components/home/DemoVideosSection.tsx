@@ -82,7 +82,7 @@ export default function DemoVideosSection() {
 
         <div className="text-center mt-8">
           <Link
-            href="/create"
+            href="/generate"
             className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition"
           >
             Create Your Own Video
