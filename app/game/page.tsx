@@ -30,15 +30,12 @@ export default function GamePage() {
               { name: 'Roulette', icon: '🎡', desc: 'Place your bets and test your luck.', href: '/game/roulette', status: 'Coming soon' },
               { name: 'Blackjack', icon: '♠️', desc: 'Beat the dealer with strategy.', href: '/game/blackjack', status: 'Coming soon' },
               { name: 'Poker', icon: '🃏', desc: 'Texas Hold’em style showdown.', href: '/game/poker', status: 'Coming soon' },
-            ].map((game, i) => (
-              <a
-                href={game.href}
-                key={i}
-                className="group block bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition"
-              >
+            ].map((game, i) => {
+              const playable = game.status === 'Playable'
+              const card = (
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="text-5xl mb-4 group-hover:scale-110 transition">{game.icon}</div>
+                    <div className="text-5xl mb-4 transition">{game.icon}</div>
                     <h3 className="text-xl font-bold">{game.name}</h3>
                     <p className="text-gray-400 mt-1">{game.desc}</p>
                   </div>
@@ -46,13 +43,39 @@ export default function GamePage() {
                     {game.status}
                   </span>
                 </div>
+              )
+              const cta = (
                 <div className="mt-5">
-                  <span className="inline-block w-full py-2 bg-purple-500/20 text-purple-400 rounded-xl text-center hover:bg-purple-500/30 transition">
-                    {game.status === 'Playable' ? 'Play now' : 'Notify me'}
+                  <span className={`inline-block w-full py-2 rounded-xl text-center transition ${
+                    playable
+                      ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
+                      : 'bg-white/5 text-gray-500 cursor-not-allowed'
+                  }`}>
+                    {playable ? 'Play now' : 'Coming soon'}
                   </span>
                 </div>
-              </a>
-            ))}
+              )
+              return playable ? (
+                <a
+                  href={game.href}
+                  key={i}
+                  className="group block bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition"
+                >
+                  {card}
+                  {cta}
+                </a>
+              ) : (
+                <div
+                  key={i}
+                  aria-disabled="true"
+                  title="Coming soon — not available yet"
+                  className="block bg-white/5 border border-white/10 rounded-2xl p-6 opacity-60"
+                >
+                  {card}
+                  {cta}
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
