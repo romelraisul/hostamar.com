@@ -20,9 +20,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 export const metadata: Metadata = {
   ...defaultSeo,
   metadataBase: new URL(SITE_URL),
-  title: 'AI মার্কেটিং ভিডিও বাংলাদেশ | হোস্টিং সহ - Hostamar',
+  title: 'Hostamar - বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার',
   description:
-    '50+ বাংলা টেমপ্লেট দিয়ে 30 সেকেন্ডে মার্কেটিং ভিডিও বানান। ঈদ, বৈশাখ, 11.11 - সব। bKash পেমেন্ট, BDIX হোস্টিং। ৳0 থেকে শুরু।',
+    'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার। ৩০ সেকেন্ডে ভিডিও, ৫০+ বাংলা টেমপ্লেট, bKash দিয়ে পেমেন্ট — শুরু ৳0 থেকে।',
   keywords: [
     'AI marketing video Bangladesh',
     'বাংলা ভিডিও মেকার',
@@ -71,8 +71,8 @@ const websiteJsonLd = {
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Product',
-  name: 'Hostamar AI Marketing + Hosting',
-  description: 'AI দিয়ে মার্কেটিং ভিডিও + BDIX হোস্টিং বাংলাদেশ',
+  name: 'Hostamar AI Marketing Video Maker',
+  description: 'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার — ৩০ সেকেন্ডে ভিডিও, ৫০+ বাংলা টেমপ্লেট, bKash পেমেন্ট।',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
     {
@@ -170,6 +170,12 @@ export default async function RootLayout({
         <meta name="format-detection" content="telephone=no, address=no, email=no" />
         <link rel="canonical" href={SITE_URL} />
         <link rel="manifest" href="/manifest.json" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
         <meta name="theme-color" content="#3b82f6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
