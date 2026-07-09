@@ -8,6 +8,7 @@ import DemoVideosSection from '@/components/home/DemoVideosSection'
 import ProductsSection from '@/components/home/ProductsSection'
 import CompetitiveEdgeSection from '@/components/home/CompetitiveEdgeSection'
 import PricingSection from '@/components/home/PricingSection'
+import FAQSection from '@/components/home/FAQSection'
 import CTASection from '@/components/home/CTASection'
 import Footer from '@/components/home/Footer'
 
@@ -79,6 +80,7 @@ export default function LandingPage() {
         <ProductsSection />
                 <CompetitiveEdgeSection />
                 <PricingSection />
+                <FAQSection />
                 <CTASection />
                 <Footer />
       </div>

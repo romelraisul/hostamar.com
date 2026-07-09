@@ -98,8 +98,8 @@ export default function PricingSection() {
           <p className="text-gray-600 dark:text-gray-400 mb-4">{t('pricing.paymentMethods')}</p>
           <div className="flex justify-center gap-8 text-3xl">
             <span className="text-green-600" title={t('pricing.bKash')}>💳</span>
-            <span className="text-purple-600" title={t('pricing.crypto')}>🪙</span>
-            <span className="text-blue-600" title={t('pricing.nagad')}>⛔</span>
+            <span className="text-purple-600" title={t('pricing.nagad')}>📱</span>
+            <span className="text-blue-600" title={t('pricing.crypto')}>🪙</span>
           </div>
         </div>
       </div>
