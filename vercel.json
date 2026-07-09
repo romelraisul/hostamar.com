@@ -6,16 +6,6 @@
       "use": "@vercel/next"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/api/payments/manual",
-      "destination": "/api/payments/manual"
-    },
-    {
-      "source": "/api/:path*",
-      "destination": "https://web-production-1234d.up.railway.app/api/:path*"
-    }
-  ],
   "headers": [
     {
       "source": "/_next/static/(.*)",

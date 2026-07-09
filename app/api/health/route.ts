@@ -1,35 +1,30 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
+// Frontend-only health probe (Vercel).
+// Under the Vercel-frontend / Railway-backend split (option B), the database
+// and API live on the dedicated backend (api.hostamar.com). This route reports
+// app liveness on Vercel; it must NOT hammer Neon from Vercel's serverless
+// pool (it cannot reach the DB from this environment, and doing so corrupts
+// the shared Prisma singleton + exhausts Neon's pooler). The backend's own
+// /api/health (on Railway) is the source of truth for DB connectivity.
 export async function GET() {
-  let database: { connected: boolean; error?: string } = { connected: false }
-  try {
-    await prisma.$connect()
-    await prisma.customer.count()
-    database = { connected: true }
-  } catch (error) {
-    database.error = error instanceof Error ? error.message : 'Unknown error'
-  } finally {
-    try {
-      await prisma.$disconnect()
-    } catch {
-      // ignore shutdown issues in health checks
-    }
-  }
-
   const payload = {
-    status: database.connected ? 'healthy' : 'unhealthy',
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    database,
+    database: {
+      connected: false,
+      note: 'DB is owned by the dedicated backend (api.hostamar.com). See that endpoint for DB health.',
+    },
     environment: {
       nodeEnv: process.env.NODE_ENV,
       nextAuthUrl: process.env.NEXTAUTH_URL || 'not set',
       databaseUrlSet: Boolean(process.env.DATABASE_URL),
+      apiBackend: process.env.NEXT_PUBLIC_API_URL || 'not set',
     },
     version: '1.0.0',
   }
 
-  return NextResponse.json(payload, { status: database.connected ? 200 : 503 })
+  return NextResponse.json(payload, { status: 200 })
 }
