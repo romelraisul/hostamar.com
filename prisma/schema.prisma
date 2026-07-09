@@ -311,6 +311,7 @@ model Payment {
   endsAt        DateTime?
 
   webhookSent   Boolean  @default(false)
+  invoiceUrl   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

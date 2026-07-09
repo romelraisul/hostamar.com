@@ -90,6 +90,7 @@ export async function middleware(request: NextRequest) {
         '/api/debug/env',
         '/api/auth/twitter/connect',
         '/api/metrics',
+        '/api/invoices',   // server-to-server invoice generation (triggered by webhook)
       ]
   if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
     return NextResponse.next()
