@@ -4,55 +4,31 @@ import { useLocale } from '@/lib/locale-context'
 
 const faqsEn = [
   {
-    q: 'Is Hostamar like ExonHost or HostSeba?',
-    a: 'Partly. We offer hosting, but also bundle AI video, chat, browser, IDE and games on one bill. ExonHost only does hosting — you’d pay $20+ for a separate video tool.',
+    q: 'How does the bKash refund work?',
+    a: 'Cancel within 30 days and the refund goes straight back to your bKash number within 24 hours — no card or bank needed.',
   },
   {
-    q: 'Are bKash payments automatic?',
-    a: 'Yes. bKash, Nagad and Rocket are all automatic. After payment, your invoice PDF is emailed to you.',
-  },
-  {
-    q: 'Will the free plan have a watermark?',
-    a: 'Yes — a small watermark at 720p. Starter removes it and gives you 1080p.',
+    q: 'Will my video have a watermark?',
+    a: 'The free plan adds a small watermark. Starter (৳2,000/mo) and above export clean 1080p with no watermark.',
   },
   {
     q: 'Do I need to know English to make videos?',
-    a: 'No. Write in Bangla — e.g. “সুতি পাঞ্জাবি for summer” — and AI generates a Bangla voiceover for you.',
-  },
-  {
-    q: 'How fast is the hosting?',
-    a: 'Dhaka Edge + BDIX means 2-3x faster for Bangladeshi visitors than US servers. LiteSpeed + NVMe.',
-  },
-  {
-    q: 'Do I get a refund if I cancel?',
-    a: '30-day money-back guarantee, refunded to bKash within 24 hours.',
+    a: 'No. Write in Bangla — e.g. "সুতি পাঞ্জাবি for summer" — and AI generates a Bangla voiceover and captions for you.',
   },
 ]
 
 const faqsBn = [
   {
-    q: 'Hostamar কি ExonHost বা HostSeba এর মতো?',
-    a: 'আংশিক। আমরা হোস্টিং দিই, কিন্তু সাথে AI ভিডিও, চ্যাট, ব্রাউজার, IDE, গেম — একই বিলে। ExonHost শুধু হোস্টিং দেয়, ভিডিওর জন্য আলাদা $২০+ টুল কিনতে হয়।',
+    q: 'bKash এ রিফান্ড কিভাবে হয়?',
+    a: '৩০ দিনের মধ্যে বাতিল করলে রিফান্ড সরাসরি আপনার bKash নাম্বারে ২৪ ঘণ্টার মধ্যে চলে যায় — কার্ড বা ব্যাংক লাগে না।',
   },
   {
-    q: 'bKash দিয়ে পেমেন্ট অটো হবে?',
-    a: 'হ্যাঁ। bKash, Nagad, Rocket তিনটাই অটো। পেমেন্ট করলেই ইনভয়েস PDF মেইলে যাবে।',
-  },
-  {
-    q: 'ফ্রি প্ল্যানে ওয়াটারমার্ক থাকবে?',
-    a: 'হ্যাঁ, ৭২০p তে ছোট ওয়াটারমার্ক। স্টার্টারে নেই, ১০৮০p।',
+    q: 'ভিডিওতে ওয়াটারমার্ক থাকবে?',
+    a: 'ফ্রি প্ল্যানে ছোট ওয়াটারমার্ক থাকে। Starter (৳২,০০০/মাস) ও তার ওপরে ১০৮০p ক্লিন এক্সপোর্ট, কোনো ওয়াটারমার্ক নয়।',
   },
   {
     q: 'ভিডিও বানাতে ইংরেজি জানতে হবে?',
-    a: 'না। বাংলায় লিখুন "গরমের জন্য সুতি পাঞ্জাবি" — AI বাংলা ভয়েস বানিয়ে দেবে।',
-  },
-  {
-    q: 'হোস্টিং কত ফাস্ট?',
-    a: 'Dhaka Edge + BDIX, বাংলাদেশের ভিজিটরের জন্য US এর চেয়ে ২-৩ গুণ ফাস্ট। LiteSpeed + NVMe।',
-  },
-  {
-    q: 'বাতিল করলে টাকা ফেরত?',
-    a: '৩০ দিন মানি-ব্যাক, bKash এ ২৪ ঘণ্টায় রিফান্ড।',
+    a: 'না। বাংলায় লিখুন "গরমের জন্য সুতি পাঞ্জাবি" — AI বাংলা ভয়েস আর ক্যাপশন বানিয়ে দেবে।',
   },
 ]
 

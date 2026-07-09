@@ -1,64 +1,58 @@
 'use client'
+
 import { useLocale } from '@/lib/locale-context'
 import Link from 'next/link'
 
-type Tpl = { emoji: string; bn: string; en: string }
-
-const TEMPLATES: Tpl[] = [
-  { emoji: '🌙', bn: 'ঈদ মোবারক', en: 'Eid Mubarak' },
-  { emoji: '🌞', bn: 'পহেলা বৈশাখ', en: 'Bengali New Year' },
-  { emoji: '🔥', bn: '১১.১১ সেল', en: '11.11 Sale' },
-  { emoji: '🇧🇩', bn: '২৬ মার্চ', en: 'Independence Day' },
-  { emoji: '💝', bn: 'ভ্যালেন্টাইন', en: 'Valentine' },
-  { emoji: '🪔', bn: 'দুর্গা পূজা', en: 'Durga Puja' },
-  { emoji: '💍', bn: 'বিয়ে', en: 'Wedding' },
-  { emoji: '🌟', bn: 'ইসলামিক নতুন বছর', en: 'Islamic New Year' },
+const TEMPLATES_BN = [
+  { name: 'ঈদ উদযাপন', tag: 'ঈদ অফার', emoji: '🌙', bg: 'from-emerald-500/15 to-emerald-500/5' },
+  { name: 'পহেলা বৈশাখ', tag: 'নববর্ষ', emoji: '🌿', bg: 'from-red-500/15 to-red-500/5' },
+  { name: '১১.১১ সেল', tag: 'মেগা অফার', emoji: '🛍️', bg: 'from-amber-500/15 to-amber-500/5' },
+  { name: 'ব্যবসা প্রোমো', tag: 'প্রোডাক্ট', emoji: '📈', bg: 'from-blue-500/15 to-blue-500/5' },
+  { name: 'ইসলামিক নতুন বছর', tag: 'ধর্মীয়', emoji: '🕌', bg: 'from-green-600/15 to-green-600/5' },
+  { name: 'ফুড প্রমো', tag: 'রেস্টুরেন্ট', emoji: '🍜', bg: 'from-orange-500/15 to-orange-500/5' },
+]
+const TEMPLATES_EN = [
+  { name: 'Eid Celebration', tag: 'Eid Offer', emoji: '🌙', bg: 'from-emerald-500/15 to-emerald-500/5' },
+  { name: 'Pohela Boishakh', tag: 'New Year', emoji: '🌿', bg: 'from-red-500/15 to-red-500/5' },
+  { name: '11.11 Sale', tag: 'Mega Offer', emoji: '🛍️', bg: 'from-amber-500/15 to-amber-500/5' },
+  { name: 'Business Promo', tag: 'Product', emoji: '📈', bg: 'from-blue-500/15 to-blue-500/5' },
+  { name: 'Islamic New Year', tag: 'Religious', emoji: '🕌', bg: 'from-green-600/15 to-green-600/5' },
+  { name: 'Food Promo', tag: 'Restaurant', emoji: '🍜', bg: 'from-orange-500/15 to-orange-500/5' },
 ]
 
 export default function TemplatesSection() {
   const { locale } = useLocale()
   const isBengali = locale === 'bn'
+  const templates = isBengali ? TEMPLATES_BN : TEMPLATES_EN
 
   return (
-    <section className="py-20 bg-white dark:bg-slate-950">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="text-center mb-14">
-          <div className="inline-block mb-4 px-4 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-sm font-semibold">
-            {isBengali ? '৫০+ বাংলা টেমপ্লেট' : '50+ Bengali Templates'}
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-            {isBengali ? 'প্রতিটি উৎসবের জন্য রেডি' : 'Ready for every festival'}
+    <section id="templates" className="bg-[#FCFCF9] px-5 py-16">
+      <div className="mx-auto max-w-[1120px]">
+        <div className="mb-6 flex items-end justify-between">
+          <h2 className="font-hind text-3xl font-bold tracking-tight text-[#18181B]">
+            {isBengali ? 'টেমপ্লেট দিয়ে শুরু করুন' : 'Start from a template'}
           </h2>
-          <p className="mt-3 text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            {isBengali
-              ? 'ঈদ থেকে পূজা — সব সিজনের জন্য প্রি-মেড টেমপ্লেট। এক ক্লিকে ব্যবহার করুন।'
-              : 'From Eid to Puja — pre-made templates for every season. Use them with one click.'}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {TEMPLATES.map((t) => (
-            <Link
-              key={t.en}
-              href="/generate"
-              className="group flex flex-col items-center justify-center gap-2 rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 p-6 text-center transition-all duration-300 hover:border-emerald-400 hover:shadow-lg hover:-translate-y-1"
-            >
-              <span className="text-3xl transition-transform group-hover:scale-110">{t.emoji}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{t.bn}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{t.en}</span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="text-center mt-10">
-          <Link
-            href="/prompts"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition"
-          >
-            {isBengali ? 'সব টেমপ্লেট দেখুন' : 'See all templates'}
-            <span aria-hidden>→</span>
+          <Link href="/prompts" className="text-sm font-semibold text-[#0E7C3A] hover:underline">
+            {isBengali ? 'সব দেখুন →' : 'See all →'}
           </Link>
         </div>
+      </div>
+      <div className="no-scrollbar flex snap-x gap-4 overflow-x-auto px-5 pb-2 lg:px-[max(1.25rem,calc((100vw-1120px)/2))]">
+        {templates.map((t) => (
+          <Link
+            key={t.name}
+            href="/generate"
+            className={`group flex min-w-[200px] snap-start flex-col justify-between rounded-2xl border border-zinc-200 bg-gradient-to-br ${t.bg} p-5 transition hover:-translate-y-1 hover:shadow-lg`}
+          >
+            <div className="mb-8 text-4xl">{t.emoji}</div>
+            <div>
+              <span className="mb-2 inline-block rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-zinc-600">
+                {t.tag}
+              </span>
+              <div className="font-hind text-lg font-bold text-[#18181B]">{t.name}</div>
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
   )
