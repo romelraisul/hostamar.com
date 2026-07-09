@@ -1,26 +1,26 @@
 import { Metadata } from 'next'
 import Navbar from '@/components/home/Navbar'
 import HeroSection from '@/components/home/HeroSection'
-import StatsSection from '@/components/home/StatsSection'
-import FeaturesSection from '@/components/home/FeaturesSection'
-import OllamaFeaturesSection from '@/components/home/OllamaFeaturesSection'
+import HowItWorksSection from '@/components/home/HowItWorksSection'
 import DemoVideosSection from '@/components/home/DemoVideosSection'
+import TemplatesSection from '@/components/home/TemplatesSection'
 import ProductsSection from '@/components/home/ProductsSection'
 import CompetitiveEdgeSection from '@/components/home/CompetitiveEdgeSection'
 import PricingSection from '@/components/home/PricingSection'
+import TestimonialsSection from '@/components/home/TestimonialsSection'
 import FAQSection from '@/components/home/FAQSection'
 import CTASection from '@/components/home/CTASection'
 import Footer from '@/components/home/Footer'
 
 export const metadata: Metadata = {
-  title: 'Hostamar — Cloud Hosting, AI Video, AI Chat, AI Browser, Gaming & Dev IDE | All-in-One Bangladesh Platform',
+  title: 'Hostamar — AI Marketing Video + Hosting for Bangladesh | Create Viral Videos in 30s',
   description:
-    'Hostamar: Bangladesh\'s all-in-one platform. 6 products, 1 account. Cloud VPS hosting, AI marketing videos, AI chat assistant, AI browser, browser games, cloud dev IDE. Bengali-first, bKash payments, free tier available.',
+    'Turn your product into a viral AI marketing video in 30 seconds. Bengali-first, 50+ festival templates, bKash/Nagad/Rocket payment, BDIX-fast hosting. Start free from ৳0.',
   alternates: { canonical: 'https://hostamar.com' },
   openGraph: {
-    title: 'Hostamar — 6 Products, 1 Platform for Bangladesh',
+    title: 'Hostamar — AI Marketing Video for Bangladeshi Business',
     description:
-      'Bangladesh\'s all-in-one platform: Cloud VPS hosting, AI marketing videos, AI chat, AI browser, gaming, cloud IDE. Bengali-first, free tier, bKash payments.',
+      'Create viral AI marketing videos in 30 seconds. Bengali-first, bKash payment, free tier. Plus hosting, AI chat, browser, games and cloud IDE.',
     url: 'https://hostamar.com',
     siteName: 'Hostamar',
     images: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         url: 'https://hostamar.com/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Hostamar — All-in-One Bangladesh Platform',
+        alt: 'Hostamar — AI Marketing Video for Bangladesh',
       },
     ],
     locale: 'en_US',
@@ -36,24 +36,19 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hostamar — Cloud Hosting, AI Video, AI Chat & More',
+    title: 'Hostamar — AI Marketing Video for Bangladesh',
     description:
-      'Bangladesh\'s all-in-one platform: Cloud VPS, AI video generation, AI marketing videos, AI chat, AI browser, games, cloud IDE. Start free.',
+      'Create viral AI marketing videos in 30 seconds. Bengali-first, bKash payment, free tier. Start now.',
     images: ['https://hostamar.com/opengraph-image'],
   },
   keywords: [
-    'cloud hosting bangladesh',
-    'ai video generation bangladesh',
-    'vps hosting bangladesh',
-    'ai marketing video',
+    'ai marketing video bangladesh',
+    'বাংলা ভিডিও মেকার',
+    'eid offer video',
+    'hosting bangladesh bkash',
     'hostamar',
-    'bangladesh hosting',
-    'ai chat bangladesh',
-    'ai browser bangladesh',
-    'browser games bangladesh',
-    'cloud ide bangladesh',
-    'bkash hosting',
     'bangla ai tools',
+    'viral video maker bd',
   ],
   robots: {
     index: true,
@@ -70,19 +65,19 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
-        <Navbar />
-        <HeroSection />
-        <StatsSection />
-        <FeaturesSection />
-        <OllamaFeaturesSection />
-        <DemoVideosSection />
-        <ProductsSection />
-                <CompetitiveEdgeSection />
-                <PricingSection />
-                <FAQSection />
-                <CTASection />
-                <Footer />
-      </div>
-    )
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
+      <Navbar />
+      <HeroSection />
+      <HowItWorksSection />
+      <DemoVideosSection />
+      <TemplatesSection />
+      <ProductsSection />
+      <CompetitiveEdgeSection />
+      <PricingSection />
+      <TestimonialsSection />
+      <FAQSection />
+      <CTASection />
+      <Footer />
+    </div>
+  )
 }
