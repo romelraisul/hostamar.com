@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
+import { prisma } from '@/lib/prisma';
 
 // ============================================================================
 // Payment Integration - bKash, Nagad, Rocket & USDT (BEP20) - SIMULATED
@@ -232,6 +233,27 @@ export async function POST(request: NextRequest) {
     });
 
     const instructions = generateInstructions(m, planInfo, trxId, phone, walletAddress);
+
+    // Persist an order row so the webhook + invoice can reference it by transactionId.
+    // Merchant creds are optional: without them the flow stays manual (live fallback).
+    try {
+      await prisma.payment.upsert({
+        where: { transactionId: trxId },
+        update: { amount: planInfo.amount, method: m, planName: planInfo.name, status: 'pending' },
+        create: {
+          customerId: 'pending', // attached to the real customer when they submit/verify
+          method: m,
+          amount: planInfo.amount,
+          currency: 'BDT',
+          status: 'pending',
+          transactionId: trxId,
+          planName: planInfo.name,
+          billingPeriod: 'yearly',
+        },
+      })
+    } catch (e) {
+      console.warn('[Payment:Create] order row upsert failed (non-fatal):', (e as any)?.message)
+    }
 
     return NextResponse.json({
       success: true,
