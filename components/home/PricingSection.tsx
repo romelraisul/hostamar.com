@@ -1,6 +1,7 @@
 'use client'
 
 import { useLocale } from '@/lib/locale-context'
+import CheckoutButton from '@/components/CheckoutButton'
 
 export default function PricingSection() {
   const { t } = useLocale()
@@ -60,9 +61,11 @@ export default function PricingSection() {
                 {t('pricing.starterSupport')}
               </li>
             </ul>
-            <a href="/login" className="block w-full py-3 rounded-lg bg-blue-600 text-white text-center hover:bg-blue-700">
-              {t('pricing.starterChoosePlan')}
-            </a>
+            <CheckoutButton
+              plan="starter"
+              label={t('pricing.starterChoosePlan')}
+              className="block w-full py-3 rounded-lg bg-blue-600 text-white text-center hover:bg-blue-700"
+            />
           </div>
 
           {/* Business */}
@@ -87,9 +90,11 @@ export default function PricingSection() {
                 {t('pricing.businessAPI')}
               </li>
             </ul>
-            <a href="/login" className="block w-full py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700">
-              {t('pricing.businessContact')}
-            </a>
+            <CheckoutButton
+              plan="business"
+              label={t('pricing.businessContact')}
+              className="block w-full py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+            />
           </div>
         </div>
 
