@@ -1,0 +1,12 @@
+# scripts/launch/daraz-shop-urls.txt
+#
+# One Daraz shop URL per line (max 20). Use https://www.daraz.com.bd/shop/{slug}.
+# Find real shops manually: Daraz search "seller rating 4.8+ 50+ reviews",
+# or FB groups "Daraz Sellers Bangladesh" -> shops with boosting posts.
+#
+# DO NOT fabricate URLs — the scraper fetches these live. 2 seeded below;
+# add 18 more real shops above the #TODO line, then run the scraper.
+https://www.daraz.com.bd/shop/aarong
+https://www.daraz.com.bd/shop/apex-official
+
+#TODO: add 18 more real shop URLs here (one per line)
