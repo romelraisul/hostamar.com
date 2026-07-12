@@ -54,12 +54,20 @@ const nextConfig = {
     ]
   },
   webpack: (config) => {
-    // NOTE: the `config.resolve.alias['@'] = path.resolve(__dirname, '.')` line
-    // that used to live here has been REMOVED. It was the only `__dirname`
-    // reference in the entire build chain and leaked into the Edge middleware
-    // bundle, causing `MIDDLEWARE_INVOCATION_FAILED` + `ReferenceError: __dirname
-    // is not defined` on Vercel. The `@/*` path alias is already declared
-    // natively in tsconfig.json ("@/*": ["./*"]), so this alias was redundant.
+    // Jackson (SAML) pulls typeorm, which tries to resolve optional DB drivers
+    // we don't use (sqlite/react-native). Stub them so the production bundle
+    // stays clean and avoids native-module resolution errors. We only use
+    // engine:'sql' + postgres, so these stubs are never executed.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'react-native-sqlite-storage': false,
+      'better-sqlite3': false,
+      '@sap/hana-client': false,
+      mysql: false,
+      mysql2: false,
+      mongodb: false,
+      'pg-native': false,
+    }
     return config
   },
 }
