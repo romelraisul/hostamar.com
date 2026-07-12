@@ -68,6 +68,13 @@ const nextConfig = {
       mongodb: false,
       'pg-native': false,
     }
+    // typeorm + protobufjs use dynamic require() for optional drivers; webpack
+    // can't statically analyze those, producing "Critical dependency" warnings.
+    // They're benign — we only use engine:'sql' + postgres. Silence them.
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      /Critical dependency: the request of a dependency is an expression/,
+    ]
     return config
   },
 }
