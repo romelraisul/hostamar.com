@@ -1,0 +1,18 @@
+name = "api-router"
+main = "workers/api-router.js"
+compatibility_date = "2024-01-01"
+# account_id is picked up automatically from `wrangler login`; do NOT set empty string.
+
+# Route api.hostamar.com/* through this Worker.
+# IMPORTANT: api.hostamar.com is owned by the Worker (Custom Domain / Route),
+# NOT a DNS CNAME. Do NOT add a CNAME for api.hostamar.com to Railway or Tunnel.
+routes = [
+  { pattern = "api.hostamar.com/*", zone_name = "hostamar.com" }
+]
+
+# Optional: override the Railway fallback domain per-environment without editing code.
+# vars = { FALLBACK_URL = "https://api-fallback.up.railway.app" }
+
+# Secrets are injected at deploy time, never committed:
+#   npx wrangler secret put FALLBACK_URL
+# (TELEGRAM_BOT_TOKEN / DATABASE_URL are NOT stored here — Worker only proxies.)
