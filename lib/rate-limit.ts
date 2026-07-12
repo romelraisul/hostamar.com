@@ -122,6 +122,8 @@ export const RATE_LIMITS = (() => {
     toolsRun: { bucket: 'tools.run', limit: 20, windowMs: 60 * 1000 },
     // Post-call webhook ingest: 200/min (spec, validation PR b).
     callWebhook: { bucket: 'webhooks.call-ended', limit: 200, windowMs: 60 * 1000 },
+    // bKash redirect/webhook ingest: 200/min (TASK 6).
+    bkashWebhook: { bucket: 'webhooks.bkash', limit: 200, windowMs: 60 * 1000 },
   }
 })()
 
