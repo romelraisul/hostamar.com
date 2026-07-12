@@ -1,185 +1,204 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { Search, Eye, Clock, Calendar, ArrowRight, Mail, Sparkles } from 'lucide-react'
 import {
-  Search,
-  Eye,
-  Clock,
-  CheckCircle,
-  XCircle,
-  ArrowRight,
-  Calendar,
-  Tag,
-  BookOpen
-} from "lucide-react"
+  POSTS, BLOG_CATS, FEATURED, GRID, POPULAR, formatViews,
+  type BlogCat,
+} from '@/lib/blog'
 
-// Blog posts data
-const blogPosts = [
-  {
-    id: 1,
-    title: "AI দিয় ভিডিও তৈরি — পূর্ণাঙ্গ গাইড ২০২৬",
-    excerpt: "হোস্টামারের সাহায্যে AI দিয় প্রফেশনাল ভিডিও কিভাবে তৈরি করবেন — স্টেপ বাই স্টেপ গাইড",
-    category: "ভিডিও টিউটোরিয়াল",
-    readTime: "৫ মিনিট",
-    date: "২০২৬-০৫-১০",
-    views: 1520,
-    tags: ["AI", "ভিডিও", "টিউটোরিয়াল"]
-  },
-  {
-    id: 2,
-    title: "৫০০ টাকা দিয় বিজনেস শুরু করুন — AI ভিডিও সার্ভিস",
-    excerpt: "ন্যূনতম বাজেটে AI ভিডিও সার্ভিস শুরু করার উপায় এবং আয়ের সম্ভাবনা",
-    category: "ব্যবসা",
-    readTime: "৪ মিনিট",
-    date: "২০২৬-০৫-০৮",
-    views: 2340,
-    tags: ["ব্যবসা", "AI", "এন্ট্রিপ্রেনিউর"]
-  },
-  {
-    id: 3,
-    title: "bKash দিয় অনলাইন পেমেন্ট — সহজ ও নিরাপদ",
-    excerpt: "Hostamar-এ bKash, Nagad, Rocket ও USDT দিয় কিভাবে পেমেন্ট করবেন",
-    category: "পেমেন্ট গাইড",
-    readTime: "৩ মিনিট",
-    date: "২০২৬-০৫-০৬",
-    views: 890,
-    tags: ["পেমেন্ট", "bKash", "নাগরিক"]
-  },
-  {
-    id: 4,
-    title: "Facebook গ্রুপ থেকে কাস্টমার পাবেন — প্রফেশনাল টিপস",
-    excerpt: "৪০০K+ মেম্বের ফেসবুক গ্রুপ থেকে কাস্টমার এক্সাক্ট করবেন",
-    category: "মার্কেটিং",
-    readTime: "৬ মিনিট",
-    date: "২০২৬-০৫-০৪",
-    views: 3210,
-    tags: ["মার্কেটিং", "ফেসবুক", "কাস্টমার"]
-  },
-  {
-    id: 5,
-    title: "AI মার্কেটিং ভিডিও — কেন ব্যবসার জন্য অপরিহার্য",
-    excerpt: "২০২৬ সালে মার্কেটিং ভিডিও বানাতে কেন AI ব্যবহার করা উচিৎ",
-    category: "আইনি",
-    readTime: "৭ মিনিট",
-    date: "২০২৬-০৫-০১",
-    views: 4100,
-    tags: ["AI", "মার্কেটিং", "ট্রেন্ড"]
-  }
-]
+const GREEN = '#0E7C3A'
 
 export default function BlogPage() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [query, setQuery] = useState('')
+  const [cat, setCat] = useState<'all' | BlogCat>('all')
+  const [subbed, setSubbed] = useState(false)
+  const [email, setEmail] = useState('')
 
-  const categories = ["all", "ভিডিও টিউটোরিয়াল", "ব্যবসা", "পেমেন্ট গাইড", "মার্কেটিং", "আইনি"]
-
-  const filteredPosts = blogPosts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || post.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return POSTS.filter((p) => {
+      const catOk = cat === 'all' || p.category === cat
+      const qOk =
+        !q ||
+        p.title.toLowerCase().includes(q) ||
+        p.excerpt.toLowerCase().includes(q) ||
+        p.tags.some((t) => t.toLowerCase().includes(q))
+      return catOk && qOk
+    }).sort((a, b) => b.views - a.views)
+  }, [query, cat])
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Header */}
-      
+    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900">
+      {/* trust banner */}
+      <div className="w-full bg-[#0E7C3A] text-white text-[12px] md:text-[13px] leading-none">
+        <div className="mx-auto max-w-[1180px] px-4 md:px-6 h-9 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-4 md:gap-6 font-medium">
+            <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 opacity-90" /> বাংলায় AI টিপস</span>
+            <span className="hidden sm:inline-flex items-center gap-1.5">সাপ্তাহিক ১ ইমেইল</span>
+            <span className="inline-flex items-center gap-1.5">৪.৮ রেটিং</span>
+          </div>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-semibold tracking-wide">🇧🇩 Made for Bangladesh</span>
+        </div>
+      </div>
 
-      {/* Hero */}
-      <section className="max-w-6xl mx-auto px-4 pt-8 pb-4 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">📰 হোস্টামার ব্লগ</h1>
-        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-          AI ভিডিও, ব্যবসা, মার্কেটিং ও টেকনোলজি — বাংলায় সর্বশেষ আপডেট
+      {/* hero */}
+      <section className="mx-auto max-w-[1180px] px-4 md:px-6 pt-12 md:pt-16 pb-6 text-center">
+        <h1 className="text-[34px] md:text-[48px] font-bold tracking-[-0.03em] leading-[1.05]">
+          হোস্টামার <span style={{ color: GREEN }}>ব্লগ</span>
+        </h1>
+        <p className="mt-3 text-[15px] md:text-[17px] text-zinc-500 max-w-[640px] mx-auto">
+          AI ভিডিও, ব্যবসা, মার্কেটিং ও টেকনোলজি — বাংলায়
         </p>
       </section>
 
-      {/* Search & Filter */}
-      <section className="max-w-6xl mx-auto px-4 pb-8">
-        <div className="flex gap-3 max-w-2xl mx-auto">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-            <input
-              type="text"
-              placeholder="আর্টিকেল খুঁজুন..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 transition"
-            />
-          </div>
+      {/* search + pills */}
+      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="ব্লগ খুঁজুন... যেমন bKash পেমেন্ট"
+            className="w-full rounded-2xl border border-zinc-200 bg-white py-3.5 pl-12 pr-4 text-[15px] outline-none focus:border-[#0E7C3A] focus:ring-2 focus:ring-[#0E7C3A]/20"
+          />
         </div>
-
-        {/* Category Filters */}
-        <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${
-                selectedCategory === cat
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white/5 text-gray-400 hover:bg-white/10'
-              }`}
-            >
-              {cat === "all" ? "সব" : cat}
+        <div className="scrollbar-none mt-3 flex gap-2 overflow-x-auto pb-1">
+          {BLOG_CATS.map((c) => (
+            <button key={c.key} onClick={() => setCat(c.key)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-medium transition ${cat === c.key ? 'bg-[#0E7C3A] text-white shadow' : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-100'}`}>
+              {c.label}
             </button>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* Blog Grid */}
-      <section className="max-w-6xl mx-auto px-4 pb-20">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPosts.map(post => (
-            <article
-              key={post.id}
-              onClick={() => router.push(`/blog/${post.id}`)}
-              className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden cursor-pointer hover:border-white/20 transition-all hover:shadow-lg hover:shadow-blue-500/5 group"
-            >
-              <div className="h-48 bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <Tag className="absolute top-3 left-3 bg-blue-600/90 text-white text-xs px-2 py-1 rounded-full" />
-                <span className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Eye className="w-3 h-3" /> {post.views}
-                </span>
-                <div className="absolute bottom-3 left-3 right-3">
-                  <h3 className="text-white font-bold text-lg group-hover:underline transition">
-                    {post.title}
-                  </h3>
+      {/* featured + grid + sidebar */}
+      <div className="mx-auto max-w-[1180px] px-4 md:px-6 py-8">
+        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="space-y-8">
+            {/* featured */}
+            {query.trim() === '' && cat === 'all' && (
+              <Link href={`/blog/${FEATURED.slug}`} className="group block overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-br from-[#0c6c33] to-[#0E7C3A] text-white shadow-sm transition hover:shadow-lg">
+                <div className="flex flex-col gap-6 p-6 md:flex-row md:items-center md:p-8">
+                  <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white/15 text-4xl md:h-24 md:w-24">{FEATURED.icon}</div>
+                  <div className="min-w-0">
+                    {FEATURED.badge && (
+                      <span className="inline-flex rounded-full bg-white/20 px-3 py-1 text-[12px] font-semibold">{FEATURED.badge}</span>
+                    )}
+                    <h2 className="mt-3 text-[22px] md:text-[26px] font-bold leading-tight">{FEATURED.title}</h2>
+                    <p className="mt-2 text-[14px] text-white/85 line-clamp-2">{FEATURED.excerpt}</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-[12.5px] text-white/80">
+                      <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {FEATURED.date}</span>
+                      <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {FEATURED.readTime}</span>
+                      <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> {formatViews(FEATURED.views)} views</span>
+                      <span>· {FEATURED.author}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {post.date}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {post.readTime}
-                  </span>
-                </div>
-                <p className="text-gray-400 text-sm line-clamp-3">{post.excerpt}</p>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {post.tags.map(tag => (
-                    <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </Link>
+            )}
 
-        {filteredPosts.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>কোনো আর্টিকেল পাওয়া যায়নি</p>
+            {/* grid */}
+            {filtered.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-10 text-center text-[15px] text-zinc-500">
+                কোনো আর্টিকেল পাওয়া যায়নি।
+              </div>
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2">
+                {filtered.map((p) => (
+                  <Link key={p.slug} href={`/blog/${p.slug}`} className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:-translate-y-1 hover:border-[#0E7C3A]/40 hover:shadow-lg">
+                    <div className="relative grid h-36 place-items-center bg-gradient-to-br from-zinc-100 to-zinc-200 text-5xl">
+                      <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-zinc-600">{p.category}</span>
+                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[11px] text-white"><Eye className="h-3 w-3" /> {formatViews(p.views)}</span>
+                      {p.icon}
+                    </div>
+                    <div className="flex flex-1 flex-col p-5">
+                      <h3 className="text-[16px] font-bold leading-snug text-zinc-900 group-hover:text-[#0E7C3A]">{p.title}</h3>
+                      <p className="mt-2 line-clamp-2 text-[13.5px] text-zinc-500">{p.excerpt}</p>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-zinc-400">
+                        <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.date}</span>
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {p.readTime}</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {p.tags.map((t) => (
+                          <span key={t} className="rounded-full bg-[#0E7C3A]/8 px-2 py-0.5 text-[11px] font-medium text-[#0E7C3A]">{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* SIDEBAR */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-[96px] space-y-4">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+                <p className="text-[15px] font-bold">বাংলায় AI টিপস পান</p>
+                <p className="mt-1 text-[13px] text-zinc-500">সাপ্তাহিক ১ ইমেইল, কোনো স্প্যাম নয়। ৳২,০০০ আপসেলের জন্য লিস্ট বাড়ান।</p>
+                {subbed ? (
+                  <p className="mt-4 rounded-xl bg-[#0E7C3A]/8 px-4 py-3 text-[14px] font-semibold text-[#0E7C3A]">✓ সাবস্ক্রাইব করা হয়েছে!</p>
+                ) : (
+                  <form onSubmit={(e) => { e.preventDefault(); if (email.includes('@')) setSubbed(true) }} className="mt-4 space-y-2">
+                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                      placeholder="আপনার ইমেইল"
+                      className="w-full rounded-xl border border-zinc-200 px-4 py-2.5 text-[14px] outline-none focus:border-[#0E7C3A]" />
+                    <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0E7C3A] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:bg-[#0c6c33]">
+                      <Mail className="h-4 w-4" /> সাবস্ক্রাইব
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+                <p className="text-[15px] font-bold">জনপ্রিয়</p>
+                <ul className="mt-3 space-y-3">
+                  {POPULAR.map((p) => (
+                    <li key={p.slug}>
+                      <Link href={`/blog/${p.slug}`} className="flex items-start gap-3">
+                        <span className="text-[18px]">{p.icon}</span>
+                        <span className="text-[13.5px] font-medium leading-snug text-zinc-700 hover:text-[#0E7C3A]">{p.title}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+                <p className="text-[15px] font-bold">ক্যাটাগরি</p>
+                <ul className="mt-3 space-y-2 text-[14px]">
+                  {BLOG_CATS.filter((c) => c.key !== 'all').map((c) => {
+                    const n = POSTS.filter((p) => p.category === c.key).length
+                    return (
+                      <li key={c.key} className="flex items-center justify-between text-zinc-600">
+                        <button onClick={() => setCat(c.key as BlogCat)} className="hover:text-[#0E7C3A]">{c.label}</button>
+                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[12px] text-zinc-500">{n}</span>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      {/* bottom CTA -> convert to trial */}
+      <section className="mx-auto max-w-[1180px] px-4 md:px-6 pb-16">
+        <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-br from-[#0E7C3A] to-[#0c6c33] p-8 text-center text-white md:p-10">
+          <h2 className="text-[22px] md:text-[28px] font-bold">ব্লগ পড়লেন, এবার ভিডিও বানান</h2>
+          <p className="mx-auto mt-2 max-w-[520px] text-[14px] text-white/85">
+            ফ্রি দিয়ে শুরু করুন — ক্রেডিট কার্ড লাগে না। ১০ মিনিটে প্রথম রিল তৈরি করুন।
+          </p>
+          <Link href="/video"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-[15px] font-bold text-[#0E7C3A] transition hover:bg-zinc-100">
+            স্টুডিওতে যান <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </section>
-    </main>
+    </div>
   )
 }
