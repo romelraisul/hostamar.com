@@ -60,40 +60,7 @@ export default function SearchPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Sticky header */}
-      <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
-              aria-label={t('search.goBack')}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-400" />
-                {t('search.title')}
-              </h1>
-              <p className="text-xs text-gray-500">
-                {t('search.subtitle')}
-              </p>
-            </div>
-          </div>
-
-          <SearchBar
-            onSearch={handleSearch}
-            onClear={() => {
-              setResults([])
-              setHasSearched(false)
-              setError(null)
-              setQuery('')
-            }}
-            isSearching={isSearching}
-            initialQuery={query}
-          />
-        </div>
-      </header>
+      
 
       {/* Results area */}
       <section className="max-w-6xl mx-auto px-4 py-8 pb-24">
@@ -127,15 +94,7 @@ export default function SearchPage() {
       </section>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur-xl border-t border-white/5 py-3">
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between text-xs text-gray-600">
-          <span>
-            {t('search.poweredBy')}{' '}
-            <span className="text-purple-400">Ollama · hermes3:latest</span>
-          </span>
-          <span>{t('search.semanticSearch')}</span>
-        </div>
-      </footer>
+      
     </main>
   )
 }

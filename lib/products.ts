@@ -235,3 +235,31 @@ export const PRODUCT_BY_SLUG: Record<string, Product> =
 export function getProduct(slug: string): Product | null {
   return PRODUCT_BY_SLUG[slug] || null
 }
+
+// Canonical live route for each product (used by nav, footer, dashboard tiles).
+// Keeps the short marketing URLs (/video, /hosting…) decoupled from the
+// registry slug so links stay stable even if a slug is renamed.
+export const PRODUCT_ROUTES: Record<string, string> = {
+  'ai-video': '/video',
+  'cloud-hosting': '/hosting',
+  'ai-chat': '/chat',
+  'ai-browser': '/browser',
+  'dev-ide': '/ide',
+  'game': '/game',
+}
+
+export function productRoute(slug: string): string {
+  return PRODUCT_ROUTES[slug] ?? '/'
+}
+
+// Nav-facing shorthand: the 6 products in display order with their live route.
+export const PRODUCT_NAV = [...PRODUCTS]
+  .sort((a, b) => a.order - b.order)
+  .map((p) => ({
+    slug: p.slug,
+    emoji: p.emoji,
+    nameBn: p.nameBn,
+    nameEn: p.nameEn,
+    taglineBn: p.taglineBn,
+    route: productRoute(p.slug),
+  }))

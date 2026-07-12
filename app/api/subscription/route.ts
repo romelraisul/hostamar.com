@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
+import { normalizePlan, getQuota } from '@/lib/subscription'
 
 export async function POST(request: Request) {
   try {
@@ -129,11 +130,18 @@ export async function GET() {
     const currentPlanName = currentSub?.plan || 'FREE'
     const currentLimits = planLimits[currentPlanName] || { videoLimit: 5, quality: '720p', watermark: true }
 
+    // Unified gate: normalize to free|starter|business so all 6 products read one plan.
+    const normalizedPlan = normalizePlan(currentPlanName)
+    const unifiedQuota = getQuota({ plan: normalizedPlan, status: hasActiveSub ? 'active' : 'inactive' })
+
     return NextResponse.json({
       success: true,
       data: {
-        currentPlan: currentPlanName,
-        subscriptionStatus: hasActiveSub ? 'ACTIVE' : 'INACTIVE',
+        currentPlan: normalizedPlan,
+        legacyPlan: currentPlanName,
+        plan: normalizedPlan,
+        quota: unifiedQuota,
+        subscriptionStatus: hasActiveSub ? 'active' : 'inactive',
         currentSubscription: currentSub || null,
         hasActiveSubscription: hasActiveSub,
         videoLimit: currentLimits.videoLimit,
@@ -148,4 +156,4 @@ export async function GET() {
     console.error('Subscription GET error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
-}
+}

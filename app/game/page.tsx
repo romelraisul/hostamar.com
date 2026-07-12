@@ -3,19 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 export default function GamePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-      <header className="container mx-auto px-4 py-6">
-        <nav className="flex items-center gap-4">
-          <a href="/" className="p-2 hover:bg-white/5 rounded-lg transition">
-            <ArrowLeft className="w-5 h-5" />
-          </a>
-          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
-            LuckyStar Game
-          </div>
-          <div className="ml-auto flex gap-4 text-sm items-center">
-            <span className="text-purple-400 font-semibold">Choose a game</span>
-          </div>
-        </nav>
-      </header>
+      
 
       <section className="container mx-auto px-4 py-12">
         <div className="max-w-5xl mx-auto">
@@ -80,9 +68,7 @@ export default function GamePage() {
         </div>
       </section>
 
-      <footer className="container mx-auto px-4 py-8 border-t border-white/10 text-center text-sm text-gray-500">
-        <p>© 2026 Hostamar.com - LuckyStar Game. Play responsibly.</p>
-      </footer>
+      
     </div>
   )
 }

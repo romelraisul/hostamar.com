@@ -282,9 +282,7 @@ export default function HostingLandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-[#E8E6E1] py-8 text-center text-sm text-zinc-500">
-        🇧🇩 Made in Bangladesh · Hostamar
-      </footer>
+      
     </div>
   )
 }

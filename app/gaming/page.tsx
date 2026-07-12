@@ -76,29 +76,7 @@ export default function App() {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#FCFCF9]/80 border-b border-zinc-200/60">
-        <div className="mx-auto max-w-[1200px] px-4 sm:px-6 h-[64px] flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <a href="#" className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-xl bg-[#0F1115] text-white grid place-items-center font-black text-[14px]">H</div>
-              <div className="leading-none">
-                <div className="font-bold tracking-tight text-[16px]">hostamar</div>
-                <div className="text-[10px] tracking-[0.18em] uppercase opacity-60 -mt-0.5">/gaming</div>
-              </div>
-            </a>
-            <nav className="hidden md:flex items-center gap-6 text-[14px] font-medium">
-              <a href="#games" className="opacity-70 hover:opacity-100 transition">Games</a>
-              <a href="#tournaments" className="opacity-70 hover:opacity-100 transition">Tournaments</a>
-              <a href="#prizes" className="opacity-70 hover:opacity-100 transition">Prizes</a>
-              <a href="#pricing" className="opacity-70 hover:opacity-100 transition">Pricing</a>
-            </nav>
-          </div>
-          <div className="flex items-center gap-2">
-            <a href="/gaming/play" className="hidden sm:inline-flex h-9 px-4 rounded-full bg-white border border-zinc-200 text-[13px] font-semibold hover:bg-zinc-50 transition">লগইন</a>
-            <a href="/gaming/play" className="inline-flex h-9 sm:h-10 px-4 sm:px-5 rounded-full bg-[#0E7C3A] text-white text-[13px] sm:text-[14px] font-semibold items-center justify-center hover:bg-[#0c6a32] transition shadow-[0_8px_20px_-10px_#0E7C3A]">ফ্রি খেলুন</a>
-          </div>
-        </div>
-      </header>
+      
 
       {/* Hero */}
       <section className="mx-auto max-w-[1200px] px-4 sm:px-6 pt-8 sm:pt-14 pb-10 sm:pb-16">
@@ -572,47 +550,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#FCFCF9] border-t border-zinc-200">
-        <div className="mx-auto max-w-[1200px] px-4 sm:px-6 py-10">
-          <div className="flex flex-col sm:flex-row justify-between gap-8">
-            <div>
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-[#0F1115] text-white grid place-items-center font-bold text-[12px]">H</div>
-                <span className="font-bold">hostamar</span><span className="opacity-50 text-[12px]">/gaming</span>
-              </div>
-              <div className="mt-3 text-[13px] leading-6 text-zinc-600 max-w-[320px]">বাংলাদেশের প্রথম browser cloud gaming + tournament platform। No download, bKash payout, BD server।</div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-[13px]">
-              <div>
-                <div className="font-semibold">Product</div>
-                <div className="mt-2 space-y-1.5 opacity-70">
-                  <div><a href="#games" className="hover:opacity-100">Games</a></div>
-                  <div><a href="#tournaments" className="hover:opacity-100">Tournaments</a></div>
-                  <div><a href="#pricing" className="hover:opacity-100">Pricing</a></div>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold">Support</div>
-                <div className="mt-2 space-y-1.5 opacity-70">
-                  <div>Anti-cheat policy</div>
-                  <div>bKash refund</div>
-                  <div>Contact: fb.com/hostamar</div>
-                </div>
-              </div>
-              <div className="hidden sm:block">
-                <div className="font-semibold">Legal</div>
-                <div className="mt-2 space-y-1.5 opacity-70">
-                  <div>18+ • Skill based • No gambling</div>
-                  <div>© 2025 Hostamar</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 pt-6 border-t border-zinc-200 flex flex-wrap gap-2 text-[11px] text-zinc-500">
-            <span>⚠️ Skill-based gaming only. This is not gambling. Tournament fee = platform service + prize pool. 10% fee transparent.</span>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   );
 }
