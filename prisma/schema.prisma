@@ -319,6 +319,12 @@ model Payment {
 
   webhookSent Boolean  @default(false)
   invoiceUrl  String?
+
+  // bKash tokenized-checkout linkage (TASK 6): provider payment id + our
+  // own invoice number. transactionId (existing @unique) carries bKash trxID.
+  providerPaymentId String? @unique // bKash paymentID from /create
+  invoiceNumber    String? @unique // orgId-orderId-ts
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
