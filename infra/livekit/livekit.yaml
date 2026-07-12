@@ -1,0 +1,18 @@
+# LiveKit SFU config — single-node $0 deployment.
+# Mounted read-only into the livekit container at /etc/livekit.yaml.
+port: 7880
+rtc:
+  port_range_start: 7882
+  port_range_end: 7887
+  use_external_ip: true
+  # Public IP auto-detected via LIVEKIT_NODE_IP env when behind NAT.
+  tcp_port: 7881
+keys:
+  # Overridden at runtime by LIVEKIT_KEYS env (apikey: secret). Keep a sane
+  # default so the container starts even if env is missing in dev.
+  devkey: devsecret
+redis:
+  address: redis:6379   # reuse existing redis service for clustering/lock
+turn:
+  enabled: false        # coturn runs as a separate container for better NAT
+# For single-node $0, SFU only is fine. No egress yet.

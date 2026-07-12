@@ -739,3 +739,18 @@ model Goal {
 
   @@index([status])
 }
+
+// VoiceCall: durable post-call artifact (transcript + summary + action items)
+// from the production Voice Agent (7th product). Written by processPostCall
+// and consumed by the Inngest voice.postcall.process worker + /dashboard/voice.
+model VoiceCall {
+  id          String   @id
+  userId      String?
+  transcript  Json
+  summary     String?
+  actionItems Json?
+  reportJson  Json?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}

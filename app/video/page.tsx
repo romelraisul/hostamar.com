@@ -1,7 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
 import { getProduct } from '@/lib/products'
+
+// Voice agent is client-only (WebRTC) — never SSR.
+const VoiceAgentClient = dynamic(() => import('@/components/voice/VoiceAgentClient'), { ssr: false })
 
 const GREEN = '#0E7C3A'
 
@@ -9,6 +14,9 @@ const GREEN = '#0E7C3A'
 // the root layout (AppHeader/AppFooter) — this page renders content only.
 export default function VideoPage() {
   const p = getProduct('ai-video')!
+  const [voiceOpen, setVoiceOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   return (
     <div className="bg-[#FCFCF9] text-zinc-900 antialiased">
@@ -38,6 +46,12 @@ export default function VideoPage() {
                 {p.ctaSecondary.label}
               </Link>
             )}
+            <button
+              onClick={() => setVoiceOpen((v) => !v)}
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#E4312B] px-6 font-semibold text-white hover:bg-[#c92a25] transition"
+            >
+              🎙️ Preview with Voice
+            </button>
           </div>
           <div className="mt-6 flex items-center gap-4 text-[13px] text-zinc-500">
             <span>✓ ক্রেডিট কার্ড লাগবে না</span>
@@ -76,6 +90,13 @@ export default function VideoPage() {
           ))}
         </div>
       </section>
+
+      {/* Voice Agent (7th product) — বাংলা voiceover preview for Video */}
+      {mounted && voiceOpen && (
+        <div className="mx-auto my-6 w-full max-w-[520px]">
+          <VoiceAgentClient mode="video" />
+        </div>
+      )}
     </div>
   )
 }
