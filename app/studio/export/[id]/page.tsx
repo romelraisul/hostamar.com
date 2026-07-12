@@ -34,6 +34,7 @@ export default function ExportPage() {
           </p>
           <Link
             href="/hosting"
+            onClick={() => setHosted(true)}
             className="mt-4 block rounded-full bg-[#0E7C3A] px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#0A5A2B]"
           >
             {hosted ? '✓ হোস্ট করা হয়েছে' : 'Host this video'}
