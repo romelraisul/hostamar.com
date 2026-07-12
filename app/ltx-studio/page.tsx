@@ -9,7 +9,6 @@ interface VideoFile {
   modifiedAt: string
 }
 
-const SAMPLES_DIR = path.join(process.cwd(), 'public', 'videos', 'ltx-samples')
 const MODEL_NAME = 'LTX-Video 2B v0.9.8 (Distilled fp8)'
 const MODEL_FILE = 'ltx-video-2b-v0.9.8-distilled-fp8.safetensors'
 const MODEL_SIZE_GB = 4.16
@@ -23,6 +22,9 @@ const PROMPTS = [
 ]
 
 async function listSampleVideos(): Promise<VideoFile[]> {
+  // Compute lazily (not at module top-level) so Vercel's serverless Lambda
+  // never evaluates process.cwd()/fs at import time.
+  const SAMPLES_DIR = path.join(process.cwd(), 'public', 'videos', 'ltx-samples')
   try {
     const entries = await fs.readdir(SAMPLES_DIR)
     const files = await Promise.all(
