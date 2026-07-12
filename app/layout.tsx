@@ -5,8 +5,7 @@ import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
 import ThemeToggle from '@/components/ThemeToggle'
 import SupportWidget from '@/components/SupportWidget'
-import AppHeader from '@/components/layout/AppHeader'
-import AppFooter from '@/components/layout/AppFooter'
+import ChromeGuard from '@/components/layout/ChromeGuard'
 import { LocaleProvider } from '@/lib/locale-context'
 import { cookies } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
@@ -229,9 +228,7 @@ export default async function RootLayout({
       <body>
         <Providers>
           <LocaleProvider locale={locale}>
-          <AppHeader />
-          <main className="min-h-[60vh]">{children}</main>
-          <AppFooter />
+          <ChromeGuard>{children}</ChromeGuard>
           <ThemeToggle />
           <SupportWidget />
           </LocaleProvider>
