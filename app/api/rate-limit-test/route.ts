@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const store = new Map<string, number[]>();
@@ -49,4 +51,4 @@ export async function GET(req: NextRequest) {
       },
     }
   );
-}
+}

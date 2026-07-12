@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -46,4 +48,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+}

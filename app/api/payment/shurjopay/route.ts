@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 // ============================================================================
 // POST /api/payment/shurjopay — shurjoPay webhook / IPN handler
 // ============================================================================
@@ -64,4 +66,4 @@ export async function GET() {
     sandbox: process.env.SHURJOPAY_SANDBOX !== 'false',
     docs: 'POST with shurjoPay webhook payload to process payments',
   })
-}
+}

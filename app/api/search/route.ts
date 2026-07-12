@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { LRUCache } from '@/lib/cache'
@@ -155,4 +157,4 @@ export async function POST(req: NextRequest) {
     console.error('[search] Error:', error.message)
     return NextResponse.json({ error: 'Search failed' }, { status: 500 })
   }
-}
+}

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getQueue, QUEUE_NAMES } from '@/lib/queue';
 
@@ -148,4 +150,4 @@ function mapStateToStatus(state: string): string {
     default:
       return 'unknown';
   }
-}
+}

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
@@ -47,4 +49,4 @@ export async function POST(req: NextRequest) {
     console.error('Queue worker error:', error?.message || error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
-}
+}

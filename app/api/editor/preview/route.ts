@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 
@@ -88,4 +90,4 @@ Respond in JSON format:
       { status: 200 }
     )
   }
-}
+}
