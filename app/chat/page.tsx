@@ -1,10 +1,17 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+// Voice agent is client-only (uses WebRTC / document) — never SSR it.
+const VoiceAgentClient = dynamic(() => import("@/components/voice/VoiceAgentClient"), { ssr: false });
 
 const App = () => {
   const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const captions = [
     "🔥 শুক্রবার স্পেশাল! ঢাকার সেরা কাচ্চি বিরিয়ানি মাত্র ২৯৯ টাকায়! পরিবার নিয়ে চলে আসুন আজই। #বিরিয়ানিলাভার #ঢাকাফুড",
@@ -75,6 +82,9 @@ const App = () => {
               <a href="#demo" className="font-bn inline-flex h-[46px] px-6 rounded-full bg-white border border-zinc-200 font-medium items-center gap-2 hover:bg-zinc-50 transition">
                 <span className="h-5 w-5 rounded-full bg-zinc-900 text-white grid place-items-center text-[10px]">▶</span> ডেমো দেখুন
               </a>
+              <button onClick={() => setVoiceOpen((v) => !v)} className="font-bn inline-flex h-[46px] px-6 rounded-full bg-[#E4312B] text-white font-semibold items-center gap-2 hover:bg-[#c92a25] transition">
+                <span className="h-5 w-5 rounded-full bg-white/15 grid place-items-center text-[10px]">🎙️</span> ভয়েস মোড
+              </button>
             </div>
 
             <div className="flex items-center gap-4 mt-8">
@@ -421,8 +431,16 @@ const App = () => {
         </div>
       </section>
 
+      {/* Voice Agent (7th product) — Chat voice mode */}
+
+      {mounted && voiceOpen && (
+        <div className="fixed bottom-5 right-5 z-50 w-[340px] max-w-[calc(100vw-2.5rem)]">
+          <VoiceAgentClient mode="chat" />
+        </div>
+      )}
+
       {/* Footer */}
-      
+
     </div>
   );
 };
