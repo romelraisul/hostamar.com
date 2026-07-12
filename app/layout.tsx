@@ -168,8 +168,19 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-    const locale = (cookieStore.get('locale')?.value || 'en') as Locale
+  // Read locale from cookie. During Vercel's build-time static prerender of the
+  // special /404 and /500 routes, `cookies()` throws "Dynamic server usage",
+  // which cascades into Next's internal /_error page (imports `Html` from
+  // next/document) and crashes the build with "<Html> should not be imported
+  // outside of pages/_document". Guard it so the prerender completes with the
+  // default locale instead of throwing.
+  let locale: Locale = 'en'
+  try {
+    const cookieStore = await cookies()
+    locale = (cookieStore.get('locale')?.value || 'en') as Locale
+  } catch {
+    locale = 'en'
+  }
     const isBengali = locale === 'bn'
     const htmlFontClass = isBengali ? bengali.variable : ''
 
