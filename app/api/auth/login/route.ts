@@ -4,7 +4,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { comparePassword, signToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
+import { validateBody, toErrorResponse, zEmail } from '@/lib/api/validator'
+import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+
+const loginSchema = z.object({
+  email: zEmail,
+  password: z.string().min(8).max(128),
+  tenant: z.string().regex(/^[a-z0-9-]+$/).optional(),
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +25,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    let body: { email: string; password: string; tenant?: string }
+    try {
+      body = await validateBody(request, loginSchema)
+    } catch (e) {
+      return toErrorResponse(e)
+    }
+
     const { email, password } = body
 
     // SSO enforcement (procurement line 1): if the email domain belongs to an
