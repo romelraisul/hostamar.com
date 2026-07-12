@@ -717,3 +717,25 @@ model HarnessSession {
 
   @@index([createdAt])
 }
+
+// ============================================================================
+// Goal: end-objective the dynamic loop works toward. GoalRunner ticks hourly,
+// measures real KPIs, and creates/updates AutonomousTasks to close the gap.
+// Self-healed at runtime by lib/autonomy/ensure-goal-schema.ts (pooled Neon
+// rejects DDL in the build sandbox, same pattern as the harness tables).
+// ============================================================================
+model Goal {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  objective   String
+  kpiTarget   Json
+  kpiCurrent  Json
+  strategy    Json?
+  status      String   @default("active") // active | paused | achieved
+  iterations  Int      @default(0)
+  maxIter     Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+}

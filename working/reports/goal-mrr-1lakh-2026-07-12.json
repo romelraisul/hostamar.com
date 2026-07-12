@@ -1,0 +1,43 @@
+{
+  "iteration": 4,
+  "slug": "mrr-1lakh",
+  "objective": "Achieve MRR ৳100,000 from Business plan ৳3500 (28 paying users) by optimizing SEO, content, RAG, and checkout conversion for Bangladeshi SMEs",
+  "kpiCurrent": {
+    "mrr": 0,
+    "payingUsers": 0,
+    "contentCount": 0,
+    "qdrantPoints": 7,
+    "updatedAt": "2026-07-12T11:40:07.321Z"
+  },
+  "gap": {
+    "mrr": 100000,
+    "payingUsers": 28
+  },
+  "reasoning": "Heuristic (Ollama unavailable): close gap by increasing content volume, forcing SEO audit, and keeping RAG fresh.",
+  "actions": [
+    {
+      "type": "create_task",
+      "slug": "seo-2026-09-01-content",
+      "prompt": "Write 2 Bengali SEO blog posts targeting \"hostamar bkash hosting\" and \"bangla ai video maker\" to drive Business-plan signups. Publish to content/blog/*.mdx and link from /pricing.",
+      "priority": "high",
+      "estimatedImpact": "Top-of-funnel SME traffic for Business plan"
+    },
+    {
+      "type": "run_task",
+      "slug": "seo-engine-weekly",
+      "prompt": "Run SEO audit now and surface the highest-impact on-page fixes for /pricing and /features to lift Business-plan conversion.",
+      "priority": "high",
+      "estimatedImpact": "Conversion lift on existing traffic"
+    },
+    {
+      "type": "run_task",
+      "slug": "chatbot-rag-sync",
+      "prompt": "Re-sync support/Bangla knowledge into Qdrant so the RAG chatbot deflects billing tickets and improves trust signals.",
+      "priority": "med",
+      "estimatedImpact": "Higher trust/retention for paid users"
+    }
+  ],
+  "kpiForecast": "Gap ৳1,00,000 remaining; actions target content + conversion.",
+  "achieved": false,
+  "at": "2026-07-12T11:40:07.347Z"
+}
