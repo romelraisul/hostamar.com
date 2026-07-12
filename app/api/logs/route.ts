@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getLogFiles, readLogFile, searchLogs } from '@/lib/logger';
 import type { LogLevel } from '@/lib/logger';
@@ -80,4 +82,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+}

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 
 const SEARXNG_BASE = process.env.SEARXNG_BASE_URL || 'http://localhost:5013'

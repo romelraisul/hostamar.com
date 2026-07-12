@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 
 // Simple queue API using Neon PostgreSQL (no Upstash needed)
@@ -84,4 +86,4 @@ export async function GET(req: NextRequest) {
     console.error('Queue fetch error:', error?.message || error)
     return NextResponse.json({ error: 'Failed to load queue' }, { status: 500 })
   }
-}
+}

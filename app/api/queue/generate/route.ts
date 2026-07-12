@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/get-auth-user';
 import { enqueueVideoGeneration, type VideoGenerationJobData } from '@/lib/queue';
@@ -104,4 +106,4 @@ export async function GET(_req: NextRequest) {
       { status: 500 }
     );
   }
-}
+}
