@@ -117,37 +117,6 @@ const productJsonLd = {
   },
 }
 
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Hostamar কি HostSeba/ExonHost এর মতো?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'না। ওরা শুধু হোস্টিং দেয়। আমরা দিই AI মার্কেটিং ভিডিও + হোস্টিং। ৳2000 এ হোস্টিং + 100 ভিডিও।',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'bKash দিয়ে পেমেন্ট করা যাবে?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'হ্যাঁ। bKash, Nagad, Rocket - সব। USD কার্ড লাগে না। 30 সেকেন্ডে একটিভ।',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'ফ্রি তে কি ওয়াটারমার্ক থাকবে?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Free তে ছোট ওয়াটারমার্ক থাকবে। ৳2000 প্ল্যানে থাকবে না।',
-      },
-    },
-  ],
-}
-
 const orgJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -211,10 +180,6 @@ export default async function RootLayout({
         <script
                   type="application/ld+json"
                   dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-                />
-                <script
-                  type="application/ld+json"
-                  dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
                 />
                 <script
                   type="application/ld+json"
