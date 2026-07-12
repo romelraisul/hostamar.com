@@ -20,6 +20,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { email, password } = body
 
+    // SSO enforcement (procurement line 1): if the email domain belongs to an
+    // org that enforces SAML SSO, password login is disabled — redirect to IdP.
+    const domain = email.split('@')[1]?.toLowerCase()
+    if (domain) {
+      const ssoOrg = await prisma.organization.findFirst({
+        where: { domain, ssoEnforced: true },
+        include: { samlConnection: true },
+      })
+      if (ssoOrg && ssoOrg.samlConnection) {
+        return NextResponse.json(
+          {
+            error: 'sso_required',
+            message: `Your organization enforces SSO. Please sign in with ${ssoOrg.name}.`,
+            ssoTenant: ssoOrg.slug,
+            ssoLoginUrl: `/api/auth/saml/login?tenant=${encodeURIComponent(ssoOrg.slug)}`,
+          },
+          { status: 403 }
+        )
+      }
+    }
+
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
@@ -92,4 +113,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+}
