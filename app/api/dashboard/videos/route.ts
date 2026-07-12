@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import prisma from '@/lib/prisma'
@@ -96,4 +98,4 @@ export async function DELETE(request: NextRequest) {
     console.error('Video deletion error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}

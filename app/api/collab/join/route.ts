@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { joinSession } from '@/lib/collab'
@@ -45,4 +47,4 @@ export async function POST(req: NextRequest) {
     console.error('Failed to join collab session:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
@@ -91,4 +93,4 @@ export async function GET(req: NextRequest) {
     console.error('Pending bKash payments error:', error?.message || error)
     return NextResponse.json({ error: 'Failed to load' }, { status: 500 })
   }
-}
+}

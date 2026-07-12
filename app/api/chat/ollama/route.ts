@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'

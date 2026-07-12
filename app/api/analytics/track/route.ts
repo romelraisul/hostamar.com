@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { trackPageView, trackEvent } from '@/lib/analytics'
 
@@ -34,4 +36,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
-}
+}

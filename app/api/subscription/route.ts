@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-config'
@@ -146,4 +148,4 @@ export async function GET() {
     console.error('Subscription GET error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
-}
+}

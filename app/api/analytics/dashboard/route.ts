@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { getAnalytics } from '@/lib/analytics'
 
@@ -12,4 +14,4 @@ export async function GET() {
       { status: 500 }
     )
   }
-}
+}

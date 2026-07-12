@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server';
 import { execSync } from 'child_process';
 
@@ -171,4 +173,4 @@ export async function GET() {
     // Prometheus-compatible numeric status values
     metrics,
   });
-}
+}
