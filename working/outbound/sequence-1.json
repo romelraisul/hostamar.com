@@ -1,0 +1,57 @@
+{
+  "sequence": "sequence-1",
+  "name": "Daraz Seller 7-day pain-anchored outbound",
+  "icp": "daraz-seller",
+  "durationDays": 9,
+  "channels": ["email", "linkedin"],
+  "anchor": {
+    "painMonthly": 8000,
+    "hostamarMonthly": 3500,
+    "savingsMonthly": 4500,
+    "currency": "BDT"
+  },
+  "placeholders": {
+    "shopName": "Qdrant company research",
+    "productCount": "Daraz/FB scrape",
+    "reelCount": "FB page scrape",
+    "topProduct": "Qdrant / order-volume research",
+    "loomLink": "auto-generated 45s Hostamar Video render",
+    "name": "contact enrichment",
+    "roiSavings": "computed by ROICalculator: reels*agencyCost - 3500"
+  },
+  "filledBy": "GoalRunner create_task outbound-daraz-seller-20 + Qdrant (never manual)",
+  "touches": [
+    {
+      "day": 1,
+      "channel": "email",
+      "subject": "{shopName} — {productCount} products, {reelCount} reels?",
+      "body": "Saw {shopName} has {productCount} products but only {reelCount} reels. I made one reel for {topProduct} in 30 seconds — {loomLink}. Hostamar does this for all your products, hosting included, for the ৳3500 you already split across ExonHost + CapCut + ChatGPT.",
+      "asset": "45s personalized Loom",
+      "personalization": "Qdrant company research"
+    },
+    {
+      "day": 3,
+      "channel": "linkedin",
+      "message": "Did the Loom land? Made a {topProduct} reel for {shopName} — happy to make one more for your top seller. 30s each, hosting + chat in the same ৳3500."
+    },
+    {
+      "day": 5,
+      "channel": "email",
+      "subject": "You'd save ৳{roiSavings}/mo",
+      "body": "Quick math for {shopName}: at your reel volume you'd save ৳{roiSavings}/mo vs paying an agency ৳500/reel — plus you drop ExonHost, CapCut, ChatGPT into one ৳3500 bill. ROI screenshot attached.",
+      "asset": "ROI calculator screenshot (/pricing)"
+    },
+    {
+      "day": 7,
+      "channel": "linkedin",
+      "message": "Social proof: an Aarong seller {name} made 30 reels last week on Hostamar — all with bKash checkout links baked in. Want the same setup for {shopName}?"
+    },
+    {
+      "day": 9,
+      "channel": "email",
+      "subject": "Closing the file for {shopName}",
+      "body": "Closing your file for now, {name} — but I'll keep a hosting slot open for {shopName} for a week. If the ৳8000+/mo across 5 tools ever gets tiring, one ৳3500 Hostamar bill replaces all of them. Reply and I'll reactivate.",
+      "type": "breakup"
+    }
+  ]
+}

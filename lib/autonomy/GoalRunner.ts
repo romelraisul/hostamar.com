@@ -136,6 +136,21 @@ async function askModel(state: GoalState): Promise<{ reasoning: string; actions:
 function heuristicDecision(state: GoalState): { reasoning: string; actions: GoalAction[]; kpiForecast: string } {
   const actions: GoalAction[] = []
   const gapMrr = Number(state.gap.mrr ?? 0)
+
+  // Large MRR gap → we don't just make more content, we go outbound where the
+  // ICP lives (Daraz sellers). Creates a targeted outbound task GoalRunner can
+  // run; placeholders ({shopName},{topProduct}...) are filled from Qdrant.
+  if (gapMrr > 50000) {
+    actions.push({
+      type: 'create_task',
+      slug: 'outbound-daraz-seller-20',
+      prompt:
+        'Run outbound sequence working/outbound/sequence-1.json against 20 Daraz sellers (50+ orders/mo, FB 5k+). For each: research {shopName}/{productCount}/{topProduct} from Qdrant, render a 45s Bangla Loom, send Day1 email anchoring ৳8000+/mo of 5 tools vs ৳3500 all-in. Track replies as SupportEvent leads.',
+      priority: 'high',
+      estimatedImpact: `Close ৳${gapMrr.toLocaleString('en-IN')} MRR gap via ICP-1 Daraz outbound (৳3500/paying user)`,
+    })
+  }
+
   if (state.signals.contentCount < 5) {
     actions.push({
       type: 'create_task',
