@@ -118,6 +118,35 @@ const FAQS = [
 
 export default function PricingPage() {
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly')
+  const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null)
+
+  // Real bKash checkout: no mock. POST create-checkout -> 302 to bkashURL.
+  async function startCheckout(plan: string) {
+    if (plan === 'free' || plan === 'enterprise') {
+      // free -> signup; enterprise -> sales contact
+      window.location.href = plan === 'free' ? `/signup?plan=${plan}` : '/contact?plan=enterprise'
+      return
+    }
+    setCheckoutPlan(plan)
+    try {
+      const res = await fetch('/api/billing/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.bkashURL) {
+        // not signed in or bKash misconfigured -> fall back to signup
+        window.location.href = `/signup?plan=${plan}`
+        return
+      }
+      window.location.href = data.bkashURL
+    } catch {
+      window.location.href = `/signup?plan=${plan}`
+    } finally {
+      setCheckoutPlan(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#FCFCF9] text-zinc-900">
@@ -222,18 +251,32 @@ export default function PricingPage() {
                 </div>
 
                 <div className="mt-auto">
-                  <Link
-                    href={`/signup?plan=${p.id}`}
-                    className={`flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[14px] font-semibold transition ${
-                      p.ctaVariant === 'primary'
-                        ? 'bg-[#0E7C3A] text-white hover:bg-[#0c6a31] shadow-[0_8px_20px_-10px_rgba(14,124,58,0.6)]'
-                        : p.ctaVariant === 'dark'
-                        ? 'bg-zinc-900 text-white hover:bg-black'
-                        : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200'
-                    }`}
-                  >
-                    {p.cta}
-                  </Link>
+                  {p.id === 'free' || p.id === 'enterprise' ? (
+                    <Link
+                      href={`/signup?plan=${p.id}`}
+                      className={`flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[14px] font-semibold transition ${
+                        p.ctaVariant === 'primary'
+                          ? 'bg-[#0E7C3A] text-white hover:bg-[#0c6a31] shadow-[0_8px_20px_-10px_rgba(14,124,58,0.6)]'
+                          : p.ctaVariant === 'dark'
+                          ? 'bg-zinc-900 text-white hover:bg-black'
+                          : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {p.cta}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => startCheckout(p.id)}
+                      disabled={checkoutPlan !== null}
+                      className={`flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[14px] font-semibold transition disabled:opacity-60 ${
+                        p.ctaVariant === 'primary'
+                          ? 'bg-[#0E7C3A] text-white hover:bg-[#0c6a31] shadow-[0_8px_20px_-10px_rgba(14,124,58,0.6)]'
+                          : 'bg-zinc-900 text-white hover:bg-black'
+                      }`}
+                    >
+                      {checkoutPlan === p.id ? 'bKash-এ নিয়ে যাওয়া হচ্ছে…' : `Pay with bKash — ${p.cta}`}
+                    </button>
+                  )}
                   {popular && (
                     <p className="bangla mt-3 text-center text-[11px] leading-4 text-zinc-500">
                       ৭ দিন ফ্রি • Cancel anytime • bKash এ পে করুন
