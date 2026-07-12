@@ -1,7 +1,10 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
-
+// NOTE: runtime intentionally NOT 'edge'. next/og's ImageResponse under the
+// edge runtime pulls in `Html` from next/document during Vercel's build-time
+// prerender of /404 and /500, crashing with "<Html> should not be imported
+// outside of pages/_document". Node.js runtime renders the OG image fine and
+// avoids that internal prerender crash.
 export const alt = 'Hostamar - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE'
 export const size = {
   width: 1200,
