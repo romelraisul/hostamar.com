@@ -561,6 +561,43 @@ model RateLimitEvent {
   @@index([ip, createdAt])
 }
 
+// ============================================================================
+// Support system (PR #3) — 3-tier automated support.
+// SupportEvent: every Tier1 automated check result / Tier2 escalation.
+// Incident: Tier3 incident response + on-call (created when a fix needs human
+//   approval or is destructive). Timeline is stored as JSON[] on the Incident.
+// ============================================================================
+model SupportEvent {
+  id         String   @id @default(cuid())
+  tier       Int      @default(1) // 1 = auto-resolved, 2 = needs triage
+  service    String // app | postgres | redis | livekit | nginx | saml
+  check      String // the check name that fired
+  action     String // the auto-fix attempted, if any
+  result      String // resolved | failed | escalated | pending
+  detail     String? // logs tail / error message
+  resolvedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([tier, createdAt])
+  @@index([service, createdAt])
+}
+
+model Incident {
+  id              String   @id @default(cuid())
+  severity        String   @default("SEV2") // SEV1 | SEV2 | SEV3
+  status          String   @default("open") // open | ack | resolved
+  service         String
+  title           String
+  timeline        Json[] // append-only: { at, actor, action, result }
+  onCallCustomerId String?
+  createdAt       DateTime @default(now())
+  resolvedAt      DateTime?
+
+  @@index([status, severity])
+  @@index([createdAt])
+}
+
 model BetaInvite {
   id              String     @id @default(cuid())
   code            String     @unique
