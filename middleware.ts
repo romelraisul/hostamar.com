@@ -38,7 +38,7 @@ async function verifyTokenEdge(token: string): Promise<{ id: string; email: stri
 export async function middleware(request: NextRequest) {
   // Check for custom JWT auth token (set by /api/auth/login)
   const authToken = request.cookies.get('auth_token')?.value
-  const { pathname } = request.nextUrl
+  const pathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
 
   // Track API request metrics (skip metrics endpoint to avoid recursion)
   if (pathname.startsWith('/api/') && pathname !== '/api/metrics') {
@@ -88,11 +88,24 @@ export async function middleware(request: NextRequest) {
         '/api/dev/chat',
         '/api/email/setup-brevo',
         '/api/debug/env',
+        '/api/support-chat',   // self-hosted Ollama L1 support, public
         '/api/auth/twitter/connect',
         '/api/metrics',
         '/api/invoices',   // server-to-server invoice generation (triggered by webhook)
+        '/api/payment/verify',   // payment gateway callback — must be reachable without a session
+        '/api/internal/provision',   // self-guarded by INTERNAL_API_KEY header (server-to-server)
       ]
-  if (publicApiPaths.some((ap) => pathname.startsWith(ap))) {
+  if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    return NextResponse.next()
+  }
+
+  // Self-guarded server-to-server / webhook paths (no cookie auth possible):
+  // guarded by INTERNAL_API_KEY at the route, exactly like /api/internal/provision.
+  const selfGuardedPaths = [
+    '/api/harness/run',       // harness plan/execute — x-internal-api-key
+    '/api/telegram/webhook',  // Telegram bot callback (cannot carry our session cookie)
+  ]
+  if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
   }
 

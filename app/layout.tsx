@@ -1,17 +1,28 @@
 import './globals.css'
-import { Inter, Noto_Sans_Bengali } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
 import ThemeToggle from '@/components/ThemeToggle'
+import SupportWidget from '@/components/SupportWidget'
 import { LocaleProvider } from '@/lib/locale-context'
 import { cookies } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
 
-const inter = Inter({ subsets: ['latin'] })
-const notoBengali = Noto_Sans_Bengali({
-  subsets: ['bengali'],
+// The root layout reads `cookies()` (request data), so the entire app is
+// dynamic. Force it explicitly to prevent Next from attempting static
+// prerender of nested client pages (which crashes on context providers
+// during prerender with "Cannot read properties of null (reading
+// 'useContext')"). This is a rendering-strategy setting, not a logic change.
+export const dynamic = 'force-dynamic'
+
+// Self-hosted Bengali font (no build-time Google Fonts fetch — Vercel's
+// prerender subprocess can't reach fonts.googleapis.com, which previously
+// triggered a Pages-Router fallback error page that crashed on <Html>).
+const bengali = localFont({
+  src: './fonts/NotoSansBengali-Regular.woff2',
   variable: '--font-bengali',
+  weight: '400',
   display: 'swap',
 })
 
@@ -160,7 +171,7 @@ export default async function RootLayout({
   const cookieStore = await cookies()
     const locale = (cookieStore.get('locale')?.value || 'en') as Locale
     const isBengali = locale === 'bn'
-    const htmlFontClass = isBengali ? notoBengali.variable : ''
+    const htmlFontClass = isBengali ? bengali.variable : ''
 
     return (
       <html lang={locale} dir="ltr" className={htmlFontClass}>
@@ -207,6 +218,7 @@ export default async function RootLayout({
           <LocaleProvider locale={locale}>
           {children}
           <ThemeToggle />
+          <SupportWidget />
           </LocaleProvider>
         </Providers>
 
