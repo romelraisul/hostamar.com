@@ -38,6 +38,28 @@ export async function measureMRR(): Promise<MrRMetrics> {
     /* Subscription table missing or unreachable — return 0s */
   }
 
+  // Fallback: if the Subscription table has no active business plans yet,
+  // derive paying users from real Payments in the last 30 days. Payment.status
+  // is 'paid' or 'completed' across the codebase; organizationId is nullable
+  // (PR d backfill) so we intentionally do NOT scope by it here.
+  if (payingUsers === 0) {
+    try {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      payingUsers = await prisma.payment.count({
+        where: { status: { in: ['paid', 'completed'] }, createdAt: { gte: since } },
+      })
+      if (mrr === 0 && payingUsers > 0) {
+        const paidAgg = await prisma.payment.aggregate({
+          _sum: { amount: true },
+          where: { status: { in: ['paid', 'completed'] }, createdAt: { gte: since } },
+        })
+        mrr = Math.round(paidAgg._sum.amount || 0)
+      }
+    } catch {
+      /* Payment table missing or unreachable — leave 0s */
+    }
+  }
+
   const qdrantPoints = await countQdrantPoints().catch(() => 0)
   const contentCount = countContentMdx()
   const reportsCount = countReports()
