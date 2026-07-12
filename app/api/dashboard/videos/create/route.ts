@@ -12,6 +12,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // PR d: resolve tenant for this customer (may be undefined pre-membership).
+    const { getCurrentOrg } = await import('@/lib/tenancy/tenant')
+    const orgId = await getCurrentOrg(authUser.id).catch(() => undefined)
+
     const body = await request.json()
     const { title, topic, description, language = 'bn' } = body
 
@@ -59,6 +63,7 @@ export async function POST(request: Request) {
         status: 'processing',
         url: '',
         fileSize: 0,
+        ...(orgId ? { organizationId: orgId } : {}),
       },
     })
 
@@ -94,4 +99,4 @@ export async function POST(request: Request) {
     console.error('Video creation error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}

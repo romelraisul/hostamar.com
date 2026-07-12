@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
+import { verifyToken, signTokenWithOrg } from '@/lib/auth'
+import { getCurrentOrg, withTenant } from '@/lib/tenancy/tenant'
 import { prisma } from '@/lib/prisma'
 import { generateMarketingVideo, generateVideoScript, suggestVideoTopics } from '@/lib/video-generator'
 
@@ -33,14 +34,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
     }
 
-    // Check video limit
+    // Check video limit — tenant-scoped (PR d). If no org resolves yet, fall
+    // back to customerId-only (pre-membership customers keep working).
+    const orgId = await getCurrentOrg(decoded.id).catch(() => undefined)
     const subscription = customer.subscriptions?.[0]
-    const currentMonthVideos = await prisma.video.count({
-      where: {
-        customerId: customer.id,
-        createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
-      }
-    })
+    const monthWhere: any = { customerId: customer.id }
+    monthWhere.createdAt = { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
+    if (orgId) monthWhere.organizationId = orgId
+    const currentMonthVideos = await prisma.video.count({ where: monthWhere })
 
     const videoLimit = subscription?.videosPerMonth ?? 10
     if (currentMonthVideos >= videoLimit) {
@@ -61,7 +62,8 @@ export async function POST(req: NextRequest) {
         language: language || 'bn',
         duration: 30,
         status: 'processing',
-        customer: { connect: { id: customer.id } }
+        customer: { connect: { id: customer.id } },
+        ...(orgId ? { organizationId: orgId } : {}),
       }
     })
 
@@ -111,6 +113,9 @@ export async function GET(req: NextRequest) {
 
     const where: any = { customerId: decoded.id }
     if (status) where.status = status
+    // PR d: tenant-scoped — resolve org via customerId and add to where.
+    const listOrg = await getCurrentOrg(decoded.id).catch(() => undefined)
+    if (listOrg) where.organizationId = listOrg
 
     const [videos, total] = await Promise.all([
       prisma.video.findMany({
