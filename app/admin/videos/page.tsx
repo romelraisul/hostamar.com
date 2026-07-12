@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { Video, Play, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react'
