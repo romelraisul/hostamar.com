@@ -79,11 +79,30 @@ services:
     # start duplicate infra here — the deploy script runs the app container
     # directly on hostamar-network, reusing the live services + cloudflared tunnel.
     restart: unless-stopped
+    environment:
+      - INNGEST_DEV=1
+      - INNGEST_BASE_URL=http://inngest:8288
+      - INNGEST_SERVE_HOST=http://hostamar-app:3000
+    depends_on:
+      - inngest
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Inngest Dev Server — autonomous engine (self-hosted, zero-cost)
+  # ---------------------------------------------------------------------------
+  inngest:
+    image: node:20-alpine
+    container_name: hostamar-inngest
+    command: sh -c "npm i -g inngest-cli@latest && inngest dev -u http://hostamar-app:3000/api/inngest --host 0.0.0.0 --port 8288"
+    ports:
+      - "8288:8288"
+    networks:
+      - hostamar-network
+    restart: unless-stopped
 
   # ---------------------------------------------------------------------------
   # BullMQ Worker — video generation (runs alongside the app)

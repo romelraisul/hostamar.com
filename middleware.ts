@@ -98,6 +98,7 @@ export async function middleware(request: NextRequest) {
   const selfGuardedPaths = [
     '/api/harness/run',       // harness plan/execute — x-internal-api-key
     '/api/telegram/webhook',  // Telegram bot callback (cannot carry our session cookie)
+    '/api/inngest',           // Inngest serve endpoint (dev server self-validates its handshake)
   ]
   if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
