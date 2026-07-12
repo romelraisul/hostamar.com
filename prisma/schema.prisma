@@ -176,11 +176,14 @@ model Video {
   views     Int @default(0)
   shares    Int @default(0)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  organizationId String? // NEW (PR d): tenant FK (Decision A). Nullable for backfill, made required later.
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([customerId, status])
   @@index([createdAt])
+  @@index([organizationId])
+  @@index([customerId, organizationId])
 }
 
 model Preview {
@@ -319,9 +322,12 @@ model Payment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  organizationId String? // NEW (PR d): tenant FK (Decision A). Nullable for backfill.
+
   @@index([customerId, status])
   @@index([transactionId])
   @@index([createdAt])
+  @@index([organizationId])
 }
 
 model Transaction {
@@ -668,6 +674,7 @@ model ProvisioningLedger {
 // the build sandbox.
 // ============================================================================
 model AutonomousTask {
+  // GLOBAL (Decision B): intentionally has NO tenant FK — system automation, not tenant data.
   id         String    @id @default(cuid())
   slug       String    @unique
   owner      String    @default("system") // "system" | "customer:<email>"
@@ -687,6 +694,7 @@ model AutonomousTask {
 }
 
 model TaskRunLog {
+  // GLOBAL (Decision B): intentionally has NO tenant FK — system automation, not tenant data.
   id         String         @id @default(cuid())
   taskId     String
   task       AutonomousTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
@@ -730,6 +738,7 @@ model HarnessSession {
 // rejects DDL in the build sandbox, same pattern as the harness tables).
 // ============================================================================
 model Goal {
+  // GLOBAL (Decision B): intentionally has NO tenant FK — system automation, not tenant data.
   id         String   @id @default(uuid())
   slug       String   @unique
   objective  String
@@ -745,19 +754,21 @@ model Goal {
   @@index([status])
 }
 
-// VoiceCall: durable post-call artifact (transcript + summary + action items)
+// model VoiceCall — durable post-call artifact (transcript + summary + action items)
 // from the production Voice Agent (7th product). Written by processPostCall
 // and consumed by the Inngest voice.postcall.process worker + /dashboard/voice.
 model VoiceCall {
-  id          String   @id
-  userId      String?
-  transcript  Json
-  summary     String?
-  actionItems Json?
-  reportJson  Json?
-  createdAt   DateTime @default(now())
+  id             String   @id
+  userId         String? // customerId alias
+  organizationId String? // NEW (PR d): tenant FK via userId->customer->membership (Decision A)
+  transcript     Json
+  summary        String?
+  actionItems    Json?
+  reportJson     Json?
+  createdAt      DateTime @default(now())
 
   @@index([createdAt])
+  @@index([organizationId])
 }
 
 // ============================================================================
@@ -809,7 +820,9 @@ model Membership {
   customer       Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isDefault      Boolean      @default(false) // NEW (PR d): Decision A default org for tenant resolution
   role           String       @default("member") // owner | admin | member
 
   @@unique([customerId, organizationId])
+  @@index([customerId, isDefault])
 }

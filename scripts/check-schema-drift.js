@@ -71,7 +71,7 @@ function scanMigrations(tableSet) {
     scanned++
     const sql = fs.readFileSync(sqlPath, 'utf8')
     // ALTER TABLE "X" ADD [COLUMN] "Y"
-    const alterRe = /ALTER\s+TABLE\s+"(\w+)"\s+ADD\s+(?:COLUMN\s+)?["`]?(\w+)["`]?/gi
+    const alterRe = /ALTER\s+TABLE\s+"(\w+)"\s+ADD\s+(?:COLUMN\s+)?"?(\w+)"?/gi
     let a
     while ((a = alterRe.exec(sql))) {
       const table = a[1]
@@ -84,7 +84,7 @@ function scanMigrations(tableSet) {
       }
     }
     // CREATE TABLE "X"
-    const createRe = /CREATE\s+TABLE\s+"(\w+)"/gi
+    const createRe = /CREATE\s+TABLE\s+"(\w+)"?/gi
     let c
     while ((c = createRe.exec(sql))) {
       const table = c[1]

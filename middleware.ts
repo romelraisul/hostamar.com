@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // BUILD-CACHE-BUSTER: this file is deliberately clean (no @/lib/metrics-store
 // import) so the Edge bundle has zero Node-only deps. Do not re-add it here.
 
-async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string } | null> {
+async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string; orgId?: string } | null> {
   try {
     const secret = process.env.NEXTAUTH_SECRET
     if (!secret || !token) return null
@@ -27,6 +27,7 @@ async function verifyTokenEdge(token: string): Promise<{ id: string; email: stri
         email: String(payload.email),
         name: String(payload.name || ''),
         role: String(payload.role || 'customer'),
+        orgId: payload.orgId ? String(payload.orgId) : undefined,
       }
     }
     return null
@@ -129,6 +130,7 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-id', payload.id)
     requestHeaders.set('x-user-email', payload.email)
     requestHeaders.set('x-user-name', payload.name)
+    if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
     return NextResponse.next({
       request: { headers: requestHeaders },
     })

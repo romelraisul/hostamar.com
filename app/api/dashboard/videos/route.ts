@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
+import { withTenant, getOrgFromRequest } from '@/lib/tenancy/tenant'
 import prisma from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
@@ -24,14 +25,25 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
     const customerId = authUser?.id ?? fallbackCustomerId
 
+    // PR d: tenant-scoped — resolve org, then scope by both customerId AND organizationId.
+    let orgId: string | undefined
+    try {
+      orgId = await getOrgFromRequest(request, { customerId })
+    } catch {
+      orgId = undefined // fallbackCustomerId path / no membership: do not over-scope
+    }
+
+    const baseWhere = { customerId }
+    const scopedWhere = orgId ? withTenant(orgId, { where: baseWhere }).where : baseWhere
+
     const [videos, videoCount] = await Promise.all([
       prisma.video.findMany({
-        where: { customerId },
+        where: scopedWhere,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.video.count({ where: { customerId } }),
+      prisma.video.count({ where: scopedWhere }),
     ])
 
     return NextResponse.json({
@@ -65,10 +77,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Video ID is required' }, { status: 400 })
     }
 
-    // Verify the video belongs to this user
-    const video = await prisma.video.findFirst({
-      where: { id: videoId, customerId: authUser.id },
-    })
+    // Verify the video belongs to this user + tenant
+    const orgId = await getOrgFromRequest(request, { customerId: authUser.id }).catch(() => undefined)
+    const where: any = { id: videoId, customerId: authUser.id }
+    if (orgId) where.organizationId = orgId
+    const video = await prisma.video.findFirst({ where })
 
     if (!video) {
       return NextResponse.json({ error: 'Video not found' }, { status: 404 })
@@ -98,4 +111,4 @@ export async function DELETE(request: NextRequest) {
     console.error('Video deletion error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}
