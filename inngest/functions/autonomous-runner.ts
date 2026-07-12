@@ -76,6 +76,8 @@ export const autonomousRunner = inngest.createFunction(
             owner: task.owner,
             autoApprove: task.owner === 'system',
             fileRoot: '/app/working',
+            taskSlug: task.slug,
+            taskName: (cfg.name as string) || task.slug,
           })
           await prisma.taskRunLog.update({
             where: { id: log.id },
