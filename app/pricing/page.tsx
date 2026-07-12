@@ -2,9 +2,20 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Check, Sparkles, Zap, MessageSquare, Globe, Code2, Gamepad2, ShieldCheck } from 'lucide-react'
+import { Check, Sparkles, Zap, MessageSquare, Globe, Code2, Gamepad2, ShieldCheck, X } from 'lucide-react'
+import ROICalculator from '@/components/pricing/ROICalculator'
 
 const GREEN = '#0E7C3A'
+
+// Competitor anchor: pain of 5 separate tools (৳8000+/mo) vs Hostamar ৳3500 all-in.
+type AnchorRow = { tool: string; cost: string; value: string }
+const ANCHOR: AnchorRow[] = [
+  { tool: 'ExonHost', cost: '৳২,০০০/yr', value: 'শুধু হোস্টিং' },
+  { tool: 'CapCut Pro', cost: '$১০/mo', value: 'শুধু ভিডিও' },
+  { tool: 'ChatGPT Plus', cost: '$২০/mo', value: 'শুধু চ্যাট' },
+  { tool: 'BrowserStack', cost: '$২৯/mo', value: 'শুধু ব্রাউজার' },
+  { tool: 'Replit', cost: '$২০/mo', value: 'শুধু IDE' },
+]
 
 type Plan = {
   id: string
@@ -263,7 +274,68 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Comparison table */}
+      {/* Competitor anchor — pain of 5 tools (৳8000+/mo) vs ৳3500 all-in */}
+      <section className="mx-auto max-w-[1240px] px-4 md:px-6 py-12 md:py-16">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="bangla text-[28px] md:text-[36px] font-bold tracking-[-0.02em] leading-tight">
+            ৫টি টুলের বিল ৳৮,০০০+ — নাকি এক সাবস্ক্রিপশন ৳৩,৫০০?
+          </h2>
+          <p className="bangla mt-3 text-zinc-600">
+            আপনি এখনই আলাদা আলাদা টুলে যা দিচ্ছেন, তার সব একসাথে Hostamar Business-এ
+          </p>
+        </div>
+
+        <div className="mt-8 overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-[13.5px]">
+              <thead>
+                <tr className="border-b border-zinc-200 bg-[#FCFCF9]">
+                  <th className="px-5 py-4 text-left font-semibold text-zinc-500">টুল</th>
+                  <th className="px-5 py-4 text-center font-semibold text-zinc-900">খরচ</th>
+                  <th className="px-5 py-4 text-left font-semibold text-zinc-900">কী পান</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ANCHOR.map((r, idx) => (
+                  <tr key={r.tool} className={idx % 2 ? 'bg-[#FCFCF9]/50' : ''}>
+                    <td className="px-5 py-3.5 font-medium text-zinc-900">
+                      <span className="inline-flex items-center gap-2">
+                        <X className="h-3.5 w-3.5 text-red-400" /> {r.tool}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-center text-zinc-600">{r.cost}</td>
+                    <td className="bangla px-5 py-3.5 text-zinc-500">{r.value}</td>
+                  </tr>
+                ))}
+                <tr className="border-t-2 border-zinc-200 bg-red-50/60">
+                  <td className="bangla px-5 py-4 font-bold text-zinc-900">মোট খরচ (৫ টুল)</td>
+                  <td className="px-5 py-4 text-center font-bold text-red-500">৳৮,০০০+/mo</td>
+                  <td className="bangla px-5 py-4 text-zinc-500">আলাদা আলাদা, কেউ কারো সাথে কথা বলে না</td>
+                </tr>
+                <tr className="bg-[#0E7C3A]/8">
+                  <td className="px-5 py-4 font-bold text-[#0E7C3A]">
+                    <span className="inline-flex items-center gap-2">
+                      <Check className="h-4 w-4" /> Hostamar Business
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-center font-bold text-[#0E7C3A]">৳৩,৫০০/mo all-in</td>
+                  <td className="bangla px-5 py-4 font-semibold text-zinc-900">
+                    ৭টি প্রোডাক্ট + SSO + সাপোর্ট + স্ট্যাটাস পেজ
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="bangla border-t border-zinc-200 bg-white px-5 py-4 text-center text-[15px] font-semibold text-[#0E7C3A]">
+            ৳৮,০০০+ → ৳৩,৫০০ = প্রায় ৫৬% সাশ্রয়
+          </div>
+        </div>
+      </section>
+
+      {/* ROI calculator (bn-BD) */}
+      <ROICalculator />
+
+      {/* Plan-tier comparison table */}
       <section className="mx-auto max-w-[1240px] px-4 md:px-6 py-12 md:py-16">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="bangla text-[28px] md:text-[36px] font-bold tracking-[-0.02em] leading-tight">
