@@ -2,9 +2,20 @@ import { readFileSync } from 'fs'
 import path from 'path'
 import DevChat from '@/components/dev-chat'
 
+// Backend/Docker page: reads a file from the local filesystem at render time.
+// force-dynamic so Vercel's serverless build never statically evaluates the
+// filesystem read (which would crash the shared Lambda / other routes). On the
+// Docker API backend this renders normally; on Vercel it degrades gracefully.
+export const dynamic = 'force-dynamic'
+
 export default function KaiPage() {
-  const tasksPath = path.join(process.cwd(), 'product-tasks', 'kai-tasks.md')
-  const tasks = readFileSync(tasksPath, 'utf-8')
+  let tasks = ''
+  try {
+    const tasksPath = path.join(process.cwd(), 'product-tasks', 'kai-tasks.md')
+    tasks = readFileSync(tasksPath, 'utf-8')
+  } catch {
+    tasks = '(tasks file not available in this environment)'
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
