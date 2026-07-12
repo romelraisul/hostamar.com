@@ -1,18 +1,8 @@
-// This file configures the initialization of Sentry on the server.
-// The config you add here will be used whenever the server handles a request.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
-
-import * as Sentry from '@sentry/nextjs';
-
-const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
-
-if (SENTRY_DSN) {
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    // Adjust sampling rate in production
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    // Only enable in production to reduce noise
-    enabled: process.env.NODE_ENV === 'production',
-    environment: process.env.NODE_ENV || 'development',
-  });
-}
+// Sentry server config — INTENTIONALLY DISABLED.
+// @sentry/nextjs build-time instrumentation injects `Html` from
+// next/document into Next's internal /404 and /500 Pages-Router
+// fallback pages, which crashes Vercel's static prerender with
+// "<Html> should not be imported outside of pages/_document".
+// This file is kept as a no-op so runtime Sentry (if re-enabled) has
+// a config entry point, but no build-time wrapper is applied.
+export {}
