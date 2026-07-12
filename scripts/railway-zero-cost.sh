@@ -37,20 +37,20 @@ fi
 # are normalized to Railway's CLI form (e.g. "US East" -> "us-east").
 detect_regions() {
   local out regions
-  out="$(bash -lc "railway service scale --service '$SERVICE' sfo=1" 2>&1)"
+  out="$(bash -lc "railway service scale --service '$SERVICE' us-east=1" 2>&1)"
   regions="$(printf '%s' "$out" \
     | grep -i "regions:" | head -1 \
     | grep -oiE '[a-z-]+ ?[a-z]* \([0-9]+\)' \
-    | sed -E 's/ \([0-9]+\)//; s/ //g; y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/; s/ /-/g')"
+    | sed -E 's/ \([0-9]+\)//; s/ /-/g; y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')"
   echo "$regions"
 }
 
 # Read current replica count per region (region -> replicas), same source.
 current_replicas() {
-  bash -lc "railway service scale --service '$SERVICE' sfo=1" 2>/dev/null \
+  bash -lc "railway service scale --service '$SERVICE' us-east=1" 2>/dev/null \
     | grep -i "regions:" | head -1 \
     | grep -oiE '[a-z-]+ ?[a-z]* \([0-9]+\)' \
-    | sed -E 's/ ?\(([0-9]+)\)/ \1/; s/ //g; y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/; s/ /-/g'
+    | sed -E 's/ ?\(([0-9]+)\)/ \1/; s/ /-/g; y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/'
 }
 
 # Scale the service to $1 replicas in EVERY region (true $0 pause = all 0).
