@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// NOTE: Prometheus metrics (incrementRequestCount from @/lib/metrics-store)
-// are intentionally NOT tracked here. The Vercel Edge middleware only proxies
-// /api/* to the API server, and importing metrics-store breaks the Edge bundle
-// ("unsupported modules"). Real request metrics live on the API server (Docker).
+// BUILD-CACHE-BUSTER: this file is deliberately clean (no @/lib/metrics-store
+// import) so the Edge bundle has zero Node-only deps. Do not re-add it here.
 
 async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string } | null> {
   try {
