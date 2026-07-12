@@ -626,3 +626,94 @@ model GameSpin {
   @@index([customerId, createdAt])
   @@index([balanceId, createdAt])
 }
+
+// ============================================================================
+// Provisioning Ledger (B) — idempotent record of a payment + its provisioning
+// outcome. Decoupled from the legacy Payment/Transaction models so the
+// Agent->Provision bridge can be tested in isolation. No cPanel calls yet;
+// `provisioned_at` is set by the internal provision endpoint.
+// ============================================================================
+model ProvisioningLedger {
+  id             String   @id @default(uuid())
+  tranId         String   @unique
+  status         String   @default("pending") // pending | paid | provisioned | failed
+  customerEmail  String
+  plan           String
+  amount         Float?
+  gateway        String   @default("mock")
+  rawPayload     Json?
+  accountId      String?
+  loginUrl       String?
+  provisionedAt  DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([customerEmail])
+}
+
+// ============================================================================
+// Autonomous Harness (Phase 2) — Production agent engine.
+// AutonomousTask: scheduled background tasks (system + customer).
+// TaskRunLog: per-run execution record (status, output, approval link).
+// ApprovalQueue: human-in-the-loop approvals for risky tools (Telegram-gated).
+// Session: harness chat session (mode plan/execute, todos, memory ref).
+// Tables are also self-healed at runtime by lib/harness/ensure-harness-schema.ts
+// because `prisma migrate deploy` cannot run against the pooled Neon URL from
+// the build sandbox.
+// ============================================================================
+model AutonomousTask {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  owner       String   @default("system") // "system" | "customer:<email>"
+  schedule    String // cron expression, e.g. "*/10 * * * *"
+  enabled     Boolean  @default(true)
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  configJson  Json?
+  status      String   @default("idle") // idle | running | error | paused
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  runs        TaskRunLog[]
+
+  @@index([enabled, nextRunAt])
+  @@index([slug])
+}
+
+model TaskRunLog {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        AutonomousTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  startedAt   DateTime @default(now())
+  finishedAt  DateTime?
+  status      String   @default("running") // running | completed | failed | blocked
+  outputJson  Json?
+  error       String?
+  approvalId  String?
+
+  @@index([taskId, startedAt])
+}
+
+model ApprovalQueue {
+  id          String   @id @default(cuid())
+  toolName    String
+  argsJson    Json
+  status      String   @default("pending") // pending | approved | denied
+  createdAt   DateTime @default(now())
+  decidedAt   DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model HarnessSession {
+  id          String   @id @default(cuid())
+  mode        String   @default("plan") // plan | execute
+  todosJson   Json?
+  memoryRef   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+}

@@ -65,32 +65,19 @@ services:
       - "3000:3000"
     networks:
       - hostamar-network
-    environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://hostamar:***@postgres:5432/hostamar}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - R2_ENDPOINT=${R2_ENDPOINT}
-      - R2_ACCESS_KEY=${R2_ACCESS_KEY}
-      - R2_SECRET_KEY=${R2_SECRET_KEY}
-      - R2_BUCKET=${R2_BUCKET:-hostamar-videos}
-      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
-      - REPLICATE_API_KEY=${REPLICATE_API_KEY}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - NEXTAUTH_URL=${NEXTAUTH_URL}
-      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
-      - NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY}
-      - NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-model:8000}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-hostamar:latest}
-      - NODE_ENV=production
-    depends_on:
-      redis:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-      ollama:
-        condition: service_healthy
+    # All runtime env (incl. DATABASE_URL, secrets, NEXT_PUBLIC_*, (B) vars)
+    # comes from .env.production.local so the VPS deploy does not depend on the
+    # Vercel builder. Build-time NEXT_PUBLIC_* are also read from this file by
+    # Next during `next build` (it is not excluded by .dockerignore).
+    env_file:
+      - .env.production.local
+    volumes:
+      - harness-gen:/tmp/gen
+      - harness-working:/app/working
+    # NOTE: redis/postgres/ollama already run on hostamar-network as standalone
+    # containers (hostamar-redis, hostamar-postgres, hostamar-ollama). We do NOT
+    # start duplicate infra here — the deploy script runs the app container
+    # directly on hostamar-network, reusing the live services + cloudflared tunnel.
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -109,27 +96,16 @@ services:
     command: ["node", "dist/workers/video-generation.js"]
     networks:
       - hostamar-network
-    environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://hostamar:***@postgres:5432/hostamar}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - R2_ENDPOINT=${R2_ENDPOINT}
-      - R2_ACCESS_KEY=${R2_ACCESS_KEY}
-      - R2_SECRET_KEY=${R2_SECRET_KEY}
-      - R2_BUCKET=${R2_BUCKET:-hostamar-videos}
-      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
-      - REPLICATE_API_KEY=${REPLICATE_API_KEY}
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - NEXTAUTH_URL=${NEXTAUTH_URL}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://hostamar-model:8000}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-hostamar:latest}
-      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://flociops-searxng:8080}
-      - NODE_ENV=production
-    depends_on:
-      redis:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
+    # All runtime env (incl. DATABASE_URL, secrets, NEXT_PUBLIC_*, (B) vars)
+    # comes from .env.production.local so the VPS deploy does not depend on the
+    # Vercel builder. Build-time NEXT_PUBLIC_* are also read from this file by
+    # Next during `next build` (it is not excluded by .dockerignore).
+    env_file:
+      - .env.production.local
+    # NOTE: redis/postgres/ollama already run on hostamar-network as standalone
+    # containers (hostamar-redis, hostamar-postgres, hostamar-ollama). We do NOT
+    # start duplicate infra here — the deploy script runs the app container
+    # directly on hostamar-network, reusing the live services + cloudflared tunnel.
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -222,6 +198,10 @@ volumes:
   prometheus-data:
     driver: local
   grafana-data:
+    driver: local
+  harness-gen:
+    driver: local
+  harness-working:
     driver: local
 
 # ---------------------------------------------------------------------------

@@ -70,6 +70,11 @@ COPY --from=builder /app/node_modules ./node_modules
 # Copy compiled worker if present
 COPY --from=builder /app/dist ./dist
 
+# Safety copy of the harness CodeAct forked worker so candidate path
+# resolution (dev + standalone + absolute) always finds it.
+COPY --from=builder --chown=nextjs:nodejs /app/lib/tools/codeact-worker.js ./.next/standalone/lib/tools/codeact-worker.js
+COPY --from=builder --chown=nextjs:nodejs /app/lib/tools/codeact-worker.js /app/lib/tools/codeact-worker.js
+
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"

@@ -50,7 +50,22 @@ function wrapLookup(): void {
         return raw.call(dns, args[0], opts, callback)
     }
 
-    rawModule['lookup'] = patched
+    // Override dns.lookup. In Node 22+ `dns.lookup` is a getter-only accessor,
+    // so a plain assignment throws "Cannot set property lookup ... which has
+    // only a getter". Use defineProperty (works on both data + accessor props).
+    try {
+      Object.defineProperty(rawModule, 'lookup', {
+        configurable: true,
+        writable: true,
+        value: patched,
+      })
+    } catch {
+      try {
+        rawModule['lookup'] = patched
+      } catch {
+        // best-effort: resolver order below is enough for most cases
+      }
+    }
 
     // Pin global resolver order where supported (Node 16+).
     const r = dns as unknown as { setDefaultResultOrder?: (s: string) => void }
