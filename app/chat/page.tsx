@@ -5,7 +5,6 @@ const App = () => {
   const [yearly, setYearly] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-  const [mobileNav, setMobileNav] = useState(false);
 
   const captions = [
     "🔥 শুক্রবার স্পেশাল! ঢাকার সেরা কাচ্চি বিরিয়ানি মাত্র ২৯৯ টাকায়! পরিবার নিয়ে চলে আসুন আজই। #বিরিয়ানিলাভার #ঢাকাফুড",
@@ -46,47 +45,7 @@ const App = () => {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#FCFCF9]/80 border-b border-zinc-200/60">
-        <div className="mx-auto max-w-[1180px] px-4 sm:px-6 h-[68px] flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-[#0E7C3A] text-white grid place-items-center font-bold text-[18px] shadow-sm">হ</div>
-              <div className="leading-none">
-                <div className="font-bn font-bold text-[18px] tracking-tight">Hostamar</div>
-                <div className="font-en text-[11px] font-semibold tracking-widest text-zinc-500 -mt-0.5">CHAT</div>
-              </div>
-            </div>
-            <nav className="hidden md:flex items-center gap-7 text-[14px] font-bn font-medium text-zinc-600">
-              <a href="#features" className="hover:text-zinc-900 transition">টেমপ্লেট</a>
-              <a href="#pricing" className="hover:text-zinc-900 transition">প্রাইসিং</a>
-              <a href="#pricing" className="hover:text-zinc-900 transition flex items-center gap-1.5">
-                API <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-900 text-white">নতুন</span>
-              </a>
-            </nav>
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <a href="https://hostamar.com/generate" className="font-bn text-[14px] font-medium px-4 py-2 rounded-full hover:bg-zinc-100 transition">লগইন</a>
-            <a href="https://hostamar.com/generate" className="font-bn inline-flex items-center justify-center h-10 px-5 rounded-full bg-[#0E7C3A] text-white text-[14px] font-semibold shadow-[0_8px_20px_-12px_#0E7C3A] hover:bg-[#0c6a32] transition">
-              ফ্রি চ্যাট শুরু করুন
-            </a>
-          </div>
-
-          <button onClick={()=>setMobileNav(!mobileNav)} className="md:hidden h-9 w-9 grid place-items-center rounded-xl border border-zinc-200 bg-white">
-            <span className="space-y-1 block">
-              <span className="block h-0.5 w-4 bg-zinc-800"/><span className="block h-0.5 w-4 bg-zinc-800"/><span className="block h-0.5 w-3 bg-zinc-800"/>
-            </span>
-          </button>
-        </div>
-        {mobileNav && (
-          <div className="md:hidden border-t border-zinc-200 bg-white px-4 py-4 flex flex-col gap-3">
-            <a href="#features" className="font-bn py-2">টেমপ্লেট</a>
-            <a href="#pricing" className="font-bn py-2">প্রাইসিং</a>
-            <a href="#pricing" className="font-bn py-2">API</a>
-            <a href="https://hostamar.com/generate" className="font-bn mt-2 inline-flex h-11 items-center justify-center rounded-full bg-[#0E7C3A] text-white font-semibold">ফ্রি চ্যাট শুরু করুন</a>
-          </div>
-        )}
-      </header>
+      
 
       {/* Hero */}
       <section className="mx-auto max-w-[1180px] px-4 sm:px-6 pt-10 sm:pt-16 pb-8">
@@ -463,43 +422,7 @@ const App = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-white">
-        <div className="mx-auto max-w-[1180px] px-4 sm:px-6 py-10">
-          <div className="flex flex-col sm:flex-row justify-between gap-8">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-[#0E7C3A] text-white grid place-items-center font-bold">হ</div>
-                <span className="font-bn font-bold">Hostamar Chat</span>
-              </div>
-              <p className="font-bn text-[13px] text-zinc-500 mt-3 max-w-[300px] leading-6">বাংলাদেশের SME, স্টুডেন্ট ও ফ্রিল্যান্সারদের জন্য তৈরি AI চ্যাট। বাংলা বোঝে, বাংলায় কাজ করে।</p>
-              <div className="mt-4 inline-flex px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[12px] font-bn font-medium">🎁 Hostamar Video কিনলে Chat ফ্রি — অফার চলছে</div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-[13px] font-bn">
-              <div>
-                <div className="font-semibold mb-3">প্রোডাক্ট</div>
-                <div className="space-y-2 text-zinc-600"><div>টেমপ্লেট</div><div>প্রাইসিং</div><div>API ডকস</div></div>
-              </div>
-              <div>
-                <div className="font-semibold mb-3">সাপোর্ট</div>
-                <div className="space-y-2 text-zinc-600"><div>হেল্প সেন্টার</div><div>bKash রিফান্ড</div><div>প্রাইভেসি</div></div>
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <div className="font-semibold mb-3">পেমেন্ট</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {["bKash","Nagad","Rocket","Upay"].map(b=>(
-                    <span key={b} className="px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200 font-en text-[11px] font-semibold">{b}</span>
-                  ))}
-                </div>
-                <div className="mt-3 text-[11px] text-zinc-400 font-en">SSL Secured • 500+ users</div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-10 pt-6 border-t border-zinc-100 flex flex-col sm:flex-row justify-between gap-2 text-[12px] font-en text-zinc-400">
-            <span>© {new Date().getFullYear()} Hostamar. Made for Bangladesh.</span>
-            <span className="font-bn">বাংলায় কথা বলুন, কাজ করিয়ে নিন</span>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   );
 };

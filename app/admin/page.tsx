@@ -286,15 +286,7 @@ export default function AdminDashboard() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <header className="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"><Eye className="text-white w-5 h-5" /></div>
-            <span className="text-xl font-bold text-white tracking-tight">{t("admin.title") || "Admin Dashboard"}</span>
-          </div>
-          <button onClick={() => fetchDashboardData()} className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"><RefreshCw className="w-5 h-5" /></button>
-        </div>
-      </header>
+      
 
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 border border-white/10">

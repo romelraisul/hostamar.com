@@ -36,16 +36,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-      <header className="container mx-auto px-4 py-6">
-        <nav className="flex items-center gap-4">
-          <Link href="/" className="p-2 hover:bg-white/5 rounded-lg transition">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Hostamar.com
-          </div>
-        </nav>
-      </header>
+      
 
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto">
@@ -133,9 +124,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      <footer className="container mx-auto px-4 py-8 border-t border-white/10 text-center text-sm text-gray-500">
-        <p>{t('contact.copyright')}</p>
-      </footer>
+      
     </div>
   );
 }
