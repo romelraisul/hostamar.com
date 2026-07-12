@@ -4,7 +4,7 @@
   "description": "Hostamar.com - Cloud Hosting + AI Video Marketing Platform",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "NODE_ENV=production prisma generate && NODE_ENV=production next build",
     "start": "next start -p 3000 -H 0.0.0.0",
     "lint": "next lint",
     "db:migrate": "prisma migrate dev",
