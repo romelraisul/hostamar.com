@@ -822,11 +822,48 @@ model Organization {
   name        String
   domain      String?  @unique // acme.com — used for email-domain discovery
   ssoEnforced Boolean  @default(false)
+  oidcEnforced Boolean @default(false) // DC prisma: OIDC discovery + enforced login
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   samlConnection SamlConnection?
+  oidcConnection OidcConnection?
+  scimTokens     ScimToken[]
   members        Membership[]
+}
+
+// OIDC connection (tenant-scoped IdP), mirrors SamlConnection shape.
+// Jackson's _jackson_* tables hold the live OIDC crypto; this is the UI/config store.
+model OidcConnection {
+  id             String       @id @default(uuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  issuer        String // https://acme.okta.com/oauth2/default
+  clientId      String
+  clientSecretEncrypted String @db.Text // encrypted at rest
+  authorizationEndpoint String?
+  tokenEndpoint String?
+  userInfoEndpoint String?
+  jwksUri       String?
+  isActive      Boolean @default(false)
+  isTested      Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// SCIM 2.0 bearer token, one (rotatable) per organization.
+// Replaces Jackson's directory-sync token store — our Prisma is authoritative for
+// tenant isolation (decision: Customer/Video/Payment scoped via Membership hop).
+model ScimToken {
+  id           String   @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  token        String   @unique @default(cuid())
+  createdBy    String
+  createdAt    DateTime @default(now())
+
+  @@index([organizationId])
 }
 
 model SamlConnection {
