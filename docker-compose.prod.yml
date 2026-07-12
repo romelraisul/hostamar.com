@@ -1,231 +1,53 @@
-# =============================================================================
-# Hostamar — Production Docker Compose Stack
-# =============================================================================
-# Usage: docker compose -f docker-compose.prod.yml up -d --build
-# =============================================================================
-
+# Production override: self-hosted LiveKit SFU + Coturn TURN on the existing
+# $0 VPS stack (reuses hostamar-network, redis). No LiveKit Cloud bill.
+# Bring up with:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d livekit coturn
+# (or just `docker compose up -d` — it merges with the base file.)
 services:
-  # ---------------------------------------------------------------------------
-  # Redis 7 — BullMQ job queue backend
-  # ---------------------------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: hostamar-redis
+  livekit:
+    image: livekit/livekit-server:v1.8.4
+    container_name: hostamar-livekit
     restart: unless-stopped
-    networks:
-      - hostamar-network
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-
-  # ---------------------------------------------------------------------------
-  # PostgreSQL 16 — primary database (Neon in prod, local for dev/test)
-  # ---------------------------------------------------------------------------
-  postgres:
-    image: postgres:16-alpine
-    container_name: hostamar-postgres
-    restart: unless-stopped
-    networks:
-      hostamar-network:
-        aliases:
-          - postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-hostamar}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hostamar}
-      POSTGRES_DB: ${POSTGRES_DB:-hostamar}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hostamar}"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-
-  # ---------------------------------------------------------------------------
-  # Next.js App (API server + frontend)
-  # ---------------------------------------------------------------------------
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: hostamar-app
+    command: --config /etc/livekit.yaml
     ports:
-      - "3000:3000"
-    networks:
-      - hostamar-network
-    # All runtime env (incl. DATABASE_URL, secrets, NEXT_PUBLIC_*, (B) vars)
-    # comes from .env.production.local so the VPS deploy does not depend on the
-    # Vercel builder. Build-time NEXT_PUBLIC_* are also read from this file by
-    # Next during `next build` (it is not excluded by .dockerignore).
-    env_file:
-      - .env.production.local
-    volumes:
-      - harness-gen:/tmp/gen
-      - harness-working:/app/working
-    # NOTE: redis/postgres/ollama already run on hostamar-network as standalone
-    # containers (hostamar-redis, hostamar-postgres, hostamar-ollama). We do NOT
-    # start duplicate infra here — the deploy script runs the app container
-    # directly on hostamar-network, reusing the live services + cloudflared tunnel.
-    restart: unless-stopped
+      - "7880:7880"      # signaling HTTP + WS
+      - "7881:7881"      # RTC TCP fallback
+      - "7882-7887:7882-7887/udp"  # RTC UDP media — open these in firewall
+      - "7882-7887:7882-7887/tcp"
     environment:
-      - INNGEST_DEV=1
-      - INNGEST_BASE_URL=http://inngest:8288
-      - INNGEST_SERVE_HOST=http://hostamar-app:3000
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+      LIVEKIT_NODE_IP: "${VPS_PUBLIC_IP}"       # export VPS_PUBLIC_IP=$(curl -s ifconfig.me) before up
+      LIVEKIT_RTC_USE_EXTERNAL_IP: "true"
+      LIVEKIT_INTERNAL_URL: "${LIVEKIT_INTERNAL_URL:-ws://livekit:7880}"
+    volumes:
+      - ./infra/livekit/livekit.yaml:/etc/livekit.yaml:ro
     depends_on:
-      - inngest
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:7880/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
         max-size: "10m"
-        max-file: "3"
-
-  # ---------------------------------------------------------------------------
-  # Inngest Dev Server — autonomous engine (self-hosted, zero-cost)
-  # ---------------------------------------------------------------------------
-  inngest:
-    image: node:20-alpine
-    container_name: hostamar-inngest
-    command: sh -c "npm i -g inngest-cli@latest && inngest dev -u http://hostamar-app:3000/api/inngest --host 0.0.0.0 --port 8288"
-    ports:
-      - "8288:8288"
     networks:
       - hostamar-network
-    restart: unless-stopped
 
-  # ---------------------------------------------------------------------------
-  # BullMQ Worker — video generation (runs alongside the app)
-  # ---------------------------------------------------------------------------
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: hostamar-worker
-    command: ["node", "dist/workers/video-generation.js"]
-    networks:
-      - hostamar-network
-    # All runtime env (incl. DATABASE_URL, secrets, NEXT_PUBLIC_*, (B) vars)
-    # comes from .env.production.local so the VPS deploy does not depend on the
-    # Vercel builder. Build-time NEXT_PUBLIC_* are also read from this file by
-    # Next during `next build` (it is not excluded by .dockerignore).
-    env_file:
-      - .env.production.local
-    # NOTE: redis/postgres/ollama already run on hostamar-network as standalone
-    # containers (hostamar-redis, hostamar-postgres, hostamar-ollama). We do NOT
-    # start duplicate infra here — the deploy script runs the app container
-    # directly on hostamar-network, reusing the live services + cloudflared tunnel.
+  coturn:
+    image: coturn/coturn:4.6.2
+    container_name: hostamar-coturn
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # ---------------------------------------------------------------------------
-  # Ollama — local Docker Model Runner for AI inference
-  # ---------------------------------------------------------------------------
-  ollama:
-    image: ollama/ollama:latest
-    container_name: hostamar-ollama
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 24G
+    network_mode: host   # required for the UDP relay to bind correctly
+    command: -c /etc/coturn/turnserver.conf
     volumes:
-      - ollama-data:/root/.ollama
-    networks:
-      - hostamar-network
-    # qwen3.6:27b pulled into ollama-data volume. For NEW model pulls, switch to
-    # `network_mode: host` so the container can reach the public Ollama registry, do
-    # the pull, switch back to `hostamar-network`.
+      - ./infra/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
     environment:
-      - OLLAMA_HOST=0.0.0.0
-      - OLLAMA_MAX_LOADED_MODELS=1
-      - OLLAMA_KV_CACHE_TYPE=q8_0
-      - OLLAMA_NUM_PARALLEL=1
-      - OLLAMA_MAX_QUEUE=512
-      - OLLAMA_NOHISTORY=false
-      - OLLAMA_KEEP_ALIVE=5m0s
-    healthcheck:
-          test: ["CMD-SHELL", "ollama list || exit 1"]
-          interval: 30s
-          timeout: 5s
-          retries: 3
-
-  # ---------------------------------------------------------------------------
-  # Prometheus — Prometheus — Metrics collection & alerting
-  # ---------------------------------------------------------------------------
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: hostamar-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./prometheus/alerts:/etc/prometheus/alerts:ro
-      - prometheus-data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    restart: unless-stopped
-    networks:
-      - hostamar-network
-
-  # ---------------------------------------------------------------------------
-  # Grafana — Dashboards & visualization
-  # ---------------------------------------------------------------------------
-  grafana:
-    image: grafana/grafana-enterprise:latest
-    container_name: hostamar-grafana
-    ports:
-      - "3002:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - TURN_USER=hostamar:${COTURN_PASSWORD}
     depends_on:
-      - prometheus
-    restart: unless-stopped
-    networks:
-      - hostamar-network
+      - livekit
 
-# ---------------------------------------------------------------------------
-# Named Volumes
-# ---------------------------------------------------------------------------
-volumes:
-  redis-data:
-    driver: local
-  postgres-data:
-    driver: local
-  ollama-data:
-    driver: local
-  prometheus-data:
-    driver: local
-  grafana-data:
-    driver: local
-  harness-gen:
-    driver: local
-  harness-working:
-    driver: local
-
-# ---------------------------------------------------------------------------
-# Networks
-# ---------------------------------------------------------------------------
+# Reuse the base file's networks/volumes (hostamar-network is external).
 networks:
   hostamar-network:
     external: true

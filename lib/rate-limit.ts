@@ -116,6 +116,8 @@ export const RATE_LIMITS = (() => {
     },
     forgotPassword: DEFAULT_LIMITS.forgotPassword,
     apiGeneral: DEFAULT_LIMITS.apiGeneral,
+    // Voice token mint: 10/min per user (spec).
+    voiceToken: { bucket: 'voice.token', limit: 10, windowMs: 60 * 1000 },
   }
 })()
 
