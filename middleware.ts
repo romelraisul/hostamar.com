@@ -99,6 +99,7 @@ export async function middleware(request: NextRequest) {
     '/api/harness/run',       // harness plan/execute — x-internal-api-key
     '/api/telegram/webhook',  // Telegram bot callback (cannot carry our session cookie)
     '/api/inngest',           // Inngest serve endpoint (dev server self-validates its handshake)
+    '/api/webhooks/call-ended', // voice post-call webhook (server-to-server, no session cookie)
   ]
   if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
