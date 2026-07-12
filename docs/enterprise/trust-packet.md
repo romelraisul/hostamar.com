@@ -14,7 +14,10 @@
 | Tenant isolation audit (cross-tenant leak tests) | `__tests__/tenancy.leak.test.ts` | **988e14a** |
 | Input validation (API request validation) | `__tests__/api-validation.test.ts` | **dcddc73** |
 | Tenant isolation shipped (Organization = tenant, per-row FK) | `prisma/schema.prisma` + middleware | **b6ad042** |
-| Schema drift | `scripts/check-schema-drift.js` → **0 violations**, 12 migrations | (all above) |
+| SCIM 2.0 + OIDC (per-tenant provisioning) | `app/api/scim/v2/*`, `app/api/auth/oidc/*` | **8ddf15e** |
+| bKash tokenized checkout + Payment→Org money linkage | `lib/payment/bkash.ts`, `app/api/billing/*` | **65ee095** |
+| $0 self-hosted Voice (LiveKit + Coturn, survives reboot) | `docker-compose.prod.yml`, `scripts/rotate-turn-cert.sh` | **50b8c7e** |
+| Schema drift | `scripts/check-schema-drift.js` → **0 violations**, 14 migrations | (all above) |
 | 3-tier support + incident response | `lib/support/*`, `/admin/support/triage` | **b6ad042** |
 
 ## SAML SSO (per-tenant)
@@ -35,11 +38,10 @@
 - Payments via bKash / Nagad / Rocket (local rails) + USDT option.
 - Data residency: self-hosted infra (Postgres, Redis, app, nginx per `docker-compose.vps.yml`).
 
-## Verification gates (as of b6ad042)
-
+## Verification gates (as of 50b8c7e)
 - `tsc --noEmit` → 0 errors
 - `npm run lint` → 0 errors
-- `vitest run` → 11/11 passing
+- `vitest run` → 19/19 passing
 - schema drift → 0
 - `npm run build` → ✓ compiled, Middleware 25.8 kB
 
