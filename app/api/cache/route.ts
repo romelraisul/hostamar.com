@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { responseCache } from '@/lib/cache'
 import { verifyToken } from '@/lib/auth'
@@ -53,4 +55,4 @@ export async function DELETE(request: NextRequest) {
 
   responseCache.clear()
   return NextResponse.json({ success: true, message: 'Cache cleared' })
-}
+}

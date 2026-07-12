@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -95,4 +97,4 @@ export async function GET() {
     console.error('Stats fetch error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}

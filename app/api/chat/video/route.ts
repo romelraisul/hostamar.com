@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
@@ -131,4 +133,4 @@ Keep responses concise and practical. Use Bengali when the user writes in Bengal
     console.error('Chat API error:', error)
     return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 })
   }
-}
+}

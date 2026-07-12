@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
@@ -102,4 +104,4 @@ export async function POST(req: NextRequest) {
 
 function SSL_SANDBOX_CHECK() {
   return process.env.SSL_SANDBOX === 'true' && (!SSL_STORE_ID || SSL_STORE_ID === 'test')
-}
+}
