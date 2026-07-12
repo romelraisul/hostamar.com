@@ -95,3 +95,45 @@ export function isSsoEnforcedSession(org: { slug: string; ssoEnforced: boolean }
   if (!org.ssoEnforced) return false
   return ssoProvider === `saml:${org.slug}`
 }
+// the IdP's userInfo), link Membership. Stamps ssoProvider `oidc:<tenant>` so
+// middleware can enforce OIDC-only sessions for enforced orgs.
+export async function jitProvisionOidc(profile: SamlProfile, tenant: string): Promise<JitResult> {
+  const org = await prisma.organization.findUnique({ where: { slug: tenant } })
+  if (!org) throw new Error(`Unknown tenant: ${tenant}`)
+
+  const email = profile.email.toLowerCase()
+  const existing = await prisma.customer.findUnique({ where: { email } })
+  let customer = existing
+  let isNew = false
+  if (!customer) {
+    customer = await prisma.customer.create({
+      data: {
+        email,
+        name: [profile.firstName, profile.lastName].filter(Boolean).join(' ') || email,
+        password: `oidc-no-password-${crypto.randomUUID()}`,
+        emailVerified: new Date(),
+        ssoId: profile.nameId || email,
+        ssoProvider: `oidc:${tenant}`,
+      },
+    })
+    isNew = true
+  } else if (!customer.ssoProvider) {
+    customer = await prisma.customer.update({
+      where: { id: customer.id },
+      data: { ssoId: profile.nameId || email, ssoProvider: `oidc:${tenant}` },
+    })
+  }
+
+  const existingMembership = await prisma.membership.findUnique({
+    where: { customerId_organizationId: { customerId: customer.id, organizationId: org.id } },
+  })
+  let membershipCreated = false
+  if (!existingMembership) {
+    await prisma.membership.create({
+      data: { customerId: customer.id, organizationId: org.id, role: 'member' },
+    })
+    membershipCreated = true
+  }
+
+  return { customer, isNew, membershipCreated, orgSlug: tenant }
+}
