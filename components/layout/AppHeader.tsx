@@ -15,6 +15,7 @@ export const NAV_LINKS: { href: string; labelBn: string; labelEn: string }[] = [
   { href: '/features', labelBn: 'ফিচার', labelEn: 'Features' },
   { href: '/faq', labelBn: 'FAQ', labelEn: 'FAQ' },
   { href: '/contact', labelBn: 'যোগাযোগ', labelEn: 'Contact' },
+  { href: '/blog', labelBn: 'ব্লগ', labelEn: 'Blog' },
 ]
 
 export default function AppHeader() {
