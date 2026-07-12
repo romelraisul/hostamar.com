@@ -29,26 +29,7 @@ export default function App() {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#FCFCF9]/80 border-b border-zinc-200/60">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-6 h-[64px] flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <a href="#" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#0E7C3A] flex items-center justify-center text-white font-mono font-bold text-[16px]">{"</>"}</div>
-              <div className="leading-none">
-                <div className="font-en font-extrabold text-[16px] tracking-tight">Hostamar <span className="text-[#0E7C3A]">/dev</span></div>
-                <div className="font-mono text-[10px] tracking-widest text-zinc-500 -mt-0.5">BROWSER IDE</div>
-              </div>
-            </a>
-            <nav className="hidden md:flex items-center gap-6">
-              {nav.map(n => <a key={n} href={`#${n.toLowerCase()}`} className="font-en text-sm text-zinc-600 hover:text-zinc-900 transition">{n}</a>)}
-            </nav>
-          </div>
-          <div className="flex items-center gap-2">
-            <a href="https://hostamar.com/generate" className="hidden md:inline-flex font-en text-sm px-3 py-2 rounded-full hover:bg-zinc-100 transition">Log in</a>
-            <a href="https://hostamar.com/generate" className="inline-flex items-center justify-center font-bn font-semibold text-[14px] md:text-[15px] bg-[#0E7C3A] text-white px-4 md:px-5 h-9 md:h-10 rounded-full shadow-[0_6px_20px_-8px_#0E7C3A] hover:bg-[#0c6a32] transition">ফ্রি IDE চালু করুন</a>
-          </div>
-        </div>
-      </header>
+      
 
       {/* Hero */}
       <section className="max-w-[1200px] mx-auto px-4 md:px-6 pt-10 md:pt-20 pb-10 md:pb-16 grid lg:grid-cols-[1.05fr_1fr] gap-10 md:gap-12 items-start">
@@ -407,27 +388,7 @@ export default function Page() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-[#FCFCF9]">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-10 grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-8">
-          <div>
-            <div className="flex items-center gap-2.5"><div className="w-8 h-8 rounded-lg bg-[#0E7C3A] flex items-center justify-center text-white font-mono font-bold">{"</>"}</div><span className="font-en font-extrabold">Hostamar <span className="text-[#0E7C3A]">/dev</span></span></div>
-            <div className="font-bn text-[13px] text-zinc-600 mt-3 leading-relaxed max-w-[300px]">বাংলাদেশের ডেভেলপারদের জন্য ব্রাউজার IDE। VS Code, AI, Deploy — সব এক জায়গায়।</div>
-            <div className="mt-4 font-en text-[12px] text-zinc-500">© {new Date().getFullYear()} Hostamar. Made in Dhaka 🇧🇩</div>
-          </div>
-          {[
-            {h:"Product", l:[["Editor","#editor"],["Templates","#"],["Deploy","#deploy"],["Pricing","#pricing"]]},
-            {h:"Ecosystem", l:[["/hosting","/hosting"],["/chat","/chat"],["/browser","/browser"],["/video","/video"]]},
-            {h:"Support", l:[["Docs","#"],["Status 99.9%","#"],["bKash Help","#"],["Contact","#"]]},
-          ].map(col=>(
-            <div key={col.h}>
-              <div className="font-en font-semibold text-[13px] tracking-wide">{col.h}</div>
-              <ul className="mt-3 space-y-2">
-                {col.l.map(([label,href])=><li key={label}><a href={href} className="font-en text-[13px] text-zinc-600 hover:text-zinc-900">{label}</a></li>)}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </footer>
+      
     </div>
   );
 }
