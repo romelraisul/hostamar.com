@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Track request metrics for Prometheus
-import { incrementRequestCount } from '@/lib/metrics-store'
+// NOTE: Prometheus metrics (incrementRequestCount from @/lib/metrics-store)
+// are intentionally NOT tracked here. The Vercel Edge middleware only proxies
+// /api/* to the API server, and importing metrics-store breaks the Edge bundle
+// ("unsupported modules"). Real request metrics live on the API server (Docker).
 
 async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string } | null> {
   try {
@@ -39,11 +41,6 @@ export async function middleware(request: NextRequest) {
   // Check for custom JWT auth token (set by /api/auth/login)
   const authToken = request.cookies.get('auth_token')?.value
   const pathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
-
-  // Track API request metrics (skip metrics endpoint to avoid recursion)
-  if (pathname.startsWith('/api/') && pathname !== '/api/metrics') {
-    incrementRequestCount(request.method, pathname)
-  }
 
   // Static assets — always allow
   if (
