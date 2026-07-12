@@ -104,6 +104,10 @@ export async function middleware(request: NextRequest) {
     '/api/auth/saml/metadata', // SAML SP metadata (IdP fetch, no session cookie)
     '/api/auth/saml/acs',     // SAML ACS — IdP POST, cannot carry our session cookie
     '/api/auth/saml/callback', // SAML OAuth code exchange (cross-site redirect from IdP)
+    '/api/auth/oidc/authorize', // OIDC SP-initiated redirect (no session needed)
+    '/api/auth/oidc/login',     // OIDC IdP-initiated entry
+    '/api/auth/oidc/callback',  // OIDC code exchange (cross-site redirect from IdP)
+    '/api/scim/v2',             // SCIM 2.0 — Bearer-token server-to-server (no session cookie)
   ]
   if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
