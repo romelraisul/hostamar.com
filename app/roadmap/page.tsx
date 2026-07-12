@@ -1,8 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Navbar from '@/components/home/Navbar'
-import Footer from '@/components/home/Footer'
 import { PRODUCTS } from '@/lib/products'
 
 // Pull roadmap directly from lib/products.ts (single source of truth).
@@ -21,7 +19,7 @@ function itemsForQuarter(q: string) {
 export default function RoadmapPage() {
   return (
     <div className="min-h-screen bg-[#FCFCF9] text-[#18181B]">
-      <Navbar />
+      
       <main className="mx-auto max-w-[1120px] px-5 py-16">
         <div className="mb-12 text-center">
           <span className="inline-block rounded-full bg-[#0E7C3A]/10 px-3 py-1 text-sm font-semibold text-[#0E7C3A]">
@@ -107,7 +105,7 @@ export default function RoadmapPage() {
           </Link>
         </div>
       </main>
-      <Footer />
+      
     </div>
   )
 }

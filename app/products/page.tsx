@@ -22,34 +22,7 @@ export default function ProductsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50 to-white">
       {/* ============ HERO ============ */}
-      <header className="border-b bg-white">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-blue-600">← হোস্টামার</Link>
-          <Link href="/signup?ref=products" className="px-5 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
-            ফ্রি ট্রায়াল
-          </Link>
-        </div>
-
-        <section className="max-w-5xl mx-auto px-4 py-16 text-center">
-          <div className="inline-block mb-4 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-            🛠️ ছয়টি পণ্য, একটি প্ল্যাটফর্ম
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5 leading-tight">
-            আপনার হাতে <span className="text-blue-600">৬টা ব্যবসার টুল</span>,<br />
-            একটি অ্যাকাউন্টে।
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            AI ভিডিও বানান, ওয়েবসাইট হোস্ট করুন, চ্যাটে সহায়তা নিন, ব্রাউজারে গবেষণা করুন, গেম খেলুন, কোড লিখুন — সব <b>বাংলা</b>।
-          </p>
-
-          {/* Quick status row */}
-          <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
-            <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full">✅ {live.length} Live</span>
-            <span className="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full">🧪 {beta.length} Beta</span>
-            <span className="px-3 py-1 bg-slate-50 text-slate-700 border border-slate-200 rounded-full">🔜 {planned.length} Coming Soon</span>
-          </div>
-        </section>
-      </header>
+      
 
       {/* ============ PRODUCT GRID ============ */}
       <section className="max-w-6xl mx-auto px-4 py-12">
@@ -149,9 +122,7 @@ export default function ProductsPage() {
       </section>
 
       {/* ============ FOOTER NOTE ============ */}
-      <footer className="container mx-auto px-4 py-8 text-sm text-gray-500 text-center border-t">
-        © 2026 hostamar.com — বাংলাদেশে তৈরি 🇧🇩
-      </footer>
+      
     </main>
   )
 }

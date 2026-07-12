@@ -107,19 +107,7 @@ export const dynamic = 'force-dynamic'
 export default function DevToolsPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-12 text-slate-100">
-      <header className="mb-12">
-        <span className="inline-block px-3 py-1 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 text-xs mb-3">
-          Dev Toolbox
-        </span>
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          Hostamar Dev Tools
-        </h1>
-        <p className="text-slate-300 max-w-2xl">
-          Local-first tools wired into the Hostamar stack: autonomous code agent,
-          headless browser automation, and an online research agent — every one
-          pointed at our <code className="font-mono text-fuchsia-300">kilo.ai</code> gateway.
-        </p>
-      </header>
+      
 
       <section className="mb-12 rounded-lg border border-fuchsia-700/40 bg-fuchsia-900/10 p-6">
         <h2 className="text-xl font-semibold text-fuchsia-300 mb-3">

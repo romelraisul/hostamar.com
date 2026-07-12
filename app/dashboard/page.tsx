@@ -12,6 +12,7 @@ import {
   Clock
 } from 'lucide-react'
 import { useLocale } from '@/lib/locale-context'
+import ProductsGrid from '@/components/dashboard/ProductsGrid'
 
 interface DashboardStats {
   videos: { total: number; thisMonth: number }
@@ -182,6 +183,9 @@ export default function DashboardPage() {
           </a>
         </div>
       </div>
+
+      {/* 6-Products interop hub — one subscription, six products */}
+      <ProductsGrid />
 
       {/* Recent Videos */}
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
