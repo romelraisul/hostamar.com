@@ -90,6 +90,13 @@ logs/
 .env*.bak.*
 *.env.bak
 
+# Local TURN/TLS certs (populated by scripts/rotate-turn-cert.sh) — gitignored.
+certs/
+*.pem
+*.key
+# Rendered coturn conf (holds TURN_STATIC_AUTH_SECRET) — generated at deploy.
+infra/coturn/turnserver.rendered.conf
+
 # Local-only ComfyUI model artifacts (hundreds of MB each; never push)
 comfyui/models/
 
