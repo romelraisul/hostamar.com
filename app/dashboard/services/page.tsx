@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { Plus, Server, Cloud, Terminal, HardDrive, Power, MoreVertical, Trash2, RefreshCw } from 'lucide-react'

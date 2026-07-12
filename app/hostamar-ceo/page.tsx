@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 import { useState } from 'react'
 
 type CalendarEvent = { day: string; platform: string; kind: string; time: string }
