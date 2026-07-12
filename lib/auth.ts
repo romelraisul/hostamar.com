@@ -18,12 +18,32 @@ export function signToken(
   return jwt.sign({ ...payload, ...(extra || {}) }, JWT_SECRET, { expiresIn: '7d' })
 }
 
-export function verifyToken(token: string): { id: string; email: string; name: string; role?: string } | null {
+// verifyToken carries an optional orgId claim (tenant cache from PR d).
+export interface VerifyPayload {
+  id: string
+  email: string
+  name: string
+  role?: string
+  orgId?: string
+}
+
+export function verifyToken(token: string): VerifyPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { id: string; email: string; name: string; role?: string }
+    return jwt.verify(token, JWT_SECRET) as VerifyPayload
   } catch {
     return null
   }
+}
+
+// Re-sign a verified payload with a resolved orgId (call once per session, cache in JWT).
+export function signTokenWithOrg(
+  payload: VerifyPayload,
+  orgId: string
+): string {
+  return signToken(
+    { id: payload.id, email: payload.email, name: payload.name, role: payload.role },
+    { orgId }
+  )
 }
 
 type AuthUser = {
