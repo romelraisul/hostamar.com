@@ -1,9 +1,10 @@
 // ============================================================================
-// measureMRR — real KPI measurement for the dynamic Goal loop.
-// Computes MRR + paying-users (Business plan ৳3500) from the live DB, plus
-// best-effort context signals (Qdrant points, content/reports counts).
-// Every probe is wrapped so a missing table / unreachable service never throws
-// — the goal loop must keep ticking even when a dependency is down.
+// measureMRR — REAL KPI measurement for the dynamic Goal loop.
+// MRR + paying orgs + paying users are derived from real bKash Payments
+// (status='paid'), linked to tenants via Payment.organizationId (isolation
+// pays off — money is attributable to the org). Subscription table is a
+// fallback only. Content/qdrant signals kept as best-effort context.
+// Every probe is wrapped so a missing table / unreachable service never throws.
 // ============================================================================
 import { prisma } from '@/lib/prisma'
 import fs from 'fs'
@@ -12,7 +13,9 @@ import path from 'path'
 export interface MrRMetrics {
   mrr: number
   payingUsers: number
+  payingOrgs: number
   currency: string
+  paidCount: number
   qdrantPoints: number
   contentCount: number
   reportsCount: number
@@ -22,41 +25,40 @@ export interface MrRMetrics {
 const QDRANT_URL = (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
 const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || 'hostamar_kb'
 
+const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
+
 export async function measureMRR(): Promise<MrRMetrics> {
+  // ---- REAL MRR from bKash Payments (status='paid') ----
   let mrr = 0
   let payingUsers = 0
+  let payingOrgs = 0
+  let paidCount = 0
   try {
-    const agg = await prisma.subscription.aggregate({
-      _sum: { price: true },
-      where: { plan: 'business', status: 'active' },
+    const since = new Date(Date.now() - THIRTY_DAYS)
+    const paidPayments = await prisma.payment.findMany({
+      where: { status: 'paid', createdAt: { gte: since } },
+      select: { amount: true, organizationId: true, customerId: true },
     })
-    mrr = Math.round(agg._sum.price || 0)
-    payingUsers = await prisma.subscription.count({
-      where: { plan: 'business', status: 'active' },
-    })
+    mrr = Math.round(paidPayments.reduce((sum, p) => sum + (p.amount || 0), 0))
+    paidCount = paidPayments.length
+    payingUsers = new Set(paidPayments.map((p) => p.customerId)).size
+    // isolation pays off: orgId linkage makes MRR per-tenant measurable
+    payingOrgs = new Set(paidPayments.map((p) => p.organizationId).filter(Boolean) as string[]).size
   } catch {
-    /* Subscription table missing or unreachable — return 0s */
+    /* Payment table missing or unreachable — fall through to Subscription */
   }
 
-  // Fallback: if the Subscription table has no active business plans yet,
-  // derive paying users from real Payments in the last 30 days. Payment.status
-  // is 'paid' or 'completed' across the codebase; organizationId is nullable
-  // (PR d backfill) so we intentionally do NOT scope by it here.
+  // ---- Fallback: Subscription (active business plans) ----
   if (payingUsers === 0) {
     try {
-      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      payingUsers = await prisma.payment.count({
-        where: { status: { in: ['paid', 'completed'] }, createdAt: { gte: since } },
+      const agg = await prisma.subscription.aggregate({
+        _sum: { price: true },
+        where: { plan: 'business', status: 'active' },
       })
-      if (mrr === 0 && payingUsers > 0) {
-        const paidAgg = await prisma.payment.aggregate({
-          _sum: { amount: true },
-          where: { status: { in: ['paid', 'completed'] }, createdAt: { gte: since } },
-        })
-        mrr = Math.round(paidAgg._sum.amount || 0)
-      }
+      mrr = mrr || Math.round(agg._sum.price || 0)
+      payingUsers = await prisma.subscription.count({ where: { plan: 'business', status: 'active' } })
     } catch {
-      /* Payment table missing or unreachable — leave 0s */
+      /* Subscription table missing or unreachable — leave 0s */
     }
   }
 
@@ -67,7 +69,9 @@ export async function measureMRR(): Promise<MrRMetrics> {
   return {
     mrr,
     payingUsers,
+    payingOrgs,
     currency: 'BDT',
+    paidCount,
     qdrantPoints,
     contentCount,
     reportsCount,
