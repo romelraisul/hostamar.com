@@ -28,12 +28,23 @@ const COMPOSE_SERVICE: Partial<Record<ServiceName, string>> = {
   app: 'app',
   postgres: 'postgres',
   redis: 'redis',
+  // Voice stack runs in docker-compose.prod.yml (separate self-hosted VPS),
+  // not the app VPS — use that compose file for the auto-fix.
+  voice: 'coturn livekit',
+  livekit: 'livekit',
+  coturn: 'coturn',
 }
+
+// The compose file used to restart the voice stack. Defaults to the prod voice
+// override; override via SUPPORT_COMPOSE_FILE if your deploy names it elsehow.
+const VOICE_COMPOSE = process.env.VOICE_COMPOSE_FILE || 'docker-compose.prod.yml'
 
 function autorestartCommand(service: ServiceName): string | null {
   const target = COMPOSE_SERVICE[service]
   if (!target) return null
-  const compose = process.env.SUPPORT_COMPOSE_FILE || 'docker-compose.vps.yml'
+  const compose = service === 'voice' || service === 'livekit' || service === 'coturn'
+    ? VOICE_COMPOSE
+    : (process.env.SUPPORT_COMPOSE_FILE || 'docker-compose.vps.yml')
   return `docker compose -f ${compose} restart ${target}`
 }
 
@@ -67,7 +78,11 @@ async function countRecentFailures(service: ServiceName): Promise<number> {
 }
 
 async function lastLogsTail(service: ServiceName): Promise<string> {
-  const container = `hostamar-${service === 'app' ? 'app' : service}`
+  const container = service === 'voice' || service === 'livekit'
+    ? 'hostamar-livekit'
+    : service === 'coturn'
+      ? 'hostamar-coturn'
+      : `hostamar-${service === 'app' ? 'app' : service}`
   if (!process.env.DOCKER_HOST && !process.env.RUNNING_IN_DOCKER) return '(docker logs unavailable in this environment)'
   try {
     const { stdout } = await execAsync(`docker logs ${container} --tail 50 2>&1`, { timeout: 10_000 })

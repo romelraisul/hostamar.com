@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { executePayment, validatePaymentId } from '@/lib/payment/bkash'
-import { validateBody, toErrorResponse, deepSanitize } from '@/lib/api/validator'
+import { validateBody, deepSanitize } from '@/lib/api/validator'
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { inngest } from '@/inngest/client'
 import { z } from 'zod'

@@ -19,7 +19,7 @@ import { prisma } from '@/lib/prisma'
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export type CheckStatus = 'green' | 'yellow' | 'red'
-export type ServiceName = 'app' | 'postgres' | 'redis' | 'livekit' | 'nginx' | 'saml'
+export type ServiceName = 'app' | 'postgres' | 'redis' | 'livekit' | 'coturn' | 'voice' | 'nginx' | 'saml'
 
 export interface CheckResult {
   service: ServiceName
@@ -188,6 +188,65 @@ async function checkLivekit(): Promise<CheckResult> {
   }
 }
 
+// Voice path probe (TASK 7): LiveKit signaling + Coturn TURN relay.
+// - livekit HTTP must answer (signaling + WS).
+// - coturn UDP/TCP 3478 must be reachable; if the static auth secret is set we
+//   assert the TURN creds are configured (else WebRTC will silently fail on
+//   Bangladesh CGNAT). We do NOT open a raw socket — just probe reachability +
+//   config sanity, which is enough for Tier1 to decide whether to restart.
+async function checkVoiceTurn(): Promise<CheckResult> {
+  const start = Date.now()
+  try {
+    // 1) LiveKit signaling.
+    const lkUrl = process.env.LIVEKIT_URL || 'http://localhost:7880'
+    const lkRes = await withTimeout(fetch(lkUrl, { method: 'GET' }))
+    const lkOk = lkRes.status < 500
+    if (!lkOk) throw new Error(`livekit signaling down (status ${lkRes.status})`)
+
+    // 2) Coturn: TURN secret must be present, and the relay port reachable.
+    const turnSecret = process.env.TURN_STATIC_AUTH_SECRET
+    if (!turnSecret) {
+      // No static secret set — TURN creds missing → WebRTC will fail on NAT.
+      throw new Error('TURN_STATIC_AUTH_SECRET not set — TURN credentials unavailable')
+    }
+    // Lightweight reachability: TCP connect to 127.0.0.1:3478 (turnutils may
+    // not be installed in the app image; a socket connect proves the port is
+    // bound by coturn).
+    const reachable = await new Promise<boolean>((resolve) => {
+      const net = require('node:net')
+      const sock = net.createConnection({ host: '127.0.0.1', port: 3478 })
+      const done = (v: boolean) => {
+        sock.destroy()
+        resolve(v)
+      }
+      sock.once('connect', () => done(true))
+      sock.once('error', () => done(false))
+      setTimeout(() => done(false), 1500)
+    })
+    if (!reachable) throw new Error('coturn 3478 not reachable — TURN relay down')
+
+    return {
+      service: 'voice',
+      check: `livekit ${lkUrl} + coturn 3478 + TURN secret`,
+      status: 'green',
+      ok: true,
+      latencyMs: Date.now() - start,
+      detail: 'livekit signaling up, coturn reachable, TURN secret configured',
+      checkedAt: new Date().toISOString(),
+    }
+  } catch (e) {
+    return {
+      service: 'voice',
+      check: 'livekit+coturn probe',
+      status: 'red',
+      ok: false,
+      latencyMs: Date.now() - start,
+      detail: String((e as Error)?.message || e),
+      checkedAt: new Date().toISOString(),
+    }
+  }
+}
+
 async function checkSaml(): Promise<CheckResult> {
   // SAML ACS error-rate over last 10m. The audit data lives in whatever table
   // records ACS attempts; we probe defensively and degrade to yellow if the
@@ -233,14 +292,15 @@ async function checkSaml(): Promise<CheckResult> {
 }
 
 export async function runAllChecks(): Promise<CheckResult[]> {
-  const [app, postgres, redis, livekit, saml] = await Promise.all([
+  const [app, postgres, redis, livekit, voice, saml] = await Promise.all([
     checkApp(),
     checkPostgres(),
     checkRedis(),
     checkLivekit(),
+    checkVoiceTurn(),
     checkSaml(),
   ])
-  return [app, postgres, redis, livekit, saml]
+  return [app, postgres, redis, livekit, voice, saml]
 }
 
 export async function runCheck(service: ServiceName): Promise<CheckResult> {
@@ -253,6 +313,8 @@ export async function runCheck(service: ServiceName): Promise<CheckResult> {
       return checkRedis()
     case 'livekit':
       return checkLivekit()
+    case 'voice':
+      return checkVoiceTurn()
     case 'saml':
       return checkSaml()
     default:

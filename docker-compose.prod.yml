@@ -8,11 +8,13 @@ services:
     container_name: hostamar-livekit
     restart: unless-stopped
     command: --config /etc/livekit.yaml
+    # WebRTC relay range widened to 200 UDP ports for ~50 concurrent sessions.
     ports:
-      - "7880:7880"      # signaling HTTP + WS
-      - "7881:7881"      # RTC TCP fallback
-      - "7882-7887:7882-7887/udp"  # RTC UDP media — open these in firewall
+      - "7880:7880"                 # signaling HTTP + WS
+      - "7881:7881"                 # RTC TCP fallback
+      - "7882-7887:7882-7887/udp"   # RTC UDP media (per-session, low count)
       - "7882-7887:7882-7887/tcp"
+      - "50000-50200:50000-50200/udp"  # TURN media relay range (coturn + SFU)
     environment:
       LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
       LIVEKIT_NODE_IP: "${VPS_PUBLIC_IP}"       # export VPS_PUBLIC_IP=$(curl -s ifconfig.me) before up
@@ -20,13 +22,18 @@ services:
       LIVEKIT_INTERNAL_URL: "${LIVEKIT_INTERNAL_URL:-ws://livekit:7880}"
     volumes:
       - ./infra/livekit/livekit.yaml:/etc/livekit.yaml:ro
+      - ./certs:/certs:ro            # TLS for the embedded TURN (TASK 7)
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+      coturn:
+        condition: service_started   # TURN must be up before SFU announces it
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:7880/"]
       interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 20s
     logging:
       driver: json-file
       options:
@@ -38,14 +45,30 @@ services:
     image: coturn/coturn:4.6.2
     container_name: hostamar-coturn
     restart: unless-stopped
-    network_mode: host   # required for the UDP relay to bind correctly
+    network_mode: host   # required for the UDP relay to bind correctly + external-ip detection
     command: -c /etc/coturn/turnserver.conf
     volumes:
-      - ./infra/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - ./infra/coturn/turnserver.rendered.conf:/etc/coturn/turnserver.conf:ro
+      - ./certs:/certs:ro            # TLS (5349) + cert rotation (TASK 7)
     environment:
-      - TURN_USER=hostamar:${COTURN_PASSWORD}
-    depends_on:
-      - livekit
+      # TURN_STATIC_AUTH_SECRET is read by turnserver.conf via envsubst-style
+      # substitution is NOT supported by coturn — we render the conf at deploy
+      # time (scripts/render-turn-conf.sh) from these vars. The container reads
+      # the rendered file. Keep both for parity with the long-form cred mech.
+      TURN_STATIC_AUTH_SECRET: "${TURN_STATIC_AUTH_SECRET}"
+      PUBLIC_IP: "${VPS_PUBLIC_IP}"
+      TURN_DOMAIN: "${LIVEKIT_TURN_DOMAIN:-turn.hostamar.com}"
+    # Healthcheck: run a TURN alloc against the static secret and assert success.
+    healthcheck:
+      test: ["CMD-SHELL", "turnutils_uclient -p 3478 -W ${TURN_STATIC_AUTH_SECRET} -u healthcheck -v 127.0.0.1 2>&1 | grep -q 'success' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 2
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
 
 # Reuse the base file's networks/volumes (hostamar-network is external).
 networks:

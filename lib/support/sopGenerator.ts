@@ -123,6 +123,24 @@ function main() {
     fs.writeFileSync(path.join(SOPS_DIR, `${name}.md`), md)
     console.log(`[sop] wrote working/sops/${name}.md`)
   }
+  // Guarantee voice-stack SOPs (livekit + coturn) are generated from the prod
+  // compose even when the primary SUPPORT_COMPOSE_FILE is the app VPS file.
+  const prodFile = path.join(ROOT, 'docker-compose.prod.yml')
+  if (fs.existsSync(prodFile)) {
+    try {
+      const prod = yaml.parse(fs.readFileSync(prodFile, 'utf8'))
+      for (const name of ['livekit', 'coturn']) {
+        if (prod?.services?.[name]) {
+          const info = extractService(prod.services[name], name)
+          const md = renderSop(info) + '\n> Voice stack runs in `docker-compose.prod.yml` on the self-hosted VPS.\n> Tier1 auto-fix restarts `coturn livekit` via that compose file.\n'
+          fs.writeFileSync(path.join(SOPS_DIR, `${name}.md`), md)
+          console.log(`[sop] wrote working/sops/${name}.md (from prod)`)
+        }
+      }
+    } catch (e) {
+      console.warn('[sop] could not parse docker-compose.prod.yml for voice SOPs:', (e as Error).message)
+    }
+  }
   // Also write an index.
   const index = `# SOP Index\n\n${names.map((n) => `- [${n}](./${n}.md)`).join('\n')}\n`
   fs.writeFileSync(path.join(SOPS_DIR, 'README.md'), index)
