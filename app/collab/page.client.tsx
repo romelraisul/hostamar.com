@@ -3,14 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from '@/lib/locale-context'
-import CollabHeader from '@/components/collab/CollabHeader'
 import CollabHero from '@/components/collab/CollabHero'
 import CollabActions from '@/components/collab/CollabActions'
 import MessageBanner from '@/components/collab/MessageBanner'
 import CreateSessionForm from '@/components/collab/CreateSessionForm'
 import JoinSessionForm from '@/components/collab/JoinSessionForm'
 import SessionList from '@/components/collab/SessionList'
-import CollabFooter from '@/components/collab/CollabFooter'
 
 interface Session {
   id: string
@@ -154,7 +152,7 @@ export default function CollabPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-      <CollabHeader user={user} />
+      
 
       <main className="container mx-auto px-4 py-12 max-w-5xl">
         <CollabHero />
@@ -195,7 +193,7 @@ export default function CollabPage() {
         />
       </main>
 
-      <CollabFooter />
+      
     </div>
   )
 }

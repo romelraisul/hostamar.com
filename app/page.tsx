@@ -41,54 +41,7 @@ export default function App() {
       `}</style>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-zinc-100">
-        <div className="mx-auto max-w-[1120px] px-5 lg:px-0 h-[64px] flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-[16px]" style={{background: GREEN}}>H</div>
-              <span className="font-bold text-[18px] tracking-tight">Hostamar</span>
-              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 ml-1">BETA</span>
-            </div>
-            <nav className="hidden md:flex items-center gap-7 text-[14px] font-medium text-zinc-600">
-            <div className="relative" onMouseEnter={()=>setProdOpen(true)} onMouseLeave={()=>setProdOpen(false)}>
-              <button className="hover:text-zinc-900 transition bangla inline-flex items-center gap-1">পণ্যসমূহ <span className={`text-[10px] transition ${prodOpen?'rotate-180':''}`}>▾</span></button>
-              {prodOpen && (
-                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50">
-                  <div className="w-[440px] rounded-2xl bg-white border border-zinc-200 shadow-xl p-2 grid grid-cols-2 gap-1">
-                    {PRODUCTS.map(p=>(
-                      <Link key={p.href} href={p.href} className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-zinc-50 transition">
-                        <span className="text-[20px] leading-none mt-0.5">{p.emoji}</span>
-                        <span><span className="block bangla font-semibold text-[14px] text-zinc-900">{p.label}</span><span className="block bangla text-[12px] text-zinc-500">{p.desc}</span></span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <button onClick={()=>{ document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}} className="hover:text-zinc-900 transition bangla">প্রাইসিং</button>
-            <Link href="/generate" className="hover:text-zinc-900 transition bangla">এডিটর</Link>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link href="/signup" className="hidden md:block text-[14px] font-medium text-zinc-600 hover:text-zinc-900">লগইন</Link>
-            <Link href="/generate" className="hidden md:inline-flex h-9 px-4 rounded-full text-white text-[14px] font-semibold items-center justify-center shadow-[0_8px_20px_-8px_rgba(14,124,58,0.5)] hover:brightness-[1.05] transition" style={{background: GREEN}}>
-              ফ্রি শুরু করুন
-            </Link>
-            <button onClick={()=>setMobileMenu(!mobileMenu)} className="md:hidden h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center">☰</button>
-          </div>
-        </div>
-        {mobileMenu && (
-          <div className="md:hidden border-t bg-white px-5 py-4 space-y-1">
-            <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide pb-1">পণ্যসমূহ</div>
-            {PRODUCTS.map(p=>(
-              <Link key={p.href} href={p.href} onClick={()=>setMobileMenu(false)} className="flex items-center gap-2 py-2 bangla font-medium">{p.emoji} {p.label}</Link>
-            ))}
-            <button onClick={()=>{setMobileMenu(false); document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}} className="block py-2 bangla font-medium w-full text-left border-t border-zinc-100 mt-1 pt-3">প্রাইসিং</button>
-            <Link href="/generate" onClick={()=>setMobileMenu(false)} className="mt-2 flex h-11 w-full rounded-full text-white font-semibold items-center justify-center bangla" style={{background: GREEN}}>ফ্রি শুরু করুন</Link>
-          </div>
-        )}
-      </header>
+      
 
       <main className="mx-auto max-w-[1120px] px-5 lg:px-0 overflow-hidden">
         {/* HERO */}
@@ -448,65 +401,7 @@ export default function App() {
         </section>
 
         {/* Footer */}
-        <footer className="mt-20 border-t border-zinc-200 pt-10 pb-12">
-          <div className="flex flex-col md:flex-row justify-between gap-10">
-            <div className="max-w-[320px]">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold" style={{background:GREEN}}>H</div>
-                <span className="font-bold text-[18px]">Hostamar</span>
-              </div>
-              <p className="bangla mt-3 text-[13px] leading-[1.6] text-zinc-500">বাংলাদেশি SME দের জন্য তৈরি AI মার্কেটিং ভিডিও প্ল্যাটফর্ম। ঢাকা থেকে ❤️ দিয়ে তৈরি।</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {[
-                  "SSL Secured",
-                  "bKash Verified",
-                  "ISO Compliant",
-                  "Made in BD 🇧🇩"
-                ].map(b=>(
-                  <span key={b} className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-zinc-200 font-medium">{b}</span>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-[13px]">
-              <div>
-                <div className="font-semibold mb-3">প্রোডাক্ট</div>
-                <div className="space-y-2.5 text-zinc-500">
-                  <Link href="/generate" className="block hover:text-zinc-900 text-left bangla">AI ভিডিও</Link>
-                  <Link href="/hosting" className="block hover:text-zinc-900 text-left bangla">হোস্টিং</Link>
-                  <Link href="/chat" className="block hover:text-zinc-900 text-left bangla">AI চ্যাট</Link>
-                  <Link href="/gaming" className="block hover:text-zinc-900 text-left bangla">গেমিং</Link>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold mb-3">সাপোর্ট</div>
-                <div className="space-y-2.5 text-zinc-500">
-                  <button onClick={()=>showToast("হেল্প সেন্টার")} className="block hover:text-zinc-900 bangla text-left">হেল্প সেন্টার</button>
-                  <button onClick={()=>document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})} className="block hover:text-zinc-900 text-left">প্রাইসিং</button>
-                  <button onClick={()=>showToast("যোগাযোগ ফর্ম খুলছে")} className="block hover:text-zinc-900 bangla text-left">যোগাযোগ</button>
-                  <button onClick={()=>showToast("All systems operational ✅")} className="block hover:text-zinc-900 text-left">Status</button>
-                </div>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <div className="font-semibold mb-3">Trust</div>
-                <div className="rounded-2xl bg-zinc-50 border border-zinc-200 p-4">
-                  <div className="flex items-center gap-2 text-[12px]"><span className="text-green-600">●</span> সব সিস্টেম চালু আছে</div>
-                  <div className="mt-3 text-[12px] text-zinc-500 leading-[1.5] bangla">আপনার ডাটা বাংলাদেশে হোস্ট করা, GDPR compliant। আমরা আপনার ভিডিও বিক্রি করি না।</div>
-                  <div className="mt-3 flex gap-1.5">
-                    <div className="h-6 flex-1 rounded bg-white border"></div>
-                    <div className="h-6 flex-1 rounded bg-white border"></div>
-                    <div className="h-6 flex-1 rounded bg-white border"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-10 pt-6 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-3 text-[12px] text-zinc-500">
-            <div>© {new Date().getFullYear()} Hostamar Ltd. Dhaka, Bangladesh. All rights reserved.</div>
-            <div className="flex gap-4"><button onClick={()=>showToast("Privacy Policy")} className="hover:text-zinc-800">Privacy</button><button onClick={()=>showToast("Terms of Service")} className="hover:text-zinc-800">Terms</button><button onClick={()=>showToast("রিফান্ড পলিসি — ৭ দিনের গ্যারান্টি")} className="hover:text-zinc-800 bangla">রিফান্ড পলিসি</button></div>
-          </div>
-        </footer>
+        
       </main>
     </div>
   );

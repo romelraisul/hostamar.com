@@ -54,18 +54,7 @@ export default async function LTXStudioPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12 text-slate-100">
-      <header className="mb-10">
-        <span className="inline-block px-3 py-1 rounded-full border border-sky-400/30 bg-sky-500/10 text-sky-300 text-xs mb-3">
-          Local Video Studio
-        </span>
-        <h1 className="text-4xl md:text-5xl font-bold mb-3">
-          Hostamar LTX Video Studio
-        </h1>
-        <p className="text-slate-300 max-w-2xl">
-          Permanently-installed local video diffusion model. Sample outputs from
-          the Lightricks LTX-Video family, served directly from your infrastructure.
-        </p>
-      </header>
+      
 
       <section className="mb-10 grid md:grid-cols-3 gap-4 text-sm">
         <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
