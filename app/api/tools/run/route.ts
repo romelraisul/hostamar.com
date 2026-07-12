@@ -9,9 +9,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-config'
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
+import { validateBody, toErrorResponse } from '@/lib/api/validator'
+import { z } from 'zod'
 import { evaluateToolCall, isDestructive, TOOL_ALLOWLIST } from '@/lib/voice/toolPolicy'
 
 export const runtime = 'nodejs'
+
+const toolRunSchema = z.object({
+  tool: z.enum(['get_status', 'create_ticket', 'initiate_bkash_payment', 'create_video']),
+  args: z.record(z.string(), z.unknown()).default({}),
+  user_confirmed: z.boolean().optional(),
+})
 
 // --- circuit breaker state (per-process; fine for single node) ---
 const failures = new Map<string, { count: number; openedAt: number }>()
@@ -65,14 +73,22 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = getClientIp(req)
-  const rl = await checkRateLimit(ip, RATE_LIMITS.apiGeneral, '/api/tools/run', 'POST')
+  const rl = await checkRateLimit(ip, RATE_LIMITS.toolsRun, '/api/tools/run', 'POST')
   if (!rl.allowed) {
-    return NextResponse.json({ error: 'rate limited' }, { status: 429 })
+    return NextResponse.json(
+      { error: 'rate limited' },
+      { status: 429, headers: { 'X-RateLimit-Limit': String(RATE_LIMITS.toolsRun.limit), 'X-RateLimit-Remaining': String(rl.remaining) } }
+    )
   }
 
-  const body = await req.json().catch(() => ({}))
-  const tool: string = body?.tool
-  const userConfirmed: boolean = body?.user_confirmed === true
+  let body: z.infer<typeof toolRunSchema>
+  try {
+    body = await validateBody(req, toolRunSchema)
+  } catch (e) {
+    return toErrorResponse(e, traceId)
+  }
+  const tool: string = body.tool
+  const userConfirmed: boolean = body.user_confirmed === true
 
   // Single source of truth for the safety gate (unit-tested in toolPolicy.test).
   const verdict = evaluateToolCall(tool, userConfirmed)
@@ -100,7 +116,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await withTimeout(runTool(tool, body?.payload ?? {}, traceId), 2000)
+    const result = await withTimeout(runTool(tool, body.args ?? {}, traceId), 2000)
     failures.set(tool, { count: 0, openedAt: 0 })
     console.log('[tool_call]', { tool, ms: Date.now() - t0, traceId, ok: true })
     return NextResponse.json({ ok: true, tool, result, traceId })
