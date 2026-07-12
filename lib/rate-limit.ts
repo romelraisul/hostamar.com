@@ -118,6 +118,10 @@ export const RATE_LIMITS = (() => {
     apiGeneral: DEFAULT_LIMITS.apiGeneral,
     // Voice token mint: 10/min per user (spec).
     voiceToken: { bucket: 'voice.token', limit: 10, windowMs: 60 * 1000 },
+    // Voice tool execution: 20/min (spec, validation PR b).
+    toolsRun: { bucket: 'tools.run', limit: 20, windowMs: 60 * 1000 },
+    // Post-call webhook ingest: 200/min (spec, validation PR b).
+    callWebhook: { bucket: 'webhooks.call-ended', limit: 200, windowMs: 60 * 1000 },
   }
 })()
 

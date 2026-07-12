@@ -6,9 +6,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { registerJacksonConnection, SAML_PRODUCT, spEntityIdForTenant, spAcsUrlForTenant } from '@/lib/sso/saml'
+import { validateBody, toErrorResponse } from '@/lib/api/validator'
+import { z } from 'zod'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+// NOTE: field names match the real UI contract (slug/name/domain/ssoEnforced/
+// idpMetadataUrl/idpMetadataXml) — NOT the prompt's {tenant, product, enforced}.
+const samlConfigSchema = z.object({
+  slug: z.string().regex(/^[a-z0-9-]+$/).max(64),
+  name: z.string().min(1).max(120),
+  domain: z.string().max(253).optional(),
+  ssoEnforced: z.boolean().optional(),
+  idpMetadataUrl: z.string().url().max(2000).optional(),
+  idpMetadataXml: z.string().max(200_000).optional(),
+})
 
 function requireAdmin(req: NextRequest): { id: string; role?: string } | null {
   const token = req.cookies.get('auth_token')?.value
@@ -39,22 +52,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await req.json()
-  const {
-    slug,
-    name,
-    domain,
-    ssoEnforced,
-    idpMetadataUrl,
-    idpMetadataXml,
-  } = body as {
-    slug?: string
-    name?: string
-    domain?: string
-    ssoEnforced?: boolean
-    idpMetadataUrl?: string
-    idpMetadataXml?: string
+  let body: z.infer<typeof samlConfigSchema>
+  try {
+    body = await validateBody(req, samlConfigSchema)
+  } catch (e) {
+    return toErrorResponse(e)
   }
+
+  const { slug, name, domain, ssoEnforced, idpMetadataUrl, idpMetadataXml } = body
 
   if (!slug || !name) {
     return NextResponse.json({ error: 'slug and name are required' }, { status: 400 })

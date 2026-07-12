@@ -10,9 +10,16 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-config'
 import { hasAccess } from '@/lib/subscription'
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
+import { validateBody, toErrorResponse } from '@/lib/api/validator'
+import { z } from 'zod'
 import { AccessToken } from 'livekit-server-sdk'
 
 export const runtime = 'nodejs'
+
+const voiceTokenSchema = z.object({
+  participant_name: z.string().max(64).regex(/^[a-zA-Z0-9 _-]+$/).optional(),
+  room: z.string().max(64).regex(/^[a-zA-Z0-9 _@.-]+$/).optional(),
+})
 
 const LIVEKIT_URL_PUBLIC = process.env.LIVEKIT_URL || 'wss://voice.hostamar.com'
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || ''
@@ -45,7 +52,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'rate limited' }, { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } })
   }
 
-  const body = await req.json().catch(() => ({}))
+  let body: { participant_name?: string; room?: string }
+  try {
+    body = await validateBody(req, voiceTokenSchema)
+  } catch (e) {
+    return toErrorResponse(e)
+  }
   const room = String(body.room || `voice-${session.user.email}`).slice(0, 64)
   const identity = `user-${session.user.email}`.slice(0, 64)
 
