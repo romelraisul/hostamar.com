@@ -14,7 +14,7 @@
 // ============================================================================
 import { prisma } from '@/lib/prisma'
 import { ensureHarnessSchema } from '@/lib/harness/ensure-harness-schema'
-import { ollamaGenerate } from '@/lib/harness/ollama-client'
+import { ollamaGenerate, ollamaEmbed } from '@/lib/harness/ollama-client'
 import { SkillsProvider } from '@/lib/skills/SkillsProvider'
 import { FileSystemAgentFileStore } from '@/lib/harness/FileSystemAgentFileStore'
 import { LocalShellTool } from '@/lib/tools/LocalShellTool'
@@ -52,6 +52,8 @@ export interface ExecuteResponse {
   shell?: { ran: boolean; approvalId?: string; output?: string }
   files: string[]
   approvals: { id: string; toolName: string; status: string }[]
+  router?: string
+  rag?: { syncedFiles?: number; chunks?: number; collection?: string; verifiedHits?: number }
 }
 
 export interface HarnessRunOptions {
@@ -61,6 +63,8 @@ export interface HarnessRunOptions {
   owner?: string
   fileRoot?: string
   autoApprove?: boolean // set by autonomous-runner for auto-approved system tasks
+  taskSlug?: string // task slug (for prompt-driven intent routing)
+  taskName?: string // task display name (for intent routing fallback)
 }
 
 // In-process handle registry for background agents (per run).
@@ -236,89 +240,271 @@ export class HarnessAgent {
     const approvalRecords: { id: string; toolName: string; status: string }[] = []
     const files: string[] = []
 
+    // ------------------------------------------------------------------
+    // INTENT ROUTING — honor the task prompt / slug instead of a hardcoded
+    // bakery-leads flow. Routes: seo-engine-weekly / content-pipeline-daily
+    // / chatbot-rag-sync, with the original bakery demo as the fallback.
+    // ------------------------------------------------------------------
+    const slug = (opts.taskSlug || '').toLowerCase()
+    const name = (opts.taskName || '').toLowerCase()
+    const intent = `${prompt.toLowerCase()} ${slug} ${name}`
+    const date = new Date().toISOString().slice(0, 10)
+
     const todos: Todo[] = [
-      { id: 't1', content: 'Research leads (background agents)', status: 'in_progress' },
-      { id: 't2', content: 'Compute SEO score (codeact)', status: 'pending' },
-      { id: 't3', content: 'Tidy working dir (shell, approval-gated)', status: 'pending' },
-      { id: 't4', content: 'Write report file (approval-gated)', status: 'pending' },
+      { id: 't1', content: 'Route + gather inputs', status: 'in_progress' },
+      { id: 't2', content: 'Run tool chain (approval-gated)', status: 'pending' },
+      { id: 't3', content: 'Write output artifact(s)', status: 'pending' },
+      { id: 't4', content: 'Persist result + memory', status: 'pending' },
     ]
 
-    // 1) Background research fan-out (3 bakery leads by default).
-    const n = this.extractLeadCount(prompt)
-    const queries = Array.from({ length: n }, (_, i) => `bakery lead ${i + 1} in Dhaka`)
-    const bgId = this.backgroundAgentsStart(queries)
-    const background = await this.backgroundAgentsCollect(bgId)
-    todos[0].status = 'completed'
-    todos[1].status = 'in_progress'
-
-    // 2) CodeAct — compute an SEO score deterministically (approval-gated).
+    let background: ResearchResult[] = []
     let codeact: unknown = null
-    const codeArgs = { language: 'js', purpose: 'seo_score' }
-    const codeApproval = await this.requireApproval('codeact_run', codeArgs, autoApprove)
-    approvalRecords.push({
-      id: codeApproval.approvalId || 'auto',
-      toolName: 'codeact_run',
-      status: codeApproval.approved ? 'approved' : 'pending',
-    })
-    if (codeApproval.approved) {
-      const seoCode = `
-        const signals = { titleLen: 52, h1: 1, h2: 4, metaLen: 120, imgAlt: true, kwDensity: 2.1, internalLinks: 5 };
-        let score = 0;
-        if (signals.titleLen >= 30 && signals.titleLen <= 60) score += 15;
-        if (signals.h1 === 1) score += 10;
-        if (signals.h2 >= 3) score += 10;
-        if (signals.metaLen >= 70 && signals.metaLen <= 160) score += 15;
-        if (signals.imgAlt) score += 15;
-        if (signals.kwDensity >= 1 && signals.kwDensity <= 3) score += 20;
-        if (signals.internalLinks >= 3) score += 15;
-        __result = { score, verdict: score >= 80 ? 'good' : 'needs-work' };
-      `
-      const r = await this.codeact.run(seoCode, 'js')
-      codeact = r.output
-      // eslint-disable-next-line no-console
-      console.log(`[HARNESS][codeact] ok=${r.ok} err=${r.error ?? ''} output=${JSON.stringify(r.output)}`)
-    }
-    todos[1].status = 'completed'
-    todos[2].status = 'in_progress'
+    let shellResult: { ran: boolean; approvalId?: string; output?: string } = { ran: false }
+    let router = 'fallback'
+    let rag: { syncedFiles?: number; chunks?: number; collection?: string; verifiedHits?: number } = {}
 
-    // 3) Shell tidy (approval-gated) — ensure reports dir exists.
-    let shellResult: ExecuteResponse['shell'] = { ran: false }
-    const shellApproval = await this.requireApproval('run_shell', { command: 'mkdir -p reports && ls -la' }, autoApprove)
-    approvalRecords.push({
-      id: shellApproval.approvalId || 'auto',
-      toolName: 'run_shell',
-      status: shellApproval.approved ? 'approved' : 'pending',
-    })
-    if (shellApproval.approved) {
-      const sh = await this.shell.run('mkdir -p reports && ls -la')
-      shellResult = { ran: true, output: sh.stdout.slice(0, 500) }
-      // eslint-disable-next-line no-console
-      console.log(`[HARNESS][shell] tidy ran (code=${sh.code})`)
+    const isRag =
+      intent.includes('rag') || intent.includes('chatbot') || intent.includes('rag-sync')
+    const isSeo = isRag ? false : intent.includes('seo-engine') || (intent.includes('seo') && intent.includes('weekly'))
+    const isContent = !isRag && (intent.includes('content') || intent.includes('pipeline'))
+
+    if (isSeo) {
+      // ----------------------------------------------------------------
+      // SEO Engine Weekly — crawl + real checks + Qdrant context.
+      // ----------------------------------------------------------------
+      router = 'seo-engine-weekly'
+      todos[0].content = 'SEO Engine: gather pages + Qdrant context'
+      todos[1].content = 'SEO Engine: real checks (meta/H1/links) via codeact'
+      todos[2].content = 'SEO Engine: write seo-weekly report'
+      const qdrantContext = await this.qdrantQuery('bakery leads', 5).catch(() => [])
+      const shell = await this.gatedShell('find /app/working -path /app/working/node_modules -prune -o -name "*.html" -print 2>/dev/null | head -50; ls /app/working/content 2>/dev/null | head -20; ls /app/working/reports 2>/dev/null', autoApprove)
+      shellResult = shell.result
+      if (shell.approval) approvalRecords.push(shell.approval)
+      const seo = await this.gatedCodeAct(
+        `const fs=require('fs');const files=(__ctx.files||'').split('\\n').filter(Boolean);` +
+          `let titleLen=0,h1=0,internalLinks=0,metaPresent=0;` +
+          `for(const f of files){try{const h=fs.readFileSync(f,'utf8');if(/<title>/.test(h))titleLen=(h.match(/<title>(.*?)<\\/title>/)||[])[1]?.length||0;h1+= (h.match(/<h1/gi)||[]).length;internalLinks+=(h.match(/<a\\s+href=/gi)||[]).length;if(/<meta\\s+name=["']description["']/i.test(h))metaPresent++;}catch(e){}}` +
+          `let score=0;if(titleLen>=30&&titleLen<=60)score+=20;if(h1===1)score+=15;if(internalLinks>=3)score+=25;if(metaPresent>0)score+=20;score+= (files.length?20:0);` +
+          `__result={scanned:files.length,titleLen,h1,internalLinks,metaPresent,score,verdict:score>=70?'good':'needs-work'};`,
+        autoApprove,
+      )
+      if (seo.approval) approvalRecords.push(seo.approval)
+      codeact = seo.output
+      todos[1].status = 'completed'
+      const report = [
+        `# SEO Engine Weekly — ${date}`,
+        `_Generated by Hostamar Harness. Task: ${slug || 'seo-engine-weekly'}_`,
+        '',
+        '## Crawl + Checks',
+        '```json',
+        JSON.stringify(codeact, null, 2),
+        '```',
+        '',
+        '## Qdrant Context (bakery leads)',
+        ...(qdrantContext.length ? qdrantContext.map((c, i) => `${i + 1}. ${c.slice(0, 200)}`) : ['(none / Qdrant unreachable)']),
+        '',
+        '## Top 10 Fixes (by impact)',
+        '1. Add unique, 50-60 char `<title>` to pages missing one.',
+        '2. Ensure exactly one `<h1>` per page.',
+        '3. Add `<meta name="description">` (70-160 chars) to every page.',
+        '4. Increase internal links between related product landers.',
+        '5. Submit/fix sitemap.xml (add new content/blog pages).',
+        '6. Compress hero images; add alt text (imgAlt).',
+        '7. Fix canonical tags; avoid duplicate URLs.',
+        '8. Add JSON-LD Product schema to hosting/chat/browser/IDE pages.',
+        '9. Improve keyword density (1-3%) on Bengali landing pages.',
+        '10. Enable Core Web Vitals monitoring (LCP/CLS/INP).',
+        '',
+        '## Notes',
+        `- Pages scanned: ${(codeact as { scanned?: number })?.scanned ?? 0}`,
+        `- Qdrant context hits: ${qdrantContext.length}`,
+      ].join('\n')
+      const f = await this.gatedFile('reports/seo-weekly-' + date + '.md', report, autoApprove)
+      if (f.approval) approvalRecords.push(f.approval)
+      if (f.path) files.push(f.path)
+      todos[2].status = 'completed'
+    } else if (isContent) {
+      // ----------------------------------------------------------------
+      // Content Pipeline Daily — 1 SEO article from Qdrant trends.
+      // ----------------------------------------------------------------
+      router = 'content-pipeline-daily'
+      todos[0].content = 'Content: pull trends from Qdrant'
+      todos[1].content = 'Content: generate article (codeact) + avoid slug collision'
+      todos[2].content = 'Content: write content/blog/*.mdx'
+      const trends = await this.qdrantQuery('bakery', 5).catch(() => [])
+      const slugHit = await this.gatedShell('ls /app/working/content/blog 2>/dev/null | wc -l', autoApprove)
+      shellResult = slugHit.result
+      if (slugHit.approval) approvalRecords.push(slugHit.approval)
+      const articleSlug = `bakery-leads-${date}`
+      const gen = await this.gatedCodeAct(
+        `const trends=(__ctx.trends||[]).join('\\n');` +
+          `const keyword='bakery leads dhaka';` +
+          `const title='বেকারি লিড: ঢাকায় বেকারি ব্যবসার জন্য Hostamar SEO গাইড';` +
+          `const description='ঢাকায় বেকারি ব্যবসার জন্য সম্পূর্ণ SEO গাইড — Hostamar দিয়ে ল্যান্ডিং পেজ, কীওয়ার্ড ও লিড জেনারেশন।';` +
+          `const body='# '+title+'\\n\\nবেকারি লিড নিয়ে এই নিবন্ধে আমরা '+keyword+' বিষয়ে আলোচনা করব।\\n\\n'+(trends.split('\\n').slice(0,5).join('\\n\\n')||'ঢাকায় বেকারি সেগমেন্টে শক্তিশালী লোকাল ডিমান্ড সিগনাল রয়েছে।');` +
+          `__result={keyword,title,description,body};`,
+        autoApprove,
+      )
+      if (gen.approval) approvalRecords.push(gen.approval)
+      codeact = gen.output
+      todos[1].status = 'completed'
+      const a = (codeact as { title?: string; description?: string; body?: string; keyword?: string }) || {}
+      const mdx =
+        `---\ntitle: "${a.title || 'Bakery Leads'}"\ndate: "${date}"\nkeywords: ["${a.keyword || 'bakery leads'}", "hostamar", "dhaka bakery"]\ndescription: "${a.description || ''}"\n---\n\n${a.body || ''}\n`
+      const f = await this.gatedFile('content/blog/' + articleSlug + '.mdx', mdx, autoApprove)
+      if (f.approval) approvalRecords.push(f.approval)
+      if (f.path) files.push(f.path)
+      const summary = [
+        `# Content Pipeline — ${date}`,
+        `_Task: ${slug || 'content-pipeline-daily'}_`,
+        '',
+        `- Generated article slug: \`${articleSlug}\``,
+        `- File: \`content/blog/${articleSlug}.mdx\``,
+        `- Trends used: ${trends.length}`,
+        '',
+        'PR-ready (auto-approved system task). Publish manually or via deploy hook.',
+      ].join('\n')
+      const fr = await this.gatedFile('reports/content-' + date + '.md', summary, autoApprove)
+      if (fr.approval) approvalRecords.push(fr.approval)
+      if (fr.path) files.push(fr.path)
+      todos[2].status = 'completed'
+    } else if (isRag) {
+      // ----------------------------------------------------------------
+      // Chatbot RAG Sync — chunk reports/blog, embed via Ollama, upsert
+      // to Qdrant, verify retrieval.
+      // ----------------------------------------------------------------
+      router = 'chatbot-rag-sync'
+      todos[0].content = 'RAG: discover source files'
+      todos[1].content = 'RAG: chunk + embed + upsert to Qdrant'
+      todos[2].content = 'RAG: verify retrieval + write stats'
+      const discover = await this.gatedShell(
+        'find /app/working/reports /app/working/content/blog /app/working/docs -type f \\( -name "*.md" -o -name "*.mdx" -o -name "*.txt" \\) 2>/dev/null | head -30',
+        autoApprove,
+      )
+      shellResult = discover.result
+      if (discover.approval) approvalRecords.push(discover.approval)
+      const fileList = (discover.result.output || '')
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+      let chunks = 0
+      const collection = process.env.QDRANT_RAG_COLLECTION || 'hostamar-knowledge'
+      await this.qdrantEnsureCollection(collection).catch(() => undefined)
+      for (const rel of fileList) {
+        const fileRef = rel.replace(/^\/app\/working\//, '')
+        const content = await this.files.readFile(fileRef).catch(() => '')
+        if (!content) continue
+        const parts = content.match(/[\s\S]{1,500}/g) || [content]
+        for (const p of parts) {
+          const vec = await ollamaEmbed(p).catch(() => null)
+          if (!vec) continue
+          await this.qdrantUpsert(collection, {
+            source: rel,
+            date,
+            chunk: chunks,
+            text: p.slice(0, 1000),
+          }, vec).catch((e) => console.log('[HARNESS][rag] upsert failed', e.message))
+          chunks += 1
+        }
+      }
+      const verified = await this.qdrantQuery('bakery leads', 3, collection).catch(() => [])
+      rag = { syncedFiles: fileList.length, chunks, collection, verifiedHits: verified.length }
+      todos[1].status = 'completed'
+      const stats = {
+        syncedFiles: rag.syncedFiles,
+        chunks: rag.chunks,
+        collection: rag.collection,
+        verifiedHits: rag.verifiedHits,
+        timestamp: new Date().toISOString(),
+      }
+      const f = await this.gatedFile(
+        'reports/rag-sync-' + date + '.json',
+        JSON.stringify(stats, null, 2),
+        autoApprove,
+      )
+      if (f.approval) approvalRecords.push(f.approval)
+      if (f.path) files.push(f.path)
+      todos[2].status = 'completed'
     } else {
-      shellResult = { ran: false, approvalId: shellApproval.approvalId }
-    }
-    todos[2].status = 'completed'
-    todos[3].status = 'in_progress'
+      // ----------------------------------------------------------------
+      // FALLBACK — original bakery-leads demo flow (preserves the 12
+      // seed tasks' behavior when no intent keyword matches).
+      // ----------------------------------------------------------------
+      router = 'fallback-bakery'
+      todos[0].content = 'Research leads (background agents)'
+      todos[1].content = 'Compute SEO score (codeact)'
+      todos[2].content = 'Tidy working dir (shell, approval-gated)'
+      todos[3].content = 'Write report file (approval-gated)'
+      const n = this.extractLeadCount(prompt)
+      const queries = Array.from({ length: n }, (_, i) => `bakery lead ${i + 1} in Dhaka`)
+      const bgId = this.backgroundAgentsStart(queries)
+      background = await this.backgroundAgentsCollect(bgId)
+      todos[0].status = 'completed'
+      todos[1].status = 'in_progress'
 
-    // 4) Write report file (approval-gated).
-    const fileApproval = await this.requireApproval(
-      'file_access_save_file',
-      { path: 'reports/bakery-leads-seo.md' },
-      autoApprove,
-    )
-    approvalRecords.push({
-      id: fileApproval.approvalId || 'auto',
-      toolName: 'file_access_save_file',
-      status: fileApproval.approved ? 'approved' : 'pending',
-    })
-    if (fileApproval.approved) {
-      const report = this.buildReport(prompt, background, codeact)
-      const saved = await this.files.saveFile('reports/bakery-leads-seo.md', report)
-      files.push(saved.path)
-      // eslint-disable-next-line no-console
-      console.log(`[HARNESS][file] wrote report ${saved.path}`)
+      const codeApproval = await this.requireApproval('codeact_run', { language: 'js', purpose: 'seo_score' }, autoApprove)
+      approvalRecords.push({
+        id: codeApproval.approvalId || 'auto',
+        toolName: 'codeact_run',
+        status: codeApproval.approved ? 'approved' : 'pending',
+      })
+      if (codeApproval.approved) {
+        const seoCode = `
+          const signals = { titleLen: 52, h1: 1, h2: 4, metaLen: 120, imgAlt: true, kwDensity: 2.1, internalLinks: 5 };
+          let score = 0;
+          if (signals.titleLen >= 30 && signals.titleLen <= 60) score += 15;
+          if (signals.h1 === 1) score += 10;
+          if (signals.h2 >= 3) score += 10;
+          if (signals.metaLen >= 70 && signals.metaLen <= 160) score += 15;
+          if (signals.imgAlt) score += 15;
+          if (signals.kwDensity >= 1 && signals.kwDensity <= 3) score += 20;
+          if (signals.internalLinks >= 3) score += 15;
+          __result = { score, verdict: score >= 80 ? 'good' : 'needs-work' };
+        `
+        const r = await this.codeact.run(seoCode, 'js')
+        codeact = r.output
+        // eslint-disable-next-line no-console
+        console.log(`[HARNESS][codeact] ok=${r.ok} err=${r.error ?? ''} output=${JSON.stringify(r.output)}`)
+      }
+      todos[1].status = 'completed'
+      todos[2].status = 'in_progress'
+
+      const shellApproval = await this.requireApproval('run_shell', { command: 'mkdir -p reports && ls -la' }, autoApprove)
+      approvalRecords.push({
+        id: shellApproval.approvalId || 'auto',
+        toolName: 'run_shell',
+        status: shellApproval.approved ? 'approved' : 'pending',
+      })
+      if (shellApproval.approved) {
+        const sh = await this.shell.run('mkdir -p reports && ls -la')
+        shellResult = { ran: true, output: sh.stdout.slice(0, 500) }
+        // eslint-disable-next-line no-console
+        console.log(`[HARNESS][shell] tidy ran (code=${sh.code})`)
+      } else {
+        shellResult = { ran: false, approvalId: shellApproval.approvalId }
+      }
+      todos[2].status = 'completed'
+      todos[3].status = 'in_progress'
+
+      const fileApproval = await this.requireApproval(
+        'file_access_save_file',
+        { path: 'reports/bakery-leads-seo.md' },
+        autoApprove,
+      )
+      approvalRecords.push({
+        id: fileApproval.approvalId || 'auto',
+        toolName: 'file_access_save_file',
+        status: fileApproval.approved ? 'approved' : 'pending',
+      })
+      if (fileApproval.approved) {
+        const report = this.buildReport(prompt, background, codeact)
+        const saved = await this.files.saveFile('reports/bakery-leads-seo.md', report)
+        files.push(saved.path)
+        // eslint-disable-next-line no-console
+        console.log(`[HARNESS][file] wrote report ${saved.path}`)
+      }
+      todos[3].status = 'completed'
     }
-    todos[3].status = 'completed'
 
     // 5) Memory: extract + store facts; persist todos to session.
     for (const fact of extractFacts(prompt + '\n' + JSON.stringify(background))) {
@@ -334,13 +520,23 @@ export class HarnessAgent {
         .catch(() => undefined)
     }
 
-    const output = `Completed: researched ${background.length} leads, computed SEO score, ${
-      shellResult.ran ? 'tidied working dir' : 'shell pending approval'
-    }, ${files.length ? 'wrote report' : 'report pending approval'}.`
+    const output = `Completed [${router}]: ${
+      isRag
+        ? `synced ${rag.syncedFiles ?? 0} files / ${rag.chunks ?? 0} chunks to ${rag.collection}, verifiedHits=${rag.verifiedHits ?? 0}`
+        : isContent
+          ? `generated content/blog article, ${files.length} file(s)`
+          : isSeo
+            ? `SEO audit written, ${files.length} file(s)`
+            : `researched ${background.length} leads, computed SEO score, ${
+                shellResult.ran ? 'tidied working dir' : 'shell pending approval'
+              }, ${files.length ? 'wrote report' : 'report pending approval'}`
+    }.`
 
     return {
       type: 'execute',
       output,
+      router,
+      rag,
       todos,
       loadedSkills: loadedNames,
       background,
@@ -349,6 +545,117 @@ export class HarnessAgent {
       files,
       approvals: approvalRecords,
     }
+  }
+
+  // ------------------------------------------------------------------
+  // Gated tool wrappers — used by the intent router. Each consults the
+  // auto-approval engine (or autoApprove override) and records the decision.
+  // ------------------------------------------------------------------
+  private async gatedShell(
+    command: string,
+    autoApprove?: boolean,
+  ): Promise<{ result: { ran: boolean; approvalId?: string; output?: string }; approval?: { id: string; toolName: string; status: string } }> {
+    const a = await this.requireApproval('run_shell', { command }, autoApprove)
+    const approval = {
+      id: a.approvalId || 'auto',
+      toolName: 'run_shell',
+      status: a.approved ? 'approved' : 'pending',
+    }
+    if (!a.approved) return { result: { ran: false, approvalId: a.approvalId }, approval }
+    const sh = await this.shell.run(command)
+    // eslint-disable-next-line no-console
+    console.log(`[HARNESS][shell] ran (code=${sh.code})`)
+    return { result: { ran: true, output: sh.stdout.slice(0, 2000) }, approval }
+  }
+
+  private async gatedCodeAct(
+    code: string,
+    autoApprove?: boolean,
+  ): Promise<{ output: unknown; approval?: { id: string; toolName: string; status: string } }> {
+    const a = await this.requireApproval('codeact_run', { purpose: 'agent' }, autoApprove)
+    const approval = {
+      id: a.approvalId || 'auto',
+      toolName: 'codeact_run',
+      status: a.approved ? 'approved' : 'pending',
+    }
+    if (!a.approved) return { output: null, approval }
+    const r = await this.codeact.run(code, 'js')
+    // eslint-disable-next-line no-console
+    console.log(`[HARNESS][codeact] ok=${r.ok} err=${r.error ?? ''}`)
+    return { output: r.output, approval }
+  }
+
+  private async gatedFile(
+    relPath: string,
+    content: string,
+    autoApprove?: boolean,
+  ): Promise<{ path?: string; approval?: { id: string; toolName: string; status: string } }> {
+    const a = await this.requireApproval('file_access_save_file', { path: relPath }, autoApprove)
+    const approval = {
+      id: a.approvalId || 'auto',
+      toolName: 'file_access_save_file',
+      status: a.approved ? 'approved' : 'pending',
+    }
+    if (!a.approved) return { approval }
+    const saved = await this.files.saveFile(relPath, content)
+    // eslint-disable-next-line no-console
+    console.log(`[HARNESS][file] wrote ${saved.path}`)
+    return { path: saved.path, approval }
+  }
+
+  // ------------------------------------------------------------------
+  // Qdrant helpers — real REST calls mirroring app/api/support-chat.
+  // ------------------------------------------------------------------
+  private qdrantUrl(): string {
+    return (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
+  }
+
+  private async qdrantEnsureCollection(collection: string): Promise<void> {
+    const url = this.qdrantUrl()
+    const res = await fetch(`${url}/collections/${collection}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vectors: { size: 768, distance: 'Cosine' } }) })
+    if (!res.ok && res.status !== 409) {
+      // 409 = already exists; treat other non-ok as failure (caller catches)
+      throw new Error(`qdrant ensure ${res.status}`)
+    }
+  }
+
+  private async qdrantUpsert(
+    collection: string,
+    payload: Record<string, unknown>,
+    vector: number[],
+  ): Promise<void> {
+    const url = this.qdrantUrl()
+    // Qdrant point IDs must be unsigned int or UUID. Derive a stable UUID from the source.
+    const h = require('crypto').createHash('sha1').update(`${payload.source}:${payload.date}:${payload.chunk ?? 0}`).digest('hex')
+    const pointId = `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-8${h.slice(17, 20)}-${h.slice(20, 32)}`
+    const res = await fetch(`${url}/collections/${collection}/points`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ points: [{ id: pointId, vector, payload }] }),
+    })
+    if (!res.ok) throw new Error(`qdrant upsert ${res.status}: ${await res.text()}`)
+  }
+
+  private async qdrantQuery(
+    query: string,
+    limit = 5,
+    collection?: string,
+  ): Promise<string[]> {
+    const url = this.qdrantUrl()
+    const col = collection || process.env.QDRANT_COLLECTION || 'hostamar_kb'
+    const vec = await ollamaEmbed(query)
+    const res = await fetch(`${url}/collections/${col}/points/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vector: vec, limit, with_payload: true }),
+    })
+    if (!res.ok) throw new Error(`qdrant ${res.status}`)
+    const data = (await res.json()) as {
+      result: { payload?: { text?: string; source?: string } }[]
+    }
+    return (data.result || [])
+      .map((r) => (r.payload?.text ? `[${r.payload.source}] ${r.payload.text}` : ''))
+      .filter(Boolean)
   }
 
   private extractLeadCount(prompt: string): number {
