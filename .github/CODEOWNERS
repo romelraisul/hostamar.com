@@ -1,0 +1,9 @@
+# Default owner — human gate for the AI review pipeline.
+* @RaisulMahmudRomel
+
+# SSO / security — you, for now (no separate team exists yet).
+lib/sso/        @RaisulMahmudRomel
+app/api/auth/   @RaisulMahmudRomel
+
+# Infra / livekit — must keep unless-stopped + healthcheck.
+infra/livekit/  @RaisulMahmudRomel

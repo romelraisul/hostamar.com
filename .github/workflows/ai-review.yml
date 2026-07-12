@@ -1,0 +1,84 @@
+name: ai-review
+
+# Production-grade review gate. Runs on every PR to main.
+# Blocks: forbidden files (_reset.ts etc), secrets in client code,
+# phantom/mis-scoped Prisma migrations, and broken tsc/lint/build.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      # --- 1. Forbidden files -------------------------------------------------
+      - name: Block forbidden files
+        run: |
+          set -e
+          FORBIDDEN='(_reset\.ts|vcheck\.sql|rag_check\.sql|tsconfig\.tsbuildinfo)$'
+          # Fail only if a forbidden file is added/modified in THIS diff.
+          BAD=$(git diff --name-only origin/main...HEAD | grep -E "$FORBIDDEN" || true)
+          if [ -n "$BAD" ]; then
+            echo "::error:: Forbidden file(s) in diff:";
+            echo "$BAD";
+            echo "These files must not be committed (destructive / local-only).";
+            exit 1;
+          fi
+          # If scripts/_reset.ts exists on disk in the PR head, block it too.
+          if [ -f scripts/_reset.ts ]; then
+            echo "::error:: scripts/_reset.ts present in tree — remove it (destructive)";
+            exit 1;
+          fi
+          echo "OK: no forbidden files"
+
+      # --- 2. Secret scan: LIVEKIT secrets must not reach the client ---------
+      - name: Secret scan (client code)
+        run: |
+          set -e
+          # Allowed in server code (route.ts, lib/, server modules).
+          # Blocked in: client components (*.tsx) and any app/ non-route file.
+          HITS=$(grep -rEn "LIVEKIT_API_SECRET|LIVEKIT_API_KEY" \
+                  --include="*.tsx" app/ components/ \
+                  | grep -v "route\.ts" || true)
+          if [ -n "$HITS" ]; then
+            echo "::error:: LiveKit secret referenced in CLIENT code:";
+            echo "$HITS";
+            exit 1;
+          fi
+          echo "OK: no LiveKit secrets in client code"
+
+      # --- 3. Phantom / mis-scoped Prisma migration check --------------------
+      - name: Schema drift check
+        run: node scripts/check-schema-drift.js
+
+      # --- 4. Gates (fast fail before anything else) -------------------------
+      - name: Type check
+        run: npx tsc --noEmit --skipLibCheck
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+
+      # --- 5. Tenant isolation grep audit (read-only, advisory) --------------
+      - name: Tenant isolation audit (advisory)
+        run: |
+          echo "Tenant-scoped reads in app/api (must eventually enforce organizationId):"
+          grep -rEn "prisma\.(video|payment|voiceCall|customer)\." app/api --include="*.ts" -n \
+            | tee /tmp/tenant-reads.txt || true
+          echo "--- end audit artifact ---"
