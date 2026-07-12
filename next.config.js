@@ -1,5 +1,3 @@
-const path = require('path')
-
 // NOTE: @sentry/nextjs v10's withSentryConfig previously injected `Html` into
 // Next's built-in /404 /500 error pages during static prerender, which crashed
 // the build. We keep the Sentry build-time wrapper DISABLED for now (the
@@ -56,7 +54,12 @@ const nextConfig = {
     ]
   },
   webpack: (config) => {
-    config.resolve.alias['@'] = path.resolve(__dirname, '.')
+    // NOTE: the `config.resolve.alias['@'] = path.resolve(__dirname, '.')` line
+    // that used to live here has been REMOVED. It was the only `__dirname`
+    // reference in the entire build chain and leaked into the Edge middleware
+    // bundle, causing `MIDDLEWARE_INVOCATION_FAILED` + `ReferenceError: __dirname
+    // is not defined` on Vercel. The `@/*` path alias is already declared
+    // natively in tsconfig.json ("@/*": ["./*"]), so this alias was redundant.
     return config
   },
 }
