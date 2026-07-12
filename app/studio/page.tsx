@@ -114,63 +114,7 @@ export default function StudioPage() {
   return (
     <div className="flex h-screen flex-col bg-[#0E0F13] text-zinc-200">
       {/* Header */}
-      <header className="flex h-[56px] shrink-0 items-center justify-between border-b border-white/[0.07] px-3 lg:px-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#0E7C3A] font-bold text-[13px] text-white">
-              H
-            </span>
-            <span className="hidden text-sm font-semibold tracking-tight sm:block">
-              Hostamar Studio
-            </span>
-          </Link>
-          <div className="hidden min-w-0 items-center gap-2 border-l border-white/10 pl-3 lg:flex">
-            <span className="bangla max-w-[200px] truncate text-[13px] font-medium">
-              {projectName}
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.06] px-2 py-0.5 text-[11px] text-zinc-400">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-              Saved
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 lg:gap-3">
-          <div className="hidden items-center rounded-full border border-white/[0.06] bg-[#171A20] p-1 md:flex">
-            {QUALITIES.map((q) => (
-              <button
-                key={q}
-                onClick={() => setQuality(q)}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
-                  quality === q ? 'bg-white text-black' : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-          <div className="hidden items-center rounded-full border border-white/[0.06] bg-[#171A20] p-1 md:flex">
-            {RATIOS.map((r) => (
-              <button
-                key={r}
-                onClick={() => setRatio(r)}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
-                  ratio === r ? 'bg-white text-black' : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={runExport}
-            disabled={exporting}
-            className="rounded-full bg-[#0E7C3A] px-4 py-1.5 text-[13px] font-semibold text-white transition hover:bg-[#0A5A2B] disabled:opacity-60"
-          >
-            {exporting ? `Exporting ${exportPct}%` : 'Export'}
-          </button>
-        </div>
-      </header>
+      
 
       {/* Body */}
       <div className="flex min-h-0 flex-1 overflow-hidden">

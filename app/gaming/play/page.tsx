@@ -8,18 +8,7 @@ import Link from 'next/link'
 export default function GamingPlayPage() {
   return (
     <div className="min-h-screen bg-[#0E0F13] text-zinc-200">
-      <header className="flex h-14 items-center justify-between border-b border-white/10 px-4">
-        <Link href="/gaming" className="flex items-center gap-2 font-semibold">
-          <span className="grid h-7 w-7 place-items-center rounded bg-[#0E7C3A] text-white">H</span>
-          Hostamar Gaming
-        </Link>
-        <Link
-          href="/generate"
-          className="rounded-full bg-[#0E7C3A] px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-[#0A5A2B]"
-        >
-          এই গেমের প্রোমো ভিডিও বানান
-        </Link>
-      </header>
+      
 
       <main className="mx-auto max-w-[1100px] px-4 py-8">
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">

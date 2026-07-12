@@ -21,7 +21,6 @@ import {
 
 export default function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [mobileNav, setMobileNav] = useState(false);
   const [mockTab, setMockTab] = useState<"summary" | "youtube" | "sources">("youtube");
   const [chatSent, setChatSent] = useState(false);
 
@@ -59,71 +58,7 @@ export default function App() {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#FCFCF9]/85 border-b border-zinc-200/70">
-        <div className="mx-auto max-w-[1180px] px-4 md:px-6 h-[64px] flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <a href="#" className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-xl bg-[#0E7C3A] text-white grid place-items-center shadow-[0_8px_20px_-8px_rgba(14,124,58,0.6)]">
-                <Globe className="h-4.5 w-4.5" />
-              </div>
-              <div className="leading-tight">
-                <div className="font-bold tracking-tight text-[15px] font-inter">Hostamar</div>
-                <div className="text-[11px] font-medium tracking-[0.14em] uppercase opacity-60 -mt-0.5">/browser</div>
-              </div>
-            </a>
-            <nav className="hidden md:flex items-center gap-7 text-[14px] font-medium">
-              <a href="#features" className="opacity-70 hover:opacity-100 transition">Features</a>
-              <a href="#usecases" className="opacity-70 hover:opacity-100 transition">Use Cases</a>
-              <a href="#pricing" className="opacity-70 hover:opacity-100 transition">Pricing</a>
-              <a href="#compare" className="opacity-70 hover:opacity-100 transition">তুলনা</a>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <a
-              href="https://hostamar.com/generate"
-              className="hidden md:inline-flex h-9 px-4 rounded-full bg-zinc-900 text-white text-[13px] font-semibold items-center gap-1.5 hover:bg-black transition"
-            >
-              ফ্রি ব্রাউজার ব্যবহার করুন
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </a>
-          <button
-              onClick={() => setMobileNav(!mobileNav)}
-              aria-label="Toggle menu"
-              aria-expanded={mobileNav}
-              className="md:hidden h-9 w-9 grid place-items-center rounded-full border border-zinc-200 bg-white"
-            >
-              <div className="space-y-1">
-                <div className={`h-0.5 w-4 bg-zinc-800 transition ${mobileNav ? "translate-y-1.5 rotate-45" : ""}`} />
-                <div className={`h-0.5 w-4 bg-zinc-800 transition ${mobileNav ? "opacity-0" : ""}`} />
-                <div className={`h-0.5 w-4 bg-zinc-800 transition ${mobileNav ? "-translate-y-1.5 -rotate-45" : ""}`} />
-              </div>
-            </button>
-          </div>
-        </div>
-        {mobileNav && (
-          <div className="md:hidden border-t border-zinc-200 bg-white px-4 py-4 space-y-1">
-            {[
-              { l: "Features", h: "#features" },
-              { l: "Use Cases", h: "#usecases" },
-              { l: "Pricing", h: "#pricing" },
-              { l: "তুলনা", h: "#compare" },
-            ].map((i) => (
-              <a
-                key={i.h}
-                href={i.h}
-                onClick={() => setMobileNav(false)}
-                className="flex h-11 items-center px-3 rounded-xl hover:bg-zinc-50 font-medium"
-              >
-                {i.l}
-              </a>
-            ))}
-            <a href="https://hostamar.com/generate" className="mt-2 flex h-11 items-center justify-center rounded-full bg-[#0E7C3A] text-white font-semibold">
-              ফ্রি ব্রাউজার ব্যবহার করুন
-            </a>
-          </div>
-        )}
-      </header>
+      
 
       {/* Hero */}
       <section className="mx-auto max-w-[1180px] px-4 md:px-6 pt-10 md:pt-16 pb-12 md:pb-20">
@@ -679,57 +614,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-white">
-        <div className="mx-auto max-w-[1180px] px-4 md:px-6 py-10">
-          <div className="flex flex-col md:flex-row justify-between gap-8">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-xl bg-zinc-900 text-white grid place-items-center">
-                  <Globe className="h-4 w-4" />
-                </div>
-                <div className="leading-tight">
-                  <div className="font-bold text-[14px]">Hostamar /browser</div>
-                  <div className="text-[11px] opacity-60">AI Browser for Bangladesh</div>
-                </div>
-              </div>
-              <p className="mt-3 text-[13px] leading-[1.6] opacity-60 max-w-[320px] font-bangla">বাংলাদেশের জন্য তৈরি প্রথম AI ব্রাউজার। বাংলা সারাংশ, YouTube ট্রান্সক্রিপ্ট, প্রাইভেসি-ফার্স্ট।</p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-[13px]">
-              <div>
-                <div className="font-semibold">Product</div>
-                <div className="mt-3 space-y-2 opacity-70">
-                  <a href="#features" className="block hover:opacity-100">Features</a>
-                  <a href="#pricing" className="block hover:opacity-100">Pricing</a>
-                  <a href="#" className="block hover:opacity-100">Changelog</a>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold">Company</div>
-                <div className="mt-3 space-y-2 opacity-70">
-                  <a href="#" className="block hover:opacity-100">About</a>
-                  <a href="#" className="block hover:opacity-100">Privacy</a>
-                  <a href="#" className="block hover:opacity-100">Terms</a>
-                </div>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <div className="font-semibold">Payment</div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {["bKash", "Nagad", "Rocket"].map((p) => (
-                    <span key={p} className="inline-flex h-7 px-3 items-center rounded-full border border-zinc-200 bg-zinc-50 text-[12px] font-semibold">
-                      {p}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-3 text-[11px] opacity-50">Secure checkout • BDIX • SSL</div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-10 pt-6 border-t border-zinc-100 flex flex-col md:flex-row justify-between gap-2 text-[12px] opacity-60">
-            <span>© {new Date().getFullYear()} Hostamar. Made with ♥ in Bangladesh.</span>
-            <span className="font-bangla">ডেটা কখনো বিক্রি হয় না — Local Ollama option উপলব্ধ</span>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   );
 }

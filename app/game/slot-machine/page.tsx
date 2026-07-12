@@ -165,26 +165,7 @@ export default function SlotMachinePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
-      <header className="border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/game" className="p-2 hover:bg-white/5 rounded-lg transition">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            LuckyStar Game
-          </div>
-          <div className="ml-auto flex gap-3 items-center">
-            <span className="text-sm text-gray-400">Credits</span>
-            <span className="text-sm font-semibold text-yellow-300 flex items-center gap-1">
-              <Coins className="w-4 h-4" />
-              {credits}
-            </span>
-            <span className="text-sm text-gray-600">|</span>
-            <span className="text-sm text-gray-400">BDT</span>
-            <span className="text-sm font-semibold text-emerald-300">{balance}</span>
-          </div>
-        </div>
-      </header>
+      
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 md:p-8">
