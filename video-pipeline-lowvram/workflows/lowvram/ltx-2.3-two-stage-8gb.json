@@ -8,7 +8,7 @@
     "4988",
     0
    ],
-   "batch_size": 121
+   "batch_size": 1
   }
  },
  "3980": {
@@ -22,7 +22,7 @@
     "5000",
     0
    ],
-   "batch_size": 97,
+   "batch_size": 1,
    "audio_vae": [
     "4010",
     0
@@ -138,7 +138,7 @@
     0
    ],
    "prompt": "",
-   "enhance_prompt": "",
+   "enhance_prompt": "ltx-2.3-22b-dev.safetensors",
    "ckpt_name": "ltx-2.3-22b-dev.safetensors"
   }
  },
@@ -226,8 +226,7 @@
  "4967": {
   "class_type": "RandomNoise",
   "inputs": {
-   "noise_seed": 42,
-   "sampler_name": "euler_ancestral_cfg_pp"
+   "noise_seed": 42
   }
  },
  "4984": {
@@ -313,9 +312,9 @@
     "4979",
     0
    ],
-   "prompt": "",
-   "enhance_prompt": "pc game, console game, video game, cartoon, childish, ugly",
-   "ckpt_name": false
+   "prompt": "pc game, console game, video game, cartoon, childish, ugly",
+   "enhance_prompt": false,
+   "ckpt_name": "ltx-2.3-22b-dev.safetensors"
   }
  },
  "4990": {
@@ -347,7 +346,7 @@
     "3940",
     0
    ],
-   "lora_name": "ltx-2.3-22b-distilled-lora-384-1.1.safetensors",
+   "lora_name": "ltxv/ltx2/ltx-2.3-22b-distilled-lora-384-1.1.safetensors",
    "strength_model": 0.5
   }
  },
@@ -410,8 +409,7 @@
    "audio": [
     "4848",
     0
-   ],
-   "bit_depth": 30
+   ]
   }
  },
  "4852": {
