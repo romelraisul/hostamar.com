@@ -7,6 +7,7 @@ import { researchFanout } from '@/inngest/functions/research-fanout'
 import { goalTick } from '@/inngest/functions/goalTick'
 import { voicePostCallWorker } from '@/lib/voice/postCallProcessor'
 import { supportAutoResolve } from '@/inngest/functions/supportAutoResolve'
+import { supportInboxTriage } from '@/inngest/functions/supportInboxTriage'
 import { billingPaymentSucceeded } from '@/inngest/functions/billing-payment-succeeded'
 
 export const runtime = 'nodejs'
@@ -14,7 +15,7 @@ export const dynamic = 'force-dynamic'
 
 export const GET = serve({
   client: inngest,
-  functions: [autonomousRunner, researchFanout, goalTick, voicePostCallWorker, supportAutoResolve, billingPaymentSucceeded],
+  functions: [autonomousRunner, researchFanout, goalTick, voicePostCallWorker, supportAutoResolve, supportInboxTriage, billingPaymentSucceeded],
 })
 export const POST = GET
 export const PUT = GET
