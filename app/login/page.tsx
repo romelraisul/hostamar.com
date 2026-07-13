@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Eye, EyeOff, Check, Loader2, ShieldCheck, X } from 'lucide-react'
+import { SSOButton } from '@/components/auth/SSOButton'
 
 // Real auth flow preserved: POST /api/auth/login -> /dashboard (same endpoint the new
 // /signup auto-login uses). Forgot-password modal calls the REAL /api/auth/forgot-password
@@ -138,6 +139,9 @@ export default function LoginPage() {
               <div className="h-px bg-zinc-200 flex-1" />
               <span className="text-[12px] text-zinc-400">অথবা</span>
               <div className="h-px bg-zinc-200 flex-1" />
+            </div>
+            <div className="mt-4">
+              <SSOButton mode="login" />
             </div>
             <p className="text-center text-[13px] text-zinc-500">
               Don&apos;t have account? <a href="/signup" className="text-[#0E7C3A] font-medium hover:underline">Create free account</a>
