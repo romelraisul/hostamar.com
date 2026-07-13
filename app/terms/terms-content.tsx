@@ -215,6 +215,11 @@ export default function TermsContent() {
                     </h2>
                   </div>
                   <p className="text-[14.5px] text-zinc-700 leading-[1.8] mt-4">{s.body}</p>
+                  {s.id === 'billing' && (
+                    <Link href="/refund" className="bangla mt-3 inline-flex items-center gap-1 text-[13.5px] font-semibold text-[#0E7C3A] hover:gap-2 transition-all">
+                      রিফান্ড নীতি দেখুন → /refund
+                    </Link>
+                  )}
                   <div className="bangla mt-3 rounded-xl bg-[#0E7C3A]/[0.06] border-l-4 border-[#0E7C3A] px-4 py-3 text-[14px] text-[#0c6a32]">
                     বাংলায় সারাংশ: {s.bn}
                   </div>
