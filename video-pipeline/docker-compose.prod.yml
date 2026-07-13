@@ -1,0 +1,167 @@
+# =============================================================================
+# Hostamar AI Video Pipeline — Production Compose (GPU render backend)
+# Self-contained under video-pipeline/. Does NOT touch the repo root
+# docker-compose.prod.yml (LiveKit-only). Bring up:
+#   cd video-pipeline && docker compose -f docker-compose.prod.yml up -d
+# Requires NVIDIA host (A100 40GB, or 2x RTX 4090 / 2x 3080) + Container Toolkit.
+# VRAM split: comfyui_main(cuda:0)=LTX 13B + 4K upscale; comfyui_lite(cuda:1)=
+# Chatterbox + ACE-Step + InfiniteTalk. See README for the math.
+# =============================================================================
+
+x_comfyui_common: &comfyui_common
+  build:
+    context: ./docker/comfyui
+  restart: unless-stopped
+  volumes:
+    - ./models:/app/ComfyUI/models
+    - ./custom_nodes:/app/ComfyUI/custom_nodes
+    - ./output:/app/ComfyUI/output
+    - ./workflows:/app/ComfyUI/workflows:ro
+  networks:
+    - video_net
+
+services:
+  comfyui_main:
+    <<: *comfyui_common
+    container_name: hostamar_comfyui_main
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - CLI_ARGS=--cuda-device 0 --highvram
+    command: python main.py --listen 0.0.0.0 --port 8188 --cuda-device 0 --highvram
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: ["gpu"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8188/system_stats', timeout=5).status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+    ports:
+      - "8188:8188"
+
+  comfyui_lite:
+    <<: *comfyui_common
+    container_name: hostamar_comfyui_lite
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1
+      - CLI_ARGS=--cuda-device 1 --highvram
+    command: python main.py --listen 0.0.0.0 --port 8189 --cuda-device 1 --highvram
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: ["gpu"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8189/system_stats', timeout=5).status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+    ports:
+      - "8189:8189"
+
+  redis:
+    image: redis:7-alpine
+    container_name: hostamar_video_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - video_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: hostamar_video_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${R2_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${R2_PASS:-minioadmin}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - video_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build:
+      context: ./backend
+    container_name: hostamar_video_worker
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      comfyui_main:
+        condition: service_healthy
+      comfyui_lite:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - COMFY_MAIN_URL=http://comfyui_main:8188
+      - COMFY_LITE_URL=http://comfyui_lite:8189
+      - R2_ENDPOINT=${R2_ENDPOINT:-http://minio:9000}
+      - R2_KEY=${R2_KEY:-minioadmin}
+      - R2_PASS=${R2_PASS:-minioadmin}
+      - R2_BUCKET=${R2_BUCKET:-hostamar-videos}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL:-http://localhost:9000/hostamar-videos}
+      - R2_TTL=${R2_TTL:-604800}
+      - HF_TOKEN=${HF_TOKEN:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+    volumes:
+      - ./models:/models:ro
+      - ./output:/output
+    networks:
+      - video_net
+
+  api_gateway:
+    build:
+      context: ./backend
+      target: gateway
+    container_name: hostamar_video_gateway
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - VIDEO_KEY=${VIDEO_KEY:-change-me}
+      - WORKER_STREAM=video_jobs
+      - JOB_TTL=${JOB_TTL:-86400}
+      - BKASH_KEY=${BKASH_KEY:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+    networks:
+      - video_net
+
+volumes:
+  redis_data:
+  minio_data:
+
+networks:
+  video_net:
+    driver: bridge

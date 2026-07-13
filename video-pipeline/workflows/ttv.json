@@ -1,0 +1,11 @@
+{
+  "1": ["LTXVModelLoader", { "_meta": { "title": "LTXV Model Loader" }, "model": "ltxv-13b-0.9.8-distilled", "precision": "fp16", "offload": false }],
+  "2": ["LTXVTextEncode", { "_meta": { "title": "LTXV Text Encode (Prompt)" }, "prompt": "PLACEHOLDER_PROMPT", "negative_prompt": "PLACEHOLDER_NEG", "width": 576, "height": 1024, "num_frames": 81, "frame_rate": 25, "aspect_ratio": "9:16", "duration": 15 }],
+  "3": ["LTXVConditioning", { "_meta": { "title": "LTXV Conditioning" }, "prompt": "PLACEHOLDER_PROMPT", "negative_prompt": "PLACEHOLDER_NEG", "strength": 1.0, "force_offload": true }],
+  "4": ["LTXVScheduler", { "_meta": { "title": "LTXV Scheduler" }, "model": ["1", 0], "steps": 30, "max_shift": 3.0, "base_shift": 1.0, "stretch": true, "terminal": 0.1 }],
+  "5": ["LTXVSample", { "_meta": { "title": "LTXV Sample" }, "conditioning": ["4", 0], "noise": ["6", 0], "width": 576, "height": 1024, "num_frames": 81, "frame_rate": 25, "compilation": false, "enable_teacache": true, "teacache_steps": 30 }],
+  "6": ["LTXVRandomNoise", { "_meta": { "title": "LTXV Random Noise" }, "noise_seed": 0, "width": 576, "height": 1024, "num_frames": 81 }],
+  "7": ["VAEDecode", { "_meta": { "title": "VAE Decode" }, "samples": ["5", 0] }],
+  "8": ["SaveImage", { "_meta": { "title": "Save Image" }, "images": ["7", 0] }],
+  "_INPUTS_TO_SET": "Worker sets node 2 + 3: prompt, negative_prompt, aspect_ratio, duration. width/height follow aspect_ratio. TEMPLATE — verify node titles against GET /object_info on a live ComfyUI-LTXVideo before production."
+}

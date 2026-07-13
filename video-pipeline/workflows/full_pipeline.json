@@ -1,0 +1,20 @@
+{
+  "1": ["LTXVModelLoader", { "_meta": { "title": "LTXV Model Loader" }, "model": "ltxv-13b-0.9.8-distilled", "precision": "fp16", "offload": false }],
+  "2": ["LoadImage", { "_meta": { "title": "Load Image" }, "image": "PLACEHOLDER_AVATAR.png" }],
+  "3": ["LTXVImgToVideo", { "_meta": { "title": "LTXV Image to Video" }, "image": ["2", 0], "vae": ["9", 0], "num_frames": 81, "strength": 1.0 }],
+  "4": ["LTXVTextEncode", { "_meta": { "title": "LTXV Text Encode (Prompt)" }, "prompt": "PLACEHOLDER_PROMPT", "negative_prompt": "blurry, watermark", "width": 576, "height": 1024, "num_frames": 81, "frame_rate": 25, "aspect_ratio": "9:16", "duration": 15 }],
+  "5": ["LTXVConditioning", { "_meta": { "title": "LTXV Conditioning" }, "prompt": "PLACEHOLDER_PROMPT", "negative_prompt": "blurry, watermark", "strength": 1.0, "force_offload": true }],
+  "6": ["LTXVScheduler", { "_meta": { "title": "LTXV Scheduler" }, "model": ["1", 0], "steps": 30, "max_shift": 3.0, "base_shift": 1.0, "stretch": true, "terminal": 0.1 }],
+  "7": ["LTXVSample", { "_meta": { "title": "LTXV Sample" }, "conditioning": ["6", 0], "noise": ["8", 0], "width": 576, "height": 1024, "num_frames": 81, "frame_rate": 25, "compilation": false, "enable_teacache": true, "teacache_steps": 30 }],
+  "8": ["LTXVRandomNoise", { "_meta": { "title": "LTXV Random Noise" }, "noise_seed": 0, "width": 576, "height": 1024, "num_frames": 81 }],
+  "9": ["LTXVVAELoader", { "_meta": { "title": "LTXV VAE Loader" }, "vae": "ltxv-13b-0.9.8-distilled" }],
+  "10": ["VAEDecode", { "_meta": { "title": "VAE Decode" }, "samples": ["7", 0] }],
+  "11": ["ACEStepGenerate", { "_meta": { "title": "ACE Step Generate" }, "prompt": "upbeat Bangladeshi bazaar background music, no vocals, 15 seconds", "duration": 15, "guidance_scale": 7.5, "seed": 0 }],
+  "12": ["SaveAudio", { "_meta": { "title": "Save BGM" }, "audio": ["11", 0] }],
+  "13": ["ChatterboxTTS", { "_meta": { "title": "ChatterBox TTS" }, "text": "PLACEHOLDER_SCRIPT", "voice": "default", "exaggeration": 0.5, "cfg": 0.5, "temperature": 0.7, "seed": 0, "language": "bn", "transliterate": true }],
+  "14": ["InfiniteTalkLipSync", { "_meta": { "title": "InfiniteTalk Lip Sync" }, "image": ["2", 0], "video": ["10", 0], "audio": ["13", 0], "motion_scale": 1.0, "use_disk_streaming": true }],
+  "15": ["WhisperAutoCaption", { "_meta": { "title": "Whisper Caption" }, "video": ["14", 0], "language": "bn" }],
+  "16": ["RealESRGANUpscale", { "_meta": { "title": "Real-ESRGAN Upscale (4x)" }, "image": ["15", 0], "model_name": "RealESRGAN_x4plus", "target_width": 3840, "target_height": 2160 }],
+  "17": ["SaveImage", { "_meta": { "title": "Save Final" }, "images": ["16", 0] }],
+  "_INPUTS_TO_SET": "Worker sets: node 2 image (avatar), node 4/5 prompt, node 11 BGM prompt, node 13 script, node 15/16 as needed. TEMPLATE - verify every node title against GET /object_info on a live ComfyUI with all 5 nodes installed. InfiniteTalk 'use_disk_streaming: true' enables the infinite-length generation the brief requires."
+}
