@@ -25,8 +25,8 @@ function Get-Model {
 }
 
 Get-Model "city96/LTX-Video-2B-gguf"            "diffusion_models/ltxv-2b-distilled-Q6_K.gguf" 6000
-Get-Model "Kijai/Wan2.1_i2v_480p_14B_FusionX-Q4_0-GGUF" "diffusion_models/wan2.1_i2v_480p_14B_Q4_0.gguf" 8000
-Get-Model "xuhongming251/InfiniteTalk"         "loras/wan2.1_infiniteTalk_single_fp16.safetensors" 1000
+Get-Model "QuantStack/Wan2.1_I2V_14B_FusionX-GGUF" "Wan2.1_I2V_14B_FusionX-Q4_0.gguf" "diffusion_models/wan2.1_i2v_480p_14B_Q4_0.gguf" 8000
+Get-Model "MeiGen-AI/InfiniteTalk"               "single/infinitetalk.safetensors" "loras/wan2.1_infiniteTalk_single_fp16.safetensors" 1000
 Get-Model "Lightricks/LTX-Video"                "vae/ltxv_2b_vae.safetensors" 100
 Get-Model "Comfy-Org/Wan_2.1_Repackaged"        "vae/wan_2.1_vae.safetensors" 100
 Get-Model "Comfy-Org/Wan_2.1_Repackaged"        "text_encoders/umt5_xxl_fp16.safetensors" 1000
