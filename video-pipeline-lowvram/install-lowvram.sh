@@ -67,7 +67,7 @@ dl "Lightricks/LTX-2.3" "ltx-2.3-22b-dev.safetensors" "checkpoints/ltx-2.3-22b-d
 dl "Lightricks/LTX-2.3" "ltx-2.3-22b-distilled-lora-384-1.1.safetensors" "loras/ltx-2.3-22b-distilled-lora-384-1.1.safetensors" 400000000
 # Spatial + temporal upscalers (two-stage pipeline)
 dl "Lightricks/LTX-2.3" "ltx-2.3-spatial-upscaler-x2-1.1.safetensors" "latent_upscale_models/ltx-2.3-spatial-upscaler-x2-1.1.safetensors" 900000000
-dl "Lightricks/LTX-2.3" "ltx-2.3-temporal-upscaler-x2-1.0.safetensors" "latent_upscale_models/ltx-2.3-temporal-upscaler-x2-1.0.safetensors" 900000000
+dl "Lightricks/LTX-2.3" "ltx-2.3-temporal-upscaler-x2-1.0.safetensors" "latent_upscale_models/ltx-2.3-temporal-upscaler-x2-1.0.safetensors" 200000000
 # Gemma-3-12B text encoder (whole repo, many files)
 dl_dir "google/gemma-3-12b-it-qat-q4_0-unquantized" "text_encoders/gemma-3-12b-it-qat-q4_0-unquantized"
 
