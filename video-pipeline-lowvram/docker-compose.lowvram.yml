@@ -1,0 +1,47 @@
+# =============================================================================
+# Hostamar AI Video Pipeline — LOW VRAM local mode (8GB VRAM + 64GB RAM, WSL2)
+# -----------------------------------------------------------------------------
+# Sibling of video-pipeline/ (A100-40GB). This one runs on a single 8GB GPU:
+#   - LTX-Video 2B distilled (or GGUF Q6 fallback) instead of 13B
+#   - InfiniteTalk via Wan2.1 I2V 14B Q4_0 GGUF + --num_persistent_param_in_dit 0
+#   - Chatterbox + ACE-Step 1.5 (audio only, fit 8GB)
+#   - Sequential execution, --lowvram, CPU VAE offload to the 48GB WSL RAM
+#
+# .wslconfig (Windows side) MUST allocate >=48GB to WSL first (see README-8GB.md).
+#
+# NOTE: env uses plain ${VAR} refs only (no inline secrets). Copy .env.example-lowvram.
+# =============================================================================
+services:
+  comfyui-lowvram:
+    build:
+      context: ./docker/comfyui-lowvram
+    image: hostamar-comfyui-lowvram:local
+    container_name: hostamar-comfyui-lowvram
+    runtime: nvidia
+    ports:
+      - "8188:8188"
+    environment:
+      # --lowvram forces chunked offload to system RAM (your 48GB WSL).
+      # --disable-smart-memory keeps it predictable. --cpu-vae decodes on CPU.
+      # --use-split-cross-attention saves VRAM on the attention path.
+      - CLI_ARGS=--lowvram --disable-smart-memory --use-split-cross-attention --cpu-vae --listen 0.0.0.0
+      - HF_TOKEN=${HF_TOKEN}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./models:/root/ComfyUI/models
+      - ./output:/root/ComfyUI/output
+      - ./workflows:/root/ComfyUI/user_workflows
+    deploy:
+      resources:
+        limits:
+          memory: 48G
+    mem_limit: 48g
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8188/system_stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+    # Single GPU, so no cuda:0/cuda:1 split — sequential only.
