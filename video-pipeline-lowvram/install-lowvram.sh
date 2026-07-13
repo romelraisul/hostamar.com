@@ -77,7 +77,7 @@ dl_dir "google/gemma-3-12b-it-qat-q4_0-unquantized" "text_encoders/gemma-3-12b-i
 dl "QuantStack/Wan2.1_I2V_14B_FusionX-GGUF" "Wan2.1_I2V_14B_FusionX-Q4_0.gguf" "diffusion_models/wan2.1_i2v_480p_14B_Q4_0.gguf" 8000000000
 
 # InfiniteTalk single fp16 patch
-dl "xuhongming251/InfiniteTalk" "wan2.1_infiniteTalk_single_fp16.safetensors" "loras/wan2.1_infiniteTalk_single_fp16.safetensors" 1000000000
+dl "MeiGen-AI/InfiniteTalk" "single/infinitetalk.safetensors" "loras/wan2.1_infiniteTalk_single_fp16.safetensors" 1000000000
 
 # Wan VAE + UMT5 text encoder (small, required)
 dl "Comfy-Org/Wan_2.1_Repackaged" "vae/wan_2.1_vae.safetensors" "vae/wan_2.1_vae.safetensors" 100000000
