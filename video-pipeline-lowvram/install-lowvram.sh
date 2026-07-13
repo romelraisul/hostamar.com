@@ -74,7 +74,7 @@ dl_dir "google/gemma-3-12b-it-qat-q4_0-unquantized" "text_encoders/gemma-3-12b-i
 # ---------------------------------------------------------------------------
 # Wan 2.1 I2V 14B Q4_0 GGUF for InfiniteTalk (Test C/D)
 # ---------------------------------------------------------------------------
-dl "Kijai/Wan2.1_i2v_480p_14B_FusionX-Q4_0-GGUF" "wan2.1_i2v_480p_14B_Q4_0.gguf" "diffusion_models/wan2.1_i2v_480p_14B_Q4_0.gguf" 8000000000
+dl "QuantStack/Wan2.1_I2V_14B_FusionX-GGUF" "Wan2.1_I2V_14B_FusionX-Q4_0.gguf" "diffusion_models/wan2.1_i2v_480p_14B_Q4_0.gguf" 8000000000
 
 # InfiniteTalk single fp16 patch
 dl "xuhongming251/InfiniteTalk" "wan2.1_infiniteTalk_single_fp16.safetensors" "loras/wan2.1_infiniteTalk_single_fp16.safetensors" 1000000000
