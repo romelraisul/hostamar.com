@@ -2,6 +2,7 @@
 // product derived from the Tier1 checks. Cached 30s at the route layer.
 import { NextResponse } from 'next/server'
 import { runAllChecks } from '@/lib/support/checks'
+import { getUserHealthSummary } from '@/lib/support/userHealth'
 
 export const runtime = 'nodejs'
 export const revalidate = 30 // cache 30s
@@ -36,8 +37,15 @@ export async function GET() {
     productStatus[p] = states.includes('red') ? 'red' : states.includes('yellow') ? 'yellow' : 'green'
   }
 
+  const userHealth = await getUserHealthSummary(60).catch(() => [])
+
   return NextResponse.json(
-    { products: productStatus, checks, generatedAt: new Date().toISOString() },
+    {
+      products: productStatus,
+      checks,
+      userHealth, // user-facing root causes (inbox), correlated vs server
+      generatedAt: new Date().toISOString(),
+    },
     { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } },
   )
 }
