@@ -1,72 +1,311 @@
 {
-  "1": ["WanVideoModelLoader", {
-    "_meta": { "title": "WanVideo Model Loader (GGUF)" },
-    "model_name": "wan2.1_i2v_480p_14B_Q4_0.gguf",
-    "base_precision": "fp16",
-    "quantization": "q4_0",
-    "load_device": "cuda",
-    "offload_device": "cpu"
-  }],
-  "2": ["WanVideoVAELoader", {
-    "_meta": { "title": "WanVideo VAE Loader" },
-    "vae_name": "wan_2.1_vae.safetensors"
-  }],
-  "3": ["WanVideoTextEncode", {
-    "_meta": { "title": "WanVideo CLIP Text Encode" },
-    "clip_name": "umt5_xxl_fp16.safetensors",
-    "text": "A Bangladeshi woman speaker talks to camera, natural hand gestures, indoor office, 480p",
-    "negative_prompt": "blurry, distorted, watermark"
-  }],
-  "4": ["LoadImage", {
-    "_meta": { "title": "Load First Frame" },
-    "upload": "first_frame.png"
-  }],
-  "5": ["WanVideoImageToVideoEncode", {
-    "_meta": { "title": "WanVideo I2V Encode" },
-    "width": 512,
-    "height": 768,
-    "length": 49,
-    "batch_size": 1,
-    "frame_rate": 25,
-    "strength": 1.0,
-    "image": ["4", 0]
-  }],
-  "6": ["InfiniteTalkModelLoader", {
-    "_meta": { "title": "InfiniteTalk Patch Loader" },
-    "model_name": "wan2.1_infiniteTalk_single_fp16.safetensors",
-    "num_persistent_param_in_dit": 0
-  }],
-  "7": ["WanVideoSampler", {
-    "_meta": { "title": "WanVideo Sampler" },
-    "seed": 0,
-    "steps": 25,
-    "cfg": 6.0,
-    "shift": 8.0,
-    "scheduler": "unipc",
-    "motion_frame": 9,
-    "mode": "streaming",
-    "size": "infinitetalk-480",
-    "model": ["1", 0],
-    "vae": ["2", 0],
-    "positive": ["3", 0],
-    "negative": ["3", 1],
-    "image_latents": ["5", 0],
-    "patch": ["6", 0]
-  }],
-  "8": ["WanVideoDecode", {
-    "_meta": { "title": "WanVideo Decode" },
-    "device": "cpu",
-    "samples": ["7", 0]
-  }],
-  "9": ["VHS_VideoCombine", {
-    "_meta": { "title": "Video Combine" },
-    "frame_rate": 25,
-    "loop_count": 0,
-    "filename_prefix": "infinitetalk-q4-8gb",
-    "format": "video/h264-mp4",
-    "pix_fmt": "yuv420p",
-    "crf": 20,
-    "save_output": true,
-    "images": ["8", 0]
-  }]
+ "129": {
+  "class_type": "WanVideoVAELoader",
+  "inputs": {
+   "model_name": "wanvideo\\Wan2_1_VAE_bf16.safetensors",
+   "precision": "bf16"
+  }
+ },
+ "238": {
+  "class_type": "CLIPVisionLoader",
+  "inputs": {
+   "clip_name": "clip_vision_h.safetensors"
+  }
+ },
+ "138": {
+  "class_type": "WanVideoLoraSelect",
+  "inputs": {
+   "lora": "WanVideo\\Lightx2v\\lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
+   "strength": 1,
+   "low_mem_load": false,
+   "merge_loras": false
+  }
+ },
+ "134": {
+  "class_type": "WanVideoBlockSwap",
+  "inputs": {
+   "blocks_to_swap": 20,
+   "offload_img_emb": false,
+   "offload_txt_emb": false,
+   "use_non_blocking": true,
+   "vace_blocks_to_swap": 0,
+   "prefetch_blocks": 1,
+   "block_swap_debug": false
+  }
+ },
+ "245": {
+  "class_type": "INTConstant",
+  "inputs": {
+   "value": 640
+  }
+ },
+ "246": {
+  "class_type": "INTConstant",
+  "inputs": {
+   "value": 640
+  }
+ },
+ "237": {
+  "class_type": "WanVideoClipVisionEncode",
+  "inputs": {
+   "clip_vision": [
+    "238",
+    0
+   ],
+   "image_1": [
+    "291",
+    0
+   ],
+   "strength_1": 1,
+   "strength_2": 1,
+   "crop": "center",
+   "combine_embeds": "average",
+   "force_offload": true,
+   "tiles": 0,
+   "ratio": 0.5
+  }
+ },
+ "293": {
+  "class_type": "PreviewAny",
+  "inputs": {
+   "source": [
+    "194",
+    2
+   ]
+  }
+ },
+ "194": {
+  "class_type": "MultiTalkWav2VecEmbeds",
+  "inputs": {
+   "wav2vec_model": [
+    "137",
+    0
+   ],
+   "audio_1": [
+    "302",
+    0
+   ],
+   "normalize_loudness": true,
+   "num_frames": [
+    "270",
+    0
+   ],
+   "fps": 25.0,
+   "audio_scale": 1,
+   "audio_cfg_scale": 1,
+   "multi_audio_type": "para"
+  }
+ },
+ "122": {
+  "class_type": "WanVideoModelLoader",
+  "inputs": {
+   "model": "WanVideo\\wan2.1-i2v-14b-480p-Q8_0.gguf",
+   "base_precision": "fp16_fast",
+   "quantization": "disabled",
+   "load_device": "offload_device",
+   "attention_mode": "sageattn",
+   "block_swap_args": [
+    "134",
+    0
+   ],
+   "lora": [
+    "138",
+    0
+   ],
+   "multitalk_model": [
+    "120",
+    0
+   ]
+  }
+ },
+ "177": {
+  "class_type": "WanVideoTorchCompileSettings",
+  "inputs": {
+   "backend": "inductor",
+   "fullgraph": false,
+   "mode": "default",
+   "dynamic": false,
+   "dynamo_cache_size_limit": 64,
+   "compile_transformer_blocks_only": true,
+   "dynamo_recompile_limit": 128
+  }
+ },
+ "291": {
+  "class_type": "GetImageSizeAndCount",
+  "inputs": {
+   "image": [
+    "281",
+    0
+   ]
+  }
+ },
+ "284": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "woman.png"
+  }
+ },
+ "281": {
+  "class_type": "ImageResizeKJv2",
+  "inputs": {
+   "image": [
+    "284",
+    0
+   ],
+   "width": [
+    "245",
+    0
+   ],
+   "height": [
+    "246",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "keep_proportion": "crop",
+   "pad_color": "0, 0, 0",
+   "crop_position": "center",
+   "divisible_by": 16,
+   "device": "cpu"
+  }
+ },
+ "125": {
+  "class_type": "LoadAudio",
+  "inputs": {
+   "audio": "sample_voice.wav"
+  }
+ },
+ "137": {
+  "class_type": "DownloadAndLoadWav2VecModel",
+  "inputs": {
+   "model": "TencentGameMate/chinese-wav2vec2-base",
+   "base_precision": "fp16",
+   "load_device": "main_device"
+  }
+ },
+ "300": {
+  "class_type": "Wav2VecModelLoader",
+  "inputs": {
+   "model": "wav2vec2-chinese-base_fp16.safetensors",
+   "base_precision": "fp16",
+   "load_device": "main_device"
+  }
+ },
+ "302": {
+  "class_type": "MelBandRoFormerSampler",
+  "inputs": {
+   "model": [
+    "301",
+    0
+   ],
+   "audio": [
+    "125",
+    0
+   ]
+  }
+ },
+ "301": {
+  "class_type": "MelBandRoFormerModelLoader",
+  "inputs": {
+   "model_name": "MelBandRoFormer\\MelBandRoformer_fp16.safetensors"
+  }
+ },
+ "120": {
+  "class_type": "MultiTalkModelLoader",
+  "inputs": {
+   "model": "WanVideo\\InfiniteTalk\\Wan2_1-InfiniteTalk_Single_Q8.gguf"
+  }
+ },
+ "309": {
+  "class_type": "WanVideoPassImagesFromSamples",
+  "inputs": {
+   "samples": [
+    "128",
+    0
+   ]
+  }
+ },
+ "241": {
+  "class_type": "WanVideoTextEncodeCached",
+  "inputs": {
+   "model_name": "umt5-xxl-enc-bf16.safetensors",
+   "precision": "bf16",
+   "positive_prompt": "a woman is singing",
+   "negative_prompt": "bright tones, overexposed, static, blurred details, subtitles, style, works, paintings, images, static, overall gray, worst quality, low quality, JPEG compression residue, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn faces, deformed, disfigured, misshapen limbs, fused fingers, still picture, messy background, three legs, many people in the background, walking backwards",
+   "quantization": "disabled",
+   "use_disk_cache": false,
+   "device": "gpu"
+  }
+ },
+ "270": {
+  "class_type": "INTConstant",
+  "inputs": {
+   "value": 500
+  }
+ },
+ "192": {
+  "class_type": "WanVideoImageToVideoMultiTalk",
+  "inputs": {
+   "vae": [
+    "129",
+    0
+   ],
+   "width": [
+    "291",
+    1
+   ],
+   "height": [
+    "291",
+    2
+   ],
+   "frame_window_size": 81,
+   "motion_frame": 9,
+   "force_offload": false,
+   "colormatch": "disabled",
+   "start_image": [
+    "291",
+    0
+   ],
+   "tiled_vae": false,
+   "clip_embeds": [
+    "237",
+    0
+   ],
+   "mode": "infinitetalk",
+   "output_path": ""
+  }
+ },
+ "128": {
+  "class_type": "WanVideoSampler",
+  "inputs": {
+   "model": [
+    "122",
+    0
+   ],
+   "image_embeds": [
+    "192",
+    0
+   ],
+   "steps": 6,
+   "cfg": 1.0000000000000002,
+   "shift": 11.000000000000002,
+   "seed": 2,
+   "force_offload": "fixed",
+   "scheduler": true,
+   "riflex_freq_index": "dpm++_sde",
+   "text_embeds": [
+    "241",
+    0
+   ],
+   "denoise_strength": 0,
+   "batched_cfg": 1,
+   "rope_function": false,
+   "multitalk_embeds": [
+    "194",
+    0
+   ],
+   "start_step": "comfy",
+   "end_step": 0,
+   "add_noise_to_samples": -1
+  }
+ }
 }

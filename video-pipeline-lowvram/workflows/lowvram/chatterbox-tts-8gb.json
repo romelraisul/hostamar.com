@@ -1,0 +1,18 @@
+{
+  "1": ["ChatterBoxSRTVoiceTTS", {
+    "_meta": { "title": "Chatterbox TTS (SRT) 8GB smoke" },
+    "srt_content": "1\n00:00:00,000 --> 00:00:04,000\nHello, this is Hostamar speaking to you.\n2\n00:00:04,000 --> 00:00:08,000\nMaking videos for your business is very easy.\n3\n00:00:08,000 --> 00:00:12,000\nToday we will see how this feature works.",
+    "language": "English",
+    "device": "cuda",
+    "exaggeration": 0.5,
+    "temperature": 0.7,
+    "cfg_weight": 0.5,
+    "seed": 0,
+    "timing_mode": "concatenate"
+  }],
+  "2": ["SaveAudio", {
+    "_meta": { "title": "Save Audio" },
+    "audio": ["1", 0],
+    "filename_prefix": "chatterbox_bn_8gb"
+  }]
+}
