@@ -16,7 +16,7 @@ OUT_DIR="output"; mkdir -p "$OUT_DIR"
 REPORT="SMOKE_REPORT_8GB.md"; : > "$REPORT"
 RES="${RES:-512x768}"; FRAMES="${FRAMES:-49}"
 PASS=0; FAIL=0
-log() { echo "$1" | tee -a "$REPORT"; }
+log() { echo "$1" | tee -a "$REPORT" >&2; }
 
 json_get() { python3 -c "import sys,json;print(json.load(sys.stdin)$1)" 2>/dev/null; }
 node_present() { curl -s -m 10 "$URL/object_info" | python3 -c "import sys,json;d=json.load(sys.stdin);sys.exit(0 if '$1' in d else 1)" 2>/dev/null; }
