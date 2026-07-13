@@ -7,7 +7,21 @@ import ROICalculator from '@/components/pricing/ROICalculator'
 
 const GREEN = '#0E7C3A'
 
-// Competitor anchor: pain of 5 separate tools (৳8000+/mo) vs Hostamar ৳3500 all-in.
+// Pricing structured data — real published BDT offers (no fabricated ratings).
+const pricingJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'Hostamar',
+  description: 'AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক সাবস্ক্রিপশনে। bKash, Nagad, Rocket।',
+  brand: { '@type': 'Brand', name: 'Hostamar' },
+  offers: [
+    { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Business', price: '3500', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Enterprise', price: '6000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+  ],
+  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '2000', highPrice: '6000', priceCurrency: 'BDT' },
+}
+
 type AnchorRow = { tool: string; cost: string; value: string }
 const ANCHOR: AnchorRow[] = [
   { tool: 'ExonHost', cost: '৳২,০০০/yr', value: 'শুধু হোস্টিং' },
@@ -150,6 +164,10 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-[#FCFCF9] text-zinc-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }}
+      />
       {/* Top banner */}
       <div className="w-full bg-[#0E7C3A] text-white text-[13px] md:text-sm">
         <div className="mx-auto max-w-[1240px] px-4 md:px-6 py-2.5 flex items-center justify-center gap-2 text-center">

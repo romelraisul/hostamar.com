@@ -1,9 +1,33 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { FAQS, FEATURED_FAQS } from '@/lib/faqs';
 
 const GREEN = "#0E7C3A";
 const RED = "#E4312B";
+
+// Homepage structured data — Product + real Offers (mirrors app/pricing) + FAQPage.
+// No AggregateRating: we surface the 4.8★ badge as a UI trust mark only, not as
+// unbacked schema.org review data.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
+const homeJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'Hostamar',
+  description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক সাবস্ক্রিপশনে।',
+  brand: { '@type': 'Brand', name: 'Hostamar' },
+  offers: [
+    { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Business', price: '3500', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Enterprise', price: '6000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+  ],
+  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '2000', highPrice: '6000', priceCurrency: 'BDT' },
+  mainEntity: FAQS.slice(0, 6).map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
 
 const PRODUCTS = [
   { href: '/generate', label: 'AI ভিডিও', desc: 'পণ্যের ছবি → ভিডিও', emoji: '🎬' },
@@ -27,6 +51,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased selection:bg-[#0E7C3A]/20 overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
+      />
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 h-11 rounded-full bg-zinc-900 text-white text-[13px] font-medium flex items-center shadow-xl animate-[in_.2s_ease]">
           {toast}
@@ -189,10 +217,13 @@ export default function App() {
         </section>
 
         {/* Bento Features */}
-        <section className="mt-16">
+        <section id="features" className="mt-16">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
             <h2 className="bangla text-[28px] md:text-[32px] font-bold leading-[1.15] tracking-[-0.02em]">বাংলাদেশের জন্য<br/>বিশেষভাবে তৈরি ফিচার</h2>
-            <p className="bangla text-[14px] text-zinc-500 max-w-[320px] leading-[1.6]">Silicon Valley টুল নয় — bKash, বাংলা ভয়েস, লোকাল ফন্ট, সবকিছুই আপনার দোকানের জন্য।</p>
+            <div className="flex flex-col items-start gap-3">
+              <p className="bangla text-[14px] text-zinc-500 max-w-[320px] leading-[1.6]">Silicon Valley টুল নয় — bKash, বাংলা ভয়েস, লোকাল ফন্ট, সবকিছুই আপনার দোকানের জন্য।</p>
+              <Link href="/features" className="bangla text-[13px] font-semibold text-[#0E7C3A] inline-flex items-center gap-1 hover:gap-2 transition-all">সব ৩০+ ফিচার দেখুন →</Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[220px]">
@@ -373,10 +404,11 @@ export default function App() {
         </section>
 
         {/* FAQ */}
-        <section className="mt-20 grid md:grid-cols-[320px_1fr] gap-8">
+        <section id="faq" className="mt-20 grid md:grid-cols-[320px_1fr] gap-8 scroll-mt-24">
           <div>
             <h2 className="bangla text-[26px] font-bold leading-tight">সাধারণ প্রশ্ন</h2>
             <p className="bangla mt-2 text-[13px] text-zinc-500 leading-[1.6]">SME ওনারদের সবচেয়ে বেশি জিজ্ঞাসিত প্রশ্ন। আরও জানতে সাপোর্টে নক দিন।</p>
+            <Link href="/faq" className="bangla mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#0E7C3A] hover:gap-2 transition-all">সব ২৫টি প্রশ্ন দেখুন →</Link>
             <div className="mt-5 hidden md:flex items-center gap-2 text-[13px]">
               <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center">💬</div>
               <div><div className="font-medium bangla">লাইভ চ্যাট সাপোর্ট</div><div className="text-[12px] text-zinc-500">সকাল ৯টা - রাত ১০টা</div></div>
@@ -384,12 +416,8 @@ export default function App() {
           </div>
 
           <div className="rounded-[20px] bg-white border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
-            {[
-              {q:"আমার কি ভিডিও এডিটিং জানতে হবে?", a:"একদম না। আপনি শুধু পণ্যের ছবি আপলোড করবেন, প্রোডাক্টের নাম লিখবেন, টেমপ্লেট সিলেক্ট করবেন — Hostamar ৩০ সেকেন্ডে ভিডিও বানিয়ে দেবে। বাংলা ভয়েস, মিউজিক, সাবটাইটেল সব অটো।"},
-              {q:"bKash দিয়ে কি পেমেন্ট করা যাবে? ইনভয়েস পাবো?", a:"হ্যাঁ। bKash, Nagad, Rocket, Upay এবং যেকোনো লোকাল কার্ড সাপোর্ট করে। পেমেন্টের সাথে সাথে অটো ইনভয়েস ইমেইলে চলে যাবে, ভ্যাট সহ। বিজনেসের জন্য BIN সহ ইনভয়েস দেওয়া হয়।"},
-              {q:"ভিডিও কি ফেসবুকে সরাসরি পোস্ট করা যাবে?", a:"হ্যাঁ। 9:16 Reels, 1:1 Feed, 16:9 YouTube — এক ক্লিকে তিন ফরম্যাটে এক্সপোর্ট। চাইলে সরাসরি ফেসবুক পেজে শিডিউলও করতে পারবেন। ক্যাপশন ও হ্যাশট্যাগ AI সাজেস্ট করে দেবে।"},
-            ].map((item, idx)=>(
-              <button key={idx} onClick={()=>setFaqOpen(faqOpen===idx?null:idx)} className="w-full text-left px-6 py-5 flex items-start justify-between gap-6 hover:bg-zinc-50/60 transition">
+            {FEATURED_FAQS(6).map((item, idx)=>(
+              <button key={item.id} onClick={()=>setFaqOpen(faqOpen===idx?null:idx)} className="w-full text-left px-6 py-5 flex items-start justify-between gap-6 hover:bg-zinc-50/60 transition">
                 <div className="flex-1">
                   <div className="bangla font-medium text-[15px] leading-[1.4]">{item.q}</div>
                   {faqOpen===idx && <div className="bangla mt-2.5 text-[13.5px] leading-[1.7] text-zinc-600">{item.a}</div>}
