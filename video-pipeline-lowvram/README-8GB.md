@@ -48,8 +48,8 @@ docker compose -f docker-compose.lowvram.yml up -d
 ```
 Pulls:
 - `city96/LTX-Video-2B-gguf` → `ltxv-2b-distilled-Q6_K.gguf` (LTX 2B, fits 8GB via GGUF)
-- `Kijai/Wan2.1_i2v_480p_14B_FusionX-Q4_0-GGUF` → `wan2.1_i2v_480p_14B_Q4_0.gguf` (InfiniteTalk, 6GB min)
-- `xuhongming251/InfiniteTalk` → `wan2.1_infiniteTalk_single_fp16.safetensors`
+- `QuantStack/Wan2.1_I2V_14B_FusionX-GGUF` → `Wan2.1_I2V_14B_FusionX-Q4_0.gguf` (InfiniteTalk, 8GB)
+- `MeiGen-AI/InfiniteTalk` → `single/infinitetalk.safetensors` (dest `loras/wan2.1_infiniteTalk_single_fp16.safetensors`)
 - LTX/Wan VAEs + `umt5_xxl_fp16` text encoder
 
 ## 4. Smoke test (sequential)
