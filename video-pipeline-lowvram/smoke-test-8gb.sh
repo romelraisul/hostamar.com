@@ -10,7 +10,7 @@
 #   ./smoke-test.sh
 # =============================================================================
 set -uo pipefail
-URL="${COMFY_URL:-http://127.0.0.1:8188}"
+URL="${COMFY_URL:-http://127.0.0.1:8199}"
 WF_DIR="$(cd "$(dirname "$0")/workflows/lowvram" && pwd)"
 OUT_DIR="output"; mkdir -p "$OUT_DIR"
 REPORT="SMOKE_REPORT_8GB.md"; : > "$REPORT"
@@ -60,7 +60,7 @@ log "# 8GB smoke test (RES=$RES FRAMES=$FRAMES)"
 poll_ready || exit 1
 
 # ---- node registry asserts (catch wrong titles BEFORE submit) ----
-for n in LTXVModelLoaderGGUF LTXVMultiGPUChunked WanVideoModelLoader InfiniteTalkModelLoader ChatterboxTTS RealESRGANLoader; do
+for n in UnetLoaderGGUF LTXMultiGPUChunkedNode WanVideoModelLoader InfiniteTalkMultiImage ChatterBoxSRTVoiceTTS; do
   if node_present "$n"; then log "OK: $n loaded"; else log "FAIL: $n MISSING (check node repo / title)"; FAIL=$((FAIL+1)); fi
 done
 
@@ -72,7 +72,7 @@ free_vram
 
 # ---- Test B: TTS ----
 log "# Test B — Chatterbox Bangla TTS"
-B=$(submit_wait "$WF_DIR/../tts.json")
+B=$(submit_wait "$WF_DIR/chatterbox-tts-8gb.json")
 [ "${B:-0}" -gt 0 ] && { log "PASS: TTS $B output(s)"; PASS=$((PASS+1)); } || { log "FAIL: TTS no output"; FAIL=$((FAIL+1)); }
 log "   MANUAL: listen — Bangla quality unverified (transliteration + XTTS bn fallback)."
 free_vram

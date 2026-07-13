@@ -17,7 +17,6 @@ services:
       context: ./docker/comfyui-lowvram
     image: hostamar-comfyui-lowvram:local
     container_name: hostamar-comfyui-lowvram
-    runtime: nvidia
     ports:
       - "8188:8188"
     environment:
@@ -25,7 +24,7 @@ services:
       # --disable-smart-memory keeps it predictable. --cpu-vae decodes on CPU.
       # --use-split-cross-attention saves VRAM on the attention path.
       - CLI_ARGS=--lowvram --disable-smart-memory --use-split-cross-attention --cpu-vae --listen 0.0.0.0
-      - HF_TOKEN=${HF_TOKEN}
+      - HF_TOKEN=${HF_TOKEN:-}
       - NVIDIA_VISIBLE_DEVICES=all
       - PYTHONUNBUFFERED=1
     volumes:
@@ -36,6 +35,11 @@ services:
       resources:
         limits:
           memory: 48G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     mem_limit: 48g
     restart: unless-stopped
     healthcheck:
