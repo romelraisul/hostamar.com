@@ -119,15 +119,22 @@ const FAQS = [
   { q: 'বারবার রিফান্ড চাইলে?', a: 'পলিসি মেনে যতবার রিকোয়েস্ট করতে পারেন; তবে濫用 সাসপেন্ড করতে পারি।' },
 ]
 
+// Canonical schema.org MerchantReturnPolicy. Adopted from the (1) preview's
+// richer schema, minus unbacked claims: the preview's restockingFee '10% for
+// gaming after tournament start' is NOT in the repo (no gaming fee data), and
+// 'BankCard' is excluded (repo methods are bKash/Nagad/Rocket/USDT, no card).
 const refundLd = {
   '@context': 'https://schema.org',
   '@type': 'MerchantReturnPolicy',
   name: 'Hostamar Refund Policy',
   applicableCountry: 'BD',
+  returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
   merchantReturnDays: 30,
-  returnMethod: 'Refund',
-  applicablePaymentMethod: ['bKash', 'Nagad', 'Rocket', 'USDT'],
-  refundType: 'FullRefund',
+  returnMethod: 'https://schema.org/ReturnOnline',
+  refundType: 'https://schema.org/FullRefund',
+  returnFees: 'https://schema.org/FreeReturn',
+  paymentMethod: ['bKash', 'Nagad', 'Rocket', 'USDT'],
+  merchantReturnLink: 'https://hostamar.com/refund',
   url: 'https://hostamar.com/refund',
 }
 
