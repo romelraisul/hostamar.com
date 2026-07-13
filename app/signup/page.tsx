@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { ArrowLeft, Eye, EyeOff, Check, X, Loader2 } from 'lucide-react'
+import { SSOButton } from '@/components/auth/SSOButton'
 
 // NOTE: real auth flow preserved exactly — POST /api/auth/signup -> /api/auth/login
 // -> NextAuth credentials sync -> /dashboard. Route has no OTP/emailVerified gating
@@ -215,6 +216,9 @@ export default function SignupPage() {
               <div className="h-px bg-zinc-200 flex-1" />
               <span className="text-[12px] text-zinc-400">অথবা</span>
               <div className="h-px bg-zinc-200 flex-1" />
+            </div>
+            <div className="mt-4">
+              <SSOButton mode="signup" />
             </div>
             <p className="text-center text-[13px] text-zinc-500">
               Already have account? <a href="/login" className="text-[#0E7C3A] font-medium hover:underline">Login here</a>
