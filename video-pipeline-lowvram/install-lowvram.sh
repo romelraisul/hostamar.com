@@ -80,8 +80,8 @@ dl "QuantStack/Wan2.1_I2V_14B_FusionX-GGUF" "Wan2.1_I2V_14B_FusionX-Q4_0.gguf" "
 dl "MeiGen-AI/InfiniteTalk" "single/infinitetalk.safetensors" "loras/wan2.1_infiniteTalk_single_fp16.safetensors" 1000000000
 
 # Wan VAE + UMT5 text encoder (small, required)
-dl "Comfy-Org/Wan_2.1_Repackaged" "vae/wan_2.1_vae.safetensors" "vae/wan_2.1_vae.safetensors" 100000000
-dl "Comfy-Org/Wan_2.1_Repackaged" "text_encoders/umt5_xxl_fp16.safetensors" "text_encoders/umt5_xxl_fp16.safetensors" 1000000000
+dl "Comfy-Org/Wan_2.1_ComfyUI_repackaged" "split_files/vae/wan_2.1_vae.safetensors" "vae/wan_2.1_vae.safetensors" 100000000
+dl "Comfy-Org/Wan_2.1_ComfyUI_repackaged" "split_files/text_encoders/umt5_xxl_fp16.safetensors" "text_encoders/umt5_xxl_fp16.safetensors" 1000000000
 
 # ---------------------------------------------------------------------------
 # Chatterbox TTS (ResembleAI) for Test B
