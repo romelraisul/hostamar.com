@@ -83,9 +83,9 @@ C=$(submit_wait "$WF_DIR/infinitetalk-q4-8gb.json")
 [ "${C:-0}" -gt 0 ] && { log "PASS: lip-sync $C output(s)"; PASS=$((PASS+1)); } || { log "FAIL: lip-sync no output"; FAIL=$((FAIL+1)); }
 free_vram
 
-# ---- Test D: full 10s sequential ----
-log "# Test D — full-10s-8gb sequential"
-D=$(submit_wait "$WF_DIR/full-10s-8gb.json")
+# ---- Test D: full 10s sequential (two-stage LTX) ----
+log "# Test D — ltx-2.3-two-stage-8gb sequential"
+D=$(submit_wait "$WF_DIR/ltx-2.3-two-stage-8gb.json")
 [ "${D:-0}" -gt 0 ] && { log "PASS: full $D output(s)"; PASS=$((PASS+1)); } || { log "FAIL: full no output"; FAIL=$((FAIL+1)); }
 
 # ---- validate ----
