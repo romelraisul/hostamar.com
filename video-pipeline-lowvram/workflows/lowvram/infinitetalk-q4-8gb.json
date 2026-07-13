@@ -1,0 +1,72 @@
+{
+  "1": ["WanVideoModelLoader", {
+    "_meta": { "title": "WanVideo Model Loader (GGUF)" },
+    "model_name": "wan2.1_i2v_480p_14B_Q4_0.gguf",
+    "base_precision": "fp16",
+    "quantization": "q4_0",
+    "load_device": "cuda",
+    "offload_device": "cpu"
+  }],
+  "2": ["WanVideoVAELoader", {
+    "_meta": { "title": "WanVideo VAE Loader" },
+    "vae_name": "wan_2.1_vae.safetensors"
+  }],
+  "3": ["WanVideoTextEncode", {
+    "_meta": { "title": "WanVideo CLIP Text Encode" },
+    "clip_name": "umt5_xxl_fp16.safetensors",
+    "text": "A Bangladeshi woman speaker talks to camera, natural hand gestures, indoor office, 480p",
+    "negative_prompt": "blurry, distorted, watermark"
+  }],
+  "4": ["LoadImage", {
+    "_meta": { "title": "Load First Frame" },
+    "upload": "first_frame.png"
+  }],
+  "5": ["WanVideoImageToVideoEncode", {
+    "_meta": { "title": "WanVideo I2V Encode" },
+    "width": 512,
+    "height": 768,
+    "length": 49,
+    "batch_size": 1,
+    "frame_rate": 25,
+    "strength": 1.0,
+    "image": ["4", 0]
+  }],
+  "6": ["InfiniteTalkModelLoader", {
+    "_meta": { "title": "InfiniteTalk Patch Loader" },
+    "model_name": "wan2.1_infiniteTalk_single_fp16.safetensors",
+    "num_persistent_param_in_dit": 0
+  }],
+  "7": ["WanVideoSampler", {
+    "_meta": { "title": "WanVideo Sampler" },
+    "seed": 0,
+    "steps": 25,
+    "cfg": 6.0,
+    "shift": 8.0,
+    "scheduler": "unipc",
+    "motion_frame": 9,
+    "mode": "streaming",
+    "size": "infinitetalk-480",
+    "model": ["1", 0],
+    "vae": ["2", 0],
+    "positive": ["3", 0],
+    "negative": ["3", 1],
+    "image_latents": ["5", 0],
+    "patch": ["6", 0]
+  }],
+  "8": ["WanVideoDecode", {
+    "_meta": { "title": "WanVideo Decode" },
+    "device": "cpu",
+    "samples": ["7", 0]
+  }],
+  "9": ["VHS_VideoCombine", {
+    "_meta": { "title": "Video Combine" },
+    "frame_rate": 25,
+    "loop_count": 0,
+    "filename_prefix": "infinitetalk-q4-8gb",
+    "format": "video/h264-mp4",
+    "pix_fmt": "yuv420p",
+    "crf": 20,
+    "save_output": true,
+    "images": ["8", 0]
+  }]
+}
