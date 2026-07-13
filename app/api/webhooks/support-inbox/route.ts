@@ -21,7 +21,24 @@ const schema = z.object({
   items: z.array(itemSchema).min(1).max(50),
 })
 
+function authFailed(res: NextResponse) {
+  return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+}
+
 export async function POST(req: NextRequest) {
+  // Self-guarded: require GMAIL_WEBHOOK_SECRET when set (Gmail push / IMAP
+  // poller must send it as `Authorization: Bearer <secret>` or
+  // `x-webhook-secret: <secret>`). If the env var is unset we allow (dev),
+  // but in prod the deploy step sets it so this rejects anonymous posts.
+  const secret = process.env.GMAIL_WEBHOOK_SECRET
+  if (secret) {
+    const headerSecret =
+      req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
+      req.headers.get('x-webhook-secret') ||
+      ''
+    if (headerSecret !== secret) return authFailed(NextResponse.json({}))
+  }
+
   const rl = await checkRateLimit(getClientIp(req), RATE_LIMITS.bkashWebhook, '/api/webhooks/support-inbox', 'POST')
   if (!rl.allowed) return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
 
