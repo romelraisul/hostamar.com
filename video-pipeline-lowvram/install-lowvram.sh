@@ -39,6 +39,9 @@ dl() { # repo  filename  local_rel  min_bytes   (local_rel is path relative to M
     local found; found=$(find "$(dirname "$local")" -maxdepth 4 \( -name "*.gguf" -o -name "*.safetensors" \) 2>/dev/null | head -1)
     [ -n "$found" ] && mv -f "$found" "$local"
   fi
+  # hf (XET) leaves empty split_files/ dirs behind — remove them so ComfyUI
+  # doesn't see a stray nested path; the flat target above is what matters.
+  find "$(dirname "$local")" -type d -name split_files -empty -delete 2>/dev/null || true
   local sz; sz=$(stat -c%s "$local" 2>/dev/null || echo 0)
   if [ "$sz" -lt "$min" ]; then echo "FAIL: $local too small ($sz < $min) — download truncated"; exit 1; fi
   echo "   ok: $(numfmt --to=iec $sz)"
