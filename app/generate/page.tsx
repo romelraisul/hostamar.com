@@ -1,247 +1,181 @@
 'use client'
-export const dynamic = 'force-dynamic'
 
-import { useState, useCallback, useEffect } from 'react'
-import Script from 'next/script'
-import { useLocale } from '@/lib/locale-context'
-import GenerateHero from '@/components/generate/GenerateHero'
-import TemplateSelector from '@/components/generate/TemplateSelector'
-import VideoPreview from '@/components/generate/VideoPreview'
-import PricingPlans from '@/components/generate/PricingPlans'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
-const promptTemplates = [
-  { id: 'product', label: 'Product Demo', icon: '📦', prompt: 'Create a professional product demonstration video showcasing features, benefits, and use cases with smooth transitions and modern typography.', style: 'modern' },
-  { id: 'social', label: 'Social Media Ad', icon: '📱', prompt: 'Generate an eye-catching social media advertisement video with dynamic text animations, vibrant colors, and engaging call-to-action elements.', style: 'cinematic' },
-  { id: 'explainer', label: 'Explainer Video', icon: '🎯', prompt: 'Create an educational explainer video with clear narration, animated graphics, and step-by-step visual breakdown of complex concepts.', style: 'modern' },
-  { id: 'testimonial', label: 'Testimonial', icon: '⭐', prompt: 'Design a customer testimonial video with photo placeholders, quote animations, and trust-building visual elements.', style: 'minimalist' },
-  { id: 'promo', label: 'Promotional', icon: '🎬', prompt: 'Generate a promotional video with cinematic transitions, dramatic music cues, and compelling storytelling structure.', style: 'cinematic' },
-  { id: 'tutorial', label: 'Tutorial', icon: '📚', prompt: 'Create a step-by-step tutorial video with screen recording placeholders, annotations, and clear instructional pacing.', style: 'vintage' },
-]
+const GREEN = '#0E7C3A'
+const API = process.env.NEXT_PUBLIC_VIDEO_API_URL || 'http://localhost:8000'
+const API_KEY = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_VIDEO_API_KEY) || 'local-dev-key'
+const AUTH_HEADER_VALUE = 'Bearer ' + API_KEY
 
-const stylePresets = [
-  { id: 'cinematic', label: 'Cinematic', icon: '🎥' },
-  { id: 'modern', label: 'Modern', icon: '✨' },
-  { id: 'vintage', label: 'Vintage', icon: '📽️' },
-  { id: 'minimalist', label: 'Minimalist', icon: '🎨' },
-]
+type Status = 'idle' | 'queued' | 'running' | 'completed' | 'failed'
 
-const pricingTiers = [
-  { name: 'Free', price: '৳0', videos: 2, quality: '720p', watermark: true, icon: '🆓' },
-  { name: 'Starter', price: '৳500/mo', videos: 20, quality: '1080p', watermark: false, icon: '🚀' },
-  { name: 'Pro', price: '৳2,000/mo', videos: 'Unlimited', quality: '4K', watermark: false, icon: '⚡' },
-  { name: 'Business', price: '৳5,000/mo', videos: 'Unlimited', quality: '4K', watermark: false, custom: true, icon: '🏢' },
-]
-
-export default function GeneratePage() {
-  const { t } = useLocale()
-  const [activeTab, setActiveTab] = useState('generate')
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [selectedStyle, setSelectedStyle] = useState<string>('modern')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
+export default function VideoGeneratePage() {
+  const router = useRouter()
+  const [promptBn, setPromptBn] = useState('')
+  const [style, setStyle] = useState('ads')
+  const [aspect, setAspect] = useState('9:16')
+  const [withBgm, setWithBgm] = useState(true)
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [jobId, setJobId] = useState('')
+  const [status, setStatus] = useState<Status>('idle')
   const [progress, setProgress] = useState(0)
-  const [statusText, setStatusText] = useState('')
-  const [videoId, setVideoId] = useState<string | null>(null)
-  const [jobId, setJobId] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [showPayment, setShowPayment] = useState(false)
-  const [selectedTier, setSelectedTier] = useState<string | null>(null)
+  const [videoUrl, setVideoUrl] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const selectedPrompt = promptTemplates.find(p => p.id === selectedTemplate)?.prompt || ''
-
-  // Poll video status endpoint
-  useEffect(() => {
-    if (!videoId || !isGenerating) return
-
-    let cancelled = false
-    const poll = async () => {
+  const pollStatus = async (id: string) => {
+    for (let i = 0; i < 240; i++) {
+      await new Promise((r) => setTimeout(r, 5000))
       try {
-        const res = await fetch(`/api/video/status/${videoId}`)
-        if (res.ok) {
-          const data = await res.json()
-          if (cancelled) return
-          const p = data.progress || 0
-          setProgress(p)
-          if (data.videoUrl) {
-            setGeneratedUrl(data.videoUrl)
-            setIsGenerating(false)
-            setProgress(100)
-            setStatusText('')
-          } else if (data.error) {
-            setError(data.error)
-            setIsGenerating(false)
-            setStatusText('')
-          } else {
-            setStatusText(data.status || 'processing')
-          }
+        const res = await fetch(`${API}/v1/status/${id}`, {
+          headers: { Authorization: AUTH_HEADER_VALUE },
+        })
+        if (!res.ok) continue
+        const data = await res.json()
+        setStatus(data.status)
+        setProgress(Number(data.progress || 0))
+        if (data.status === 'completed') {
+          setVideoUrl(data.video_url)
+          setLoading(false)
+          return
+        }
+        if (data.status === 'failed') {
+          setError(data.error || 'render failed')
+          setLoading(false)
+          return
         }
       } catch {
-        // ignore transient poll errors
+        /* transient; keep polling */
       }
     }
+    setError('timeout: job did not finish in 20 min')
+    setLoading(false)
+  }
 
-    poll()
-    const interval = setInterval(poll, 2000)
-    return () => {
-      cancelled = true
-      clearInterval(interval)
-    }
-  }, [videoId, isGenerating])
-
-  const handleGenerate = useCallback(async () => {
-    const prompt = selectedTemplate ? selectedPrompt : ''
-    if (!prompt && !selectedTemplate) {
-      setError('Please select a template or enter a prompt.')
-      return
-    }
-
-    setIsGenerating(true)
+  const start = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    setVideoUrl('')
     setProgress(0)
-    setGeneratedUrl(null)
-    setError(null)
-    setStatusText('queued')
-    setVideoId(null)
-    setJobId(null)
-
+    setStatus('queued')
     try {
-      const res = await fetch('/api/ai/videos/generate', {
+      const res = await fetch(`${API}/v1/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: AUTH_HEADER_VALUE },
         body: JSON.stringify({
-          templateId: selectedTemplate,
-          prompt,
-          title: promptTemplates.find(p => p.id === selectedTemplate)?.label || 'AI Video',
-          style: selectedStyle,
+          prompt_bn: promptBn,
+          style,
+          aspect_ratio: aspect,
+          with_bgm: withBgm,
+          avatar_image_url: avatarUrl || null,
         }),
       })
-
-      if (res.status === 401) {
-        window.location.href = '/login'
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.detail || 'generate failed')
+        setLoading(false)
         return
       }
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to start video generation')
-      }
-
-      const data = await res.json()
-      if (data.videoId) setVideoId(data.videoId)
-      if (data.jobId) setJobId(data.jobId)
-      setStatusText('queued')
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong')
-      setIsGenerating(false)
-      setStatusText('')
+      setJobId(data.job_id)
+      pollStatus(data.job_id)
+    } catch {
+      setError('network error')
+      setLoading(false)
     }
-  }, [selectedTemplate, selectedPrompt, selectedStyle])
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased">
+      <div className="mx-auto max-w-[760px] px-4 py-12">
+        <Link href="/video" className="text-[13px] text-zinc-500 hover:text-zinc-800">← back to Video</Link>
+        <h1 className="mt-4 text-3xl font-bold">ভিডিও বানান — একটা প্রম্পট দিন</h1>
+        <p className="mt-2 text-zinc-600">Bangla prompt → script + voice + caption + BGM + talking avatar, 4K export.</p>
 
-      <GenerateHero onTabChange={setActiveTab} />
+        <form onSubmit={start} className="mt-6 space-y-4 rounded-2xl border border-zinc-200 bg-white p-6">
+          <div>
+            <label className="block text-[13px] font-medium mb-1">Bangla prompt</label>
+            <textarea
+              value={promptBn}
+              onChange={(e) => setPromptBn(e.target.value)}
+              required
+              rows={3}
+              className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A]"
+              placeholder="একটি কটন পাঞ্জাবির ১৫ সেকেন্ড অ্যাড, বাজারের ব্যাকগ্রাউন্ড, সাবটাইটল সহ"
+            />
+          </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {activeTab === 'generate' && (
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Left: Template Selection */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <TemplateSelector
-                templates={promptTemplates}
-                selectedTemplate={selectedTemplate}
-                onSelect={(id) => setSelectedTemplate(id)}
-              />
-
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('generate.yourPrompt')}</label>
-                <textarea
-                  className="w-full p-4 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-slate-800 dark:text-white min-h-[120px]"
-                  placeholder={t('generate.promptPlaceholder')}
-                  rows={4}
-                  value={selectedPrompt}
-                  onChange={(e) => {
-                    // keep template selection but allow prompt override visual
-                  }}
-                />
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Video Style</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {stylePresets.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => setSelectedStyle(s.id)}
-                      className={`px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                        selectedStyle === s.id
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-blue-300'
-                      }`}
-                    >
-                      <span className="mr-1">{s.icon}</span>
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {error && (
-                <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <button
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className={`mt-4 w-full py-4 px-8 rounded-xl font-bold text-lg transition-all ${
-                  isGenerating || !selectedTemplate
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-xl hover:scale-[1.02]'
-                }`}
-              >
-                {isGenerating ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    {t('generate.generating')}
-                  </span>
-                ) : t('generate.generateBtn')}
-              </button>
-
-              {(isGenerating || statusText) && (
-                <div className="mt-3 text-sm text-gray-600 dark:text-gray-300 text-center">
-                  Status: {statusText || 'starting...'}
-                  {jobId && <span className="block text-xs text-gray-400 mt-1">Job ID: {jobId}</span>}
-                </div>
-              )}
+              <label className="block text-[13px] font-medium mb-1">Style</label>
+              <select value={style} onChange={(e) => setStyle(e.target.value)} className="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-[14px]">
+                <option value="ads">Ads</option>
+                <option value="reels">Reels</option>
+                <option value="tutorial">Tutorial</option>
+                <option value="promo">Promo</option>
+              </select>
             </div>
-
-            {/* Right: Preview / Result */}
             <div>
-              <VideoPreview
-                isGenerating={isGenerating}
-                generatedUrl={generatedUrl}
-                progress={progress}
-                statusText={statusText}
-                error={error}
-              />
+              <label className="block text-[13px] font-medium mb-1">Aspect ratio</label>
+              <select value={aspect} onChange={(e) => setAspect(e.target.value)} className="w-full px-3 py-2.5 border border-zinc-200 rounded-xl text-[14px]">
+                <option value="9:16">9:16 Reels/TikTok/Shorts</option>
+                <option value="16:9">16:9 YouTube</option>
+                <option value="1:1">1:1 Square</option>
+              </select>
             </div>
           </div>
-        )}
 
-        {/* Pricing Tab */}
-        {activeTab === 'pricing' && (
-          <PricingPlans
-            tiers={pricingTiers}
-            onSelectTier={(tier: string) => { setSelectedTier(tier); setShowPayment(true) }}
-            showPayment={showPayment}
-            selectedTier={selectedTier}
-            onClosePayment={() => { setShowPayment(false); setSelectedTier(null) }}
-          />
+          <div>
+            <label className="block text-[13px] font-medium mb-1">Avatar image URL (optional)</label>
+            <input
+              value={avatarUrl}
+              onChange={(e) => setAvatarUrl(e.target.value)}
+              className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A]"
+              placeholder="https://.../avatar.png (for talking-head mode)"
+            />
+          </div>
+
+          <label className="flex items-center gap-2 text-[14px]">
+            <input type="checkbox" checked={withBgm} onChange={(e) => setWithBgm(e.target.checked)} /> BGM যোগ করুন (ACE-Step)
+          </label>
+
+          <button
+            type="submit"
+            disabled={loading || !promptBn.trim()}
+            className="w-full bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:bg-zinc-300 text-white font-semibold py-3 rounded-xl transition text-[14px]"
+          >
+            {loading ? 'তৈরি হচ্ছে...' : 'ভিডিও জেনারেট করুন →'}
+          </button>
+        </form>
+
+        {jobId && (
+          <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="flex items-center justify-between text-[13px] text-zinc-500">
+              <span>Job: {jobId}</span>
+              <span className="font-medium" style={{ color: GREEN }}>{status}</span>
+            </div>
+            <div className="mt-3 h-2 rounded-full bg-zinc-100 overflow-hidden">
+              <div className="h-full transition-all" style={{ width: `${Math.round(progress * 100)}%`, background: GREEN }} />
+            </div>
+
+            {videoUrl && (
+              <div className="mt-4">
+                <video src={videoUrl} controls className="w-full rounded-xl" />
+                <a
+                  href={videoUrl}
+                  download
+                  className="mt-3 inline-flex h-11 items-center rounded-full px-6 font-semibold text-white"
+                  style={{ background: GREEN }}
+                >
+                  4K ডাউনলোড
+                </a>
+                <p className="mt-2 text-[12px] text-zinc-400">স্বয়ংক্রিয় মুছে যাবে ৭ দিন পরে (signed URL)।</p>
+              </div>
+            )}
+            {error && <p className="mt-3 text-[13px] text-red-600">{error}</p>}
+          </div>
         )}
       </div>
     </div>

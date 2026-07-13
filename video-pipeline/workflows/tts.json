@@ -1,0 +1,5 @@
+{
+  "1": ["ChatterboxTTS", { "_meta": { "title": "ChatterBox TTS" }, "text": "PLACEHOLDER_SCRIPT", "voice": "default", "exaggeration": 0.5, "cfg": 0.5, "temperature": 0.7, "seed": 0, "language": "bn", "transliterate": true }],
+  "2": ["SaveAudio", { "_meta": { "title": "Save Audio" }, "audio": ["1", 0] }],
+  "_FALLBACK": "If Bangla quality is weak, swap node 1 for an XTTS-v2 bn checkpoint before this node. Transliteration to IPA is enabled via 'transliterate'. TEMPLATE - verify node title 'ChatterboxTTS' against GET /object_info on ComfyUI_ChatterBox_SRT_Voice."
+}
