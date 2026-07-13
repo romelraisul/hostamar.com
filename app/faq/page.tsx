@@ -3,72 +3,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Search, ChevronDown, MessageCircle, Mail, Phone, Clock, HelpCircle } from 'lucide-react'
+import { FAQS, FAQ_CATS, type FaqCat } from '@/lib/faqs'
 
 const GREEN = '#0E7C3A'
 const WHATSAPP = 'https://wa.me/8801822417463?text=হ্যাঁ,%20আমি%20সাহায্য%20চাই'
 const EMAIL = 'mailto:support@hostamar.com'
-const CALL = 'tel:+8809696517463'
+const CALL = 'tel:+880****7463'
 
-type Faq = {
-  id: string
-  cat: 'billing' | 'video' | 'hosting' | 'chat' | 'gaming' | 'account'
-  q: string
-  a: string
-  link?: { href: string; label: string }
-}
-
-const FAQS: Faq[] = [
-  // Billing
-  { id: 'billing-active', cat: 'billing', q: 'টাকা কেটেছে কিন্তু একাউন্ট একটিভ হয়নি?', a: 'bKash TrxID দিয়ে যাচাই করুন — সাধারণত ২-৩ মিনিটে অটো একটিভ হয়। ১০ মিনিটের বেশি হলে TrxID সহ আমাদের কাছে যোগাযোগ করুন, ২ ঘণ্টার মধ্যে রিসল্ভ করি।', link: { href: '/contact', label: 'যোগাযোগ করুন' } },
-  { id: 'billing-invoice', cat: 'billing', q: 'ইনভয়েস / রশিদ পাবো?', a: 'হ্যাঁ, প্রতিটি পেমেন্টের পর ড্যাশবোর্ডে ইনভয়েস + bKash রশিদ পাবেন। ব্যবসায়িক প্রয়োজনে VAT রশিদ ইমেইল করে দিই।' },
-  { id: 'billing-refund', cat: 'billing', q: '৭ দিন মানি ব্যাক পাবো?', a: 'হ্যাঁ, যেকোনো পেইড প্ল্যানে ৭ দিনের মানি-ব্যাক গ্যারান্টি। কারণ ছাড়াই bKash নাম্বারে ২৪ ঘণ্টায় রিফান্ড।', link: { href: '/pricing', label: 'প্ল্যান দেখুন' } },
-  { id: 'billing-methods', cat: 'billing', q: 'bKash ছাড়া কার্ড/ব্যাংক দিয়ে দেওয়া যায়?', a: 'হ্যাঁ, Nagad ও Rocket ছাড়াও কার্ড (Visa/Mastercard) ও ব্যাংক ট্রান্সফার চলে। BD SME-এর জন্য bKash সবচেয়ে সহজ।' },
-  { id: 'billing-upgrade', cat: 'billing', q: 'মাঝে প্ল্যান আপগ্রেড করলে টাকা নষ্ট?', a: 'না — আপগ্রেড করলে শুধু প্রোরাটা (অবশিষ্ট দিন) হিসাবে অল্প টাকা কাটবে, পুরো টাকা নয়।' },
-
-  // Video
-  { id: 'video-watermark', cat: 'video', q: 'ফ্রি প্ল্যানে ওয়াটারমার্ক থাকে?', a: 'হ্যাঁ, ফ্রিতে ছোট "Made with Hostamar" ওয়াটারমার্ক থাকে। Starter (৳২,০০০/মাস) থেকে ক্লিন ১০৮০p, কোনো ওয়াটারমার্ক নয়।', link: { href: '/pricing', label: 'স্টার্টার প্ল্যান' } },
-  { id: 'video-yo-phola', cat: 'video', q: 'বাংলা য-ফলা ভাঙে?', a: 'না — আমাদের Perfect Bangla Font য-ফলা, উ-কার, নাকি সহ সঠিক রেন্ডার করে। পুরানো ভাঙা রেন্ডার vs নতুন ফিক্স ফিচার পেজে দেখুন।', link: { href: '/features', label: 'ফিচার দেখুন' } },
-  { id: 'video-voice', cat: 'video', q: 'ভয়েসওভার কত ভাষা সাপোর্ট করে?', a: 'মূলত বাংলা (পুরুষ/মহিলা — সুমাইয়া), ইংরেজি, হিন্দি। বাংলা আমাদের সবচেয়ে ন্যাচারাল, ElevenLabs + OpenAI মডেল।' },
-  { id: 'video-4k', cat: 'video', q: '৪K export পাবো?', a: 'হ্যাঁ, Business ও Enterprise প্ল্যানে ৪K (2160p) export। Starter-এ 1080p, ফ্রিতে 720p।' },
-  { id: 'video-hook', cat: 'video', q: 'Hook Generator কী?', a: 'আপনার নিচের টপিক দিয়ে স্ক্রল-স্টপিং হুক বানায় — যেমন "ঈদে সবাই তাকিয়ে থাকবে"। রমজান/পূজা/সেল সব টেমপ্লেট আছে।' },
-
-  // Hosting
-  { id: 'hosting-diff', cat: 'hosting', q: 'HostSeba / ExonHost থেকে আমাদের পার্থক্য?', a: 'ওরা শুধু হোস্টিং দেয়, আমরা AI ভিডিও + হোস্টিং একসাথে ৳২,০০০-এ। প্ল্যান কিনলে হোস্টিং ফ্রি পান, ভিডিও তৈরিও করতে পারেন।', link: { href: '/hosting', label: 'হোস্টিং দেখুন' } },
-  { id: 'hosting-cpanel', cat: 'hosting', q: 'cPanel আছে?', a: 'হ্যাঁ, বাংলা cPanel — ফাইল, ডেটাবেস, ইমেইল সব বাংলায়। ইংরেজি না বুঝলেও চলবে।' },
-  { id: 'hosting-bdix', cat: 'hosting', q: 'BDIX স্পিড কত?', a: 'বাংলাদেশে BDIX ২০ms লেটেন্সি, NVMe SSD। BD ভিজিটরের জন্য সবচেয়ে ফাস্ট লোড।' },
-  { id: 'hosting-ssl', cat: 'hosting', q: 'ফ্রি SSL পাবো?', a: 'হ্যাঁ, Let’s Encrypt ফ্রি SSL অটো-ইনস্টল। কোনো চার্জ নেই।' },
-  { id: 'hosting-migrate', cat: 'hosting', q: 'অন্য থেকে মাইগ্রেশন করে দেবেন?', a: 'হ্যাঁ, ফ্রি মাইগ্রেশন — আপনার পুরানো সাইট আমরা হোস্ট করে দেই। শুধু cPanel অ্যাক্সেস দিন।', link: { href: '/contact', label: 'মাইগ্রেশন চান' } },
-
-  // Chat / Browser / Dev
-  { id: 'browser-private', cat: 'chat', q: 'Browser history কি প্রাইভেট?', a: 'হ্যাঁ, ব্রাউজারের ইতিহাস আমাদের প্রাইভেট Ollama মডেলে থাকে, কোথাও শেয়ার হয় না। আপনি মুছে দিতে পারেন।', link: { href: '/browser', label: 'ব্রাউজার' } },
-  { id: 'dev-pandas', cat: 'chat', q: 'IDE তে pandas / Python চলবে?', a: 'হ্যাঁ, ব্রাউজারেই Pyodide Python — pandas, numpy চলে। উদা: `pd.read_csv("sales.csv").head()`। ইনস্টল লাগে না।', link: { href: '/ide', label: 'IDE' } },
-  { id: 'chat-pdf', cat: 'chat', q: 'Chat কি PDF বুঝে?', a: 'হ্যাঁ, PDF আপলোড করুন, বাংলায় প্রশ্ন করুন — সামারি, কিওয়াই পয়েন্ট, অনুবাদ সব পাবেন।' },
-  { id: 'browser-yt', cat: 'chat', q: 'YouTube ভিডিও থেকে সামারি কীভাবে?', a: 'লিংক পেস্ট করুন, ট্রান্সক্রিপ্ট এক্সট্র্যাক্ট + বাংলা সামারি পাবেন ১০ সেকেন্ডে।', link: { href: '/browser', label: 'গাইড' } },
-
-  // Gaming
-  { id: 'gaming-payout', cat: 'gaming', q: 'bKash payout কি ইনস্ট্যান্ট?', a: 'হ্যাঁ, ৯০% payout ৫ মিনিটে bKash এ যায়। ৳৫০ হলেই উইথড্র, কোনো হোল্ড নেই, শুক্রবারেও পাবেন।' },
-  { id: 'gaming-cheat', cat: 'gaming', q: 'টুর্নামেন্টে চিটিং হলে কী হয়?', a: 'Anti-cheat + ম্যানুয়াল রিভিউ। প্রমাণ পেলে ব্যান + প্রাইজ মানি ভিকটিমকে ব্যাক। ফেয়ার প্লে আমাদের USP।' },
-  { id: 'gaming-ping', cat: 'gaming', q: 'BD পিং কত?', a: 'ঢাকা সার্ভারে ১৫ms লো পিং। ডাউনলোড ছাড়াই HTML5 গেম, লিংকে খুললেই খেলা।' },
-
-  // Account
-  { id: 'acc-delete', cat: 'account', q: 'একাউন্ট ডিলিট করবো?', a: 'সেটিংস → একাউন্ট থেকে ডিলিট করতে পারেন। ৭ দিনের মধ্যে ফেরত আনা যায়। ডেটা পার্মানেন্ট মুছে যায়।' },
-  { id: 'acc-pass', cat: 'account', q: 'পাসওয়ার্ড ভুলে গেছি?', a: 'লগইনে "Forgot password" → ইমেইলে লিংক → নতুন পাসওয়ার্ড। bKash নাম্বার দিয়েও রিসেট করা যায়।', link: { href: '/login', label: 'লগইন' } },
-  { id: 'acc-devices', cat: 'account', q: 'একাধিক ডিভাইসে লগইন থাকবে?', a: 'হ্যাঁ, ফোন + ল্যাপটপ দুটোতেই চলবে। সাসপিশাস লগইনে OTP যাবে।' },
-]
-
-const CATS: { key: 'all' | Faq['cat']; label: string }[] = [
-  { key: 'all', label: 'সব' },
-  { key: 'billing', label: 'বিলিং ও bKash' },
-  { key: 'video', label: 'ভিডিও' },
-  { key: 'hosting', label: 'হোস্টিং' },
-  { key: 'chat', label: 'চ্যাট • ব্রাউজার • Dev' },
-  { key: 'gaming', label: 'গেমিং' },
-  { key: 'account', label: 'একাউন্ট' },
-]
+const CATS = FAQ_CATS
 
 export default function FaqPage() {
   const [query, setQuery] = useState('')
-  const [cat, setCat] = useState<'all' | Faq['cat']>('all')
+  const [cat, setCat] = useState<'all' | FaqCat>('all')
   const [openId, setOpenId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
