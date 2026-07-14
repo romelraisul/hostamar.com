@@ -17,7 +17,19 @@ on a fresh Windows 11 + WSL Ubuntu + Docker Desktop. Total restore ~10 min
 ```bash
 docker network create hostamar-network
 docker volume create flociops-assistant_ollama-data
-docker volume create cloudflared-config
+# NOTE: cloudflared no longer uses a named volume — it bind-mounts
+# /home/romel/.cloudflared-docker (see step 6). No volume to create.
+```
+
+## 1b. Restore Cloudflare tunnel creds (so the site is public with NO re-login):
+```bash
+# The every-minute backup uploads cloudflared.<ts>.enc to OneDrive (Tier 2, encrypted).
+LATEST_CF=$(ls -1t /home/romel/restore/cloudflared.*.enc | head -1)
+openssl enc -d -aes-256-cbc -pbkdf2 -pass "pass:$BACKUP_PASSWORD" \
+  -in "$LATEST_CF" -out /tmp/cloudflared.tgz
+tar -xzf /tmp/cloudflared.tgz -C /home/romel   # restores ~/.cloudflared-docker/
+# config.yml already has container paths (/etc/cloudflared/...) + 644 perms baked in.
+# Compose bind-mounts it read-only; just `docker compose up -d hostamar-cloudflared`.
 ```
 
 ## 2. Pull latest backup from OneDrive:
@@ -36,8 +48,12 @@ docker exec hostamar-postgres pg_isready -U hostamar
 
 ## 4. Restore the database (this is your users + admin):
 ```bash
-gunzip -c "$LATEST" | docker exec -i hostamar-postgres pg_restore -U postgres -d hostamar --clean --if-exists || \
-gunzip -c "$LATEST" | docker exec -i hostamar-postgres psql -U postgres -d hostamar
+# NOTE: the DB superuser is `hostamar` (NOT `postgres` — that role does not exist).
+gunzip -c "$LATEST" | docker exec -i hostamar-postgres pg_restore -U hostamar -d hostamar --clean --if-exists || \
+gunzip -c "$LATEST" | docker exec -i hostamar-postgres psql -U hostamar -d hostamar
+# If schema is empty instead of a dump-restore, sync from Prisma INSIDE the app
+# container (localhost auth fails from host; docker-DNS `postgres` works):
+#   docker exec hostamar-app npx prisma db push --skip-generate --accept-data-loss
 ```
 
 ## 5. Restore encrypted .env.docker:
