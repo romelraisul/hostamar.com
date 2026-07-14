@@ -324,7 +324,7 @@
     "2004",
     0
    ],
-   "scale_method": "scale longer dimension"
+   "scale_method": "bilinear"
   }
  },
  "4010": {
