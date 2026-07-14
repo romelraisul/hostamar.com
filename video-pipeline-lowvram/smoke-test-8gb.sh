@@ -10,7 +10,7 @@
 #   ./smoke-test.sh
 # =============================================================================
 set -uo pipefail
-URL="${COMFY_URL:-http://127.0.0.1:8199}"
+URL="${COMFY_URL:-http://127.0.0.1:8188}"
 WF_DIR="$(cd "$(dirname "$0")/workflows/lowvram" && pwd)"
 OUT_DIR="output"; mkdir -p "$OUT_DIR"
 REPORT="SMOKE_REPORT_8GB.md"; : > "$REPORT"
