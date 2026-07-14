@@ -116,3 +116,8 @@ bin/
 # python
 __pycache__/
 *.pyc
+video-pipeline-lowvram/models/
+video-pipeline-lowvram/output/
+Dockerfile.bak.*
+test-autonomous-video.mjs
+voice-call-test_*.json
