@@ -14,7 +14,7 @@ Key rules learned the hard way:
 """
 import json, urllib.request, urllib.error
 
-BASE = "http://127.0.0.1:8199"
+BASE = "http://127.0.0.1:8188"
 WIDGET_TYPES = {"INT", "FLOAT", "STRING", "BOOLEAN", "COMBO"}
 
 
