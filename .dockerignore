@@ -25,8 +25,18 @@ hostamar-platform.tgz
 
 comfyui/
 
+# Exclude the 101G video-pipeline model/output dirs so `docker build .`
+# does not drag them into the build context (was ~9GB+ context, build stalled)
+video-pipeline-lowvram/models/
+video-pipeline-lowvram/output/
+video-pipeline-lowvram/SMOKE_REPORT_8GB.md
+video-pipeline-lowvram/workflows/
+video-pipeline-lowvram/docker/
+
 *.tar.gz
 *.zip
 hostamar-platform.tgz
 demo/
 redis-bridge/node_modules
+*.log
+/tmp
