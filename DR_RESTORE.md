@@ -49,8 +49,10 @@ docker exec hostamar-postgres pg_isready -U hostamar
 ## 4. Restore the database (this is your users + admin):
 ```bash
 # NOTE: the DB superuser is `hostamar` (NOT `postgres` — that role does not exist).
-gunzip -c "$LATEST" | docker exec -i hostamar-postgres pg_restore -U hostamar -d hostamar --clean --if-exists || \
-gunzip -c "$LATEST" | docker exec -i hostamar-postgres psql -U hostamar -d hostamar
+# NOTE: the dump is PostgreSQL custom format (-Fc, already compressed) — pipe it
+# STRAIGHT to pg_restore (do NOT gunzip first; gunzip will fail with
+# "not in gzip format"). pg_restore decompresses the -Fc format internally.
+docker exec -i hostamar-postgres pg_restore -U hostamar -d hostamar --clean --if-exists < "$LATEST"
 # If schema is empty instead of a dump-restore, sync from Prisma INSIDE the app
 # container (localhost auth fails from host; docker-DNS `postgres` works):
 #   docker exec hostamar-app npx prisma db push --skip-generate --accept-data-loss
