@@ -168,7 +168,10 @@ services:
     container_name: hostamar-cloudflared
     command: tunnel --config /etc/cloudflared/config.yml run
     volumes:
-      - cloudflared-config:/etc/cloudflared
+      # Bind-mount survivable creds from Ubuntu /home (survives `wsl --shutdown` /
+      # docker-desktop-data VM wipe). Container paths + 644 perms already baked in.
+      # DO NOT switch back to the empty named volume `cloudflared-config`.
+      - /home/romel/.cloudflared-docker:/etc/cloudflared:ro
     restart: unless-stopped
     networks:
       - hostamar-network
