@@ -69,8 +69,76 @@ cd /home/romel/hostamar-build/video-pipeline-lowvram
 # huggingface-cli commands documented in MISSING_MODELS.md
 ```
 
-## 9. OneDrive DR cron (so this never happens again):
-```bash
+```
+# 9. OneDrive DR cron (so this never happens again):
 crontab -e
 # add: * * * * * BACKUP_PASSWORD='your-32-char-pass' /home/romel/hostamar-backup/hostamar-backup.sh
 ```
+
+---
+
+## APPENDIX A — Backup scripts (rebuild these on a new PC if wiped)
+
+Place under `/home/romel/hostamar-backup/`, `chmod +x *.sh`. Requires rclone
+remote `onedrive:` (run `onedrive-setup.sh` once with browser OAuth).
+
+### `wsl-pg-dump.sh`
+```bash
+#!/bin/bash
+set -euo pipefail
+DATE=$(date +%Y-%m-%d_%H-%M-%S)
+BACKUP_DIR=/home/romel/backup
+mkdir -p "$BACKUP_DIR"
+TMP="$BACKUP_DIR/hostamar-$DATE.sql.gz.tmp"
+FINAL="$BACKUP_DIR/hostamar-$DATE.sql.gz"
+if docker exec hostamar-postgres pg_dump -U postgres -Fc -Z9 hostamar > "$TMP" 2>/tmp/pg-dump.log; then
+  :
+else
+  docker exec hostamar-postgres pg_dump -U postgres hostamar | gzip -9 > "$TMP"
+fi
+mv -f "$TMP" "$FINAL"
+ls -1t "$BACKUP_DIR"/hostamar-*.sql.gz 2>/dev/null | tail -n +1441 | xargs -r rm -f
+echo "$FINAL"
+```
+
+### `hostamar-backup.sh`
+```bash
+#!/bin/bash
+set -uo pipefail
+BACKUP_PASSWORD="${BACKUP_PASSWORD:-CHANGE_ME_32_CHAR_MINIMUM}"
+RCLONE=/home/romel/bin/rclone
+REMOTE="onedrive:hostamar-backups"
+WSL_BACKUP=/home/romel/backup
+REPO=/home/romel/hostamar-build
+DATE=$(date +%Y-%m-%d_%H-%M-%S)
+DAY=$(date +%Y-%m-%d)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DUMP=$("$SCRIPT_DIR/wsl-pg-dump.sh"); DUMP=$(echo "$DUMP" | tail -1)
+if [ $(date +%M) -eq 0 ] || [ ! -f "$WSL_BACKUP/.env.docker.enc" ]; then
+  openssl enc -aes-256-cbc -pbkdf2 -pass "pass:$BACKUP_PASSWORD" \
+    -in "$REPO/.env.docker" -out "$WSL_BACKUP/.env.docker.$DATE.enc.tmp"
+  mv -f "$WSL_BACKUP/.env.docker.$DATE.enc.tmp" "$WSL_BACKUP/.env.docker.$DATE.enc"
+fi
+if [ $(date +%u) -eq 7 ] && [ $(date +%H) -eq 3 ]; then
+  docker exec hostamar-redis redis-cli SAVE 2>/dev/null || true
+  docker run --rm -v hostamar-build_minio-data:/data -v "$WSL_BACKUP":/backup alpine \
+    tar -czf "/backup/minio-$DAY.tar.gz" -C /data . 2>/dev/null || true
+fi
+find "$REPO/video-pipeline-lowvram/models" -type f -exec ls -la {} \; > "$WSL_BACKUP/models-manifest.txt" 2>/dev/null || true
+"$RCLONE" copy "$WSL_BACKUP" "$REMOTE/$DAY" \
+  --include "hostamar-*.sql.gz" --include ".env.docker.*.enc" --include "models-manifest.txt" \
+  --retries 10 --low-level-retries 10 --transfers 1 --checkers 1 \
+  --log-file "$WSL_BACKUP/rclone.log" --log-level INFO
+"$RCLONE" delete "$REMOTE" --min-age 7d --rmdirs 2>/dev/null || true
+echo "BACKUP OK $DATE -> $REMOTE/$DAY"
+```
+
+### `onedrive-setup.sh` (run ONCE, opens browser)
+```bash
+#!/bin/bash
+set -euo pipefail
+RCLONE=/home/romel/bin/rclone
+"$RCLONE" config   # New remote -> onedrive -> romelraisul@outlook.com -> OneDrive Personal
+"$RCLONE" lsd onedrive:   # verify
+```
+
