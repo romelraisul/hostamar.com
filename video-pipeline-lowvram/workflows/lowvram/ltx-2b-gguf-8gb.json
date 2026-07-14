@@ -246,7 +246,7 @@
  "4960": {
   "class_type": "LTXAVTextEncoderLoader",
   "inputs": {
-   "text_encoder": "comfy_gemma_3_12B_it.safetensors",
+   "text_encoder": "gemma-3-12b-it-qat-q4_0-unquantized",
    "ckpt_name": "ltx-2.3-22b-dev.safetensors",
    "device": "default"
   }
