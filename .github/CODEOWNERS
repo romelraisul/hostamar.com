@@ -1,9 +1,8 @@
-# Default owner — human gate for the AI review pipeline.
+# CODEOWNERS — human gate for hostamar.com
+#
+# Every change requires review from the repo owner. The ai-review.yml workflow
+# enforces the static checks; this file enforces the "require approval" policy.
+# Apply the matching branch protection rule (see .github/BRANCH_PROTECTION.md)
+# via GitHub UI or `node scripts/setup-branch-protection.ts`.
+
 * @RaisulMahmudRomel
-
-# SSO / security — you, for now (no separate team exists yet).
-lib/sso/        @RaisulMahmudRomel
-app/api/auth/   @RaisulMahmudRomel
-
-# Infra / livekit — must keep unless-stopped + healthcheck.
-infra/livekit/  @RaisulMahmudRomel
