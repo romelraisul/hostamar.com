@@ -43,12 +43,25 @@ Action item: before tightening, remove the committed `tsconfig.tsbuildinfo`
 from the repo and add it to `.gitignore`, then it can be re-added to the
 forbidden list.
 
-## Schema-drift grounding notes
+## Build gate is advisory (grounded deviation)
 
-`scripts/check-schema-drift.js` is grounded to this repo's real 30-model schema.
-The canonical skill assumed `GLOBAL_MODELS = ['Goal','AutonomousTask','TaskRunLog']`
-— **those models do not exist here**, so `GLOBAL_MODELS` is intentionally empty.
-`organizationId` already exists on `Membership`, `SamlConnection`,
-`OidcConnection`, `ScimToken` (the SSO/SCIM tenant boundary). User-data models
-without `organizationId` currently emit an ADVISORY (non-blocking) warning until
-a deliberate isolation decision is made.
+The `Build` step in `ai-review.yml` is **non-blocking** (`continue-on-error: true`).
+Reason: `next build` is already a HARD gate in `hostamar-ci.yml` (the repo's main
+CI). In `ai-review.yml` it is advisory because `main` currently has a
+**pre-existing build break unrelated to any PR**: `ERR_REQUIRE_ESM` from
+`@exodus/bytes` / `html-encoding-sniffer` while collecting page data for
+`/api/admin/support/fix` (transitive ESM/CJS conflict in `node_modules`). Making
+it hard here would block EVERY PR on an unrelated issue.
+
+Fix the dependency conflict separately (pin/override `@exodus/bytes` or the
+offending transitive dep), confirm `next build` is green on `main`, then flip
+the `Build` step back to a hard gate in `ai-review.yml`.
+
+## Secret scan exclusions (grounded)
+
+`app/setup/` and `app/dev-tools/` are excluded from the client secret scan
+because they are documentation/reference pages that list env-var NAMES by
+design. Their secret VALUES are masked (`•••••••• (set via .env)`). The real
+leak that prompted this (hardcoded Neon `DATABASE_URL` + `NEXTAUTH_SECRET` +
+`QUEUE_SECRET` + S3 keys in `app/setup/page.tsx`) was fixed in PR #8 and the
+values rotated.
