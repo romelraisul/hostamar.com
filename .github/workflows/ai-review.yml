@@ -71,11 +71,21 @@ jobs:
       # (*.tsx / *.jsx) outside server-only code (route.ts / lib / server).
       # Catches LIVEKIT_*, NEXTAUTH_SECRET, DATABASE_URL, STRIPE_*, *_SECRET,
       # *_API_KEY, PRIVATE_KEY, etc.
+      #
+      # False-positive exclusions (intentional / safe by design):
+      #   - NEXT_PUBLIC_*  : Next.js convention — these ARE meant to be exposed
+      #                      to the browser; flagging them is noise.
+      #   - app/dev-tools/ : developer documentation/example page (shows env-var
+      #                      names as examples, not real values).
+      # NOTE: app/setup/page.tsx ships REAL literal secrets (NEXTAUTH_SECRET,
+      # QUEUE_SECRET, S3_SECRET_KEY, a Neon DATABASE_URL) in a client component —
+      # that is a genuine leak and is intentionally NOT excluded. Fix it in
+      # product code, not here.
       - name: Secret-in-client scan
         run: |
           set -euo pipefail
           PATTERN='(LIVEKIT_[A-Z_]+|NEXTAUTH_SECRET|DATABASE_URL|STRIPE_[A-Z_]+|[A-Z_]+_SECRET|[A-Z_]+_API_KEY|[A-Z_]+_PRIVATE_KEY|PRIVATE_KEY)'
-          HITS="$(grep -rEn "$PATTERN" --include='*.tsx' --include='*.jsx' app components 2>/dev/null | grep -vE 'route\.tsx?$|/lib/|/server/|server-only' || true)"
+          HITS="$(grep -rEn "$PATTERN" --include='*.tsx' --include='*.jsx' app components 2>/dev/null | grep -vE 'route\.tsx?$|/lib/|/server/|server-only|NEXT_PUBLIC_|/dev-tools/' || true)"
           if [ -n "$HITS" ]; then
             echo "::error:: Possible secret/credential reaching client code:"
             echo "$HITS"

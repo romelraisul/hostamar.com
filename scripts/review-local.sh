@@ -37,7 +37,7 @@ echo "OK: no forbidden files"
 
 # 2. Secret-in-client scan -------------------------------------------------
 PATTERN='(LIVEKIT_[A-Z_]+|NEXTAUTH_SECRET|DATABASE_URL|STRIPE_[A-Z_]+|[A-Z_]+_SECRET|[A-Z_]+_API_KEY|[A-Z_]+_PRIVATE_KEY|PRIVATE_KEY)'
-HITS="$(grep -rEn "$PATTERN" --include='*.tsx' --include='*.jsx' app components 2>/dev/null | grep -vE 'route\.tsx?$|/lib/|/server/|server-only' || true)"
+HITS="$(grep -rEn "$PATTERN" --include='*.tsx' --include='*.jsx' app components 2>/dev/null | grep -vE 'route\.tsx?$|/lib/|/server/|server-only|NEXT_PUBLIC_|/dev-tools/' || true)"
 if [ -n "$HITS" ]; then
   echo "::error:: Possible secret/credential reaching client code:"; echo "$HITS"; exit 1
 fi
