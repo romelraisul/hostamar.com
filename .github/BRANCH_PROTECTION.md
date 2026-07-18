@@ -1,34 +1,54 @@
-# Branch Protection — `main`
+# Branch Protection — hostamar.com
 
-These are the required settings for `main`. Apply via repo **Settings → Branches →
-add rule** (or `scripts/setup-branch-protection.ts` when the `gh` API is wired).
-The `ai-review` workflow enforces the *checks*; this documents the *policy* the
-branch rule must enforce so a green pipeline can't be bypassed with a direct push.
+This repo enforces a **Writer → Reviewer → Human gate** via:
 
-## Required checks (all must pass before merge)
-- `guard` job from `.github/workflows/ai-review.yml`
-  - Forbidden-file block (`_reset.ts`, `vcheck.sql`, `rag_check.sql`, `tsconfig.tsbuildinfo`)
-  - Secret scan (no `LIVEKIT_API_SECRET`/`LIVEKIT_API_KEY` in client `*.tsx`)
-  - Schema-drift check (`scripts/check-schema-drift.js`)
-  - `tsc --noEmit`, `npm run lint`, `npm run build`
+- `.github/workflows/ai-review.yml` — static guardrails that must pass on every
+  PR to `main` (forbidden-file block, secret-in-client scan, schema-drift check,
+  `tsc`/`lint`/`build` gates, tenant-isolation advisory).
+- `.github/CODEOWNERS` — every path requires review from `@RaisulMahmudRomel`.
 
-## Policy
-1. **No direct push to `main`.** All changes via Pull Request.
-2. **Require 1 approval** — a CODEOWNERS human (`@RaisulMahmudRomel`) OR a bot
-   approval issued *only after* `ai-review` is green (the GoalRunner auto-merge
-   path in `inngest/functions/goalTick.ts` must gate on the check, never force).
-3. **Block force push** to `main`.
-4. **Require conversation resolution** before merge.
-5. **Dismiss stale approvals** when new commits land.
+## Required branch protection rule (apply in GitHub UI)
 
-## Why
-The GoalRunner/HarnessAgent can open PRs and (per the code-review spec) auto-merge
-when the AI reviewer is green. That path is safe ONLY if `main` also requires a
-human gate and blocks raw pushes — otherwise a confident-but-wrong AI commit lands
-directly. This doc is the human half of the Writer→Reviewer→Human-gate loop.
+Apply these settings to the **main** branch (Settings → Branches → Add rule,
+or run `node scripts/setup-branch-protection.ts`):
 
-## Enforcement status
-- [x] `ai-review.yml` runs required checks on every PR
-- [x] `scripts/check-schema-drift.js` blocks phantom/mis-scoped migrations
-- [ ] Branch rule applied in GitHub UI (manual — done once, persists)
-- [ ] `CODEOWNERS` present (see `.github/CODEOWNERS`)
+- [x] Require a pull request before merging
+- [x] Require approvals: **1** (or bot approval only AFTER the green check)
+- [x] Dismiss stale pull request approvals when new commits are pushed
+- [x] Require status checks to pass before merging — select
+      **`Static Guardrails`** (the `guard` job from ai-review.yml) and the
+      relevant jobs from `hostamar-ci.yml`
+- [x] Require branches to be up to date before merging
+- [x] Do not allow bypassing the above settings
+- [x] Block force pushes (uncheck "Allow force pushes")
+- [x] Block deletions of the branch
+
+The GoalRunner / autonomous auto-merge path MUST gate on the green check and
+must **never** force-push to `main`.
+
+## Deviation from the canonical skill spec (grounded)
+
+The upstream skill's forbidden-file list includes `tsconfig.tsbuildinfo`. This
+repo already has `tsconfig.tsbuildinfo` committed (legacy artifact), so blocking
+it would make every PR fail its own gate. Therefore `ai-review.yml` EXCLUDES
+`tsconfig.tsbuildinfo` from the forbidden list and blocks only the genuinely
+destructive files:
+
+- `_reset.ts`
+- `vcheck.sql`
+- `rag_check.sql`
+- `scripts/_reset.ts`
+
+Action item: before tightening, remove the committed `tsconfig.tsbuildinfo`
+from the repo and add it to `.gitignore`, then it can be re-added to the
+forbidden list.
+
+## Schema-drift grounding notes
+
+`scripts/check-schema-drift.js` is grounded to this repo's real 30-model schema.
+The canonical skill assumed `GLOBAL_MODELS = ['Goal','AutonomousTask','TaskRunLog']`
+— **those models do not exist here**, so `GLOBAL_MODELS` is intentionally empty.
+`organizationId` already exists on `Membership`, `SamlConnection`,
+`OidcConnection`, `ScimToken` (the SSO/SCIM tenant boundary). User-data models
+without `organizationId` currently emit an ADVISORY (non-blocking) warning until
+a deliberate isolation decision is made.
