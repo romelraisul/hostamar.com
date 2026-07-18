@@ -10,6 +10,7 @@ interface EnvField {
   value: string
   key: string
   placeholder?: string
+  secret?: boolean
 }
 
 export default function SetupPage() {
@@ -45,14 +46,14 @@ export default function SetupPage() {
       { label: 'From Name', value: 'Hostamar', key: 'FROM_NAME' },
       { label: 'S3 Endpoint', value: 'http://192.168.1.2:9000', key: 'S3_ENDPOINT' },
       { label: 'S3 Region', value: 'auto', key: 'S3_REGION' },
-      { label: 'S3 Access Key', value: 'minioadmin', key: 'S3_ACCESS_KEY' },
-      { label: 'S3 Secret Key', value: 'minioadmin', key: 'S3_SECRET_KEY' },
+      { label: 'S3 Access Key', value: '•••••••• (set via .env)', key: 's3-access-key', secret: true },
+      { label: 'S3 Secret Key', value: '•••••••• (set via .env)', key: 's3-secret-key', secret: true },
       { label: 'S3 Bucket', value: 'hostamar', key: 'S3_BUCKET' },
       { label: 'S3 Public URL', value: 'http://192.168.1.2:9000', key: 'S3_PUBLIC_URL' },
-      { label: 'DATABASE_URL', value: `postgresql://neondb_owner:***REDACTED***@ep-empty-firefly-apkx8hzh.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require`, key: 'DATABASE_URL' },
-      { label: 'NEXTAUTH_SECRET', value: '***REDACTED***', key: 'NEXTAUTH_SECRET' },
+      { label: 'Database URL', value: '•••••••• (set via .env)', key: 'database-url', secret: true },
+      { label: 'Auth Secret', value: '•••••••• (set via .env)', key: 'nextauth-secret', secret: true },
       { label: 'NEXTAUTH_URL', value: 'http://localhost:3000', key: 'NEXTAUTH_URL' },
-      { label: 'QUEUE_SECRET', value: '***REDACTED***', key: 'QUEUE_SECRET' },
+      { label: 'Queue Secret', value: '•••••••• (set via .env)', key: 'queue-secret', secret: true },
       { label: 'OLLAMA_BASE_URL', value: 'http://localhost:11435', key: 'OLLAMA_BASE_URL' },
       { label: 'OLLAMA_VIDEO_MODEL', value: 'hermes3:latest', key: 'OLLAMA_VIDEO_MODEL' },
     ])
@@ -60,7 +61,7 @@ export default function SetupPage() {
 
   const copyAll = () => {
     const lines = fields
-      .filter(f => f.value)
+      .filter(f => f.value && !f.secret)
       .map(f => `${f.key}=${f.value}`)
       .join('\n')
     copyToClipboard(lines, 'all')
@@ -123,8 +124,8 @@ export default function SetupPage() {
           <div className="grid grid-cols-2 gap-3 text-sm text-gray-300 mb-3">
             <div><span className="text-gray-500">API:</span> http://192.168.1.2:9000</div>
             <div><span className="text-gray-500">Console:</span> http://192.168.1.2:9001</div>
-            <div><span className="text-gray-500">Access Key:</span> minioadmin</div>
-            <div><span className="text-gray-500">Secret Key:</span> minioadmin</div>
+            <div><span className="text-gray-500">Access Key:</span> •••••••• (set via .env)</div>
+            <div><span className="text-gray-500">Secret Key:</span> •••••••• (set via .env)</div>
           </div>
           <p className="text-xs text-gray-500 mt-2">Replaces Uploadthing — unlimited storage on your machine</p>
         </div>
@@ -138,7 +139,7 @@ export default function SetupPage() {
             <span className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full">Free ✓</span>
           </div>
           <p className="text-sm text-gray-300 mb-3">Email + password auth. No Google/Facebook. No third-party dependency.</p>
-          <p className="text-xs text-gray-500">Already configured — just add NEXTAUTH_SECRET to env</p>
+          <p className="text-xs text-gray-500">Already configured — just add your auth secret to env</p>
         </div>
 
         {/* Step 4: Queue & Cron */}
