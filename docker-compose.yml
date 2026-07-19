@@ -152,10 +152,14 @@ services:
       - "80:80"
     volumes:
       - nginx-cache:/var/cache/nginx
+    # host.docker.internal resolves to the host's bridge gateway so nginx can
+    # reach the DMR bridge at :12434 (DMR Docker or native Ollama fallback).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - hostamar
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1/__nginx_health | grep -q OK || exit 1"]
+      test: [ "CMD-SHELL", "wget -q -O - http://127.0.0.1/__nginx_health | grep -q OK || exit 1" ]
       interval: 30s
       timeout: 5s
       retries: 3
