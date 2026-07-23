@@ -6,18 +6,18 @@ import { useLocale } from '@/lib/locale-context'
 export default function CancelPage() {
   const { t } = useLocale()
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
-      <div className="max-w-md w-full rounded-xl border border-yellow-500/30 bg-gray-800 p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4">
+    <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased flex items-center justify-center px-4">
+      <div className="max-w-md w-full rounded-[24px] border border-zinc-200 bg-white p-8 text-center shadow-sm">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">⏸️</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">{t('payment.cancelled')}</h1>
-        <p className="text-gray-400 mb-6">
+        <h1 className="text-2xl font-bold mb-2">{t('payment.cancelled')}</h1>
+        <p className="text-zinc-500 mb-6">
           {t('payment.cancelledMsg')}
         </p>
         <Link
           href="/payment"
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+          className="inline-block bg-[#0E7C3A] hover:bg-[#0c6a32] text-white font-semibold px-6 py-3 rounded-full transition"
         >
           {t('payment.backToPlans')}
         </Link>

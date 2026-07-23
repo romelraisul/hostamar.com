@@ -84,3 +84,35 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ==========================================================================
+   Hostamar Design System — global utilities
+   These were previously only in app/page.tsx inline <style>, making them
+   unavailable on every other page. Centralised here so all pages inherit them.
+   ========================================================================== */
+
+/* Bangla text uses Hind Siliguri (loaded via <link> in layout.tsx) */
+.bangla {
+  font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+}
+
+/* Default body font: Inter for English, falls back to Hind Siliguri for Bangla */
+body {
+  font-family: 'Inter', 'Hind Siliguri', system-ui, sans-serif;
+}
+
+/* Hide scrollbar for horizontal scroll areas (pills, tabs, carousels) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
