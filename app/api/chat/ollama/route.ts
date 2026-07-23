@@ -70,22 +70,29 @@ async function callOmniRoute(messages: any[]) {
 
 // Helper: call local Ollama via tunnel (only works when PC is on)
 async function callOllama(messages: any[]) {
-  const resp = await fetch(`${OLLAMA_HOST}/v1/chat/completions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 3000) // 3s timeout — fail fast on Vercel
+  try {
+    const resp = await fetch(`${OLLAMA_HOST}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        messages,
+        stream: false,
+        temperature: 0.7,
+        max_tokens: 1024,
+      }),
+      signal: controller.signal,
+    })
+    if (!resp.ok) throw new Error('Ollama unreachable')
+    const data = await resp.json()
+    return {
+      content: data.choices?.[0]?.message?.content || 'No response generated.',
       model: OLLAMA_MODEL,
-      messages,
-      stream: false,
-      temperature: 0.7,
-      max_tokens: 1024,
-    }),
-  }).catch(() => undefined)
-  if (!resp || !resp.ok) throw new Error('Ollama unreachable')
-  const data = await resp.json()
-  return {
-    content: data.choices?.[0]?.message?.content || 'No response generated.',
-    model: OLLAMA_MODEL,
+    }
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
