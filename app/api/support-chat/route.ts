@@ -207,6 +207,7 @@ export async function POST(request: NextRequest) {
     const timeout = setTimeout(() => controller.abort(), 25000)
 
     let text = ''
+    let provider = 'ollama'
     try {
       const res = await fetch(`${OLLAMA_URL}/api/generate`, {
         method: 'POST',
@@ -224,20 +225,46 @@ export async function POST(request: NextRequest) {
       text = (data.response || '').trim()
     } catch {
       clearTimeout(timeout)
-      return NextResponse.json(
-        {
-          reply:
-            'দুঃখিত, এই মুহূর্তে AI সাপোর্ট মডেলটি অনুপলব্ধ। কিছুক্ষণ পর আবার চেষ্টা করুন বা support@hostamar.com-এ ইমেইল করুন।',
-          degraded: true,
-        },
-        { status: 200 },
-      )
+      // Fallback: Google Gemini (free tier, always available on Vercel)
+      const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
+      if (GEMINI_KEY) {
+        try {
+          const geminiResp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: `${sys}\n\n${context}` }] }],
+                generationConfig: { temperature: 0.5, maxOutputTokens: 400 },
+              }),
+            },
+          )
+          if (geminiResp.ok) {
+            const gemData = await geminiResp.json()
+            text = gemData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || ''
+            provider = 'gemini'
+          }
+        } catch {
+          // Gemini also failed
+        }
+      }
+      if (!text) {
+        return NextResponse.json(
+          {
+            reply:
+              'দুঃখিত, এই মুহূর্তে AI সাপোর্ট মডেলটি অনুপলব্ধ। কিছুক্ষণ পর আবার চেষ্টা করুন বা support@hostamar.com-এ ইমেইল করুন।',
+            degraded: true,
+          },
+          { status: 200 },
+        )
+      }
     }
     clearTimeout(timeout)
 
     if (!text) text = 'দুঃখিত, উত্তর তৈরি করা যায়নি। অন্য ভাবে প্রশ্ন করুন।'
 
-    return NextResponse.json({ reply: text, ragUsed: rag.length })
+    return NextResponse.json({ reply: text, ragUsed: rag.length, provider })
   } catch {
     return NextResponse.json({ error: 'internal error' }, { status: 500 })
   }
