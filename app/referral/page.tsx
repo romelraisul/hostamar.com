@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation"
 import { Copy, Check, Share2, Gift, Users, Award, TrendingUp, ArrowRight, RefreshCw, CopyCheck } from "lucide-react"
 import { useLocale } from "@/lib/locale-context"
 
+const GREEN = '#0E7C3A'
+
 interface ReferralData {
   referralLink: string;
   referralCode: string;
@@ -91,20 +93,20 @@ export default function ReferralPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="animate-pulse text-white">{t('referral.loading')}</div>
+      <div className="min-h-screen bg-[#FCFCF9] flex items-center justify-center">
+        <div className="bangla animate-pulse text-zinc-500">{t('referral.loading')}</div>
       </div>
     )
   }
 
   if (!referralData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <div className="bg-white/5 backdrop-blur-md rounded-3xl p-8 max-w-md w-full text-center">
-          <p className="text-white/70">{t('referral.loginFirst')}</p>
+      <div className="min-h-screen bg-[#FCFCF9] flex items-center justify-center p-4">
+        <div className="rounded-[24px] border border-zinc-200 bg-white p-8 max-w-md w-full text-center shadow-sm">
+          <p className="bangla text-zinc-600">{t('referral.loginFirst')}</p>
           <button
             onClick={() => router.push('/login')}
-            className="mt-4 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition"
+            className="bangla mt-4 px-8 py-3 bg-[#0E7C3A] hover:bg-[#0c6a32] text-white rounded-full font-medium transition"
           >
             {t('referral.login')}
           </button>
@@ -119,23 +121,22 @@ export default function ReferralPage() {
   const currentTier = [...rewards].reverse().find(r => referralData.referredCount >= (r.threshold || 0))
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased">
       {/* Header */}
-      
 
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4 pt-8 pb-4 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0E7C3A]/10 border border-[#0E7C3A]/20 text-[#0E7C3A] text-sm font-medium mb-6">
           <TrendingUp className="w-4 h-4" />
           {t('referral.bestNetwork')}
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+        <h1 className="bangla text-4xl md:text-5xl font-bold text-zinc-900 mb-4 leading-tight tracking-[-0.03em]">
           {t('referral.heroTitle')} <br />
-          <span className="text-gradient bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <span style={{ color: GREEN }}>
             {t('referral.heroEarn')}
           </span>
         </h1>
-        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+        <p className="bangla text-zinc-500 text-lg max-w-2xl mx-auto">
           {t('referral.heroDesc')}
         </p>
       </section>
@@ -146,23 +147,23 @@ export default function ReferralPage() {
           {/* Left Column - Main Card */}
           <div className="md:col-span-3 space-y-6">
             {/* Referral Link Card */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden">
-              <div className="p-6 border-b border-white/5">
+            <div className="rounded-[24px] border border-zinc-200 bg-white shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-zinc-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <svg className="text-blue-400 w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  <div className="w-10 h-10 rounded-xl bg-[#0E7C3A]/10 flex items-center justify-center">
+                    <svg className="text-[#0E7C3A] w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">{t('referral.yourLink')}</h2>
-                    <p className="text-sm text-gray-400">{t('referral.linkDesc')}</p>
+                    <h2 className="bangla text-lg font-bold text-zinc-900">{t('referral.yourLink')}</h2>
+                    <p className="bangla text-sm text-zinc-500">{t('referral.linkDesc')}</p>
                   </div>
                 </div>
               </div>
               <div className="p-6 space-y-4">
                 {/* Referral Code Badge */}
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-400 w-28">{t('referral.code')}</span>
-                  <span className="px-3 py-1.5 rounded-lg bg-purple-500/20 text-purple-400 font-mono font-bold text-lg border border-purple-500/30">
+                  <span className="bangla text-sm font-medium text-zinc-500 w-28">{t('referral.code')}</span>
+                  <span className="px-3 py-1.5 rounded-lg bg-[#0E7C3A]/10 text-[#0E7C3A] font-mono font-bold text-lg border border-[#0E7C3A]/20">
                     {referralData.referralCode}
                   </span>
                 </div>
@@ -173,25 +174,25 @@ export default function ReferralPage() {
                     type="text"
                     value={referralData.referralLink}
                     readOnly
-                    className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm font-mono focus:outline-none focus:border-blue-500/50 transition"
+                    className="flex-1 px-4 py-3 rounded-xl bg-[#FCFCF9] border border-zinc-200 text-zinc-700 text-sm font-mono focus:outline-none focus:border-[#0E7C3A] transition"
                   />
                   <button
                     onClick={copyReferralLink}
                     className={`px-4 py-3 rounded-xl font-medium transition flex items-center gap-2 ${
                       copied
-                        ? 'bg-green-600 hover:bg-green-700'
-                        : 'bg-blue-600 hover:bg-blue-700'
+                        ? 'bg-[#0E7C3A] hover:bg-[#0c6a32] text-white'
+                        : 'bg-[#0E7C3A] hover:bg-[#0c6a32] text-white'
                     }`}
                   >
                     {copied ? (
                       <>
                         <CopyCheck className="w-4 h-4" />
-                        <span className="hidden md:inline">{t('referral.copied')}</span>
+                        <span className="hidden md:inline bangla">{t('referral.copied')}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-4 h-4" />
-                        <span className="hidden md:inline">{t('referral.copy')}</span>
+                        <span className="hidden md:inline bangla">{t('referral.copy')}</span>
                       </>
                     )}
                   </button>
@@ -201,28 +202,28 @@ export default function ReferralPage() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={shareOnFacebook}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition flex items-center justify-center gap-2 text-sm"
+                    className="flex-1 py-3 rounded-xl bg-[#0E7C3A] hover:bg-[#0c6a32] text-white font-medium transition flex items-center justify-center gap-2 text-sm"
                   >
                     <Share2 className="w-4 h-4" /> Facebook
                   </button>
                   <button
                     onClick={shareOnWhatsApp}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium transition flex items-center justify-center gap-2 text-sm"
+                    className="flex-1 py-3 rounded-xl bg-[#0E7C3A] hover:bg-[#0c6a32] text-white font-medium transition flex items-center justify-center gap-2 text-sm"
                   >
                     <Share2 className="w-4 h-4" /> WhatsApp
                   </button>
                   <button
                     onClick={shareOnMessenger}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-medium transition flex items-center justify-center gap-2 text-sm"
+                    className="flex-1 py-3 rounded-xl bg-[#0E7C3A] hover:bg-[#0c6a32] text-white font-medium transition flex items-center justify-center gap-2 text-sm"
                   >
                     Messenger
                   </button>
                 </div>
 
                 {/* Referral Instructions */}
-                <div className="bg-white/5 rounded-xl p-4 mt-4">
-                  <h4 className="text-sm font-bold text-white mb-3">{t('referral.howItWorks')}</h4>
-                  <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
+                <div className="bg-[#FCFCF9] rounded-xl p-4 mt-4 border border-zinc-200">
+                  <h4 className="bangla text-sm font-bold text-zinc-900 mb-3">{t('referral.howItWorks')}</h4>
+                  <ol className="bangla text-sm text-zinc-600 space-y-2 list-decimal list-inside">
                     <li>{t('referral.step1')}</li>
                     <li>{t('referral.step2')}</li>
                     <li>{t('referral.step3')}</li>
@@ -233,16 +234,16 @@ export default function ReferralPage() {
             </div>
 
             {/* Progress Card */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
+            <div className="rounded-[24px] border border-zinc-200 bg-white shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-white">{t('referral.progress')}</h2>
-                <span className="text-sm text-gray-400">{referralData.referredCount} / 100</span>
+                <h2 className="bangla text-lg font-bold text-zinc-900">{t('referral.progress')}</h2>
+                <span className="bangla text-sm text-zinc-500">{referralData.referredCount} / 100</span>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full h-3 rounded-full bg-white/5 overflow-hidden mb-4">
+              <div className="w-full h-3 rounded-full bg-zinc-100 overflow-hidden mb-4">
                 <div
-                  className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+                  className="h-full rounded-full transition-all duration-1000 bg-[#0E7C3A]"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -250,13 +251,13 @@ export default function ReferralPage() {
               {/* Milestones */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-yellow-400" />
-                  <span className="text-gray-300">
+                  <Award className="w-4 h-4 text-[#0E7C3A]" />
+                  <span className="bangla text-zinc-600">
                     {currentTier ? `${t('referral.currentTier')} ${currentTier.label || currentTier.tier}` : t('referral.firstBonus')}
                   </span>
                 </div>
                 {nextTier && (
-                  <span className="text-blue-400 font-medium">
+                  <span className="text-[#0E7C3A] font-medium">
                     {t('referral.nextTier')} {nextTier.label || nextTier.tier}
                   </span>
                 )}
@@ -269,22 +270,22 @@ export default function ReferralPage() {
                     key={idx}
                     className={`rounded-xl p-3 text-center border transition ${
                       referralData.referredCount >= (tier.threshold || 0)
-                        ? 'bg-green-500/10 border-green-500/30'
-                        : 'bg-white/5 border-white/5'
+                        ? 'bg-[#0E7C3A]/10 border-[#0E7C3A]/30'
+                        : 'bg-[#FCFCF9] border-zinc-200'
                     }`}
                   >
                     <div className={`text-lg font-bold mb-1 ${
                       referralData.referredCount >= (tier.threshold || 0)
-                        ? 'text-green-400'
-                        : 'text-gray-500'
+                        ? 'text-[#0E7C3A]'
+                        : 'text-zinc-500'
                     }`}>{tier.bonus || tier.reward}৳</div>
                     <div className={`text-xs ${
                       referralData.referredCount >= (tier.threshold || 0)
-                        ? 'text-green-400'
-                        : 'text-gray-500'
+                        ? 'text-[#0E7C3A]'
+                        : 'text-zinc-500'
                     }`}>{tier.threshold || tier.referredCount} referrals</div>
                     {referralData.referredCount >= (tier.threshold || 0) && (
-                      <Check className="w-3 h-3 mx-auto mt-1 text-green-400" />
+                      <Check className="w-3 h-3 mx-auto mt-1 text-[#0E7C3A]" />
                     )}
                   </div>
                 ))}
@@ -295,31 +296,31 @@ export default function ReferralPage() {
           {/* Right Column - Stats Sidebar */}
           <div className="md:col-span-2 space-y-6">
             {/* Stats Card */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4">{t('referral.stats')}</h2>
+            <div className="rounded-[24px] border border-zinc-200 bg-white shadow-sm p-6">
+              <h2 className="bangla text-lg font-bold text-zinc-900 mb-4">{t('referral.stats')}</h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400">{t('referral.totalInvites')}</span>
-                  <span className="text-white font-bold">{referralData.referredCount}</span>
+                  <span className="bangla text-zinc-500">{t('referral.totalInvites')}</span>
+                  <span className="text-zinc-900 font-bold">{referralData.referredCount}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400">{t('referral.successful')}</span>
-                  <span className="text-green-400 font-bold">{referralData.completedCount}</span>
+                  <span className="bangla text-zinc-500">{t('referral.successful')}</span>
+                  <span className="text-[#0E7C3A] font-bold">{referralData.completedCount}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400">{t('referral.pending')}</span>
-                  <span className="text-yellow-400 font-bold">{referralData.pendingCount}</span>
+                  <span className="bangla text-zinc-500">{t('referral.pending')}</span>
+                  <span className="text-[#E4312B] font-bold">{referralData.pendingCount}</span>
                 </div>
-                <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                  <span className="text-gray-400 font-bold">{t('referral.totalEarned')}</span>
-                  <span className="text-purple-400 font-bold text-xl">৳{referralData.totalBonus}</span>
+                <div className="flex justify-between items-center pt-4 border-t border-zinc-100">
+                  <span className="bangla text-zinc-900 font-bold">{t('referral.totalEarned')}</span>
+                  <span className="text-[#0E7C3A] font-bold text-xl">৳{referralData.totalBonus}</span>
                 </div>
               </div>
             </div>
 
             {/* Leaderboard Card */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4">{t('referral.leaderboard')}</h2>
+            <div className="rounded-[24px] border border-zinc-200 bg-white shadow-sm p-6">
+              <h2 className="bangla text-lg font-bold text-zinc-900 mb-4">{t('referral.leaderboard')}</h2>
               <div className="space-y-3" id="leaderboard">
                 {[
                   { name: 'Riaz', referrals: 47, bonus: 15000 },
@@ -331,28 +332,28 @@ export default function ReferralPage() {
                   <div key={idx} className="flex items-center gap-3 py-2">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
                       idx < 3
-                        ? ['bg-yellow-500/20 text-yellow-400', 'bg-gray-400/20 text-gray-400', 'bg-amber-600/20 text-amber-400'][idx]
-                        : 'bg-white/10 text-gray-500'
+                        ? ['bg-[#0E7C3A]/10 text-[#0E7C3A]', 'bg-zinc-200 text-zinc-600', 'bg-[#E4312B]/10 text-[#E4312B]'][idx]
+                        : 'bg-zinc-100 text-zinc-500'
                     }`}
                     >
                       {idx + 1}
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm text-white font-medium">{leader.name}</div>
-                      <div className="text-xs text-gray-500">{leader.referrals} referrals</div>
+                      <div className="text-sm text-zinc-900 font-medium">{leader.name}</div>
+                      <div className="text-xs text-zinc-500">{leader.referrals} referrals</div>
                     </div>
-                    <div className="text-sm font-bold text-green-400">৳{leader.bonus}</div>
+                    <div className="text-sm font-bold text-[#0E7C3A]">৳{leader.bonus}</div>
                   </div>
                 ))}
               </div>
-              <button className="mt-4 w-full py-2.5 text-sm text-blue-400 hover:text-blue-300 transition font-medium">
+              <button className="bangla mt-4 w-full py-2.5 text-sm text-[#0E7C3A] hover:text-[#0c6a32] transition font-medium">
                 {t('referral.viewFull')}
               </button>
             </div>
 
             {/* FAQ Card */}
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-              <h2 className="text-lg font-bold text-white mb-4">{t('referral.faq')}</h2>
+            <div className="rounded-[24px] border border-zinc-200 bg-white shadow-sm p-6">
+              <h2 className="bangla text-lg font-bold text-zinc-900 mb-4">{t('referral.faq')}</h2>
               <div className="space-y-3">
                 {[
                   [t('referral.faqQ1'), t('referral.faqA1')],
@@ -361,10 +362,10 @@ export default function ReferralPage() {
                   [t('referral.faqQ4'), t('referral.faqA4')],
                 ].map(([q, a], idx) => (
                   <details key={idx} className="group">
-                    <summary className="cursor-pointer text-sm font-medium text-white py-2 hover:text-blue-400 transition">
+                    <summary className="bangla cursor-pointer text-sm font-medium text-zinc-900 py-2 hover:text-[#0E7C3A] transition">
                       {q}
                     </summary>
-                    <p className="text-sm text-gray-400 pb-2 pl-4">{a}</p>
+                    <p className="bangla text-sm text-zinc-500 pb-2 pl-4">{a}</p>
                   </details>
                 ))}
               </div>

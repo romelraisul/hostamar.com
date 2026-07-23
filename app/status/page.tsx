@@ -16,9 +16,9 @@ const DOT: Record<State, string> = {
   red: '🔴',
 }
 const LABEL: Record<State, string> = {
-  green: 'Operational',
-  yellow: 'Degraded',
-  red: 'Outage',
+  green: 'সচল',
+  yellow: 'মন্দ',
+  red: 'বিভ্রাট',
 }
 
 export default function StatusPage() {
@@ -43,26 +43,33 @@ export default function StatusPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Hostamar Status</h1>
-        <p className="text-slate-500 mb-6">
-          {data ? `Last updated ${new Date(data.generatedAt).toLocaleString()}` : err ? `Error: ${err}` : 'Loading…'}
+        <div className="mb-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#0E7C3A] bg-[#0E7C3A]/10 px-3 py-1 rounded-full">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0E7C3A] opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0E7C3A]" />
+          </span>
+          System Status
+        </div>
+        <h1 className="bangla text-[28px] md:text-[32px] font-bold tracking-[-0.02em] mb-2">হোস্টামার স্ট্যাটাস</h1>
+        <p className="bangla text-[14px] text-zinc-500 mb-6">
+          {data ? `সর্বশেষ আপডেট ${new Date(data.generatedAt).toLocaleString()}` : err ? `সমস্যা: ${err}` : 'লোড হচ্ছে…'}
         </p>
         <div className="grid grid-cols-1 gap-3">
           {data &&
             Object.entries(data.products).map(([name, state]) => (
-              <div key={name} className="flex items-center justify-between border rounded-lg bg-white px-4 py-3 shadow-sm">
-                <span className="font-medium capitalize">{name === 'SSO' ? 'SSO' : name}</span>
+              <div key={name} className="flex items-center justify-between rounded-[16px] border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+                <span className="bangla font-medium capitalize text-[15px]">{name === 'SSO' ? 'SSO' : name}</span>
                 <span className="flex items-center gap-2">
                   <span>{DOT[state]}</span>
-                  <span className="text-sm text-slate-600">{LABEL[state]}</span>
+                  <span className="bangla text-[13px] text-zinc-600">{LABEL[state]}</span>
                 </span>
               </div>
             ))}
         </div>
-        <p className="mt-8 text-xs text-slate-400">
-          Automated Tier-1 checks run every 5 minutes. Incidents are posted to the operations channel.
+        <p className="bangla mt-8 text-[12px] text-zinc-400">
+          অটোমেটেড চেক প্রতি ৫ মিনিটে চলে। ঘটনা অপারেশন চ্যানেলে পোস্ট করা হয়।
         </p>
       </div>
     </div>

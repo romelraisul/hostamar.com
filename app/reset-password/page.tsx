@@ -40,14 +40,14 @@ function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="text-center">
-        <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">📧</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">{t('forgotPassword.checkEmail')}</h1>
-        <p className="text-gray-400 mb-6">
+        <h1 className="text-2xl font-bold mb-2">{t('forgotPassword.checkEmail')}</h1>
+        <p className="text-zinc-500 mb-6">
           {t('forgotPassword.checkEmailMsg')}
         </p>
-        <Link href="/login" className="text-blue-400 hover:underline text-sm">
+        <Link href="/login" className="text-[#0E7C3A] hover:underline text-sm">
           {t('forgotPassword.backToLogin')}
         </Link>
       </div>
@@ -57,22 +57,22 @@ function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">{t('forgotPassword.title')}</h1>
-        <p className="text-gray-400 text-sm">{t('forgotPassword.subtitle')}</p>
+        <h1 className="text-2xl font-bold mb-2">{t('forgotPassword.title')}</h1>
+        <p className="text-zinc-500 text-sm">{t('forgotPassword.subtitle')}</p>
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
       )}
 
       <div>
-        <label className="block text-sm text-gray-400 mb-1">{t('forgotPassword.emailLabel')}</label>
+        <label className="block text-sm text-zinc-600 mb-1">{t('forgotPassword.emailLabel')}</label>
         <input
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20 focus:border-[#0E7C3A]"
           placeholder={t('forgotPassword.emailPlaceholder')}
         />
       </div>
@@ -80,14 +80,14 @@ function ForgotPasswordForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
+        className="w-full bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:opacity-50 text-white font-medium py-2.5 rounded-full transition"
       >
         {loading ? t('forgotPassword.sending') : t('forgotPassword.sendReset')}
       </button>
 
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-zinc-500">
         {t('forgotPassword.rememberPassword')}{' '}
-        <Link href="/login" className="text-blue-400 hover:underline">{t('nav.login')}</Link>
+        <Link href="/login" className="text-[#0E7C3A] hover:underline">{t('nav.login')}</Link>
       </p>
     </form>
   )
@@ -107,9 +107,9 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">{t('resetPassword.invalidLink')}</h1>
-        <p className="text-gray-400 mb-4">{t('resetPassword.invalidLinkMsg')}</p>
-        <Link href="/forgot-password" className="text-blue-400 hover:underline">{t('resetPassword.requestNew')}</Link>
+        <h1 className="text-2xl font-bold mb-2">{t('resetPassword.invalidLink')}</h1>
+        <p className="text-zinc-500 mb-4">{t('resetPassword.invalidLinkMsg')}</p>
+        <Link href="/forgot-password" className="text-[#0E7C3A] hover:underline">{t('resetPassword.requestNew')}</Link>
       </div>
     )
   }
@@ -117,12 +117,12 @@ function ResetPasswordForm() {
   if (done) {
     return (
       <div className="text-center">
-        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">✅</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">{t('resetPassword.resetDone')}</h1>
-        <p className="text-gray-400 mb-6">{t('resetPassword.resetDoneMsg')}</p>
-        <Link href="/login" className="text-blue-400 hover:underline">{t('resetPassword.loginWithNew')}</Link>
+        <h1 className="text-2xl font-bold mb-2">{t('resetPassword.resetDone')}</h1>
+        <p className="text-zinc-500 mb-6">{t('resetPassword.resetDoneMsg')}</p>
+        <Link href="/login" className="text-[#0E7C3A] hover:underline">{t('resetPassword.loginWithNew')}</Link>
       </div>
     )
   }
@@ -157,42 +157,42 @@ function ResetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">{t('resetPassword.setNewPassword')}</h1>
-        <p className="text-gray-400 text-sm">{t('resetPassword.enterNewPassword')}</p>
+        <h1 className="text-2xl font-bold mb-2">{t('resetPassword.setNewPassword')}</h1>
+        <p className="text-zinc-500 text-sm">{t('resetPassword.enterNewPassword')}</p>
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
       )}
 
       <div>
-        <label className="block text-sm text-gray-400 mb-1">{t('resetPassword.newPasswordLabel')}</label>
+        <label className="block text-sm text-zinc-600 mb-1">{t('resetPassword.newPasswordLabel')}</label>
         <input
           type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20 focus:border-[#0E7C3A]"
         />
       </div>
 
       <div>
-        <label className="block text-sm text-gray-400 mb-1">{t('resetPassword.confirmPasswordLabel')}</label>
+        <label className="block text-sm text-zinc-600 mb-1">{t('resetPassword.confirmPasswordLabel')}</label>
         <input
           type="password"
           value={confirm}
           onChange={e => setConfirm(e.target.value)}
           required
           minLength={6}
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20 focus:border-[#0E7C3A]"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition"
+        className="w-full bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:opacity-50 text-white font-medium py-2.5 rounded-full transition"
       >
         {loading ? t('resetPassword.resetting') : t('resetPassword.resetBtn')}
       </button>
@@ -203,9 +203,9 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   const { t } = useLocale()
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-xl border border-white/10 bg-gray-800/50 p-8">
-        <Suspense fallback={<div className="text-center text-gray-400">{t('common.loading') || 'Loading...'}</div>}>
+    <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-[24px] border border-zinc-200 bg-white p-8 shadow-sm">
+        <Suspense fallback={<div className="text-center text-zinc-400">{t('common.loading') || 'Loading...'}</div>}>
           <ResetPasswordForm />
         </Suspense>
       </div>
