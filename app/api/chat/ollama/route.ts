@@ -33,7 +33,7 @@ async function callGemini(messages: any[]) {
     body: JSON.stringify({
       contents,
       systemInstruction,
-      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+      generationConfig: { temperature: 0.8, maxOutputTokens: 1200 },
     }),
   })
 
@@ -57,7 +57,7 @@ async function callOmniRoute(messages: any[]) {
       messages,
       stream: false,
       temperature: 0.7,
-      max_tokens: 1024,
+      max_tokens: 1200,
     }),
   })
   if (!resp.ok) throw new Error(`OmniRoute error: ${resp.status}`)
@@ -71,7 +71,7 @@ async function callOmniRoute(messages: any[]) {
 // Helper: call local Ollama via tunnel (only works when PC is on)
 async function callOllama(messages: any[]) {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 3000) // 3s timeout — fail fast on Vercel
+  const timeout = setTimeout(() => controller.abort(), 5000) // 3s timeout — fail fast on Vercel
   try {
     const resp = await fetch(`${OLLAMA_HOST}/v1/chat/completions`, {
       method: 'POST',
@@ -81,7 +81,7 @@ async function callOllama(messages: any[]) {
         messages,
         stream: false,
         temperature: 0.7,
-        max_tokens: 1024,
+        max_tokens: 1200,
       }),
       signal: controller.signal,
     })
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     const messages = [
       {
         role: 'system',
-        content: 'You are Hostamar AI, a helpful assistant for Hostamar.com — a cloud hosting, AI video marketing, and gaming platform. Respond in the same language the user writes in (Bengali, English, or Urdu). Keep responses concise and actionable.',
+        content: 'You are হোস্টা — Hostamar AI support. You are warm, caring, and talk like a real friend, not a robot. Respond in the same language the user writes (Bengali, English, Urdu). Keep responses natural, short, and personal. Use emojis when appropriate. Show empathy and enthusiasm.',
       },
       ...(Array.isArray(history) ? history.slice(-10) : []),
       { role: 'user', content: message },
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
             messages,
             stream: false,
             temperature: 0.7,
-            max_tokens: 1024,
+            max_tokens: 1200,
           }),
         })
         if (resp.ok) {
