@@ -26,7 +26,7 @@ async function callGemini(messages: any[]) {
     ? { parts: [{ text: systemMsg.content }] }
     : undefined
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -40,7 +40,7 @@ async function callGemini(messages: any[]) {
   if (!resp.ok) throw new Error(`Gemini API error: ${resp.status}`)
   const data = await resp.json()
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.'
-  return { content: text, model: 'gemini-2.0-flash' }
+  return { content: text, model: 'gemini-2.5-flash' }
 }
 
 // Helper: call OmniRoute (free AI gateway, 90+ providers)
