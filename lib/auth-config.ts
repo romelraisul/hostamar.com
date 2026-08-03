@@ -1,8 +1,20 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
+import GitHubProvider from 'next-auth/providers/github'
+import FacebookProvider from 'next-auth/providers/facebook'
+import AzureADProvider from 'next-auth/providers/azure-ad'
+import TwitterProvider from 'next-auth/providers/twitter'
+import LinkedInProvider from 'next-auth/providers/linkedin'
 import bcrypt from 'bcryptjs'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from './prisma'
+
+// OAuth providers are enabled only when their env vars are present,
+// so the app builds/runs without them (progressive SSO rollout).
+function hasEnv(...keys: string[]): boolean {
+  return keys.every((k) => !!process.env[k])
+}
 
 export const authOptions: NextAuthOptions = {
   // Adapter is used for password-reset flow (VerificationToken) only.
@@ -86,6 +98,55 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    ...(hasEnv('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET')
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          }),
+        ]
+      : []),
+    ...(hasEnv('GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET')
+      ? [
+          GitHubProvider({
+            clientId: process.env.GITHUB_CLIENT_ID!,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+          }),
+        ]
+      : []),
+    ...(hasEnv('FACEBOOK_CLIENT_ID', 'FACEBOOK_CLIENT_SECRET')
+      ? [
+          FacebookProvider({
+            clientId: process.env.FACEBOOK_CLIENT_ID!,
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+          }),
+        ]
+      : []),
+    ...(hasEnv('AZURE_AD_CLIENT_ID', 'AZURE_AD_CLIENT_SECRET', 'AZURE_AD_TENANT_ID')
+      ? [
+          AzureADProvider({
+            clientId: process.env.AZURE_AD_CLIENT_ID!,
+            clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
+            tenantId: process.env.AZURE_AD_TENANT_ID!,
+          }),
+        ]
+      : []),
+    ...(hasEnv('TWITTER_CLIENT_ID', 'TWITTER_CLIENT_SECRET')
+      ? [
+          TwitterProvider({
+            clientId: process.env.TWITTER_CLIENT_ID!,
+            clientSecret: process.env.TWITTER_CLIENT_SECRET!,
+          }),
+        ]
+      : []),
+    ...(hasEnv('LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET')
+      ? [
+          LinkedInProvider({
+            clientId: process.env.LINKEDIN_CLIENT_ID!,
+            clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+          }),
+        ]
+      : []),
   ],
 
   callbacks: {

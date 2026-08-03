@@ -1,31 +1,58 @@
-export const dynamic = 'force-dynamic'
-
 import { NextResponse } from 'next/server'
 import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { NextRequest } from 'next/server'
-import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
-import { sendWelcomeEmail } from '@/lib/email'
+import { ensureTrial } from '@/lib/trial'
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const ip = getClientIp(request)
-    const rl = await checkRateLimit(ip, RATE_LIMITS.signup, '/api/auth/signup', 'POST')
-    if (!rl.allowed) {
-      return NextResponse.json(
-        { error: 'Too many signup attempts from this address. Please try again later.' },
-        { status: 429 }
-      )
-    }
-
     const body = await request.json()
-    const { email, password, name, businessName, industry, inviteCode, refCode } = body
+    const { email, password, name, businessName, industry, betaCode, phone } = body
 
     if (!email || !password || !name) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
+    }
+
+    // --- Beta-code gate (effective when the BetaInvite table is provisioned) ----
+    // If betaCode is provided, look it up in BetaInvite; reject if invalid / expired / already USED.
+    // If NO betaCode is provided AND the BetaInvite table has any rows, reject (gated mode).
+    // If the BetaInvite table is empty/missing, allow free signup (open mode).
+    let validatedInvite: any = null
+    try {
+      const totalInvites = await prisma.betaInvite.count()
+      if (totalInvites > 0) {
+        // gated mode — code is required
+        if (!betaCode) {
+          return NextResponse.json(
+            { error: 'Beta access code required' },
+            { status: 403 }
+          )
+        }
+        const invite = await prisma.betaInvite.findUnique({ where: { code: betaCode } })
+        if (!invite) {
+          return NextResponse.json(
+            { error: 'Invalid beta access code' },
+            { status: 403 }
+          )
+        }
+        if (invite.status === 'USED') {
+          return NextResponse.json(
+            { error: 'Beta access code already used' },
+            { status: 403 }
+          )
+        }
+        if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+          return NextResponse.json(
+            { error: 'Beta access code expired' },
+            { status: 403 }
+          )
+        }
+        validatedInvite = invite
+      }
+    } catch {
+      // BetaInvite table missing/corrupt — fall through to free signup (avoids hard 500s during infra drift)
     }
 
     const existingCustomer = await prisma.customer.findUnique({
@@ -46,6 +73,7 @@ export async function POST(request: NextRequest) {
         email,
         password: hashedPassword,
         name,
+        phone: phone || null,
         business: businessName ? {
           create: {
             name: businessName,
@@ -58,36 +86,28 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Phase 0.1: every new customer gets an automatic 7-day free trial.
+    // ensureTrial is idempotent so re-runs (e.g. signup retry) do nothing.
+    await ensureTrial(customer.id)
 
-    // Track referral if ref code provided
-    if (refCode) {
+    // --- Mark the beta invite as USED now that the customer (and trial) are created ---
+    if (validatedInvite) {
       try {
-        await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/referral`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refCode, newUserId: customer.id })
-        });
-      } catch { /* referral tracking is non-critical */ }
-    }
-
-    // Consume beta invite code if provided
-    if (inviteCode) {
-      const invite = await prisma.betaInvite.findUnique({
-        where: { code: String(inviteCode).trim().toUpperCase() }
-      })
-      if (invite && invite.status === 'PENDING' && invite.email === email) {
         await prisma.betaInvite.update({
-          where: { id: invite.id },
-          data: { status: 'USED', usedAt: new Date() }
+          where: { code: validatedInvite.code },
+          data: {
+            status: 'USED',
+            usedAt: new Date(),
+            email: email,      // record who consumed it
+            name: name,
+            phone: phone || null,
+            updatedAt: new Date(),
+          },
         })
+      } catch (e) {
+        // Non-fatal: the user already signed up; we just couldn't record the invite use.
+        console.error('Failed to mark BetaInvite USED:', e)
       }
-    }
-
-    // Send welcome email — fails gracefully (SMTP may be unset)
-    try {
-      await sendWelcomeEmail(customer.email, customer.name || customer.email.split('@')[0])
-    } catch (emailError) {
-      console.warn('[Signup] Welcome email failed:', emailError)
     }
 
     return NextResponse.json({
@@ -104,3 +124,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
