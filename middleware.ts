@@ -107,6 +107,8 @@ export async function middleware(request: NextRequest) {
             '/api/auth/oidc/authorize',
             '/api/auth/oidc/login',
             '/api/auth/oidc/callback',
+            '/api/queue/status',
+            '/api/video/status',
 ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
