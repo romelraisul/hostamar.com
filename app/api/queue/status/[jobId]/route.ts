@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+import { getQueue, QUEUE_NAMES, initRedis } from '@/lib/queue';
 
 /**
  * GET /api/queue/status/[jobId]
@@ -14,6 +14,7 @@ export async function GET(
   { params }: { params: { jobId: string } }
 ) {
   try {
+    await initRedis()
     const { jobId } = params;
 
     if (!jobId || typeof jobId !== 'string') {
@@ -150,4 +151,4 @@ function mapStateToStatus(state: string): string {
     default:
       return 'unknown';
   }
-}
+}
