@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const GREEN = '#0E7C3A'
-const API = process.env.NEXT_PUBLIC_VIDEO_API_URL || 'http://localhost:8000'
-const API_KEY = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_VIDEO_API_KEY) || 'local-dev-key'
-const AUTH_HEADER_VALUE = 'Bearer ' + API_KEY
+const API = '/api/ai/videos'  // Internal Next.js API route
+const AUTH_HEADER_VALUE = ''  // Uses cookie auth via middleware
 
 type Status = 'idle' | 'queued' | 'running' | 'completed' | 'failed'
 
@@ -18,6 +17,7 @@ export default function VideoGeneratePage() {
   const [aspect, setAspect] = useState('9:16')
   const [withBgm, setWithBgm] = useState(true)
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [videoId, setVideoId] = useState('')
   const [jobId, setJobId] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [progress, setProgress] = useState(0)
@@ -29,20 +29,22 @@ export default function VideoGeneratePage() {
     for (let i = 0; i < 240; i++) {
       await new Promise((r) => setTimeout(r, 5000))
       try {
-        const res = await fetch(`${API}/v1/status/${id}`, {
-          headers: { Authorization: AUTH_HEADER_VALUE },
-        })
+        const res = await fetch(`/api/queue/status/${id}`)
         if (!res.ok) continue
         const data = await res.json()
-        setStatus(data.status)
+        const mappedStatus = mapStateToStatus(data.state)
+        setStatus(mappedStatus)
         setProgress(Number(data.progress || 0))
-        if (data.status === 'completed') {
-          setVideoUrl(data.video_url)
+        if (mappedStatus === 'complete') {
+          // Video URL would be in data.result or need separate fetch
+          const videoRes = await fetch(`/api/video/status/${data.videoId || data.data?.previewId || videoId}`)
+          const videoData = await videoRes.json()
+          setVideoUrl(videoData.videoUrl || videoData.url)
           setLoading(false)
           return
         }
-        if (data.status === 'failed') {
-          setError(data.error || 'render failed')
+        if (mappedStatus === 'failed') {
+          setError(data.error || data.failedReason || 'render failed')
           setLoading(false)
           return
         }
@@ -54,6 +56,22 @@ export default function VideoGeneratePage() {
     setLoading(false)
   }
 
+  function mapStateToStatus(state: string): Status {
+    switch (state) {
+      case 'waiting':
+      case 'delayed':
+        return 'queued'
+      case 'active':
+        return 'running'
+      case 'completed':
+        return 'completed'
+      case 'failed':
+        return 'failed'
+      default:
+        return 'queued'
+    }
+  }
+
   const start = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -62,25 +80,26 @@ export default function VideoGeneratePage() {
     setProgress(0)
     setStatus('queued')
     try {
-      const res = await fetch(`${API}/v1/generate`, {
+      const res = await fetch(`${API}/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: AUTH_HEADER_VALUE },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Send auth_token cookie
         body: JSON.stringify({
-          prompt_bn: promptBn,
+          templateId: `${style}_${aspect.replace(':', '_')}`,
+          prompt: promptBn,
           style,
-          aspect_ratio: aspect,
-          with_bgm: withBgm,
-          avatar_image_url: avatarUrl || null,
+          duration: 30,
         }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.detail || 'generate failed')
+        setError(data.error || data.details || 'generate failed')
         setLoading(false)
         return
       }
-      setJobId(data.job_id)
-      pollStatus(data.job_id)
+      setVideoId(data.videoId)
+      setJobId(data.jobId)
+      pollStatus(data.jobId)
     } catch {
       setError('network error')
       setLoading(false)
