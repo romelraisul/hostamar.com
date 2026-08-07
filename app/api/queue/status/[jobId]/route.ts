@@ -21,10 +21,15 @@ export async function GET(
       return NextResponse.json({ error: 'jobId is required' }, { status: 400 });
     }
 
+    // Add timeout to prevent 502
     const queue = getQueue(QUEUE_NAMES.VIDEO_GENERATION);
-
-    // Fetch the job from BullMQ
-    const job = await queue.getJob(jobId);
+    
+    const jobPromise = queue.getJob(jobId);
+    const timeoutPromise = new Promise<null>((_, reject) => 
+      setTimeout(() => reject(new Error('Queue operation timeout')), 8000)
+    );
+    
+    const job = await Promise.race([jobPromise, timeoutPromise]);
 
     if (!job) {
       return NextResponse.json(
@@ -89,6 +94,7 @@ export async function DELETE(
   { params }: { params: { jobId: string } }
 ) {
   try {
+    await initRedis()
     const { jobId } = params;
 
     if (!jobId) {
