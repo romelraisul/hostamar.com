@@ -68,7 +68,7 @@ async function getOrCreateUser(profile: { sub: string; email: string; name?: str
   if (byEmail) {
     return prisma.customer.update({
       where: { id: byEmail.id },
-      data: { ssoId: profile.sub, ssoProvider: PROVIDER, emailVerified: true },
+      data: { ssoId: profile.sub, ssoProvider: PROVIDER, emailVerified: new Date() },
     });
   }
 
@@ -83,8 +83,8 @@ async function getOrCreateUser(profile: { sub: string; email: string; name?: str
       password: passwordHash,
       ssoId: profile.sub,
       ssoProvider: PROVIDER,
-      emailVerified: true,
-      role: "CUSTOMER",
+      emailVerified: new Date(),
+      role: "customer",
     },
   });
 }
