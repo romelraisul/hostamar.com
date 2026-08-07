@@ -3,15 +3,15 @@ import { NextRequest } from "next/server";
 export async function GET(req: NextRequest) {
   const mode = req.nextUrl.searchParams.get("mode") || "login";
 
-  const authorizeUrl = process.env.SSO_AUTHORIZE_URL;
+  const authorizeUrl = process.env.SSO_AUTHORIZE_URL || "https://accounts.google.com/o/oauth2/v2/auth";
   const clientId = process.env.SSO_CLIENT_ID;
   const appUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-  if (!authorizeUrl || !clientId) {
+  if (!clientId) {
     return new Response(
       JSON.stringify({
         error: "SSO not configured",
-        missing: ["SSO_AUTHORIZE_URL", "SSO_CLIENT_ID"].filter((k) => !process.env[k]),
+        missing: ["SSO_CLIENT_ID"],
       }),
       { status: 501, headers: { "content-type": "application/json" } }
     );
@@ -26,6 +26,8 @@ export async function GET(req: NextRequest) {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", process.env.SSO_SCOPE || "openid email profile");
   url.searchParams.set("state", state);
+  // Google requires nonce for OIDC
+  url.searchParams.set("nonce", crypto.randomUUID());
 
   return Response.redirect(url.toString(), 302);
 }

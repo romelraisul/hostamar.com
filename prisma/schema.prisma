@@ -89,6 +89,7 @@ model Customer {
   conversations     Conversation[]
   gameBalances      GameBalance[]
   gameSpins         GameSpin[]
+  trial             Trial?
 
   // Twitter OAuth 2.0
   twitterAccessToken       String?
@@ -621,6 +622,24 @@ model BetaInvite {
 
   @@index([status])
   @@index([createdAt])
+}
+
+model Trial {
+  id          String   @id @default(cuid())
+  customerId  String   @unique
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  startedAt   DateTime @default(now())
+  expiresAt   DateTime
+  convertedAt DateTime?
+  planChosen  String?
+  source      String   @default("signup")
+  status      String   @default("active")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
+  @@index([status, expiresAt])
 }
 
 model Conversation {

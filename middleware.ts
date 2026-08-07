@@ -52,44 +52,62 @@ export async function middleware(request: NextRequest) {
   }
 
   // Public API paths — no auth needed (include all NextAuth endpoints + custom auth + video public APIs)
-  const publicApiPaths = [
-    '/api/auth/login',
-    '/api/auth/register',
-    '/api/health',
-    '/api/auth/signup',
-    '/api/auth/forgot-password',
-    '/api/auth/forgot',
-    '/api/auth/reset',
-    '/api/auth/reset-password',
-    '/api/bootstrap-admin',
-    '/api/storage',
-    '/api/metrics',
-    '/api/auth/providers',
-    '/api/auth/callback',
-    '/api/auth/signin',
-    '/api/auth/signout',
-    '/api/auth/csrf',
-    '/api/auth/session',
-    '/api/admin',
-    '/api/ai/videos/generate',
-    '/api/video/status',
-    '/api/dashboard/videos',
-    '/api/game/balance',
-    '/api/game/spin',
-    '/api/ai/browser/search',
-    '/api/browser/proxy',
-        '/api/browser/screenshot',
-        '/api/browser/summarize',
-        '/api/dev/chat',
-        '/api/email/setup-brevo',
-        '/api/debug/env',
-        '/api/support-chat',   // self-hosted Ollama L1 support, public
-        '/api/auth/twitter/connect',
-        '/api/metrics',
-        '/api/invoices',   // server-to-server invoice generation (triggered by webhook)
-        '/api/payment/verify',   // payment gateway callback — must be reachable without a session
-        '/api/internal/provision',   // self-guarded by INTERNAL_API_KEY header (server-to-server)
-      ]
+    const publicApiPaths = [
+                '/api/auth/login',
+                '/api/auth/register',
+                '/api/health',
+                '/api/auth/signup',
+                '/api/auth/forgot-password',
+                '/api/auth/forgot',
+                '/api/auth/reset',
+                '/api/auth/reset-password',
+                '/api/bootstrap-admin',
+                '/api/storage',
+                '/api/metrics',
+                '/api/auth/providers',
+                '/api/auth/callback',
+                '/api/auth/signin',
+                '/api/auth/signout',
+                '/api/auth/csrf',
+                '/api/auth/session',
+                '/api/auth/sso/start',
+                '/api/auth/sso/callback',
+                '/api/admin',
+                '/api/ai/videos/generate',
+                '/api/video/status',
+                '/api/dashboard/videos',
+                '/api/game/balance',
+                '/api/game/spin',
+                '/api/ai/browser/search',
+                '/api/browser/proxy',
+                '/api/browser/screenshot',
+                '/api/browser/summarize',
+                '/api/dev/chat',
+                '/api/email/setup-brevo',
+                '/api/debug/env',
+                '/api/support-chat',   // self-hosted Ollama L1 support, public
+                '/api/auth/twitter/connect',
+                '/api/metrics',
+                '/api/invoices',   // server-to-server invoice generation (triggered by webhook)
+                '/api/payment/verify',   // payment gateway callback — must be reachable without a session
+                '/api/internal/provision',   // self-guarded by INTERNAL_API_KEY header (server-to-server)
+                '/api/cron/neon-keepalive', // Neon keep-alive cron endpoint
+                '/api/test-signup', // Test endpoint for debugging
+            '/api/test-redis', // Test Redis connection
+            '/api/test-video-gen', // Test video generation
+            '/api/test-bullmq', // Test BullMQ directly
+                '/api/hosting', // Hosting API
+                '/api/ide', // IDE API
+                '/api/game', // Game API
+                '/api/billing', // Billing API
+                          '/api/auth/saml/login',
+            '/api/auth/saml/acs',
+            '/api/auth/saml/callback',
+            '/api/auth/saml/metadata',
+            '/api/auth/oidc/authorize',
+            '/api/auth/oidc/login',
+            '/api/auth/oidc/callback',
+]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
   }
@@ -122,11 +140,19 @@ export async function middleware(request: NextRequest) {
   }
 
   // API routes — validate token
-  if (pathname.startsWith('/api/')) {
-    if (!authToken) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const payload = await verifyTokenEdge(authToken)
+    if (pathname.startsWith('/api/')) {
+      // Check both cookie and Authorization header
+      let authToken = request.cookies.get('auth_token')?.value
+      if (!authToken) {
+        const authHeader = request.headers.get('authorization')
+        if (authHeader?.startsWith('Bearer ')) {
+          authToken = authHeader.slice(7).trim()
+        }
+      }
+      if (!authToken) {
+        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      }
+      const payload = await verifyTokenEdge(authToken)
     if (!payload) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -141,19 +167,27 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected pages — redirect to login
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-    if (!authToken) {
-      return NextResponse.redirect(new URL('/login', request.url))
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+      // Check both cookie and Authorization header
+      let authToken = request.cookies.get('auth_token')?.value
+      if (!authToken) {
+        const authHeader = request.headers.get('authorization')
+        if (authHeader?.startsWith('Bearer ')) {
+          authToken = authHeader.slice(7).trim()
+        }
+      }
+      if (!authToken) {
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+      const payload = await verifyTokenEdge(authToken)
+      if (!payload) {
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+      // /admin area requires elevated role
+      if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
     }
-    const payload = await verifyTokenEdge(authToken)
-    if (!payload) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-    // /admin area requires elevated role
-    if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-  }
 
   return NextResponse.next()
 }

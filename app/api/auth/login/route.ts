@@ -37,12 +37,18 @@ export async function POST(request: NextRequest) {
     // SSO enforcement (procurement line 1): if the email domain belongs to an
     // org that enforces SAML/OIDC SSO, password login is disabled — redirect to IdP.
     const domain = email.split('@')[1]?.toLowerCase()
-    if (domain) {
-      const ssoOrg = await prisma.organization.findFirst({
-        where: { domain, OR: [{ ssoEnforced: true }, { oidcEnforced: true }] },
-        include: { samlConnection: true, oidcConnection: true },
-      })
-      if (ssoOrg) {
+    let ssoOrg: any = null
+    try {
+      if (domain) {
+        ssoOrg = await prisma.organization.findFirst({
+          where: { domain, OR: [{ ssoEnforced: true }, { oidcEnforced: true }] },
+          include: { samlConnection: true, oidcConnection: true },
+        })
+      }
+    } catch (dbErr) {
+      console.error('DB unreachable (SSO check):', dbErr instanceof Error ? dbErr.message : dbErr)
+    }
+    if (ssoOrg) {
         // Prefer OIDC if it's the enforced method, else SAML.
         const useOidc = ssoOrg.oidcEnforced && ssoOrg.oidcConnection
         const loginUrl = useOidc
@@ -57,7 +63,6 @@ export async function POST(request: NextRequest) {
           },
           { status: 403 }
         )
-      }
     }
 
     if (!email || !password) {

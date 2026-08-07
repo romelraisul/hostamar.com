@@ -85,6 +85,10 @@ export async function checkRateLimit(
       // Don't block traffic when the DB doesn't have the rate-limit table.
       return { allowed: true, remaining: cfg.limit, resetAt: now + cfg.windowMs }
     }
+    // Non-blocking fallback when DB is unreachable (e.g. Neon compute idle/suspended)
+    if (msg.includes('Can\'t reach database server') || msg.includes('P1001') || msg.includes('timeout')) {
+      return { allowed: true, remaining: cfg.limit, resetAt: now + cfg.windowMs }
+    }
     throw error
   }
 }

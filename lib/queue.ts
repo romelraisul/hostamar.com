@@ -8,77 +8,42 @@
  * the worker (lib/redis-failover.ts) selects the fallback URL. We read the
  * selected URL via getSelectedRedisUrl() below.
  */
-import { Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq';
-import Redis from 'ioredis';
-import { startRedisFailover, getActiveRedis, onFailoverEvent } from './redis-failover';
+import { Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq'
+import Redis from 'ioredis'
+import { startRedisFailover, getActiveRedis, onFailoverEvent } from './redis-failover'
 
 // --- Redis Connection ---
-
-// Failover-aware URL selector. At boot, picks PRIMARY if reachable, else FALLBACK.
-// Hot-swapping is provided via onFailover callback (BullMQ retries with attempts:3).
-let selectedUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-
-function createRedisConnection(): Redis {
-  const connection = new Redis(selectedUrl, {
-    maxRetriesPerRequest: null, // BullMQ manages its own retries
-    enableReadyCheck: false,
-    retryStrategy(times) {
-      // Exponential backoff for Redis connection: 1s, 2s, 4s, 8s… up to 30s
-      return Math.min(times * 1000, 30000);
-    },
-    reconnectOnError(err) {
-      const targetErrors = ['READONLY', 'ETIMEDOUT', 'ECONNREFUSED', 'EPIPE'];
-      return targetErrors.some((e) => err.message.includes(e));
-    },
-  });
-
-  connection.on('error', (err) => {
-    console.error('[Redis] Connection error:', err.message);
-  });
-
-  connection.on('connect', () => {
-    console.log('[Redis] Connected');
-  });
-
-  return connection;
-}
-
-let redisConnection: Redis | null = null;
-
-/**
- * Boot the failover module so selectedUrl reflects the live Redis target,
- * not the env-var-driven default. Called once at app/worker startup.
- */
-export async function initRedis(): Promise<void> {
-  try {
-    const active = await startRedisFailover()
-    selectedUrl = (active.options as any).host
-      ? `${active.options.host}:${(active.options as any).port}`
-      : selectedUrl
-    // If failover kicked in to a different URL, switch to that one
-    const fbUrl = process.env.REDIS_FALLBACK_URL || ''
-    const activeOptions = active.options as any
-    if (activeOptions.url && activeOptions.url !== selectedUrl) {
-      selectedUrl = activeOptions.url
-    }
-    onFailoverEvent((newUrl) => {
-      console.warn('[Queue] Redis failover — bullmq will retry on next disconnect', { newUrl })
-      selectedUrl = newUrl
-      // Drop the cached connection so the next getRedisConnection() picks up the new URL.
-      redisConnection?.disconnect()
-      redisConnection = null
-    })
-    console.log('[Queue] Redis initialized', { url: selectedUrl })
-  } catch (e) {
-    console.warn('[Queue] initRedis failed, falling back to REDIS_URL env', (e as Error).message)
-  }
-}
+// Use the failover module's active Redis connection directly
+let redisConnection: Redis | null = null
 
 export function getRedisConnection(): Redis {
   if (!redisConnection) {
-    redisConnection = createRedisConnection();
+    // This will be initialized by initRedis()
+    throw new Error('Redis not initialized. Call initRedis() first.')
   }
-  return redisConnection;
+  return redisConnection
+}
+
+export async function initRedis(): Promise<void> {
+  try {
+    redisConnection = await startRedisFailover()
+    onFailoverEvent((newUrl) => {
+      console.warn('[Queue] Redis failover — bullmq will retry on next disconnect', { newUrl })
+      // The failover module handles connection swapping internally
+    })
+    console.log('[Queue] Redis initialized via failover module')
+  } catch (e) {
+    console.error('[Queue] initRedis failed', (e as Error).message)
+    throw e
+  }
+}
+
+export async function closeRedis(): Promise<void> {
+  if (redisConnection) {
+    await redisConnection.quit()
+    redisConnection = null
+    console.log('[Redis] Connection closed')
+  }
 }
 
 // --- Queue Names ---

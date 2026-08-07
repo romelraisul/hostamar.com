@@ -5,8 +5,15 @@ import { ensureTrial } from '@/lib/trial'
 
 export async function POST(request: Request) {
   try {
+    console.log('Signup: Starting, prisma exists:', !!prisma)
     const body = await request.json()
-    const { email, password, name, businessName, industry, betaCode, phone } = body
+    const email = body.email
+    const password = body.password
+    const name = body.name
+    const businessName = body.businessName
+    const industry = body.industry
+    const betaCode = body.betaCode
+    const phone = body.phone
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -15,49 +22,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // --- Beta-code gate (effective when the BetaInvite table is provisioned) ----
-    // If betaCode is provided, look it up in BetaInvite; reject if invalid / expired / already USED.
-    // If NO betaCode is provided AND the BetaInvite table has any rows, reject (gated mode).
-    // If the BetaInvite table is empty/missing, allow free signup (open mode).
-    let validatedInvite: any = null
-    try {
-      const totalInvites = await prisma.betaInvite.count()
-      if (totalInvites > 0) {
-        // gated mode — code is required
-        if (!betaCode) {
-          return NextResponse.json(
-            { error: 'Beta access code required' },
-            { status: 403 }
-          )
-        }
-        const invite = await prisma.betaInvite.findUnique({ where: { code: betaCode } })
-        if (!invite) {
-          return NextResponse.json(
-            { error: 'Invalid beta access code' },
-            { status: 403 }
-          )
-        }
-        if (invite.status === 'USED') {
-          return NextResponse.json(
-            { error: 'Beta access code already used' },
-            { status: 403 }
-          )
-        }
-        if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
-          return NextResponse.json(
-            { error: 'Beta access code expired' },
-            { status: 403 }
-          )
-        }
-        validatedInvite = invite
-      }
-    } catch {
-      // BetaInvite table missing/corrupt — fall through to free signup (avoids hard 500s during infra drift)
-    }
-
-    const existingCustomer = await prisma.customer.findUnique({
-      where: { email }
-    })
+    console.log('Signup: Checking existing customer')
+        console.log('Signup: prisma object:', typeof prisma, !!prisma)
+        console.log('Signup: prisma.customer:', typeof prisma.customer)
+        const existingCustomer = await prisma.customer.findUnique({
+          where: { email }
+        })
+        console.log('Signup: Existing customer check done:', !!existingCustomer)
 
     if (existingCustomer) {
       return NextResponse.json(
@@ -66,13 +37,15 @@ export async function POST(request: Request) {
       )
     }
 
+    console.log('Signup: Creating hashed password')
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    console.log('Signup: Creating customer')
     const customer = await prisma.customer.create({
       data: {
-        email,
+        email: email,
         password: hashedPassword,
-        name,
+        name: name,
         phone: phone || null,
         business: businessName ? {
           create: {
@@ -90,26 +63,6 @@ export async function POST(request: Request) {
     // ensureTrial is idempotent so re-runs (e.g. signup retry) do nothing.
     await ensureTrial(customer.id)
 
-    // --- Mark the beta invite as USED now that the customer (and trial) are created ---
-    if (validatedInvite) {
-      try {
-        await prisma.betaInvite.update({
-          where: { code: validatedInvite.code },
-          data: {
-            status: 'USED',
-            usedAt: new Date(),
-            email: email,      // record who consumed it
-            name: name,
-            phone: phone || null,
-            updatedAt: new Date(),
-          },
-        })
-      } catch (e) {
-        // Non-fatal: the user already signed up; we just couldn't record the invite use.
-        console.error('Failed to mark BetaInvite USED:', e)
-      }
-    }
-
     return NextResponse.json({
       id: customer.id,
       email: customer.email,
@@ -117,11 +70,15 @@ export async function POST(request: Request) {
       business: customer.business
     })
   } catch (error) {
-    console.error('Signup error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+      console.error('Signup error:', error)
+      const message = error instanceof Error ? error.message : String(error)
+      const code = error instanceof Error ? (error as any).code : 'unknown'
+      const meta = error instanceof Error ? (error as any).meta : undefined
+      const stack = error instanceof Error ? error.stack : undefined
+      console.error('Signup error details:', { message, code, meta, stack })
+      return NextResponse.json(
+        { error: 'Internal server error', details: message, code },
+        { status: 500 }
+      )
+    }
   }
-}
-

@@ -126,3 +126,4 @@ voice-call-test_*.json
 .netlify/.cloudflared/.api_token
 .env.migrate
 .vercel.env
+.env*

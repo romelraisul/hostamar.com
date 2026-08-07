@@ -23,18 +23,14 @@ export async function POST(req: NextRequest) {
     let created = false
 
     try {
-      const existing = await prisma.$queryRaw<any[]>`
-        SELECT id, email, name, password, "role"
-        FROM "Customer"
-        WHERE email = ${email}
-        LIMIT 1;
-      `
+      const existing = await prisma.$queryRaw<any[]>`SELECT id, email, name, password, role FROM "Customer" WHERE email = ${email} LIMIT 1;`
+      console.log('Existing user query result:', existing)
       if (existing[0]) {
         customerId = existing[0].id
         created = false
         // Promote to admin role if needed
         try {
-          await prisma.$executeRaw`UPDATE "Customer" SET "role" = 'admin' WHERE id = ${customerId} AND "role" <> 'admin';`
+          await prisma.$executeRaw`UPDATE "Customer" SET role = 'admin' WHERE id = ${customerId} AND role <> 'admin';`
         } catch (e) {
           console.error('Bootstrap role-update error:', e)
         }
@@ -42,18 +38,22 @@ export async function POST(req: NextRequest) {
         const id = `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
         customerId = id
         created = true
-        await prisma.$executeRaw`
-          INSERT INTO "Customer" (id, email, name, password, "role", "emailVerified", "createdAt", "updatedAt")
-          VALUES (${id}, ${email}, ${name}, ${hashed}, 'admin', NOW(), NOW());
-        `
+        console.log('Inserting new customer with id:', id)
+        await prisma.$executeRaw`INSERT INTO "Customer" (id, email, name, password, role, "emailVerified", "createdAt", "updatedAt") VALUES (${id}, ${email}, ${name}, ${hashed}, 'admin', NOW(), NOW(), NOW());`
+        console.log('Insert completed')
       }
     } catch (rawError) {
       console.error('Bootstrap DB error:', rawError)
+      if (rawError instanceof Error) {
+        console.error('Error message:', rawError.message)
+        console.error('Error code:', (rawError as any).code)
+        console.error('Error meta:', (rawError as any).meta)
+      }
       customerId = null
     }
 
     if (!customerId) {
-      return NextResponse.json({ error: 'db_error' }, { status: 500 })
+      return NextResponse.json({ error: 'db_error', details: 'No customer ID' }, { status: 500 })
     }
 
     const role = created ? 'admin' : 'customer'
@@ -76,6 +76,14 @@ export async function POST(req: NextRequest) {
     return response
   } catch (error) {
     console.error('Bootstrap admin error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorCode = error instanceof Error ? (error as any).code : 'unknown'
+    const errorMeta = error instanceof Error ? (error as any).meta : undefined
+    return NextResponse.json({ 
+      error: 'db_error', 
+      details: errorMessage,
+      code: errorCode,
+      meta: errorMeta
+    }, { status: 500 })
   }
 }
