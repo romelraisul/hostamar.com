@@ -102,6 +102,9 @@ model Customer {
   ssoProvider String? // e.g. saml:acme-corp
   memberships Membership[]
 
+  // API Keys
+  apiKeys ApiKey[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -964,6 +967,9 @@ model ApiKey {
   isActive          Boolean @default(true)
   expiresAt         DateTime?
   
+  // Relations
+  apiRequestLogs    ApiRequestLog[]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -974,6 +980,7 @@ model ApiKey {
 model ApiRequestLog {
   id          String   @id @default(cuid())
   apiKeyId    String
+  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
   endpoint    String
   method      String
   statusCode  Int
