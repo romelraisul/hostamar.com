@@ -1,6 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+async function ensureSsoStateTable() {
+  const exists = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'SsoState'
+    ) as exists
+  `
+  if (exists[0]?.exists) return
+
+  console.log("[sso] Creating SsoState table...")
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "SsoState" (
+      id          TEXT PRIMARY KEY,
+      state       TEXT NOT NULL UNIQUE,
+      nonce       TEXT,
+      mode        TEXT NOT NULL DEFAULT 'login',
+      "customerId" TEXT,
+      "expiresAt" TIMESTAMP NOT NULL,
+      "consumedAt" TIMESTAMP,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `)
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "SsoState_state_idx" ON "SsoState" (state)`)
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "SsoState_expiresAt_idx" ON "SsoState" ("expiresAt")`)
+  console.log("[sso] SsoState table created")
+}
+
 export async function GET(req: NextRequest) {
   const mode = req.nextUrl.searchParams.get("mode") || "login";
 
@@ -18,17 +46,18 @@ export async function GET(req: NextRequest) {
   const state = crypto.randomUUID();
   const redirectUri = `${appUrl}/api/auth/sso/callback`;
 
-  // Persist state to DB for CSRF protection
+  // Self-bootstrap: ensure table exists, then persist state
   try {
+    await ensureSsoStateTable()
     await prisma.ssoState.create({
       data: {
         state,
         mode,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       },
-    });
+    })
   } catch (dbErr) {
-    console.error("[sso/start] Failed to persist state:", dbErr);
+    console.error("[sso/start] Failed to persist state:", dbErr)
     return NextResponse.json({ error: "Failed to initiate SSO" }, { status: 500 });
   }
 

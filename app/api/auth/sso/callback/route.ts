@@ -125,8 +125,25 @@ export async function GET(req: NextRequest) {
   try {
     ssoState = await prisma.ssoState.findUnique({ where: { state } });
   } catch (dbErr) {
-    console.error("[sso/callback] SsoState lookup failed:", dbErr);
-    return Response.redirect(`${loginUrl}?error=sso_state_db_unavailable`, 302);
+    console.error("[sso/callback] SsoState lookup failed, attempting bootstrap:", dbErr);
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "SsoState" (
+          id          TEXT PRIMARY KEY,
+          state       TEXT NOT NULL UNIQUE,
+          nonce       TEXT,
+          mode        TEXT NOT NULL DEFAULT 'login',
+          "customerId" TEXT,
+          "expiresAt" TIMESTAMP NOT NULL,
+          "consumedAt" TIMESTAMP,
+          "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+      `);
+      ssoState = await prisma.ssoState.findUnique({ where: { state } });
+    } catch (bootstrapErr) {
+      console.error("[sso/callback] Bootstrap failed:", bootstrapErr);
+      return Response.redirect(`${loginUrl}?error=sso_state_db_unavailable`, 302);
+    }
   }
 
   if (!ssoState) {
