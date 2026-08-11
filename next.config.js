@@ -21,7 +21,7 @@ const nextConfig = {
   poweredByHeader: false,
   generateEtags: true,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,

@@ -192,7 +192,7 @@ export default async function RootLayout({
       </head>
       <body>
         <Providers>
-          <LocaleProvider locale={locale}>
+          <LocaleProvider>
           <ChromeGuard>{children}</ChromeGuard>
           <ThemeToggle />
           <SupportWidget />

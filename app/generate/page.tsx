@@ -8,7 +8,7 @@ const GREEN = '#0E7C3A'
 const API = '/api/ai/videos'  // Internal Next.js API route
 const AUTH_HEADER_VALUE = ''  // Uses cookie auth via middleware
 
-type Status = 'idle' | 'queued' | 'running' | 'completed' | 'failed'
+type Status = 'idle' | 'queued' | 'running' | 'completed' | 'failed' | 'complete'
 
 export default function VideoGeneratePage() {
   const router = useRouter()
