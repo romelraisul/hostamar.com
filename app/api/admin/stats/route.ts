@@ -56,7 +56,14 @@ export async function GET(req: NextRequest) {
       },
     }
 
-    return NextResponse.json({ success: true, data: stats })
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...stats,
+        totalRevenue: stats.totalRevenue?._sum?.amount ?? 0,
+        monthlyRevenue: stats.monthlyRevenue?._sum?.amount ?? 0,
+      }
+    })
   } catch (error: any) {
     console.error('Admin stats error:', error)
     const status = error?.cause?.status || 500
