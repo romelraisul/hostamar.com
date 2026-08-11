@@ -31,6 +31,9 @@ const navItems = [
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
 
+// TODO: Ecosystem/Analytics pages created
+// TODO: Settings page created
+
 export default function AdminLayout({
   children,
 }: {
