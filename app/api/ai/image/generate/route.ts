@@ -12,7 +12,7 @@ const AVAILABLE_MODELS = [
 export async function GET() {
   // Return available models
   // Check which models exist on ComfyUI
-  const models = []
+  const models: Array<{ id: string; name: string; speed: string; quality: string; vram: string }> = []
   try {
     const resp = await fetch(`${COMFYUI_BASE}/object_info/CheckpointLoaderSimple`)
     if (resp.ok) {
