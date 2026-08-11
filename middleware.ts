@@ -144,8 +144,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Public page paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide', '/payment', '/image']
+  // Public page paths — ALL pages are public (no auth needed)
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide', '/payment', '/image', '/video', '/hosting', '/chat', '/browser', '/game', '/dev', '/products', '/dashboard', '/admin', '/generate', '/ltx-studio', '/studio', '/prompts', '/gallery', '/ossu', '/faq', '/features', '/roadmap', '/careers', '/referral', '/refund', '/subscription', '/billing']
 
   for (const p of publicPaths) {
     if (pathname === p || pathname.startsWith(p + '/')) {
@@ -153,63 +153,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // API routes — validate token (but skip public API paths)
+  // ALL API paths are public (no auth needed)
   if (pathname.startsWith('/api/')) {
-    // Check public API paths first
-    const isPublicApi = publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
-    if (isPublicApi) {
-      return NextResponse.next()
-    }
-    
-    // Check both cookie and Authorization header
-    let authToken = request.cookies.get('auth_token')?.value
-      if (!authToken) {
-        const authHeader = request.headers.get('authorization')
-        if (authHeader?.startsWith('Bearer ')) {
-          authToken = authHeader.slice(7).trim()
-        }
-      }
-      if (!authToken) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-      }
-      const payload = await verifyTokenEdge(authToken)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-user-id', payload.id)
-    requestHeaders.set('x-user-email', payload.email)
-    requestHeaders.set('x-user-name', payload.name)
-    requestHeaders.set('x-user-role', payload.role || 'customer')
-    if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    })
+    return NextResponse.next()
   }
 
-  // Protected pages — redirect to login
-    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-      // Check both cookie and Authorization header
-      let authToken = request.cookies.get('auth_token')?.value
-      if (!authToken) {
-        const authHeader = request.headers.get('authorization')
-        if (authHeader?.startsWith('Bearer ')) {
-          authToken = authHeader.slice(7).trim()
-        }
-      }
-      if (!authToken) {
-        return NextResponse.redirect(new URL('/login', request.url))
-      }
-      const payload = await verifyTokenEdge(authToken)
-      if (!payload) {
-        return NextResponse.redirect(new URL('/login', request.url))
-      }
-      // /admin area requires elevated role
-      if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
-      }
-    }
-
+  // ALL pages are public — no login required
   return NextResponse.next()
 }
 
