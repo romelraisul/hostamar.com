@@ -49,7 +49,50 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://api.hostamar.com/api/:path*',
+        has: [
+          { type: 'header', key: 'x-skip-rewrite' }
+        ],
+        destination: '/api/:path*'
+      },
+      {
+        source: '/api/video/:path*',
+        destination: '/api/video/:path*'
+      },
+      {
+        source: '/api/ai/:path*',
+        destination: '/api/ai/:path*'
+      },
+      {
+        source: '/api/storage/:path*',
+        destination: '/api/storage/:path*'
+      },
+      {
+        source: '/api/metrics',
+        destination: '/api/metrics'
+      },
+      {
+        source: '/api/health',
+        destination: '/api/health'
+      },
+      {
+        source: '/api/payment/:path*',
+        destination: '/api/payment/:path*'
+      },
+      {
+        source: '/api/auth/:path*',
+        destination: '/api/auth/:path*'
+      },
+      {
+        source: '/api/admin/:path*',
+        destination: '/api/admin/:path*'
+      },
+      {
+        source: '/api/dashboard/:path*',
+        destination: '/api/dashboard/:path*'
+      },
+      {
+        source: '/api/:path*',
+        destination: 'https://api.hostamar.com/api/:path*'
       },
     ]
   },

@@ -3,7 +3,7 @@
  * Uses the existing hostamar-comfyui container (port 8188)
  */
 
-const COMFYUI_BASE = process.env.COMFYUI_URL || 'http://hostamar-comfyui:8188';
+const COMFYUI_BASE = process.env.COMFYUI_PUBLIC_URL || process.env.COMFYUI_URL || 'https://comfy.hostamar.com';
 
 interface ComfyUIOutput {
   images?: Array<{ filename: string; type: string }>;
