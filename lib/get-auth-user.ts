@@ -7,6 +7,7 @@ export type AuthUser = {
   id: string
   email: string
   name: string
+  role?: string
 }
 
 /**
@@ -21,6 +22,7 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
       id: session.user.id as string,
       email: session.user.email as string,
       name: session.user.name as string,
+      role: (session.user as any).role as string | undefined,
     }
   }
 
@@ -30,7 +32,7 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
     const token = authHeader.slice(7)
     const payload = verifyToken(token)
     if (payload?.id) {
-      return { id: payload.id, email: payload.email, name: payload.name }
+      return { id: payload.id, email: payload.email, name: payload.name, role: payload.role as string | undefined }
     }
   }
 
@@ -39,7 +41,7 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
   if (cookieToken) {
     const payload = verifyToken(cookieToken)
     if (payload?.id) {
-      return { id: payload.id, email: payload.email, name: payload.name }
+      return { id: payload.id, email: payload.email, name: payload.name, role: payload.role as string | undefined }
     }
   }
 
@@ -47,8 +49,9 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
   const headerId = req.headers.get('x-user-id')
   const headerEmail = req.headers.get('x-user-email')
   const headerName = req.headers.get('x-user-name')
+  const headerRole = req.headers.get('x-user-role')
   if (headerId) {
-    return { id: headerId, email: headerEmail || '', name: headerName || '' }
+    return { id: headerId, email: headerEmail || '', name: headerName || '', role: headerRole || undefined }
   }
 
   return null

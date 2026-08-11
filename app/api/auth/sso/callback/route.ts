@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { SignJWT } from "jose";
 import { hash } from "bcryptjs";
+import { signToken } from "@/lib/auth";
 
 const COOKIE_NAME = "auth_token";
 const COOKIE_OPTS: Record<string, unknown> = {
@@ -61,9 +61,9 @@ async function getOrCreateUser(profile: { sub: string; email: string; name?: str
   });
   if (existing) return existing;
 
-  // Find by email (link SSO on first login)
-  const byEmail = await prisma.customer.findUnique({
-    where: { email: profile.email },
+  // Find by email (case-insensitive, link SSO on first login)
+  const byEmail = await prisma.customer.findFirst({
+    where: { email: { equals: profile.email, mode: 'insensitive' } },
   });
   if (byEmail) {
     return prisma.customer.update({
@@ -89,13 +89,13 @@ async function getOrCreateUser(profile: { sub: string; email: string; name?: str
   });
 }
 
-async function signToken(user: { id: string; email: string; role: string }) {
-  const secret = new TextEncoder().encode(NEXTAUTH_SECRET!);
-  return new SignJWT({ sub: user.id, email: user.email, role: user.role })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(secret);
+async function signToken_sso(user: { id: string; email: string; name?: string; role: string }) {
+  return signToken({
+    id: user.id,
+    email: user.email,
+    name: user.name || user.email.split("@")[0],
+    role: user.role,
+  });
 }
 
 export async function GET(req: NextRequest) {
@@ -103,8 +103,7 @@ export async function GET(req: NextRequest) {
   const state = req.nextUrl.searchParams.get("state");
   const error = req.nextUrl.searchParams.get("error");
 
-  const loginUrl = `${req.nextUrl.origin}/login`;
-  const dashboardUrl = `${req.nextUrl.origin}/dashboard`;
+  const loginUrl = `${req.nextUrl.origin}/login`
 
   if (error) {
     return Response.redirect(`${loginUrl}?error=${encodeURIComponent(error)}`, 302);
@@ -118,13 +117,35 @@ export async function GET(req: NextRequest) {
     return Response.redirect(`${loginUrl}?error=missing_state`, 302);
   }
 
+  // Validate state against SsoState row created by /api/auth/sso/start.
+  // The state must exist, not be expired, and not have been consumed already
+  // (consumedAt = CSRF replay protection).
   let mode = "login";
+  let ssoState;
   try {
-    const decoded = JSON.parse(Buffer.from(state, "base64url").toString());
-    mode = decoded.mode || "login";
-  } catch {
-    // ignore malformed state
+    ssoState = await prisma.ssoState.findUnique({ where: { state } });
+  } catch (dbErr) {
+    console.error("[sso/callback] SsoState lookup failed:", dbErr);
+    return Response.redirect(`${loginUrl}?error=sso_state_db_unavailable`, 302);
   }
+
+  if (!ssoState) {
+    return Response.redirect(`${loginUrl}?error=invalid_state`, 302);
+  }
+  if (ssoState.consumedAt) {
+    return Response.redirect(`${loginUrl}?error=state_already_used`, 302);
+  }
+  if (ssoState.expiresAt.getTime() < Date.now()) {
+    return Response.redirect(`${loginUrl}?error=state_expired`, 302);
+  }
+
+  mode = ssoState.mode || "login";
+
+  // Mark state consumed (replay protection). Fire-and-log so it never blocks the redirect.
+  prisma.ssoState.update({
+    where: { state },
+    data: { consumedAt: new Date() },
+  }).catch((err) => console.warn("[sso/callback] state consume failed:", err.message));
 
   // Required env check
   const required = ["SSO_TOKEN_URL", "SSO_CLIENT_ID", "SSO_CLIENT_SECRET", "SSO_USERINFO_URL", "NEXTAUTH_SECRET"];
@@ -145,13 +166,27 @@ export async function GET(req: NextRequest) {
       console.error('SSO DB error:', dbErr instanceof Error ? dbErr.message : dbErr);
       return Response.redirect(`${loginUrl}?error=db_unavailable`, 302);
     }
-    const token = await signToken({ id: user.id, email: user.email, role: user.role });
+    const token = await signToken_sso({ id: user.id, email: user.email, role: user.role });
 
-    const resp = Response.redirect(dashboardUrl, 302);
-    resp.headers.set("Set-Cookie", `${COOKIE_NAME}=${token}; ${Object.entries(COOKIE_OPTS).map(([k, v]) => `${k}=${v}`).join("; ")}`);
-    return resp;
+    // Response.redirect returns a Headers object that is IMMUTABLE in Next.js
+    // runtime, so we can't call .headers.set() on it. Build the response with
+    // headers passed at construction time using NextResponse.redirect().
+    const cookieValue = `${COOKIE_NAME}=${token}; ${Object.entries(COOKIE_OPTS).map(([k, v]) => `${k}=${v}`).join("; ")}`;
+    const isAdmin = user.role === 'admin' || user.role === 'superadmin'
+    const dashboardUrl = `${req.nextUrl.origin}${isAdmin ? '/admin' : '/dashboard'}`
+    return NextResponse.redirect(dashboardUrl, {
+      status: 302,
+      headers: {
+        "Set-Cookie": cookieValue,
+      },
+    });
   } catch (e) {
-    console.error("SSO callback error:", e);
-    return Response.redirect(`${loginUrl}?error=sso_callback_failed`, 302);
+    // Clean error logging — keeps last 80 chars in URL for browser debugging.
+    const errMsg = e instanceof Error ? e.message : String(e);
+    console.error("[sso/callback] failed:", errMsg);
+    return NextResponse.redirect(
+      `${loginUrl}?error=sso_callback_failed&reason=${encodeURIComponent(errMsg.slice(0, 80))}`,
+      { status: 302 }
+    );
   }
 }

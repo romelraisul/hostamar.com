@@ -55,6 +55,7 @@ export async function middleware(request: NextRequest) {
     const publicApiPaths = [
                 '/api/auth/login',
                 '/api/auth/register',
+                '/api/auth/me',
                 '/api/health',
                 '/api/auth/signup',
                 '/api/auth/forgot-password',
@@ -112,7 +113,10 @@ export async function middleware(request: NextRequest) {
             '/api/auth/oidc/login',
             '/api/auth/oidc/callback',
             '/api/queue/status',
+            '/api/queue/process', // cron worker entry — self-guarded by QUEUE_SECRET
             '/api/video/status',
+            '/api/video/render/process', // self-guarded by QUEUE_SECRET
+            '/api/video/file', // served via authenticated proxy (getAuthUser inside route)
 ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
@@ -166,6 +170,7 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-id', payload.id)
     requestHeaders.set('x-user-email', payload.email)
     requestHeaders.set('x-user-name', payload.name)
+    requestHeaders.set('x-user-role', payload.role || 'customer')
     if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
     return NextResponse.next({
       request: { headers: requestHeaders },
