@@ -7,26 +7,25 @@ type PaymentMethod = {
   network?: string
   type: string
   instructions: string
-  qrData?: string
 }
 
 // Personal payment endpoints — no business documents required
 const PERSONAL_PAYMENT_METHODS: Record<string, PaymentMethod> = {
   bkash: {
     name: 'bKash',
-    number: process.env.PERSONAL_BKASH_NUMBER || '',
+    number: process.env.BKASH_NUMBER || '',
     type: 'personal',
     instructions: '1. Open bKash app\n2. Select "Send Money"\n3. Enter the number above\n4. Enter amount\n5. Confirm with your PIN',
   },
   nagad: {
     name: 'Nagad',
-    number: process.env.PERSONAL_NAGAD_NUMBER || '',
+    number: process.env.NAGAD_NUMBER || '',
     type: 'personal',
     instructions: '1. Open Nagad app\n2. Select "Send Money"\n3. Enter the number above\n4. Enter amount\n5. Confirm with your PIN',
   },
   rocket: {
     name: 'Rocket',
-    number: process.env.PERSONAL_ROCKET_NUMBER || '',
+    number: process.env.ROCKET_NUMBER || '',
     type: 'personal',
     instructions: '1. Open Rocket app\n2. Select "Send Money"\n3. Enter the number above\n4. Enter amount\n5. Confirm with your PIN',
   },
