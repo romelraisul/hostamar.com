@@ -913,6 +913,20 @@ model SamlConnection {
   @@unique([organizationId])
 }
 
+model SsoState {
+  id          String    @id @default(uuid())
+  state       String    @unique
+  nonce       String?
+  mode        String    @default("login")
+  customerId  String?
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([state])
+  @@index([expiresAt])
+}
+
 model Membership {
   id             String       @id @default(uuid())
   customerId     String
