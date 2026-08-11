@@ -30,7 +30,7 @@ export default function AdminSubscriptionsClient() {
       const res = await fetch('/api/admin/subscriptions?limit=100', { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to load subscriptions')
       const data = await res.json()
-      setSubscriptions(data.subscriptions || [])
+      setSubscriptions(data.data || data.subscriptions || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {

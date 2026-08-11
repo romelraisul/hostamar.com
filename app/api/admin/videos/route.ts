@@ -47,6 +47,7 @@ export async function GET(request: Request) {
     }))
 
     return NextResponse.json({ 
+      data: formattedVideos,
       videos: formattedVideos,
       queue: formattedQueue,
       pagination: {

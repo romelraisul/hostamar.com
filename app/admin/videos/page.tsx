@@ -40,8 +40,8 @@ export default function AdminVideosPage() {
       const res = await fetch('/api/admin/videos')
       if (res.ok) {
         const data = await res.json()
-        setVideos(data.videos)
-        setQueue(data.queue)
+        setVideos(data.data || data.videos || [])
+        setQueue(data.queue || [])
       }
     } catch (error) {
       console.error('Failed to fetch videos:', error)

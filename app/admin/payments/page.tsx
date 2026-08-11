@@ -51,7 +51,7 @@ export default function AdminPaymentsClient() {
       const res = await fetch('/api/admin/payments?limit=100', { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to load payments')
       const data = await res.json()
-      setPayments(data.payments || [])
+      setPayments(data.data || data.payments || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     }

@@ -30,7 +30,7 @@ export default function AdminServicesClient() {
       const res = await fetch('/api/admin/services?limit=100', { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to load services')
       const data = await res.json()
-      setServices(data.services || [])
+      setServices(data.data || data.services || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {

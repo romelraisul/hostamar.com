@@ -34,7 +34,7 @@ export default function AdminCustomersPage() {
       const res = await fetch('/api/admin/customers')
       if (res.ok) {
         const data = await res.json()
-        setCustomers(data.customers)
+        setCustomers(data.data || data.customers || [])
       }
     } catch (error) {
       console.error('Failed to fetch customers:', error)

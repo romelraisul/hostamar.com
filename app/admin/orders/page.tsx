@@ -30,7 +30,7 @@ export default function AdminOrdersClient() {
       const res = await fetch('/api/admin/orders?limit=100', { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to load orders')
       const data = await res.json()
-      setOrders(data.orders || [])
+      setOrders(data.data || data.orders || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
