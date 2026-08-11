@@ -234,7 +234,6 @@ export default function AdminDashboard() {
   const [services, setServices] = useState<any[]>([])
   const [subscriptions, setSubscriptions] = useState<any[]>([])
   const [payments, setPayments] = useState<any[]>([])
-  const [customers, setCustomers] = useState<any[]>([])
   const [analyticsData, setAnalyticsData] = useState<Analytics | undefined>(undefined)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
