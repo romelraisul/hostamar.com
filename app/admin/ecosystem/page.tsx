@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '@/app/admin/layout'
 
 export default function AdminEcosystemClient() {
-  const [stats, setStats] = useState({ users: 0, videos: 0, revenue: 0 })
+  const [stats, setStats] = useState({ totalCustomers: 0, totalOrders: 0, totalRevenue: 0, pendingOrders: 0, totalVideos: 0, activeSubscriptions: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,15 +31,15 @@ export default function AdminEcosystemClient() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
           <div className="text-sm text-slate-400">Total Users</div>
-          <div className="text-2xl font-semibold text-white">{stats.users}</div>
+          <div className="text-2xl font-semibold text-white">{stats.totalCustomers.toLocaleString()}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
           <div className="text-sm text-slate-400">Total Videos</div>
-          <div className="text-2xl font-semibold text-emerald-400">{stats.videos}</div>
+          <div className="text-2xl font-semibold text-emerald-400">{stats.totalVideos.toLocaleString()}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
           <div className="text-sm text-slate-400">Revenue (BDT)</div>
-          <div className="text-2xl font-semibold text-blue-400">৳{stats.revenue.toLocaleString()}</div>
+          <div className="text-2xl font-semibold text-blue-400">৳{(stats.totalRevenue || 0).toLocaleString()}</div>
         </div>
       </div>
 
