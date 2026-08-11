@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
+import { validateApiKey, checkApiKeyRateLimit } from '@/lib/apikey'
 
 const COMFYUI_BASE = process.env.COMFYUI_URL || process.env.COMFYUI_PUBLIC_URL || 'http://localhost:8188'
 
@@ -99,16 +101,33 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limiting by IP
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                     req.headers.get('x-real-ip') || 
-                     'unknown'
+    // Check for API key first (Bearer token or X-API-Key header)
+    const authHeader = req.headers.get('authorization')
+    const apiKeyHeader = req.headers.get('x-api-key')
+    const apiKey = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : apiKeyHeader
     
-    if (!checkRateLimit(clientIp)) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Try again in 1 minute.' },
-        { status: 429 }
-      )
+    if (apiKey) {
+      const keyData = await validateApiKey(apiKey)
+      if (!keyData) {
+        return NextResponse.json({ error: 'Invalid API key' }, { status: 401 })
+      }
+      if (!keyData.canGenerateImage) {
+        return NextResponse.json({ error: 'API key does not have image generation permission' }, { status: 403 })
+      }
+      // Rate limit by API key
+      const allowed = await checkApiKeyRateLimit(keyData.id, keyData.rateLimitPerMinute)
+      if (!allowed) {
+        return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      }
+    } else {
+      // Fall back to cookie auth
+      const user = await getAuthUser(req)
+      if (!user) {
+        return NextResponse.json({ error: 'Unauthorized — provide API key or login' }, { status: 401 })
+      }
+      if (!checkRateLimit(clientIp)) {
+        return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
+      }
     }
 
     const body = await req.json().catch(() => ({}))

@@ -1,7 +1,15 @@
 'use client'
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FAQS, FEATURED_FAQS } from '@/lib/faqs';
+import PWAInstallBanner from '@/components/PWAInstallBanner';
+
+// Register service worker
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 
 const GREEN = "#0E7C3A";
 const RED = "#E4312B";
@@ -108,6 +116,28 @@ export default function App() {
               <span className="inline-flex items-center gap-1.5"><span className="text-[14px]">✓</span> ক্রেডিট কার্ড লাগবে না</span>
               <span className="h-3 w-px bg-zinc-200"></span>
               <span className="inline-flex items-center gap-1.5"><span className="text-[14px]">✓</span> bKash এ পেমেন্ট</span>
+            </div>
+
+            {/* Mobile App Download */}
+            <div className="mt-4 inline-flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-xl" style={{ background: GREEN }}>📱</div>
+              <div className="flex-1">
+                <div className="text-[13px] font-semibold">Hostamar Mobile App</div>
+                <div className="text-[11px] text-zinc-500">Install • No app store needed</div>
+              </div>
+              <button
+                onClick={() => {
+                  if (window.matchMedia('(display-mode: standalone)').matches) {
+                    alert('Already installed!')
+                  } else {
+                    alert('Use browser menu → Add to Home Screen to install')
+                  }
+                }}
+                className="rounded-lg px-3 py-1.5 text-[12px] font-medium text-white"
+                style={{ background: GREEN }}
+              >
+                Install
+              </button>
             </div>
           </div>
 
@@ -429,8 +459,50 @@ export default function App() {
         </section>
 
         {/* Footer */}
-        
+        <footer className="mt-20 border-t border-zinc-200 pt-10 pb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+              <h4 className="font-semibold mb-3">Product</h4>
+              <ul className="space-y-2 text-sm text-zinc-600">
+                <li><Link href="/video">AI Video</Link></li>
+                <li><Link href="/image">AI Image</Link></li>
+                <li><Link href="/chat">AI Chat</Link></li>
+                <li><Link href="/hosting">Hosting</Link></li>
+                <li><Link href="/game">Gaming</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Developers</h4>
+              <ul className="space-y-2 text-sm text-zinc-600">
+                <li><Link href="/developers">API Docs</Link></li>
+                <li><a href="#" onClick={(e) => { e.preventDefault(); alert('PWA Install: Use browser menu → Add to Home Screen') }}>Mobile App</a></li>
+                <li><Link href="/pricing">Pricing</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Company</h4>
+              <ul className="space-y-2 text-sm text-zinc-600">
+                <li><Link href="/about">About</Link></li>
+                <li><Link href="/contact">Contact</Link></li>
+                <li><Link href="/privacy">Privacy</Link></li>
+                <li><Link href="/terms">Terms</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Support</h4>
+              <ul className="space-y-2 text-sm text-zinc-600">
+                <li><Link href="/faq">FAQ</Link></li>
+                <li><Link href="/refund">Refund</Link></li>
+                <li><Link href="/status">Status</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-6 border-t border-zinc-200 text-center text-sm text-zinc-500">
+            © 2026 Hostamar. Made in Bangladesh 🇧🇩
+          </div>
+        </footer>
       </main>
+      <PWAInstallBanner />
     </div>
   );
 }
