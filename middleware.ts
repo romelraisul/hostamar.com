@@ -57,7 +57,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Public API paths — auth, health, webhooks, payment, AI generation (public for demo)
+  // Public API paths — auth, health, webhooks, payment (NO AI generation here)
   const publicApiPaths = [
     '/api/auth/',
     '/api/health',
@@ -80,10 +80,7 @@ export async function middleware(request: NextRequest) {
     '/api/payment/webhook',
     '/api/payment/ipn',
     '/api/payment/bkash-verify',
-    '/api/ai/image/generate',
-    '/api/ai/videos/generate',
     '/api/video/status',
-    '/api/ai/browser/search',
     '/api/browser/proxy',
     '/api/browser/screenshot',
     '/api/browser/summarize',
