@@ -1,203 +1,171 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import {
-  AlertCircle,
-  Clock,
-  ArrowLeft,
-  Loader2,
-  Shield,
-} from 'lucide-react';
-import { useLocale } from '@/lib/locale-context';
+import { useState, useEffect } from 'react'
 
-import { Plan, PaymentMethod, PaymentState, PLANS } from '@/components/payment/types';
-import PlanSelector from '@/components/payment/plan-selector';
-import PaymentMethodSelector from '@/components/payment/payment-method-selector';
-import PhoneInput from '@/components/payment/phone-input';
-import PaymentInstructions from '@/components/payment/payment-instructions';
-import CompletedView from '@/components/payment/completed-view';
+type PaymentMethod = {
+  name: string
+  number?: string
+  address?: string
+  network?: string
+}
 
-export default function PaymentPage() {
-  const { t } = useLocale();
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
-  const [phone, setPhone] = useState('');
-  const [state, setState] = useState<PaymentState>({ status: 'idle' });
-  const [copied, setCopied] = useState(false);
+export default function PersonalPaymentPage() {
+  const [methods, setMethods] = useState<Record<string, PaymentMethod>>({})
+  const [selectedMethod, setSelectedMethod] = useState<string>('')
+  const [transactionId, setTransactionId] = useState('')
+  const [amount, setAmount] = useState('')
+  const [email, setEmail] = useState('')
+  const [plan, setPlan] = useState('starter')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
-  const handleCreatePayment = async () => {
-    if (!selectedPlan || !selectedMethod || !phone) return;
+  useEffect(() => {
+    fetch('/api/payment/personal')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.success) setMethods(d.methods)
+      })
+      .catch(() => {})
+  }, [])
 
-    setState({ status: 'creating' });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    setMessage('')
 
     try {
-      const res = await fetch('/api/payment/create', {
+      const res = await fetch('/api/payment/personal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plan: selectedPlan,
           method: selectedMethod,
-          phone,
+          transactionId,
+          amount,
+          customerEmail: email,
+          plan,
         }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setState({ status: 'idle', error: data.error });
-        return;
-      }
-
-      setState({
-        status: 'created',
-        trxId: data.trxId,
-        plan: data.plan.toLowerCase() as Plan,
-        amount: data.amount,
-        method: data.method,
-        phone: data.phone,
-        instructions: data.instructions,
-      });
-    } catch (_err) {
-      setState({ status: 'idle', error: 'Failed to create payment. Please try again.' });
-    }
-  };
-
-  const handleVerifyPayment = async () => {
-    if (!state.trxId) return;
-
-    setState({ ...state, status: 'verifying' });
-
-    try {
-      const res = await fetch('/api/payment/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trxId: state.trxId }),
-      });
-
-      const data = await res.json();
-
-      if (data.status === 'completed') {
-        setState({ ...state, status: 'completed', message: data.message });
+      })
+      const data = await res.json()
+      if (data.success) {
+        setMessage(data.message)
+        setTransactionId('')
+        setAmount('')
       } else {
-        setState({ ...state, status: 'created', message: data.message });
+        setError(data.error || 'Something went wrong')
       }
-    } catch (_err) {
-      setState({ ...state, status: 'created', error: 'Failed to verify payment. Please try again.' });
+    } catch {
+      setError('Failed to submit. Please try again.')
+    } finally {
+      setLoading(false)
     }
-  };
-
-  const copyTrxId = () => {
-    if (state.trxId) {
-      navigator.clipboard.writeText(state.trxId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const reset = () => {
-    setSelectedPlan(null);
-    setSelectedMethod(null);
-    setPhone('');
-    setState({ status: 'idle' });
-    setCopied(false);
-  };
-
-  if (state.status === 'completed') {
-    return <CompletedView state={state} />;
   }
 
-  const isBusy = state.status === 'creating' || state.status === 'verifying';
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-      {/* Header */}
-      
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-white mb-2">Send Payment</h1>
+        <p className="text-gray-400 mb-8">
+          Send money via bKash, Nagad, Rocket, or USDT. No business account needed — personal send money only.
+        </p>
 
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        {/* Page Title */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-3">{t('payment.pageTitle')}</h1>
-          <p className="text-gray-400 text-lg">{t('payment.subtitle')}</p>
-        </div>
-
-        {/* Error Display */}
-        {state.error && (
-          <div className="mb-8 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-red-300 text-sm">{state.error}</p>
-          </div>
-        )}
-
-        {/* Message Display */}
-        {state.message && (state.status as string) !== 'completed' && (
-          <div className="mb-8 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <p className="text-blue-300 text-sm">{state.message}</p>
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Left Column - Selection */}
-          <div className="space-y-6">
-            <PlanSelector
-              selectedPlan={selectedPlan}
-              onSelect={setSelectedPlan}
-              disabled={isBusy}
-            />
-
-            <PaymentMethodSelector
-              selectedMethod={selectedMethod}
-              onSelect={setSelectedMethod}
-              disabled={isBusy}
-            />
-
-            <PhoneInput
-              phone={phone}
-              onChange={setPhone}
-              disabled={isBusy}
-            />
-
-            {/* Create Payment Button */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {Object.entries(methods).map(([key, method]) => (
             <button
-              onClick={handleCreatePayment}
-              disabled={!selectedPlan || !selectedMethod || !phone || isBusy}
-              className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
-                selectedPlan && selectedMethod && phone
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-600/25'
-                  : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+              key={key}
+              onClick={() => setSelectedMethod(key)}
+              className={`p-4 rounded-xl border text-left transition ${
+                selectedMethod === key
+                  ? 'border-blue-500 bg-blue-500/10'
+                  : 'border-white/10 bg-white/5 hover:border-white/20'
               }`}
             >
-              {state.status === 'creating' ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {t('payment.creating')}
-                </span>
-              ) : (
-                `${t('payment.payWith')} ৳${selectedPlan ? PLANS[selectedPlan].amount.toLocaleString() : '0'}`
+              <div className="text-white font-medium">{method.name}</div>
+              {method.number && (
+                <div className="text-gray-400 text-sm mt-1 font-mono">{method.number}</div>
+              )}
+              {method.address && (
+                <div className="text-gray-400 text-sm mt-1 font-mono">
+                  {method.network}: {method.address.slice(0, 12)}...{method.address.slice(-8)}
+                </div>
               )}
             </button>
-          </div>
-
-          {/* Right Column - Instructions */}
-          <div>
-            <PaymentInstructions
-              state={state}
-              onVerify={handleVerifyPayment}
-              onReset={reset}
-              copied={copied}
-              onCopy={copyTrxId}
-            />
-          </div>
+          ))}
         </div>
 
-        {/* Security Note */}
-        <div className="mt-12 text-center">
-          <div className="inline-flex items-center gap-2 text-sm text-gray-500">
-            <Shield className="w-4 h-4" />
-            <span>{t('payment.secureNote')}</span>
-          </div>
+        {selectedMethod && (
+          <form onSubmit={handleSubmit} className="space-y-4 bg-white/5 border border-white/10 rounded-xl p-6">
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Transaction ID</label>
+              <input
+                type="text"
+                value={transactionId}
+                onChange={(e) => setTransactionId(e.target.value)}
+                className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-white"
+                placeholder="Enter transaction ID from your payment app"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Amount (BDT)</label>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-white"
+                placeholder="299"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Your Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-white"
+                placeholder="your@email.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Plan</label>
+              <select
+                value={plan}
+                onChange={(e) => setPlan(e.target.value)}
+                className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-2 text-white"
+              >
+                <option value="starter">Starter — ৳299/mo</option>
+                <option value="growth">Growth — ৳599/mo</option>
+                <option value="pro">Pro — ৳999/mo</option>
+              </select>
+            </div>
+
+            {message && <div className="text-emerald-400 text-sm">{message}</div>}
+            {error && <div className="text-red-400 text-sm">{error}</div>}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-3 rounded-lg font-medium transition"
+            >
+              {loading ? 'Submitting...' : 'Submit Payment Notification'}
+            </button>
+          </form>
+        )}
+
+        <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+          <h3 className="text-amber-400 font-medium mb-2">How it works</h3>
+          <ol className="text-gray-400 text-sm space-y-1 list-decimal list-inside">
+            <li>Select your preferred payment method above</li>
+            <li>Send money using your mobile app (bKash/Nagad/Rocket) or Binance P2P (USDT)</li>
+            <li>Copy the transaction ID from your payment app</li>
+            <li>Fill in the form and submit</li>
+            <li>We verify and activate your subscription within 24 hours</li>
+          </ol>
         </div>
-      </main>
+      </div>
     </div>
-  );
+  )
 }
