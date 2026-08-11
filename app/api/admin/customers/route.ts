@@ -36,7 +36,8 @@ export async function GET(req: NextRequest) {
     ])
 
     return NextResponse.json({
-      customers,
+      success: true,
+      data: customers,
       pagination: {
         page,
         limit,
@@ -50,4 +51,4 @@ export async function GET(req: NextRequest) {
     const status = error?.cause?.status || 500
     return NextResponse.json({ error: error?.message || 'Internal server error' }, { status })
   }
-}
+}

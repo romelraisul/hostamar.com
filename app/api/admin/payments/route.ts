@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
         }).catch(() => fallback)
       : fallback
 
-    return NextResponse.json({ success: true, payments })
+    return NextResponse.json({ success: true, data: payments })
   } catch (error: any) {
     console.error('Admin payments fetch error:', error)
     const status = error?.cause?.status || 500

@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
         }).catch(() => fallback)
       : fallback
 
-    return NextResponse.json({ success: true, subscriptions })
+    return NextResponse.json({ success: true, data: subscriptions })
   } catch (error: any) {
     console.error('Admin subscriptions fetch error:', error)
     const status = error?.cause?.status || 500

@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
         }).catch(() => fallback)
       : fallback
 
-    return NextResponse.json({ success: true, services })
+    return NextResponse.json({ success: true, data: services })
   } catch (error: any) {
     console.error('Admin services fetch error:', error)
     const status = error?.cause?.status || 500
