@@ -94,6 +94,7 @@ export async function middleware(request: NextRequest) {
                 '/api/metrics',
                 '/api/invoices',   // server-to-server invoice generation (triggered by webhook)
                 '/api/payment/verify',   // payment gateway callback — must be reachable without a session
+                '/api/payment/personal',  // personal payment info — public
                 '/api/internal/provision',   // self-guarded by INTERNAL_API_KEY header (server-to-server)
                 '/api/cron/neon-keepalive', // Neon keep-alive cron endpoint
                 '/api/test-signup', // Test endpoint for debugging
@@ -143,7 +144,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Public page paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide']
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide', '/payment']
   for (const p of publicPaths) {
     if (pathname === p || pathname.startsWith(p + '/')) {
       return NextResponse.next()
