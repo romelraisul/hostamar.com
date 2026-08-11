@@ -73,6 +73,7 @@ export async function middleware(request: NextRequest) {
                 '/api/auth/session',
                 '/api/auth/sso/start',
                 '/api/auth/sso/callback',
+                '/api/auth/logout',
                 '/api/auth/verify-email',
                 '/api/auth/resend-verification',
                 '/api/admin',
