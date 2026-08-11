@@ -166,10 +166,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // API routes — validate token
-    if (pathname.startsWith('/api/')) {
-      // Check both cookie and Authorization header
-      let authToken = request.cookies.get('auth_token')?.value
+  // API routes — validate token (but skip public API paths)
+  if (pathname.startsWith('/api/')) {
+    // Check public API paths first
+    const isPublicApi = publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+    if (isPublicApi) {
+      return NextResponse.next()
+    }
+    
+    // Check both cookie and Authorization header
+    let authToken = request.cookies.get('auth_token')?.value
       if (!authToken) {
         const authHeader = request.headers.get('authorization')
         if (authHeader?.startsWith('Bearer ')) {
