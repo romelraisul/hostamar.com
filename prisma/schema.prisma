@@ -991,3 +991,46 @@ model ApiRequestLog {
 
   @@index([apiKeyId, createdAt])
 }
+
+// Video Creation Pipeline — chains AI script → ComfyUI render → output
+model VideoJob {
+  id          String   @id @default(cuid())
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  prompt      String   @db.Text
+  model       String   @default("bonsai") // bonsai | qwen36
+  status      String   @default("pending") // pending | scripting | rendering | done | error
+  progress    Int      @default(0)
+  outputUrl   String?
+  errorMessage String?  @db.Text
+  totalScenes Int      @default(0)
+  completedScenes Int  @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+
+  scenes      VideoScene[]
+
+  @@index([customerId, status])
+  @@index([status, createdAt])
+}
+
+model VideoScene {
+  id             String   @id @default(cuid())
+  jobId          String
+  job            VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  index          Int
+  description    String   @db.Text
+  prompt         String   @db.Text
+  voiceover      String?  @db.Text
+  duration       Int      @default(5) // seconds
+  status         String   @default("pending") // pending | rendering | done | failed
+  comfyPromptId  String?
+  outputUrl      String?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([jobId, index])
+  @@index([jobId, status])
+}
