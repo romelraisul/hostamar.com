@@ -45,11 +45,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Public pages — no auth needed (marketing + auth pages)
+  // Public pages — no auth needed (marketing + auth pages + product landing pages)
   const publicPages = [
     '/', '/login', '/signup', '/pricing', '/about', '/contact',
     '/privacy', '/terms', '/blog', '/forgot-password', '/reset-password',
-    '/verify-email', '/signin',
+    '/verify-email', '/signin', '/developers',
+    // Public landing pages for products
+    '/video', '/image', '/chat', '/browser', '/game', '/ide', '/hosting', '/dev', '/products',
   ]
   for (const p of publicPages) {
     if (pathname === p || pathname.startsWith(p + '/')) {
@@ -124,13 +126,12 @@ export async function middleware(request: NextRequest) {
     })
   }
 
-  // Protected pages — require auth (all product pages)
-  // Pages that REQUIRE login: /video, /image, /chat, /browser, /game, /ide, /hosting, /dashboard, /admin, /generate, /dev, /products, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
+  // Protected pages — require auth (internal/dashboard/admin tools)
+  // Pages that REQUIRE login: /dashboard, /admin, /generate, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
   const protectedPages = [
-    '/video', '/image', '/chat', '/browser', '/game', '/ide', '/hosting',
-    '/dashboard', '/admin', '/generate', '/dev', '/products', '/studio',
+    '/dashboard', '/admin', '/generate', '/studio',
     '/ltx-studio', '/gallery', '/prompts', '/ossu', '/subscription',
-    '/payment', '/profile', '/generate', '/ai-browser', '/collab', '/crm',
+    '/payment', '/profile', '/ai-browser', '/collab', '/crm',
     '/editor', '/setup',
   ]
   for (const p of protectedPages) {
