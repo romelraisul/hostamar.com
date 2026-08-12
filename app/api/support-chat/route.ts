@@ -9,18 +9,22 @@ import { ensureSchema } from '@/lib/ensure-schema'
 
 // ============================================================================
 // Live support chat — RAG-backed by Hostamar's SELF-HOSTED stack:
-//   • Ollama  (generation)  via OLLAMA_PUBLIC_URL
+//   • Bonsai 27B (llama-server) via BONSAI_URL  -> port 11436 (PC on)
+//   • Ollama  (generation)  via OLLAMA_PUBLIC_URL -> port 11434 (PC on)
 //   • Qdrant  (retrieval)   via QDRANT_PUBLIC_URL  -> collection "hostamar_kb"
 //   • nomic-embed-text      (embeddings) via Ollama /api/embed
-// Zero third-party API cost; data stays in Bangladesh (dogfooding the AI Chat product).
+//   • Google Gemini         (fallback)            -> always available on Vercel
+// Zero third-party API cost when PC is on; data stays in Bangladesh.
 // ============================================================================
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const GEN_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:latest'
+const BONSAI_MODEL = process.env.BONSAI_MODEL || 'bonsai-27b'
 const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text'
 const OLLAMA_URL = (process.env.OLLAMA_PUBLIC_URL || 'http://localhost:11434').replace(/\/$/, '')
+const BONSAI_URL = (process.env.BONSAI_URL || 'http://localhost:11436').replace(/\/$/, '')
 const QDRANT_URL = (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
 const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || 'hostamar_kb'
 
@@ -210,25 +214,59 @@ export async function POST(request: NextRequest) {
     const timeout = setTimeout(() => controller.abort(), 25000)
 
     let text = ''
-    let provider = 'ollama'
+    let provider = 'bonsai'
+    // Tier 1: Bonsai 27B local (PC on, fastest)
     try {
-      const res = await fetch(`${OLLAMA_URL}/api/generate`, {
+      const res = await fetch(`${BONSAI_URL}/v1/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: GEN_MODEL,
-          prompt: `${sys}\n\n${context}`,
+          model: BONSAI_MODEL,
+          messages: [
+            { role: 'system', content: sys },
+            ...(history || []).slice(-8).map((m: any) => ({ role: m.role, content: m.content })),
+            { role: 'user', content: `${context}` },
+          ],
           stream: false,
-          options: { temperature: 0.8, num_predict: 1200 },
+          temperature: 0.8,
+          max_tokens: 1200,
         }),
         signal: controller.signal,
       })
-      if (!res.ok) throw new Error(`ollama ${res.status}`)
-      const data = (await res.json()) as { response?: string }
-      text = (data.response || '').trim()
+      if (res.ok) {
+        const data = await res.json()
+        text = data.choices?.[0]?.message?.content?.trim() || ''
+      }
     } catch {
-      clearTimeout(timeout)
-      // Fallback: Google Gemini (free tier, always available on Vercel)
+      // Bonsai not available
+    }
+
+    // Tier 2: Ollama local
+    if (!text) {
+      provider = 'ollama'
+      try {
+        const res = await fetch(`${OLLAMA_URL}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: GEN_MODEL,
+            prompt: `${sys}\n\n${context}`,
+            stream: false,
+            options: { temperature: 0.8, num_predict: 1200 },
+          }),
+          signal: controller.signal,
+        })
+        if (!res.ok) throw new Error(`ollama ${res.status}`)
+        const data = (await res.json()) as { response?: string }
+        text = (data.response || '').trim()
+      } catch {
+        clearTimeout(timeout)
+      }
+    }
+
+    // Tier 3: Google Gemini (always available)
+    if (!text) {
+      provider = 'gemini'
       const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
       if (GEMINI_KEY) {
         try {
