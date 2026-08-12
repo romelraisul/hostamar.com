@@ -7,6 +7,58 @@ import { prisma } from '@/lib/prisma'
 const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
 const DEFAULT_MODEL = 'qwen3.6:latest'
 
+// Google Token Guard for fallback
+let googleGuard: any = null
+async function getGoogleGuard() {
+  if (!googleGuard) {
+    const { GoogleTokenGuard } = await import('@/guard/google_token_guard')
+    googleGuard = new GoogleTokenGuard()
+  }
+  return googleGuard
+}
+
+// Helper: call Google Gemini with Token Guard
+async function callGemini(messages: any[]): Promise<string> {
+  const guard = await getGoogleGuard()
+  
+  const callFn = async (key: string) => {
+    const systemMsg = messages.find(m => m.role === 'system')
+    const userMessages = messages.filter(m => m.role !== 'system')
+    const contents = userMessages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }))
+    
+    const systemInstruction = systemMsg
+      ? { parts: [{ text: systemMsg.content }] }
+      : undefined
+
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          systemInstruction,
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1200 },
+        }),
+      }
+    )
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}))
+      const error = new Error(`Gemini ${resp.status}`)
+      ;(error as any).response = { json: () => Promise.resolve(err), text: JSON.stringify(err) }
+      throw error
+    }
+    return resp.json()
+  }
+
+  const result = await guard.callWithGuard(callFn, 'gemini-2.5-flash')
+  const data = result[0]
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.'
+}
+
 type ChatRole = 'user' | 'assistant'
 
 interface MessagePayload {
@@ -99,21 +151,34 @@ export async function POST(request: NextRequest) {
       }),
     }).catch(() => undefined)
 
+    let fallbackUsed = false
+    let fullContent = ''
+
     if (!ollamaRes || !ollamaRes.ok) {
-      // Save assistant fallback inline to keep schema consistent
+      // Fallback to Google Gemini with Token Guard
+      fallbackUsed = true
+      try {
+        fullContent = await callGemini(messagesPayload)
+      } catch (geminiError) {
+        console.error('[Chat] Gemini fallback failed:', geminiError)
+      }
+
+      // Save assistant message
       await prisma.message.create({
         data: {
           conversationId: activeConversationId,
           userId: authUser.id as any,
           role: 'assistant',
-          content: 'AI service unavailable right now.',
+          content: fullContent || 'AI service unavailable right now.',
           model,
         } as any,
       })
-      return NextResponse.json(
-        { error: 'AI service unavailable', conversationId: activeConversationId },
-        { status: 502 }
-      )
+
+      return NextResponse.json({
+        content: fullContent || 'AI service unavailable right now.',
+        conversationId: activeConversationId,
+        fallback: fallbackUsed,
+      })
     }
 
     const encoder = new TextEncoder()
@@ -128,7 +193,7 @@ export async function POST(request: NextRequest) {
 
         const decoder = new TextDecoder()
         let buffer = ''
-        let fullContent = ''
+        fullContent = ''
 
         try {
           while (true) {

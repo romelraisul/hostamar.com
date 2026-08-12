@@ -14,6 +14,7 @@ import { ensureSchema } from '@/lib/ensure-schema'
 //   • Qdrant  (retrieval)   via QDRANT_PUBLIC_URL  -> collection "hostamar_kb"
 //   • nomic-embed-text      (embeddings) via Ollama /api/embed
 //   • Google Gemini         (fallback)            -> always available on Vercel
+//   • Google Token Guard    (rate limit + multi-key + retry-after parsing)
 // Zero third-party API cost when PC is on; data stays in Bangladesh.
 // ============================================================================
 
@@ -27,6 +28,16 @@ const OLLAMA_URL = (process.env.OLLAMA_PUBLIC_URL || 'http://localhost:11434').r
 const BONSAI_URL = (process.env.BONSAI_URL || 'http://localhost:11436').replace(/\/$/, '')
 const QDRANT_URL = (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
 const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || 'hostamar_kb'
+
+// Google Token Guard (import dynamically to avoid bundling issues)
+let googleGuard: any = null
+async function getGoogleGuard() {
+  if (!googleGuard) {
+    const { GoogleTokenGuard } = await import('@/guard/google_token_guard')
+    googleGuard = new GoogleTokenGuard()
+  }
+  return googleGuard
+}
 
 async function embed(text: string): Promise<number[]> {
   const res = await fetch(`${OLLAMA_URL}/api/embed`, {
@@ -264,33 +275,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Tier 3: Google Gemini (always available)
-    if (!text) {
-      provider = 'gemini'
-      const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
-      if (GEMINI_KEY) {
-        try {
-          const geminiResp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: `${sys}\n\n${context}` }] }],
-                generationConfig: { temperature: 0.8, maxOutputTokens: 1200 },
-              }),
-            },
-          )
-          if (geminiResp.ok) {
-            const gemData = await geminiResp.json()
+    // Tier 3: Google Gemini with Token Guard (rate limit + multi-key + retry-after)
+        if (!text) {
+          provider = 'gemini'
+          const guard = await getGoogleGuard()
+          try {
+            // Use guard to make the call with automatic rate limiting and key rotation
+            const callGemini = async (key: string) => {
+              const resp = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    contents: [{ role: 'user', parts: [{ text: `${sys}\n\n${context}` }] }],
+                    generationConfig: { temperature: 0.8, maxOutputTokens: 1200 },
+                  }),
+                }
+              )
+              if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}))
+                const error = new Error(`Gemini ${resp.status}`)
+                // Attach response for retry-after parsing
+                ;(error as any).response = { json: () => Promise.resolve(err), text: JSON.stringify(err) }
+                throw error
+              }
+              return resp.json()
+            }
+
+            const result = await guard.callWithGuard(callGemini, 'gemini-2.5-flash')
+            const gemData = result[0]
             text = gemData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || ''
             provider = 'gemini'
+          } catch (e: any) {
+            console.error('[SupportChat] Gemini failed:', e.message)
+            // Don't clear timeout here - let it fall through to degraded response
           }
-        } catch {
-          // Gemini also failed
         }
-      }
-      if (!text) {
+        if (!text) {
         return NextResponse.json(
           {
             reply:

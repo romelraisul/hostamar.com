@@ -13,7 +13,17 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY 
 
 const MODELS_AVAILABLE = ['qwen3.6:latest', 'hermes3:latest', 'granite4.1:8b']
 
-// Helper: call Google Gemini API (free tier, always works on Vercel)
+// Google Token Guard
+let googleGuard: any = null
+async function getGoogleGuard() {
+  if (!googleGuard) {
+    const { GoogleTokenGuard } = await import('@/guard/google_token_guard')
+    googleGuard = new GoogleTokenGuard()
+  }
+  return googleGuard
+}
+
+// Helper: call Google Gemini API with Token Guard (rate limit + multi-key + retry-after)
 async function callGemini(messages: any[]) {
   const systemMsg = messages.find(m => m.role === 'system')
   const userMessages = messages.filter(m => m.role !== 'system')
@@ -26,19 +36,30 @@ async function callGemini(messages: any[]) {
     ? { parts: [{ text: systemMsg.content }] }
     : undefined
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents,
-      systemInstruction,
-      generationConfig: { temperature: 0.8, maxOutputTokens: 1200 },
-    }),
-  })
+  const guard = await getGoogleGuard()
 
-  if (!resp.ok) throw new Error(`Gemini API error: ${resp.status}`)
-  const data = await resp.json()
+  const callFn = async (key: string) => {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents,
+        systemInstruction,
+        generationConfig: { temperature: 0.8, maxOutputTokens: 1200 },
+      }),
+    })
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}))
+      const error = new Error(`Gemini API error: ${resp.status}`)
+      ;(error as any).response = { json: () => Promise.resolve(err), text: JSON.stringify(err) }
+      throw error
+    }
+    return resp.json()
+  }
+
+  const result = await guard.callWithGuard(callFn, 'gemini-2.5-flash')
+  const data = result[0]
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.'
   return { content: text, model: 'gemini-2.5-flash' }
 }
