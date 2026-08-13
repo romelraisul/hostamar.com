@@ -34,14 +34,13 @@ export async function GET(
     const messages = await prisma.message.findMany({
       where: { conversationId: params.id },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, role: true, content: true, model: true, createdAt: true },
+      select: { id: true, role: true, content: true, createdAt: true },
     })
 
     const formatted = messages.map((m) => ({
       id: m.id,
       role: m.role.toLowerCase(),
       content: m.content,
-      model: m.model,
       createdAt: m.createdAt.toISOString(),
     }))
 
@@ -85,10 +84,8 @@ export async function POST(
     const messageData = await prisma.message.create({
       data: {
         conversationId: params.id,
-        customerId: authUser.id,
         role,
         content,
-        model,
       },
     })
 
@@ -98,7 +95,6 @@ export async function POST(
           id: messageData.id,
           role: messageData.role.toLowerCase(),
           content: messageData.content,
-          model: messageData.model,
           createdAt: messageData.createdAt.toISOString(),
         },
       },
