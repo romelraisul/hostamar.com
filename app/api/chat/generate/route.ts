@@ -145,10 +145,8 @@ export async function POST(request: NextRequest) {
     await prisma.message.create({
       data: {
         conversationId: activeConversationId,
-        customerId: authUser.id,
         role: 'user',
         content: message,
-        model,
       },
     })
 
@@ -185,11 +183,9 @@ export async function POST(request: NextRequest) {
     await prisma.message.create({
       data: {
         conversationId: activeConversationId,
-        customerId: authUser.id,
         role: 'assistant',
         content: fullContent,
-        model,
-      } as any,
+      },
     })
 
     await prisma.conversation.update({

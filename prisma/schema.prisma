@@ -714,10 +714,10 @@ model Message {
   id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  customerId     String
   role           String
   content        String
-  model          String?
+  audioUrl       String?
+  detectedLang   String?
   createdAt      DateTime     @default(now())
 
   @@index([conversationId, createdAt])
