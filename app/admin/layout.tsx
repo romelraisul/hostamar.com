@@ -15,14 +15,20 @@ import {
   X,
   BarChart3,
   ShoppingCart,
-  Gift
+  Gift,
+  Coins,
+  Globe,
+  Terminal
 } from 'lucide-react'
 
 const navItems = [
   { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/admin/customers', icon: Users, label: 'Customers' },
+  { href: '/admin/credits', icon: Coins, label: 'Credits' },
   { href: '/admin/videos', icon: Video, label: 'Videos' },
   { href: '/admin/services', icon: Server, label: 'Services' },
+  { href: '/admin/browser', icon: Globe, label: 'Browser' },
+  { href: '/admin/ide', icon: Terminal, label: 'IDE' },
   { href: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { href: '/admin/payments', icon: ShoppingCart, label: 'Payments' },
   { href: '/admin/orders', icon: Gift, label: 'Orders' },
