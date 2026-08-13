@@ -116,7 +116,16 @@ export async function POST(request: NextRequest) {
 }
 
 async function runQuery(request: NextRequest) {
-  const query = (request.nextUrl.searchParams.get('q') || '').trim()
+  // Accept query from either query param (GET) or JSON body (POST)
+  const urlQuery = (request.nextUrl.searchParams.get('q') || '').trim()
+  let bodyQuery = ''
+  if (request.method === 'POST') {
+    try {
+      const body = await request.json()
+      bodyQuery = (body?.q || body?.query || '').trim()
+    } catch {}
+  }
+  const query = urlQuery || bodyQuery
   const sessionId = extractCustomerId(request)
   if (!query) {
     return NextResponse.json({ ok: false, error: 'missing_query', results: [] }, { headers: CORS_HEADERS })

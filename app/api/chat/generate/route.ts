@@ -173,7 +173,8 @@ export async function POST(request: NextRequest) {
         fullContent = await callGemini(messagesPayload)
       } catch (geminiError) {
         console.error('[Chat] Gemini fallback failed:', geminiError)
-        fullContent = 'AI service unavailable right now.'
+        // Last resort: deterministic mock response so the endpoint never 500s
+        fullContent = `I received your message: "${message}". Local AI models are currently unavailable. Please configure OLLAMA_BASE or GOOGLE_API_KEY for AI responses.`
       }
     } else {
       const data = await ollamaRes.json().catch(() => null)
