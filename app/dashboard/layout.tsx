@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -17,8 +17,21 @@ import {
   User,
   Bell,
   BarChart3,
-  Gift
+  Gift,
+  Coins,
 } from 'lucide-react'
+
+type CreditSummary = {
+  credits: number
+  consumed: number
+  videoCredits: number
+  imageCredits: number
+  chatCredits: number
+  browserCredits: number
+  ideCredits: number
+  gameCredits: number
+  hostingCredits: number
+}
 
 export default function DashboardLayout({
   children,
@@ -30,6 +43,27 @@ export default function DashboardLayout({
   const { data: session } = useSession()
   const { t } = useLocale()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [credits, setCredits] = useState<CreditSummary | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/credits/me', { credentials: 'include', cache: 'no-store' })
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled) setCredits(data)
+      } catch (err) {
+        // non-fatal: dashboard works without credit badge
+      }
+    }
+    load()
+    const interval = setInterval(load, 30_000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [])
 
   const navItems = [
       { href: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
@@ -121,8 +155,26 @@ export default function DashboardLayout({
           </nav>
 
           {/* User Section */}
-          <div className="border-t p-4">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="border-t p-4 space-y-3">
+            {credits && (
+              <div className="rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <Coins className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-semibold text-blue-700">Credit Balance</span>
+                  </div>
+                  <span className="text-sm font-bold text-blue-700">{credits.credits.toLocaleString()}</span>
+                </div>
+                <div className="text-[10px] text-gray-500">Used {credits.consumed.toLocaleString()} of {(credits.credits + credits.consumed).toLocaleString()}</div>
+                <div className="mt-2 grid grid-cols-4 gap-1 text-[9px] text-gray-500">
+                  <span>🎬 {credits.videoCredits}</span>
+                  <span>🖼️ {credits.imageCredits}</span>
+                  <span>💬 {credits.chatCredits}</span>
+                  <span>🌐 {credits.browserCredits}</span>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                 <User className="w-5 h-5 text-blue-600" />
               </div>

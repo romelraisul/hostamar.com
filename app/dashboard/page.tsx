@@ -2,14 +2,16 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
-import { 
-  Video, 
-  Server, 
-  CreditCard, 
+import {
+  Video,
+  Server,
+  CreditCard,
   TrendingUp,
   Users,
   Play,
-  Clock
+  Clock,
+  Coins,
+  RefreshCw,
 } from 'lucide-react'
 import { useLocale } from '@/lib/locale-context'
 import ProductsGrid from '@/components/dashboard/ProductsGrid'
@@ -28,20 +30,40 @@ interface RecentVideo {
   createdAt: string
 }
 
+interface CreditSummary {
+  credits: number
+  consumed: number
+  videoCredits: number
+  imageCredits: number
+  chatCredits: number
+  browserCredits: number
+  ideCredits: number
+  gameCredits: number
+  hostingCredits: number
+}
+
 export default function DashboardPage() {
   const { t } = useLocale()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [recentVideos, setRecentVideos] = useState<RecentVideo[]>([])
+  const [credits, setCredits] = useState<CreditSummary | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const res = await fetch('/api/dashboard/stats')
-        if (res.ok) {
-          const data = await res.json()
+        const [statsRes, creditsRes] = await Promise.all([
+          fetch('/api/dashboard/stats'),
+          fetch('/api/credits/me', { credentials: 'include', cache: 'no-store' }),
+        ])
+        if (statsRes.ok) {
+          const data = await statsRes.json()
           setStats(data.stats)
           setRecentVideos(data.recentVideos || [])
+        }
+        if (creditsRes.ok) {
+          const data = await creditsRes.json()
+          setCredits(data)
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)
@@ -51,6 +73,16 @@ export default function DashboardPage() {
     }
     fetchDashboardData()
   }, [])
+
+  async function refreshCredits() {
+    try {
+      const res = await fetch('/api/credits/me', { credentials: 'include', cache: 'no-store' })
+      if (res.ok) {
+        const data = await res.json()
+        setCredits(data)
+      }
+    } catch {}
+  }
 
   const statCards = [
     {
@@ -111,7 +143,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {statCards.map((stat, index) => (
-          <div 
+          <div
             key={index}
             className="bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow"
           >
@@ -128,6 +160,53 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Credit Widget */}
+      {credits && (
+        <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl p-6 shadow-sm border">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white rounded-lg shadow-sm">
+                <Coins className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Credit Balance</h2>
+                <p className="text-xs text-gray-500">Spend across video, image, chat, browser, IDE, game, and hosting</p>
+              </div>
+            </div>
+            <button
+              onClick={refreshCredits}
+              className="p-2 rounded-lg hover:bg-white/60 transition"
+              aria-label="Refresh credits"
+            >
+              <RefreshCw className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="bg-white/80 backdrop-blur rounded-xl p-4 border">
+              <div className="text-xs text-gray-500">Balance</div>
+              <div className="text-3xl font-bold text-blue-700">{credits.credits.toLocaleString()}</div>
+              <div className="text-[10px] text-gray-400 mt-1">of {(credits.credits + credits.consumed).toLocaleString()} lifetime</div>
+            </div>
+            <div className="bg-white/80 backdrop-blur rounded-xl p-4 border">
+              <div className="text-xs text-gray-500">Used</div>
+              <div className="text-2xl font-bold text-amber-600">{credits.consumed.toLocaleString()}</div>
+            </div>
+            <div className="bg-white/80 backdrop-blur rounded-xl p-4 border col-span-2">
+              <div className="text-xs text-gray-500 mb-2">By product</div>
+              <div className="grid grid-cols-4 gap-2 text-[11px]">
+                <div className="flex flex-col"><span className="text-gray-500">🎬 Video</span><span className="font-semibold text-gray-800">{credits.videoCredits}</span></div>
+                <div className="flex flex-col"><span className="text-gray-500">🖼️ Image</span><span className="font-semibold text-gray-800">{credits.imageCredits}</span></div>
+                <div className="flex flex-col"><span className="text-gray-500">💬 Chat</span><span className="font-semibold text-gray-800">{credits.chatCredits}</span></div>
+                <div className="flex flex-col"><span className="text-gray-500">🌐 Browser</span><span className="font-semibold text-gray-800">{credits.browserCredits}</span></div>
+                <div className="flex flex-col"><span className="text-gray-500">💻 IDE</span><span className="font-semibold text-gray-800">{credits.ideCredits}</span></div>
+                <div className="flex flex-col"><span className="text-gray-500">🎮 Game</span><span className="font-semibold text-gray-800">{credits.gameCredits}</span></div>
+                <div className="flex flex-col"><span className="text-gray-500">☁️ Hosting</span><span className="font-semibold text-gray-800">{credits.hostingCredits}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl p-6 shadow-sm border">

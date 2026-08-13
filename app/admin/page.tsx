@@ -242,12 +242,96 @@ type CreditAccountRow = {
 }
 
 function AdminCreditsSection({ accounts, stats, onRefresh }: { accounts: CreditAccountRow[]; stats?: any; onRefresh?: () => void }) {
+  const [emailQuery, setEmailQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<CreditAccountRow[]>([])
+  const [searching, setSearching] = useState(false)
+  const [adjustTarget, setAdjustTarget] = useState<CreditAccountRow | null>(null)
+  const [adjustAmount, setAdjustAmount] = useState('')
+  const [adjustProduct, setAdjustProduct] = useState('bonus')
+  const [adjustNote, setAdjustNote] = useState('')
+  const [adjustSubmitting, setAdjustSubmitting] = useState(false)
+  const [adjustError, setAdjustError] = useState('')
+  const [adjustSuccess, setAdjustSuccess] = useState('')
+
+  async function runSearch(e?: React.FormEvent) {
+    if (e) e.preventDefault()
+    const q = emailQuery.trim().toLowerCase()
+    if (!q) {
+      setSearchResults([])
+      return
+    }
+    setSearching(true)
+    try {
+      const filtered = accounts.filter((a) => {
+        const email = (a.customer?.email || '').toLowerCase()
+        const name = (a.customer?.name || '').toLowerCase()
+        return email.includes(q) || name.includes(q)
+      })
+      setSearchResults(filtered)
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  async function submitAdjustment(e: React.FormEvent) {
+    e.preventDefault()
+    if (!adjustTarget) return
+    const amount = parseInt(adjustAmount, 10)
+    if (!Number.isInteger(amount) || amount === 0) {
+      setAdjustError('Amount must be a non-zero integer (positive to add, negative to deduct).')
+      return
+    }
+    setAdjustSubmitting(true)
+    setAdjustError('')
+    setAdjustSuccess('')
+    try {
+      const res = await fetch('/api/admin/credits', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: adjustTarget.customerId,
+          amount,
+          product: adjustProduct,
+          description: adjustNote || (amount > 0 ? 'Admin credit adjustment (+)' : 'Admin credit adjustment (-)'),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setAdjustError(data?.error || `Failed (${res.status})`)
+        return
+      }
+      setAdjustSuccess(data.message || `Account updated. New balance: ${data.account?.credits}`)
+      setAdjustAmount('')
+      setAdjustNote('')
+      onRefresh?.()
+    } catch (err: any) {
+      setAdjustError(err?.message || 'Network error')
+    } finally {
+      setAdjustSubmitting(false)
+    }
+  }
+
+  const productOptions = [
+    { value: 'bonus', label: 'Bonus (general)' },
+    { value: 'video_wan_5s', label: 'Video (Wan2.1)' },
+    { value: 'video_hunyuan_5s', label: 'Video (Hunyuan 1.5 GGUF)' },
+    { value: 'image_sd', label: 'Image (SDXL Turbo)' },
+    { value: 'image_flux', label: 'Image (Flux)' },
+    { value: 'chat_message', label: 'Chat' },
+    { value: 'browser_search', label: 'Browser' },
+    { value: 'ide_task', label: 'IDE' },
+    { value: 'game_spin', label: 'Game' },
+    { value: 'hosting_check', label: 'Hosting' },
+  ]
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-white">Credit Management</h3>
         <button onClick={onRefresh} className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-sm hover:bg-white/20 transition">Refresh</button>
       </div>
+
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
@@ -268,48 +352,168 @@ function AdminCreditsSection({ accounts, stats, onRefresh }: { accounts: CreditA
           </div>
         </div>
       )}
+
+      {/* Search + Adjust */}
+      <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+        <form onSubmit={runSearch} className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={emailQuery}
+            onChange={(e) => setEmailQuery(e.target.value)}
+            placeholder="Search by email or name..."
+            className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            disabled={searching}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+          >
+            {searching ? 'Searching...' : 'Search'}
+          </button>
+        </form>
+
+        {searchResults.length > 0 && (
+          <div className="space-y-2">
+            {searchResults.map((acc) => (
+              <div
+                key={acc.id}
+                className={`flex items-center justify-between p-3 rounded-lg border ${adjustTarget?.id === acc.id ? 'bg-blue-600/20 border-blue-500' : 'bg-white/5 border-white/10 hover:bg-white/10'} cursor-pointer transition`}
+                onClick={() => {
+                  setAdjustTarget(acc)
+                  setAdjustError('')
+                  setAdjustSuccess('')
+                }}
+              >
+                <div>
+                  <div className="font-medium text-white">{acc.customer?.name || '—'}</div>
+                  <div className="text-xs text-gray-400">{acc.customer?.email || '—'}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-emerald-300">{acc.credits.toLocaleString()} credits</div>
+                  <div className="text-xs text-gray-500">Used: {acc.consumed.toLocaleString()}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {emailQuery && searchResults.length === 0 && !searching && (
+          <div className="text-center text-gray-400 py-3 text-sm">No matching accounts.</div>
+        )}
+      </div>
+
+      {/* Adjustment Form */}
+      {adjustTarget && (
+        <form onSubmit={submitAdjustment} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-white">
+              Adjust credits for {adjustTarget.customer?.email || adjustTarget.customer?.name}
+            </h4>
+            <button
+              type="button"
+              onClick={() => { setAdjustTarget(null); setAdjustError(''); setAdjustSuccess('') }}
+              className="text-xs text-gray-400 hover:text-white"
+            >
+              Cancel
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-gray-400">Amount (+/-)</label>
+              <input
+                type="number"
+                value={adjustAmount}
+                onChange={(e) => setAdjustAmount(e.target.value)}
+                placeholder="e.g. 1000 or -500"
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400">Product</label>
+              <select
+                value={adjustProduct}
+                onChange={(e) => setAdjustProduct(e.target.value)}
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {productOptions.map((p) => (
+                  <option key={p.value} value={p.value}>{p.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400">Note (optional)</label>
+              <input
+                type="text"
+                value={adjustNote}
+                onChange={(e) => setAdjustNote(e.target.value)}
+                placeholder="Reason for adjustment"
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          {adjustError && <div className="text-xs text-red-400">{adjustError}</div>}
+          {adjustSuccess && <div className="text-xs text-emerald-400">{adjustSuccess}</div>}
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="submit"
+              disabled={adjustSubmitting}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+            >
+              {adjustSubmitting ? 'Saving...' : 'Apply'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Customer Credits Table */}
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-white/5">
           <h3 className="text-lg font-semibold text-white">Customer Credits</h3>
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="bg-white/5 border-b border-white/10">
-            <tr>
-              <th className="px-6 py-3 text-gray-300">Customer</th>
-              <th className="px-6 py-3 text-gray-300">Balance</th>
-              <th className="px-6 py-3 text-gray-300">Consumed</th>
-              <th className="px-6 py-3 text-gray-300">Video</th>
-              <th className="px-6 py-3 text-gray-300">Image</th>
-              <th className="px-6 py-3 text-gray-300">Chat</th>
-              <th className="px-6 py-3 text-gray-300">Browser</th>
-              <th className="px-6 py-3 text-gray-300">IDE</th>
-              <th className="px-6 py-3 text-gray-300">Game</th>
-              <th className="px-6 py-3 text-gray-300">Hosting</th>
-              <th className="px-6 py-3 text-gray-300">Updated</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {accounts.map((account: any) => (
-              <tr key={account.id} className="hover:bg-white/5">
-                <td className="px-6 py-4">
-                  <div className="font-medium text-white">{account.customer?.name || "—"}</div>
-                  <div className="text-xs text-gray-400">{account.customer?.email || "—"}</div>
-                </td>
-                <td className="px-6 py-4 text-white font-semibold">{account.credits}</td>
-                <td className="px-6 py-4 text-gray-300">{account.consumed}</td>
-                <td className="px-6 py-4 text-gray-300">{account.videoCredits ?? 0}</td>
-                <td className="px-6 py-4 text-gray-300">{account.imageCredits ?? 0}</td>
-                <td className="px-6 py-4 text-gray-300">{account.chatCredits ?? 0}</td>
-                <td className="px-6 py-4 text-gray-300">{account.browserCredits ?? 0}</td>
-                <td className="px-6 py-4 text-gray-300">{account.ideCredits ?? 0}</td>
-                <td className="px-6 py-4 text-gray-300">{account.gameCredits ?? 0}</td>
-                <td className="px-6 py-4 text-gray-300">{account.hostingCredits ?? 0}</td>
-                <td className="px-6 py-4 text-gray-400">{account.updatedAt ? new Date(account.updatedAt).toLocaleString() : "—"}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-white/5 border-b border-white/10">
+              <tr>
+                <th className="px-6 py-3 text-gray-300">Customer</th>
+                <th className="px-6 py-3 text-gray-300">Balance</th>
+                <th className="px-6 py-3 text-gray-300">Consumed</th>
+                <th className="px-6 py-3 text-gray-300">Video</th>
+                <th className="px-6 py-3 text-gray-300">Image</th>
+                <th className="px-6 py-3 text-gray-300">Chat</th>
+                <th className="px-6 py-3 text-gray-300">Browser</th>
+                <th className="px-6 py-3 text-gray-300">IDE</th>
+                <th className="px-6 py-3 text-gray-300">Game</th>
+                <th className="px-6 py-3 text-gray-300">Hosting</th>
+                <th className="px-6 py-3 text-gray-300">Updated</th>
               </tr>
-            ))}
-            {!accounts.length && (<tr><td colSpan={11} className="px-6 py-10 text-center text-gray-400">No credit accounts found.</td></tr>)}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {accounts.map((account: any) => (
+                <tr
+                  key={account.id}
+                  className={`hover:bg-white/5 cursor-pointer ${adjustTarget?.id === account.id ? 'bg-blue-600/10' : ''}`}
+                  onClick={() => { setAdjustTarget(account); setAdjustError(''); setAdjustSuccess('') }}
+                >
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-white">{account.customer?.name || "—"}</div>
+                    <div className="text-xs text-gray-400">{account.customer?.email || "—"}</div>
+                  </td>
+                  <td className="px-6 py-4 text-white font-semibold">{account.credits.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.consumed.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.videoCredits ?? 0}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.imageCredits ?? 0}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.chatCredits ?? 0}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.browserCredits ?? 0}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.ideCredits ?? 0}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.gameCredits ?? 0}</td>
+                  <td className="px-6 py-4 text-gray-300">{account.hostingCredits ?? 0}</td>
+                  <td className="px-6 py-4 text-gray-400">{account.updatedAt ? new Date(account.updatedAt).toLocaleString() : "—"}</td>
+                </tr>
+              ))}
+              {!accounts.length && (<tr><td colSpan={11} className="px-6 py-10 text-center text-gray-400">No credit accounts found.</td></tr>)}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
