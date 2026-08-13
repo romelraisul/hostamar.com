@@ -60,12 +60,24 @@ export default function PricingPage() {
 
   const apis = [
     {
+      name: 'Chat / Language Model API',
+      endpoint: '/v1/chat/completions',
+      price: '৳0.5-2 / 1K tokens',
+      desc: 'OpenAI-compatible. Models: hostamar-rafan-27b (fast) & hostamar-rushan-35b (35B MoE), both with 1M token context. Host your own AI assistant, support bot, or agent.',
+      example:
+`curl -X POST https://hostamar.com/v1/chat/completions \\
+  -H "Authorization: Bearer ***" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model": "hostamar-rafan-27b", "messages": [{"role": "user", "content": "আমার পণ্যের জন্য মার্কেটিং টিপস দিন"}]}'`,
+    },
+    {
       name: 'Image Generation',
       endpoint: '/api/ai/image/generate',
       price: '৳50-200/image',
       desc: 'Generate product photos, marketing banners, social media graphics',
-      example: `curl -X POST https://hostamar.com/api/ai/image/generate \\
-  -H "Authorization: Bearer hk_live_..." \\
+      example:
+`curl -X POST https://hostamar.com/api/ai/image/generate \\
+  -H "Authorization: Bearer ***" \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "professional product photo", "width": 1024, "height": 1024}'`,
     },
@@ -74,28 +86,20 @@ export default function PricingPage() {
       endpoint: '/api/ai/videos/generate',
       price: '৳500-2,000/video',
       desc: 'Create marketing videos, reels, TikToks, YouTube shorts',
-      example: `curl -X POST https://hostamar.com/api/ai/videos/generate \\
-  -H "Authorization: Bearer hk_live_..." \\
+      example:
+`curl -X POST https://hostamar.com/api/ai/videos/generate \\
+  -H "Authorization: Bearer ***" \\
   -H "Content-Type: application/json" \\
   -d '{"prompt": "15s product ad", "style": "ads", "duration": 15}'`,
-    },
-    {
-      name: 'Chat / AI Assistant',
-      endpoint: '/api/chat/generate',
-      price: '৳0.5-2/message',
-      desc: 'Bangla AI assistant, customer support, content writing',
-      example: `curl -X POST https://hostamar.com/api/chat/generate \\
-  -H "Authorization: Bearer hk_live_..." \\
-  -H "Content-Type: application/json" \\
-  -d '{"message": "আমার পণ্যের জন্য মার্কেটিং টিপস দিন"}'`,
     },
     {
       name: 'Code Generation',
       endpoint: '/api/dev/chat',
       price: '৳1-5/query',
       desc: 'Code generation, debugging, documentation',
-      example: `curl -X POST https://hostamar.com/api/dev/chat \\
-  -H "Authorization: Bearer hk_live_..." \\
+      example:
+`curl -X POST https://hostamar.com/api/dev/chat \\
+  -H "Authorization: Bearer ***" \\
   -H "Content-Type: application/json" \\
   -d '{"message": "Write a Python script for image processing"}'`,
     },
@@ -104,8 +108,9 @@ export default function PricingPage() {
       endpoint: '/api/ai/browser/search',
       price: '৳0.5-1/query',
       desc: 'URL summarization, web scraping, article extraction',
-      example: `curl -X POST https://hostamar.com/api/ai/browser/search \\
-  -H "Authorization: Bearer hk_live_..." \\
+      example:
+`curl -X POST https://hostamar.com/api/ai/browser/search \\
+  -H "Authorization: Bearer ***" \\
   -H "Content-Type: application/json" \\
   -d '{"url": "https://example.com/article"}'`,
     },
@@ -177,6 +182,7 @@ export default function PricingPage() {
           <h2 className="text-2xl font-bold">API Catalog</h2>
           <p className="mt-2 text-zinc-600">
             Sell these APIs to your customers. Pay-per-use or bundle into your own product.
+            Get your key at <Link href="/developers" className="text-[#0E7C3A] underline">/developers</Link>.
           </p>
 
           <div className="mt-6 space-y-4">

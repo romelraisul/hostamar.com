@@ -27,6 +27,9 @@ export default function Navbar() {
             <Link href="/pricing" className="transition hover:text-[#18181B]">
               {isBengali ? 'প্রাইসিং' : 'Pricing'}
             </Link>
+            <Link href="/developers" className="transition hover:text-[#18181B]">
+              {isBengali ? 'ডেভেলপার' : 'Developers'}
+            </Link>
             <div className="group relative">
               <button
                 type="button"
@@ -54,6 +57,9 @@ export default function Navbar() {
                   </a>
                   <a href="/dev" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
                     {isBengali ? 'Dev IDE' : 'Dev IDE'}
+                  </a>
+                  <a href="/developers" className="block rounded-lg px-3 py-2 text-sm text-[#0E7C3A] hover:bg-zinc-100">
+                    {isBengali ? 'API ডক্স →' : 'API Docs →'}
                   </a>
                   <a href="/roadmap" className="block rounded-lg px-3 py-2 text-sm text-[#0E7C3A] hover:bg-zinc-100">
                     {isBengali ? 'রোডম্যাপ →' : 'Roadmap →'}

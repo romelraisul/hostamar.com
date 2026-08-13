@@ -194,6 +194,72 @@ export default function DevelopersPage() {
           </section>
         )}
 
+        {/* OpenAI-Compatible Model API (v1) */}
+        <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
+          <h2 className="text-xl font-semibold">OpenAI-Compatible Model API</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Drop-in replacement for the OpenAI API. Use your Hostamar API key with any OpenAI SDK.
+            Base URL: <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[#0E7C3A]">https://hostamar.com/v1</code>
+          </p>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-zinc-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm font-semibold">hostamar-rafan-27b</span>
+                <span className="text-xs text-zinc-500">1M context</span>
+              </div>
+              <p className="mt-1 text-sm text-zinc-600">Rafan-27B — fast conversational model (Bonsai-27B, local GPU)</p>
+            </div>
+            <div className="rounded-xl border border-zinc-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm font-semibold">hostamar-rushan-35b</span>
+                <span className="text-xs text-zinc-500">1M context</span>
+              </div>
+              <p className="mt-1 text-sm text-zinc-600">Rushan-35B — larger MoE model (Qwen3.6-35B-A3B, local GPU)</p>
+            </div>
+            <div className="rounded-xl border border-zinc-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm font-semibold">hostamar-image</span>
+                <span className="text-xs text-zinc-500">ComfyUI</span>
+              </div>
+              <p className="mt-1 text-sm text-zinc-600">Text-to-image generation</p>
+            </div>
+            <div className="rounded-xl border border-zinc-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm font-semibold">hostamar-video</span>
+                <span className="text-xs text-zinc-500">ComfyUI</span>
+              </div>
+              <p className="mt-1 text-sm text-zinc-600">Text-to-video generation</p>
+            </div>
+          </div>
+
+          <h3 className="mt-6 font-medium">Chat completions (OpenAI SDK)</h3>
+          <div className="mt-2 rounded-lg bg-zinc-900 p-4 text-sm text-green-400 font-mono overflow-x-auto">
+            <div>{`from openai import OpenAI`}</div>
+            <div>{`client = OpenAI(base_url="https://hostamar.com/v1", api_key="hk_live_...")`}</div>
+            <div>&nbsp;</div>
+            <div>{`resp = client.chat.completions.create(`}</div>
+            <div>{`  model="hostamar-rafan-27b",`}</div>
+            <div>{`  messages=[{"role": "user", "content": "Hello"}]`}</div>
+            <div>{`)`}</div>
+            <div>{`print(resp.choices[0].message.content)`}</div>
+          </div>
+
+          <h3 className="mt-6 font-medium">Raw curl</h3>
+          <div className="mt-2 rounded-lg bg-zinc-900 p-4 text-sm text-green-400 font-mono overflow-x-auto">
+            <div>curl https://hostamar.com/v1/chat/completions \</div>
+            <div className="text-zinc-400">&nbsp;&nbsp;-H "Authorization: Bearer hk_live_..." \</div>
+            <div className="text-zinc-400">&nbsp;&nbsp;-H "Content-Type: application/json" \</div>
+            <div className="text-zinc-400">&nbsp;&nbsp;-d '{"model":"hostamar-rafan-27b","messages":[{"role":"user","content":"Hello"}],"stream":false}'</div>
+          </div>
+
+          <h3 className="mt-6 font-medium">List models</h3>
+          <div className="mt-2 rounded-lg bg-zinc-900 p-4 text-sm text-green-400 font-mono overflow-x-auto">
+            <div>curl https://hostamar.com/v1/models \</div>
+            <div className="text-zinc-400">&nbsp;&nbsp;-H "Authorization: Bearer hk_live_..."</div>
+          </div>
+        </section>
+
         {/* API Reference */}
         <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
           <h2 className="text-xl font-semibold">API Reference</h2>
