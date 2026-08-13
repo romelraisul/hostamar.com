@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const conversations = await prisma.conversation.findMany({
-      where: { userId: authUser.id },
+      where: { customerId: authUser.id },
       orderBy: { updatedAt: 'desc' },
       select: { id: true, title: true, createdAt: true, updatedAt: true },
     })
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     const conversation = await prisma.conversation.create({
       data: {
-        userId: authUser.id,
+        customerId: authUser.id,
         title: title || 'New conversation',
       },
       select: { id: true, title: true, createdAt: true, updatedAt: true },

@@ -12,7 +12,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     }
 
     const conversation = await prisma.conversation.findFirst({
-      where: { id: params.id, userId: authUser.id },
+      where: { id: params.id, customerId: authUser.id },
       select: { id: true, title: true, createdAt: true, updatedAt: true },
     })
 
@@ -62,7 +62,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
     }
 
     const deleted = await prisma.conversation.deleteMany({
-      where: { id: params.id, userId: authUser.id },
+      where: { id: params.id, customerId: authUser.id },
     })
 
     if (!deleted.count) {

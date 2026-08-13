@@ -23,7 +23,7 @@ export async function GET(
     }
 
     const conversation = await prisma.conversation.findFirst({
-      where: { id: params.id, userId: authUser.id },
+      where: { id: params.id, customerId: authUser.id },
       select: { id: true },
     })
 
@@ -74,7 +74,7 @@ export async function POST(
     }
 
     const conversation = await prisma.conversation.findFirst({
-      where: { id: params.id, userId: authUser.id },
+      where: { id: params.id, customerId: authUser.id },
       select: { id: true },
     })
 
@@ -85,11 +85,11 @@ export async function POST(
     const messageData = await prisma.message.create({
       data: {
         conversationId: params.id,
-        userId: authUser.id,
+        customerId: authUser.id,
         role,
         content,
         model,
-      } as any,
+      },
     })
 
     return NextResponse.json(
@@ -124,7 +124,7 @@ export async function DELETE(
     const { before } = body as { before?: string }
 
     const conversation = await prisma.conversation.findFirst({
-      where: { id: params.id, userId: authUser.id },
+      where: { id: params.id, customerId: authUser.id },
       select: { id: true },
     })
 

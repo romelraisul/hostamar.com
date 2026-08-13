@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     if (!activeConversationId) {
       const conversation = await prisma.conversation.create({
         data: {
-          userId: authUser.id,
+          customerId: authUser.id,
           title: message.slice(0, 60) || 'New conversation',
         },
         select: { id: true },
@@ -145,11 +145,11 @@ export async function POST(request: NextRequest) {
     await prisma.message.create({
       data: {
         conversationId: activeConversationId,
-        userId: authUser.id as any,
+        customerId: authUser.id,
         role: 'user',
         content: message,
         model,
-      } as any,
+      },
     })
 
     // Request from local Ollama
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     await prisma.message.create({
       data: {
         conversationId: activeConversationId,
-        userId: authUser.id as any,
+        customerId: authUser.id,
         role: 'assistant',
         content: fullContent,
         model,

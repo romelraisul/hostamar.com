@@ -698,22 +698,22 @@ model Trial {
 
 model Conversation {
   id        String   @id @default(cuid())
-  userId    String
+  customerId String
   title     String   @default("New conversation")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  customer Customer  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   messages Message[]
 
-  @@index([userId, createdAt])
+  @@index([customerId, createdAt])
 }
 
 model Message {
   id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  userId         String
+  customerId     String
   role           String
   content        String
   model          String?
