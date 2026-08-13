@@ -212,10 +212,17 @@ export default function DevelopersPage() {
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-rushan-35b</span>
+                <span className="font-mono text-sm font-semibold">hostamar-borna-31b</span>
                 <span className="text-xs text-zinc-500">1M context</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">Rushan-35B — larger MoE model (Qwen3.6-35B-A3B, local GPU)</p>
+              <p className="mt-1 text-sm text-zinc-600">Borna-31B — Gemma 4 31B, strong general + multilingual (AirLLM)</p>
+            </div>
+            <div className="rounded-xl border border-zinc-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm font-semibold">hostamar-hostamar-30b</span>
+                <span className="text-xs text-zinc-500">1M context</span>
+              </div>
+              <p className="mt-1 text-sm text-zinc-600">Hostamar-30B — Mistral Small 3.1 30B, balanced reasoning (AirLLM)</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
