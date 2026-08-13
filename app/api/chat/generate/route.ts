@@ -204,6 +204,12 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Chat generate error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errMsg = error instanceof Error ? error.message : String(error)
+    const errCode = (error as any)?.code
+    const errMeta = (error as any)?.meta
+    return NextResponse.json(
+      { error: 'Internal server error', debug: { message: errMsg, code: errCode, meta: errMeta } },
+      { status: 500 }
+    )
   }
 }
