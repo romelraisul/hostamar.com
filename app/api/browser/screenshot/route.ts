@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       }
       try {
         const buffer = await screenshotWithSteel(url, steelKey, fullPage)
-        return new NextResponse(buffer, {
+        return new NextResponse(new Uint8Array(buffer), {
           status: 200,
           headers: { 'content-type': 'image/png', 'cache-control': 'no-store' },
         })

@@ -45,6 +45,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
     scrollRestoration: true,
+    serverComponentsExternalPackages: ['playwright-core'],
     // Trace the forked CodeAct worker into the standalone bundle (alongside the
     // Dockerfile safety COPY) so fork() finds it in both dev and prod.
     outputFileTracingIncludes: {
@@ -126,6 +127,12 @@ const nextConfig = {
       mysql2: false,
       mongodb: false,
       'pg-native': false,
+      // playwright-core is used only in the Steel (cloud CDP) browser branch.
+      // It must NOT be webpack-bundled — it has optional native deps
+      // (chromium-bidi, electron, bufferutil, utf-8-validate, fsevents) that
+      // fail to resolve at build time. Externalizing keeps it as a runtime
+      // require() so connectOverCDP works on the server without a browser binary.
+      'playwright-core': 'playwright-core',
     }
     // typeorm + protobufjs use dynamic require() for optional drivers; webpack
     // can't statically analyze those, producing "Critical dependency" warnings.
