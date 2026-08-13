@@ -8,74 +8,61 @@ function base64PngToDataUrl(base64: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { url, width, height, fullPage } = body
+    const { url, userId = 'hostamar', sessionKey, tabId, fullPage = false, width, height } = await request.json()
 
-    if (!url || typeof url !== 'string') {
+    if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    const target = new URL(url)
-    const camofoxHost = process.env.CAMOFOX_HOST || 'http://localhost:4000'
-    const userId = `hostamar-${request.ip || 'anon'}-${Date.now()}`
-    const sessionKey = `screenshot-${Date.now()}`
+    const camofoxHost = process.env.CAMOFOX_HOST || 'http://localhost:9377'
+    const base = camofoxHost.replace(/\/$/, '')
 
-    const createTabRes = await fetch(`${camofoxHost}/tabs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        sessionKey,
-        url: target.href,
-      }),
-    })
+    // Reuse existing tab if provided, otherwise create a new one
+    let targetTabId = tabId
+    if (!targetTabId) {
+      const createRes = await fetch(`${base}/tabs`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ userId, sessionKey: sessionKey || 'hostamar-default', url, width, height }),
+      })
 
-    if (!createTabRes.ok) {
-      const detail = await createTabRes.text().catch(() => '')
-      return NextResponse.json(
-        { error: `Failed to create browser tab`, detail },
-        { status: 502 }
-      )
+      const createData = (await createRes.json()) as { tabId?: string; error?: string }
+      if (!createRes.ok || !createData.tabId) {
+        return NextResponse.json({ error: createData.error || 'Failed to create tab' }, { status: 502 })
+      }
+      targetTabId = createData.tabId
     }
 
-    const createTabData = await createTabRes.json()
-    const tabId = createTabData?.tabId
+    // Small delay to allow page load when a new tab was just created
     if (!tabId) {
-      return NextResponse.json(
-        { error: 'Browser tab creation returned no tabId' },
-        { status: 502 }
-      )
+      await new Promise((resolve) => setTimeout(resolve, 1500))
     }
 
-    try {
-      const screenshotUrl = new URL(`${camofoxHost}/tabs/${encodeURIComponent(tabId)}/screenshot`)
-      screenshotUrl.searchParams.set('userId', userId)
-      if (fullPage === true) {
-        screenshotUrl.searchParams.set('fullPage', 'true')
-      }
+    const screenshotUrl = new URL(`${base}/tabs/${encodeURIComponent(targetTabId)}/screenshot`)
+    screenshotUrl.searchParams.set('userId', userId)
+    if (fullPage) screenshotUrl.searchParams.set('fullPage', 'true')
 
-      const screenshotRes = await fetch(screenshotUrl.toString())
-      if (!screenshotRes.ok) {
-        return NextResponse.json(
-          { error: `Screenshot failed: ${screenshotRes.status}` },
-          { status: 502 }
-        )
+    const screenshotRes = await fetch(screenshotUrl.toString())
+    if (!screenshotRes.ok) {
+      const errorBody = await screenshotRes.text().catch(() => 'unknown screenshot error')
+      if (screenshotRes.status === 404 || screenshotRes.status === 410) {
+        return NextResponse.json({ error: 'Tab not found or browser restarted', detail: errorBody }, { status: 404 })
       }
-
-      const buffer = await screenshotRes.arrayBuffer()
-      const base64 = Buffer.from(buffer).toString('base64')
-      return NextResponse.json({ image: base64PngToDataUrl(base64) })
-    } finally {
-      try {
-        await fetch(`${camofoxHost}/tabs/${encodeURIComponent(tabId)}?userId=${encodeURIComponent(userId)}`, {
-          method: 'DELETE',
-        })
-      } catch {
-        // best-effort cleanup
-      }
+      return NextResponse.json({ error: 'Screenshot service unavailable. Ensure camofox/canvas service is running.', detail: errorBody }, { status: 502 })
     }
-  } catch (error: any) {
-    console.error('Browser screenshot error:', error)
-    return NextResponse.json({ error: 'Invalid request', message: error?.message }, { status: 400 })
+
+    const contentType = screenshotRes.headers.get('content-type') || 'image/png'
+    const buffer = Buffer.from(await screenshotRes.arrayBuffer())
+
+    return new NextResponse(buffer, {
+      status: 200,
+      headers: {
+        'content-type': contentType,
+        'cache-control': 'no-store',
+      },
+    })
+  } catch (error) {
+    console.error('Screenshot proxy error:', error)
+    return NextResponse.json({ error: 'Internal screenshot error' }, { status: 500 })
   }
 }
