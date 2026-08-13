@@ -39,31 +39,52 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const router = useRouter()
-  const { data: session } = useSession()
-  const { t } = useLocale()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [credits, setCredits] = useState<CreditSummary | null>(null)
+    const router = useRouter()
+    const { data: session } = useSession()
+    const { t } = useLocale()
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [credits, setCredits] = useState<CreditSummary | null>(null)
+    const [profile, setProfile] = useState<{ name?: string; email?: string } | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      try {
-        const res = await fetch('/api/credits/me', { credentials: 'include', cache: 'no-store' })
-        if (!res.ok) return
-        const data = await res.json()
-        if (!cancelled) setCredits(data)
-      } catch (err) {
-        // non-fatal: dashboard works without credit badge
+    useEffect(() => {
+      let cancelled = false
+      const load = async () => {
+        try {
+          const res = await fetch('/api/credits/me', { credentials: 'include', cache: 'no-store' })
+          if (!res.ok) return
+          const data = await res.json()
+          if (!cancelled) setCredits(data)
+        } catch (err) {
+          // non-fatal: dashboard works without credit badge
+        }
       }
-    }
-    load()
-    const interval = setInterval(load, 30_000)
-    return () => {
-      cancelled = true
-      clearInterval(interval)
-    }
-  }, [])
+      load()
+      const interval = setInterval(load, 30_000)
+      return () => {
+        cancelled = true
+        clearInterval(interval)
+      }
+    }, [])
+
+    // Auth is cookie-based (auth_token), not NextAuth session. Fetch the real
+    // profile so the sidebar shows the logged-in user's name/email.
+    useEffect(() => {
+      let cancelled = false
+      const loadProfile = async () => {
+        try {
+          const res = await fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
+          if (!res.ok) return
+          const data = await res.json()
+          if (!cancelled && data?.user) setProfile(data.user)
+        } catch {
+          // non-fatal: falls back to session or placeholder
+        }
+      }
+      loadProfile()
+      return () => {
+        cancelled = true
+      }
+    }, [])
 
   const navItems = [
       { href: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
@@ -175,14 +196,14 @@ export default function DashboardLayout({
               </div>
             )}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                <User className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{session?.user?.name || 'User'}</p>
-                <p className="text-xs text-gray-500 truncate">{session?.user?.email || 'user@email.com'}</p>
-              </div>
-            </div>
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <User className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{profile?.name || session?.user?.name || 'User'}</p>
+                            <p className="text-xs text-gray-500 truncate">{profile?.email || session?.user?.email || 'user@email.com'}</p>
+                          </div>
+                        </div>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 text-gray-600 hover:text-red-600 w-full px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
