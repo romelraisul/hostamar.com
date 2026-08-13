@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
@@ -83,8 +84,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await deductCredits(authUser.id, chatCost, 'chat_message', 'Chat message')
-
     const body = await request.json().catch(() => ({}))
     const {
       message,
@@ -103,6 +102,8 @@ export async function POST(request: NextRequest) {
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
+
+    await deductCredits(authUser.id, chatCost, 'chat_message', 'Chat message')
 
     let activeConversationId = conversationId
 
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
       `${videoContext ? videoContext : ''}Keep responses concise and practical. Match the user's language. Use Bengali when the user writes in Bengali.`
 
     const messagesPayload = [
-      { role: 'system', content: systemPrompt },
+      { role: 'system' as ChatRole, content: systemPrompt },
       ...(Array.isArray(history) ? history.slice(-12) : []),
       { role: 'user' as ChatRole, content: message },
     ]
@@ -151,14 +152,14 @@ export async function POST(request: NextRequest) {
       } as any,
     })
 
-    // Request streaming from local Ollama
+    // Request from local Ollama
     const ollamaRes = await fetch(`${OLLAMA_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
         messages: messagesPayload,
-        stream: true,
+        stream: false,
         options: { temperature: 0.7 },
       }),
     }).catch(() => undefined)
@@ -167,122 +168,41 @@ export async function POST(request: NextRequest) {
     let fullContent = ''
 
     if (!ollamaRes || !ollamaRes.ok) {
-      // Fallback to Google Gemini with Token Guard
       fallbackUsed = true
       try {
         fullContent = await callGemini(messagesPayload)
       } catch (geminiError) {
         console.error('[Chat] Gemini fallback failed:', geminiError)
+        fullContent = 'AI service unavailable right now.'
       }
-
-      // Save assistant message
-      await prisma.message.create({
-        data: {
-          conversationId: activeConversationId,
-          userId: authUser.id as any,
-          role: 'assistant',
-          content: fullContent || 'AI service unavailable right now.',
-          model,
-        } as any,
-      })
-
-      return NextResponse.json({
-        content: fullContent || 'AI service unavailable right now.',
-        conversationId: activeConversationId,
-        fallback: fallbackUsed,
-      })
+    } else {
+      const data = await ollamaRes.json().catch(() => null)
+      fullContent = data?.message?.content || 'No response generated.'
     }
 
-    const encoder = new TextEncoder()
-    const stream = new ReadableStream({
-      async start(controller) {
-        const reader = ollamaRes.body?.getReader()
-        if (!reader) {
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-          controller.close()
-          return
-        }
-
-        const decoder = new TextDecoder()
-        let buffer = ''
-        fullContent = ''
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-
-            buffer += decoder.decode(value, { stream: true })
-            const lines = buffer.split('\n')
-            buffer = lines.pop() || ''
-
-            for (const line of lines) {
-              if (!line.trim() || !line.startsWith('{')) continue
-              try {
-                const chunk = JSON.parse(line)
-                const token = chunk.message?.content || ''
-                if (token) {
-                  fullContent += token
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token, conversationId: activeConversationId })}\n\n`))
-                }
-              } catch {
-                // skip malformed JSON
-              }
-            }
-          }
-
-          // Persist full assistant message after stream ends
-          if (fullContent) {
-            const messageData: any = {
-              conversationId: activeConversationId,
-              userId: authUser.id,
-              role: 'assistant',
-              content: fullContent,
-              model,
-            }
-            await prisma.message.create({
-              data: messageData,
-            })
-
-            await prisma.conversation.update({
-              where: { id: activeConversationId },
-              data: { updatedAt: new Date() },
-            })
-          }
-        } catch {
-          // ignore stream errors, try to save partial content
-          if (fullContent) {
-            const fallbackData: any = {
-              conversationId: activeConversationId,
-              userId: authUser.id,
-              role: 'assistant',
-              content: fullContent,
-              model,
-            }
-            await prisma.message.create({
-              data: fallbackData,
-            })
-          }
-        } finally {
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-          controller.close()
-        }
-      },
+    // Save assistant message
+    await prisma.message.create({
+      data: {
+        conversationId: activeConversationId,
+        userId: authUser.id as any,
+        role: 'assistant',
+        content: fullContent,
+        model,
+      } as any,
     })
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-        'X-Conversation-Id': activeConversationId,
-      },
+    await prisma.conversation.update({
+      where: { id: activeConversationId },
+      data: { updatedAt: new Date() },
     })
-  } catch (error: any) {
+
+    return NextResponse.json({
+      content: fullContent,
+      conversationId: activeConversationId,
+      fallback: fallbackUsed,
+    })
+  } catch (error) {
     console.error('Chat generate error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
