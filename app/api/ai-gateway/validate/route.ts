@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
       keyId: apiKey.id,
     })
   } catch (error) {
-    console.error('[ai-gateway/validate] error:', error)
-    return NextResponse.json({ valid: false, error: 'Server error' }, { status: 500 })
+    const detail = error instanceof Error ? error.message : String(error)
+    console.error('[ai-gateway/validate] error:', detail)
+    return NextResponse.json({ valid: false, error: 'Server error', detail }, { status: 500 })
   }
 }
