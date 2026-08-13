@@ -250,7 +250,7 @@ export default function DevelopersPage() {
             <div>curl https://hostamar.com/v1/chat/completions \</div>
             <div className="text-zinc-400">&nbsp;&nbsp;-H "Authorization: Bearer hk_live_..." \</div>
             <div className="text-zinc-400">&nbsp;&nbsp;-H "Content-Type: application/json" \</div>
-            <div className="text-zinc-400">&nbsp;&nbsp;-d '{"model":"hostamar-rafan-27b","messages":[{"role":"user","content":"Hello"}],"stream":false}'</div>
+            <div className="text-zinc-400">{`  -d '{"model":"hostamar-rafan-27b","messages":[{"role":"user","content":"Hello"}],"stream":false}'`}</div>
           </div>
 
           <h3 className="mt-6 font-medium">List models</h3>
