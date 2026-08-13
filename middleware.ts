@@ -150,6 +150,7 @@ export async function middleware(request: NextRequest) {
     '/api/test-video-gen',
     '/api/test-bullmq',
     '/api/email/setup-brevo',
+    '/api/browser/',
   ]
   if (pathname.startsWith('/api/')) {
     const isPublicApi = publicApiPaths.some((p) => pathname === p || pathname.startsWith(p))
