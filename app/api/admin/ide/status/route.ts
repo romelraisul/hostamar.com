@@ -17,9 +17,15 @@ export async function GET(request: NextRequest) {
       const to = setTimeout(() => ctrl.abort(), 8000)
       const res = await fetch(url, { method: 'GET', signal: ctrl.signal, cache: 'no-store' })
       clearTimeout(to)
-      checks[name] = { ok: res.ok, status: res.status, ms: Date.now() - t0 }
+      // server responded (<500) => reachable. 401/403 = auth-gated (still up).
+      checks[name] = {
+        ok: res.status < 500,
+        status: res.status,
+        reachable: res.status < 500,
+        ms: Date.now() - t0,
+      }
     } catch (e: any) {
-      checks[name] = { ok: false, error: e?.name === 'AbortError' ? 'timeout' : e?.message, ms: Date.now() - t0 }
+      checks[name] = { ok: false, reachable: false, error: e?.name === 'AbortError' ? 'timeout' : e?.message, ms: Date.now() - t0 }
     }
   }
 
