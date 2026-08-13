@@ -1,0 +1,35 @@
+tunnel: 19c220ee-37ae-4fad-9c99-495f0e154b12
+credentials-file: C:\Users\User\.cloudflared\19c220ee-37ae-4fad-9c99-495f0e154b12.json
+
+ingress:
+  - hostname: api.hostamar.com
+    service: http://localhost:3000
+  - hostname: ai.hostamar.com
+    service: http://localhost:3000
+  - hostname: admin.hostamar.com
+    service: http://localhost:3000
+  - hostname: staging.hostamar.com
+    service: http://localhost:3000
+  - hostname: www.staging.hostamar.com
+    service: http://localhost:3000
+  - hostname: ssh.ai.hostamar.com
+    service: ssh://localhost:22
+  - hostname: comfy.hostamar.com
+    service: http://localhost:8188
+  - hostname: studio.hostamar.com
+    service: http://localhost:3000
+  - hostname: video.hostamar.com
+    service: http://localhost:3000
+  - hostname: voice.hostamar.com
+    service: http://localhost:3000
+  - hostname: chat.hostamar.com
+    service: http://localhost:3000
+  - hostname: browser.hostamar.com
+    service: http://localhost:3000
+  - hostname: ide.hostamar.com
+    service: http://localhost:3000
+  - hostname: game.hostamar.com
+    service: http://localhost:3000
+  - hostname: hosting.hostamar.com
+    service: http://localhost:3000
+  - service: http_status:404

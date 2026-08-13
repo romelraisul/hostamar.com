@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { ensureTrial } from '@/lib/trial'
+import { ensureFreeCredits } from '@/lib/credits'
 
 export async function POST(request: Request) {
   try {
@@ -62,6 +63,9 @@ export async function POST(request: Request) {
     // Phase 0.1: every new customer gets an automatic 7-day free trial.
     // ensureTrial is idempotent so re-runs (e.g. signup retry) do nothing.
     await ensureTrial(customer.id)
+
+    // Phase 0.2: every new customer gets 6000 free credits across all products.
+    await ensureFreeCredits(customer.id, 6000)
 
     return NextResponse.json({
       id: customer.id,

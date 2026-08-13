@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
+import { getCreditAccount, deductCredits, CREDIT_COSTS } from '@/lib/credits'
 import { validateApiKey, checkApiKeyRateLimit } from '@/lib/apikey'
 
 const COMFYUI_BASE = process.env.COMFYUI_URL || process.env.COMFYUI_PUBLIC_URL || 'http://localhost:8188'
@@ -106,6 +107,7 @@ export async function POST(req: NextRequest) {
     const apiKeyHeader = req.headers.get('x-api-key')
     const apiKey = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : apiKeyHeader
     
+    let user: { id: string; [key: string]: any } | null = null
     if (apiKey) {
       const keyData = await validateApiKey(apiKey)
       if (!keyData) {
@@ -119,12 +121,16 @@ export async function POST(req: NextRequest) {
       if (!allowed) {
         return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
       }
+      user = { id: keyData.id }
     } else {
       // Fall back to cookie auth
-      const user = await getAuthUser(req)
+      user = await getAuthUser(req)
       if (!user) {
         return NextResponse.json({ error: 'Unauthorized — provide API key or login' }, { status: 401 })
       }
+      const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                       req.headers.get('x-real-ip') || 
+                       'unknown'
       if (!checkRateLimit(clientIp)) {
         return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
       }
@@ -252,6 +258,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { prompt_id } = await submitResp.json()
+
+    const customerId = user?.id
+    if (customerId) {
+      await deductCredits(customerId, CREDIT_COSTS.image_sd, 'image_sd', 'Image generation (SDXL Turbo)')
+    }
 
     // Poll for completion (up to 2 minutes)
     const startTime = Date.now()

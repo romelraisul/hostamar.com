@@ -1,17 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const PRODUCT_SUBDOMAIN_PATHS: Record<string, string> = {
+  'studio.hostamar.com': '/studio',
+  'video.hostamar.com': '/video',
+  'voice.hostamar.com': '/chat',
+  'chat.hostamar.com': '/chat',
+  'browser.hostamar.com': '/browser',
+  'ide.hostamar.com': '/ide',
+  'game.hostamar.com': '/game',
+  'hosting.hostamar.com': '/hosting',
+}
+
 async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string; orgId?: string } | null> {
   try {
-    const secret = process.env.NEXTAUTH_SECRET
+    const secret = process.env.JWT_SECRET
     if (!secret || !token) return null
 
     const parts = token.split('.')
     if (parts.length !== 3) return null
 
-    const base64Url = parts[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
-    const payload = JSON.parse(atob(padded))
+    const header = JSON.parse(decodeBase64Url(parts[0]))
+    if (header.alg !== 'HS256') return null
+
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+    const signature = base64UrlToBytes(parts[2])
+    const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`)
+    const verified = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signature.buffer as ArrayBuffer,
+      data
+    )
+    if (!verified) return null
+
+    const payload = JSON.parse(decodeBase64Url(parts[1]))
 
     if (payload.exp && Date.now() >= payload.exp * 1000) return null
 
@@ -30,9 +58,37 @@ async function verifyTokenEdge(token: string): Promise<{ id: string; email: stri
   }
 }
 
+function decodeBase64Url(value: string): string {
+  return new TextDecoder().decode(base64UrlToBytes(value))
+}
+
+function base64UrlToBytes(value: string): Uint8Array {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
+  const binary = atob(padded)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return bytes
+}
+
 export async function middleware(request: NextRequest) {
   const authToken = request.cookies.get('auth_token')?.value
-  const pathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
+  const requestedPathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
+  const hostname = (request.headers.get('host') || '').split(':')[0].toLowerCase()
+  const subdomainPath = PRODUCT_SUBDOMAIN_PATHS[hostname]
+  const pathname = requestedPathname === '/' && subdomainPath ? subdomainPath : requestedPathname
+
+  const continueRequest = (requestHeaders?: Headers) => {
+    const init = requestHeaders ? { request: { headers: requestHeaders } } : undefined
+    if (pathname !== requestedPathname) {
+      const destination = request.nextUrl.clone()
+      destination.pathname = pathname
+      return NextResponse.rewrite(destination, init)
+    }
+    return NextResponse.next(init)
+  }
 
   // Static assets — always allow
   if (
@@ -50,12 +106,11 @@ export async function middleware(request: NextRequest) {
     '/', '/login', '/signup', '/pricing', '/about', '/contact',
     '/privacy', '/terms', '/blog', '/forgot-password', '/reset-password',
     '/verify-email', '/signin', '/developers',
-    // Public landing pages for products
-    '/video', '/image', '/chat', '/browser', '/game', '/ide', '/hosting', '/dev', '/products',
+    '/dev', '/products',
   ]
   for (const p of publicPages) {
     if (pathname === p || pathname.startsWith(p + '/')) {
-      return NextResponse.next()
+      return continueRequest()
     }
   }
 
@@ -83,12 +138,6 @@ export async function middleware(request: NextRequest) {
     '/api/payment/ipn',
     '/api/payment/bkash-verify',
     '/api/video/status',
-    '/api/browser/proxy',
-    '/api/browser/screenshot',
-    '/api/browser/summarize',
-    '/api/game/',
-    '/api/hosting/',
-    '/api/ide/',
     '/api/billing/',
     '/api/dashboard/videos',
     '/api/storage',
@@ -129,7 +178,8 @@ export async function middleware(request: NextRequest) {
   // Protected pages — require auth (internal/dashboard/admin tools)
   // Pages that REQUIRE login: /dashboard, /admin, /generate, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
   const protectedPages = [
-    '/dashboard', '/admin', '/generate', '/studio',
+    '/dashboard', '/admin', '/generate', '/studio', '/video', '/image',
+    '/voice', '/chat', '/browser', '/game', '/ide', '/hosting',
     '/ltx-studio', '/gallery', '/prompts', '/ossu', '/subscription',
     '/payment', '/profile', '/ai-browser', '/collab', '/crm',
     '/editor', '/setup',
@@ -153,14 +203,12 @@ export async function middleware(request: NextRequest) {
       requestHeaders.set('x-user-name', payload.name)
       requestHeaders.set('x-user-role', payload.role || 'customer')
       if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
-      return NextResponse.next({
-        request: { headers: requestHeaders },
-      })
+      return continueRequest(requestHeaders)
     }
   }
 
   // Default: allow (for any unmatched paths)
-  return NextResponse.next()
+  return continueRequest()
 }
 
 export const config = {

@@ -225,6 +225,96 @@ function AdminSettingsSection() {
   )
 }
 
+type CreditAccountRow = {
+  id: string
+  customerId: string
+  credits: number
+  consumed: number
+  videoCredits: number
+  imageCredits: number
+  chatCredits: number
+  browserCredits: number
+  ideCredits: number
+  gameCredits: number
+  hostingCredits: number
+  updatedAt?: string
+  customer?: { name?: string; email?: string }
+}
+
+function AdminCreditsSection({ accounts, stats, onRefresh }: { accounts: CreditAccountRow[]; stats?: any; onRefresh?: () => void }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold text-white">Credit Management</h3>
+        <button onClick={onRefresh} className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-sm hover:bg-white/20 transition">Refresh</button>
+      </div>
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="text-xs text-gray-400">Total Customers</div>
+            <div className="text-2xl font-bold text-white">{stats.totalCustomers ?? 0}</div>
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="text-xs text-gray-400">Credits Issued</div>
+            <div className="text-2xl font-bold text-emerald-300">{stats.totalCreditsIssued?.toLocaleString?.() ?? 0}</div>
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="text-xs text-gray-400">Credits Consumed</div>
+            <div className="text-2xl font-bold text-amber-300">{stats.totalCreditsConsumed?.toLocaleString?.() ?? 0}</div>
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="text-xs text-gray-400">Remaining</div>
+            <div className="text-2xl font-bold text-blue-300">{((stats.totalCreditsIssued || 0) - (stats.totalCreditsConsumed || 0)).toLocaleString()}</div>
+          </div>
+        </div>
+      )}
+      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-white/5">
+          <h3 className="text-lg font-semibold text-white">Customer Credits</h3>
+        </div>
+        <table className="w-full text-left text-sm">
+          <thead className="bg-white/5 border-b border-white/10">
+            <tr>
+              <th className="px-6 py-3 text-gray-300">Customer</th>
+              <th className="px-6 py-3 text-gray-300">Balance</th>
+              <th className="px-6 py-3 text-gray-300">Consumed</th>
+              <th className="px-6 py-3 text-gray-300">Video</th>
+              <th className="px-6 py-3 text-gray-300">Image</th>
+              <th className="px-6 py-3 text-gray-300">Chat</th>
+              <th className="px-6 py-3 text-gray-300">Browser</th>
+              <th className="px-6 py-3 text-gray-300">IDE</th>
+              <th className="px-6 py-3 text-gray-300">Game</th>
+              <th className="px-6 py-3 text-gray-300">Hosting</th>
+              <th className="px-6 py-3 text-gray-300">Updated</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {accounts.map((account: any) => (
+              <tr key={account.id} className="hover:bg-white/5">
+                <td className="px-6 py-4">
+                  <div className="font-medium text-white">{account.customer?.name || "—"}</div>
+                  <div className="text-xs text-gray-400">{account.customer?.email || "—"}</div>
+                </td>
+                <td className="px-6 py-4 text-white font-semibold">{account.credits}</td>
+                <td className="px-6 py-4 text-gray-300">{account.consumed}</td>
+                <td className="px-6 py-4 text-gray-300">{account.videoCredits ?? 0}</td>
+                <td className="px-6 py-4 text-gray-300">{account.imageCredits ?? 0}</td>
+                <td className="px-6 py-4 text-gray-300">{account.chatCredits ?? 0}</td>
+                <td className="px-6 py-4 text-gray-300">{account.browserCredits ?? 0}</td>
+                <td className="px-6 py-4 text-gray-300">{account.ideCredits ?? 0}</td>
+                <td className="px-6 py-4 text-gray-300">{account.gameCredits ?? 0}</td>
+                <td className="px-6 py-4 text-gray-300">{account.hostingCredits ?? 0}</td>
+                <td className="px-6 py-4 text-gray-400">{account.updatedAt ? new Date(account.updatedAt).toLocaleString() : "—"}</td>
+              </tr>
+            ))}
+            {!accounts.length && (<tr><td colSpan={11} className="px-6 py-10 text-center text-gray-400">No credit accounts found.</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
   const { t } = useLocale()
   const router = useRouter()
@@ -239,9 +329,12 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [filter, setFilter] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [credits, setCredits] = useState<any[]>([])
+  const [creditsStats, setCreditsStats] = useState<any>(null)
 
   useEffect(() => {
     fetchDashboardData()
+    fetchCreditsData()
   }, [])
 
   const fetchDashboardData = async () => {
@@ -281,6 +374,26 @@ export default function AdminDashboard() {
     }
   }
 
+  const fetchCreditsData = async () => {
+    try {
+      const [accountsRes, statsRes] = await Promise.all([
+        fetch("/api/admin/credits?limit=200", { credentials: "include" }),
+        fetch("/api/admin/credits", { credentials: "include" }),
+      ])
+
+      if (accountsRes.ok) {
+        const data = await accountsRes.json()
+        setCredits(Array.isArray(data.accounts) ? data.accounts : [])
+      }
+      if (statsRes.ok) {
+        const data = await statsRes.json()
+        setCreditsStats(data.stats || null)
+      }
+    } catch (err) {
+      console.error("Credits fetch error:", err)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
@@ -307,7 +420,7 @@ export default function AdminDashboard() {
         <StatCards stats={stats} orders={orders} services={services} subscriptions={subscriptions} />
 
         <div className="flex gap-2 mb-6 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-1 inline-flex flex-wrap">
-          {["overview", "customers", "orders", "payments", "services", "subscriptions", "analytics", "settings"].map((tab) => (
+          {["overview", "customers", "orders", "payments", "services", "subscriptions", "analytics", "settings", "credits"].map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === tab ? "bg-blue-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
               {tab === "overview" && (t("admin.overview") || "Overview")}
               {tab === "customers" && (t("admin.customers.title") || "Customers")}
@@ -317,6 +430,7 @@ export default function AdminDashboard() {
               {tab === "subscriptions" && "Subscriptions"}
               {tab === "analytics" && "Analytics"}
               {tab === "settings" && "Settings"}
+              {tab === "credits" && "Credits"}
             </button>
           ))}
         </div>
@@ -383,6 +497,7 @@ export default function AdminDashboard() {
           {activeTab === "subscriptions" && <AdminSubscriptionsSection subscriptions={subscriptions} />}
           {activeTab === "analytics" && <AdminAnalyticsSection analytics={analyticsData} />}
           {activeTab === "settings" && <AdminSettingsSection />}
+          {activeTab === "credits" && <AdminCreditsSection accounts={credits} stats={creditsStats} onRefresh={fetchCreditsData} />}
         </div>
       </section>
     </main>

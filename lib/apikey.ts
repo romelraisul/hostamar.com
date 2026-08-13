@@ -53,12 +53,7 @@ export async function validateApiKey(key: string) {
 }
 
 // Create API key for customer
-export async function createApiKey(customerId: string, name: string, permissions?: Partial<{
-  canGenerateImage: boolean
-  canGenerateVideo: boolean
-  canUseChat: boolean
-  rateLimitPerMinute: number
-} }) {
+export async function createApiKey(customerId: string, name: string, permissions?: Partial<{ canGenerateImage: boolean; canGenerateVideo: boolean; canUseChat: boolean; rateLimitPerMinute: number }>) {
   const key = generateApiKey()
   const keyHash = hashApiKey(key)
 

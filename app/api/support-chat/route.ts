@@ -312,16 +312,15 @@ export async function POST(request: NextRequest) {
             // Don't clear timeout here - let it fall through to degraded response
           }
         }
-        if (!text) {
-        return NextResponse.json(
-          {
-            reply:
-              'দুঃখিত, এই মুহূর্তে AI সাপোর্ট মডেলটি অনুপলব্ধ। কিছুক্ষণ পর আবার চেষ্টা করুন বা support@hostamar.com-এ ইমেইল করুন।',
-            degraded: true,
-          },
-          { status: 200 },
-        )
-      }
+    if (!text) {
+      return NextResponse.json(
+        {
+          reply:
+            'দুঃখিত, এই মুহূর্তে AI সাপোর্ট মডেলটি অনুপলব্ধ। কিছুক্ষণ পর আবার চেষ্টা করুন বা support@hostamar.com-এ ইমেইল করুন।',
+          degraded: true,
+        },
+        { status: 200 },
+      )
     }
     clearTimeout(timeout)
 

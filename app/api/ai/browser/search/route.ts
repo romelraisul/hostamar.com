@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { requireCredits } from '@/lib/credits-middleware'
+import { CREDIT_COSTS } from '@/lib/credits'
 
 const SEARXNG_BASE = process.env.SEARXNG_BASE_URL || 'http://localhost:5013'
 const SEARXNG_PATH = '/search'
@@ -101,6 +103,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const result = await requireCredits(request, {
+    product: 'browser_search',
+    cost: CREDIT_COSTS.browser_search,
+  })
+
+  if (!result.ok) {
+    return result.response
+  }
+
   return runQuery(request)
 }
 

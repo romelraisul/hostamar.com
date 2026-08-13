@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { buildWanT2VWorkflow } from '@/lib/comfyWorkflow'
 
 // ============================================================================
 // Unified Video Creation API
@@ -61,10 +62,13 @@ Output ONLY valid JSON, no other text.`
       max_tokens: 2000,
     }
   } else {
-    url = `${QWEN_URL}/api/generate`
+    url = `${QWEN_URL}/api/chat`
     body = {
-      model: 'qwen3.6:latest',
-      prompt: `${systemPrompt}\n\n${userPrompt}`,
+      model: 'Qwen/Qwen3.6-35B-A3B-FP8',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
       stream: false,
       options: { temperature: 0.8, num_predict: 2000 },
     }
@@ -81,7 +85,7 @@ Output ONLY valid JSON, no other text.`
   const data = await res.json()
   const text = model === 'bonsai'
     ? data.choices?.[0]?.message?.content || ''
-    : data.response || ''
+    : data.message?.content || ''
 
   // Parse JSON from response
   try {
@@ -107,26 +111,20 @@ Output ONLY valid JSON, no other text.`
   }
 }
 
-// Submit render job to ComfyUI
-async function submitToComfyUI(prompt: string, width = 960, height = 540): Promise<string> {
-  // Build a simple Wan2.1 workflow
-  const workflow = {
-    "1": { class_type: "CheckpointLoaderSimple", inputs: { checkpoint_name: "sd_xl_turbo_1.0_fp16.safetensors" } },
-    "2": { class_type: "CLIPTextEncode", inputs: { clip: ["1", 0], text: prompt } },
-    "3": { class_type: "CLIPTextEncode", inputs: { clip: ["1", 0], text: "blurry, low quality, distorted" } },
-    "4": { class_type: "EmptyLatentImage", inputs: { width, height, batch_size: 1 } },
-    "5": { class_type: "KSampler", inputs: { seed: Math.floor(Math.random() * 1000000), steps: 8, cfg: 3.5, sampler_name: "euler", scheduler: "normal", denoise: 1, model: ["1", 0], positive: ["2", 0], negative: ["3", 0], latent_image: ["4", 0] } },
-    "6": { class_type: "VAEDecode", inputs: { samples: ["5", 0], vae: ["1", 2] } },
-    "7": { class_type: "SaveImage", inputs: { filename_prefix: "hostamar_video", images: ["6", 0] } },
-  }
+// Submit render job to ComfyUI using the validated Wan2.1-T2V-1.3B graph.
+async function submitToComfyUI(scenePrompt: string, width = 832, height = 480): Promise<string> {
+  const body = buildWanT2VWorkflow({ prompt: scenePrompt, width, height })
 
   const res = await fetch(`${COMFYUI_URL}/prompt`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: workflow }),
+    body: JSON.stringify(body),
   })
 
-  if (!res.ok) throw new Error(`ComfyUI submit failed: ${res.status}`)
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '')
+    throw new Error(`ComfyUI submit failed: ${res.status} ${errText.slice(0, 200)}`)
+  }
   const data = await res.json()
   return data.prompt_id
 }
@@ -200,34 +198,6 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   const models = await getAvailableModels()
   return NextResponse.json(models)
-}
-
-// GET /api/video/status/[jobId] — Check render progress
-export async function getStatus(req: NextRequest, { params }: { params: { jobId: string } }) {
-  try {
-    const job = await prisma.videoJob.findUnique({
-      where: { id: params.jobId },
-      include: { scenes: true },
-    })
-
-    if (!job) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 })
-    }
-
-    const doneScenes = job.scenes.filter(s => s.status === 'done').length
-    const totalScenes = job.scenes.length
-    const progress = totalScenes > 0 ? Math.round((doneScenes / totalScenes) * 100) : 0
-
-    return NextResponse.json({
-      jobId: job.id,
-      status: job.status,
-      progress,
-      scenes: job.scenes,
-      videoUrl: job.outputUrl,
-    })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
 }
 
 // Background: render all scenes

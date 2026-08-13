@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/auth'
+import { ensureFreeCredits } from '@/lib/credits'
 import bcrypt from 'bcryptjs'
 
 export async function POST(req: NextRequest) {
@@ -54,6 +55,10 @@ export async function POST(req: NextRequest) {
 
     if (!customerId) {
       return NextResponse.json({ error: 'db_error', details: 'No customer ID' }, { status: 500 })
+    }
+
+    if (created) {
+      await ensureFreeCredits(customerId, 6000)
     }
 
     const role = created ? 'admin' : 'customer'

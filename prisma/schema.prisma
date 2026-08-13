@@ -86,6 +86,7 @@ model Customer {
   campaigns         Campaign[]
   userProgress      UserProgress[]
   previews          Preview[]
+  videoJobs         VideoJob[]
   conversations     Conversation[]
   gameBalances      GameBalance[]
   gameSpins         GameSpin[]
@@ -104,6 +105,9 @@ model Customer {
 
   // API Keys
   apiKeys ApiKey[]
+
+  // Credits
+  creditAccount CreditAccount?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -362,6 +366,53 @@ model Transaction {
   @@index([customerId, status])
   @@index([gatewayTrxId])
   @@index([createdAt])
+}
+
+model CreditAccount {
+  id          String    @id @default(cuid())
+  customerId  String    @unique
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Total credits allocated to this customer (free + purchased + bonus).
+  credits     Int       @default(0)
+  // Lifetime consumed credits across all products.
+  consumed    Int       @default(0)
+
+  // Product-specific budgets (optional soft caps).
+  videoCredits    Int @default(0)
+  imageCredits    Int @default(0)
+  chatCredits     Int @default(0)
+  browserCredits  Int @default(0)
+  ideCredits      Int @default(0)
+  gameCredits     Int @default(0)
+  hostingCredits  Int @default(0)
+
+  transactions CreditTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CreditTransaction {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     CreditAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Amount in credits (positive = add, negative = consume).
+  amount      Int
+  balanceAfter Int
+
+  // Product this transaction belongs to.
+  product     String   // video | image | chat | browser | ide | game | hosting | bonus | purchase | refund
+
+  // Optional metadata.
+  metadata    Json?
+  description String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([product])
 }
 
 model Notification {

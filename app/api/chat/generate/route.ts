@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { getCreditAccount, deductCredits, CREDIT_COSTS } from '@/lib/credits'
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
-const DEFAULT_MODEL = 'qwen3.6:latest'
+const OLLAMA_BASE = process.env.QWEN_URL || process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
+const DEFAULT_MODEL = process.env.OLLAMA_CHAT_MODEL || 'Qwen/Qwen3.6-35B-A3B-FP8'
 
 // Google Token Guard for fallback
 let googleGuard: any = null
@@ -72,6 +73,17 @@ export async function POST(request: NextRequest) {
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const chatCost = CREDIT_COSTS.chat_message
+    const chatAccount = await getCreditAccount(authUser.id)
+    if (chatAccount.credits < chatCost) {
+      return NextResponse.json(
+        { error: 'Insufficient credits', required: chatCost, balance: chatAccount.credits },
+        { status: 402 },
+      )
+    }
+
+    await deductCredits(authUser.id, chatCost, 'chat_message', 'Chat message')
 
     const body = await request.json().catch(() => ({}))
     const {

@@ -2,8 +2,8 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 
-const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6:latest'
+const OLLAMA_HOST = process.env.QWEN_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
+const OLLAMA_MODEL = process.env.OLLAMA_CHAT_MODEL || process.env.OLLAMA_MODEL || 'Qwen/Qwen3.6-35B-A3B-FP8'
 const FALLBACK_API_URL = process.env.FALLBACK_API_URL || ''
 const FALLBACK_API_KEY = process.env.FALLBACK_API_KEY || ''
 const FALLBACK_MODEL = process.env.FALLBACK_MODEL || OLLAMA_MODEL
@@ -11,7 +11,7 @@ const OMNIROUTE_URL = process.env.OMNIROUTE_URL || ''
 const OMNIROUTE_KEY = process.env.OMNIROUTE_KEY || ''
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
 
-const MODELS_AVAILABLE = ['qwen3.6:latest', 'hermes3:latest', 'granite4.1:8b']
+const MODELS_AVAILABLE = [OLLAMA_MODEL]
 
 // Google Token Guard
 let googleGuard: any = null
