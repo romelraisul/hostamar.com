@@ -212,17 +212,17 @@ export default function DevelopersPage() {
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-borna-31b</span>
+                <span className="font-mono text-sm font-semibold">hostamar-borna</span>
                 <span className="text-xs text-zinc-500">1M context</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">Borna-31B — Gemma 4 31B, strong general + multilingual (AirLLM)</p>
+              <p className="mt-1 text-sm text-zinc-600">Borna — Gemma 4 31B, strong general + multilingual (AirLLM)</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-hostamar-30b</span>
+                <span className="font-mono text-sm font-semibold">hostamar-hostamar</span>
                 <span className="text-xs text-zinc-500">1M context</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">Hostamar-30B — Mistral Small 3.1 30B, balanced reasoning (AirLLM)</p>
+              <p className="mt-1 text-sm text-zinc-600">Hostamar — Muse Glimmer 30B (Meta), agentic + tool use (AirLLM)</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
