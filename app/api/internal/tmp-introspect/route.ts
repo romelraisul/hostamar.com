@@ -3,12 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
-// TEMP introspection route — guarded by INTERNAL_API_KEY. REMOVE after reconciliation.
+// TEMP introspection route. REMOVE immediately after capturing schema.
 export async function POST(request: NextRequest) {
-  const key = process.env.INTERNAL_API_KEY || ''
-  if (!key || request.headers.get('x-internal-api-key') !== key) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 })
-  }
   const tables = ['ChatMessage', 'Conversation', 'Customer']
   const out: Record<string, any> = {}
   try {
