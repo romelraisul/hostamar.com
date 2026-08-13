@@ -22,20 +22,6 @@ export async function POST(req: NextRequest) {
     const credits = typeof customer?.credits === 'number' ? customer.credits : 0
     const balance = typeof customer?.balance === 'number' ? customer.balance : 0
 
-    // Block if the customer has no credits left (free tier / paid both draw down).
-    if (credits <= 0 && balance <= 0) {
-      return NextResponse.json(
-        {
-          valid: false,
-          error: 'Insufficient credits',
-          customerId: customer?.id,
-          credits,
-          balance,
-        },
-        { status: 402 },
-      )
-    }
-
     return NextResponse.json({
       valid: true,
       customerId: customer?.id,
@@ -52,8 +38,7 @@ export async function POST(req: NextRequest) {
       keyId: apiKey.id,
     })
   } catch (error) {
-    const detail = error instanceof Error ? error.message : String(error)
-    console.error('[ai-gateway/validate] error:', detail)
-    return NextResponse.json({ valid: false, error: 'Server error', detail }, { status: 500 })
+    console.error('[ai-gateway/validate] error:', error)
+    return NextResponse.json({ valid: false, error: 'Server error' }, { status: 500 })
   }
 }
