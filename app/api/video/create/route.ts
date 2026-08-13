@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { buildWanT2VWorkflow } from '@/lib/comfyWorkflow'
+import path from 'path'
+import fs from 'fs'
 
 // ============================================================================
 // Unified Video Creation API
@@ -202,40 +204,91 @@ export async function GET() {
 
 // Background: render all scenes
 async function renderAllScenes(jobId: string, scenes: any[]) {
+  const OUTPUT_ROOT = process.env.COMFYUI_OUTPUT_DIR || path.join('C:', 'ComfyUI_Download', 'ComfyUI_windows_portable', 'ComfyUI', 'output')
+
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i]
 
-    // Update scene status
     await prisma.videoScene.updateMany({
       where: { jobId, index: i },
       data: { status: 'rendering' },
     })
 
     try {
-      // Submit to ComfyUI
       const promptId = await submitToComfyUI(scene.prompt)
 
-      // Poll until done (simplified)
-      await new Promise(resolve => setTimeout(resolve, 15000))
+      const result = await waitForComfyOutput(promptId)
+      if (!result) {
+        throw new Error('Render timeout or no output')
+      }
 
-      // Mark as done
+      const publicUrl = `${COMFYUI_PUBLIC}/api/video/file/${jobId}?f=${encodeURIComponent(result.fileName)}&t=${encodeURIComponent(result.type)}`
+
       await prisma.videoScene.updateMany({
         where: { jobId, index: i },
-        data: { status: 'done', comfyPromptId: promptId },
+        data: { status: 'done', comfyPromptId: promptId, outputUrl: publicUrl },
       })
-
     } catch (error) {
       console.error(`Scene ${i} render failed:`, error)
       await prisma.videoScene.updateMany({
         where: { jobId, index: i },
-        data: { status: 'failed' },
+        data: { status: 'failed', errorMessage: (error as any)?.message || 'render_failed' },
       })
     }
   }
 
-  // Mark job complete
+  const summary = await prisma.videoScene.findMany({
+    where: { jobId },
+    select: { status: true, outputUrl: true },
+  })
+
+  const completedScenes = summary.filter((s) => s.status === 'done').length
+  const status = completedScenes === 0 ? 'error' : 'done'
+  const outputUrl = summary.find((s) => s.outputUrl)?.outputUrl || null
+
   await prisma.videoJob.update({
     where: { id: jobId },
-    data: { status: 'done', completedAt: new Date() },
+    data: {
+      status,
+      completedScenes,
+      outputUrl,
+      completedAt: new Date(),
+    },
   })
+}
+
+async function waitForComfyOutput(promptId: string, timeoutMs = 1000 * 60 * 10) {
+  const start = Date.now()
+  while (Date.now() - start < timeoutMs) {
+    await sleep(2000)
+    const res = await fetch(`${COMFYUI_URL}/history/${promptId}`).catch(() => null)
+    if (!res || !res.ok) continue
+    const data = await res.json().catch(() => null)
+    const entry = data?.[promptId]
+    if (!entry) continue
+
+    const status = entry.status?.status_str
+    if (status === 'success') {
+      const images = entry.outputs?.['9']?.images || []
+      const first = images[0]
+      if (!first) return null
+      const fileNames = Array.isArray(first) ? first[0]?.filename : first.filename
+      if (!fileNames) return null
+      const fileName = Array.isArray(fileNames) ? fileNames[0] : fileNames
+      const source = await fetch(`${COMFYUI_URL}/view?type=${first.type}&filename=${encodeURIComponent(fileName)}`).catch(() => null)
+      if (!source || !source.ok) return null
+      const buffer = Buffer.from(await source.arrayBuffer())
+      const OUTPUT_ROOT = process.env.COMFYUI_OUTPUT_DIR || path.join('C:', 'ComfyUI_Download', 'ComfyUI_windows_portable', 'ComfyUI', 'output')
+      fs.mkdirSync(OUTPUT_ROOT, { recursive: true })
+      const outPath = path.join(OUTPUT_ROOT, fileName)
+      await fs.promises.writeFile(outPath, buffer)
+      return { fileName, type: first.type || 'output' }
+    }
+    if (status === 'error') return null
+  }
+  return null
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
