@@ -65,6 +65,12 @@ const nextConfig = {
     if (process.env.NEXT_PUBLIC_BUILD_TARGET === 'api') return []
     return [
       {
+        // Hostamar AI Gateway — our own OpenAI-compatible models under hostamar.com/v1
+        // (proxies to the local gateway exposed via ai.hostamar.com tunnel)
+        source: '/v1/:path*',
+        destination: 'https://ai.hostamar.com/v1/:path*',
+      },
+      {
         source: '/api/:path*',
         has: [
           { type: 'header', key: 'x-skip-rewrite' }
