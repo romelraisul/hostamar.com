@@ -41,7 +41,23 @@ export function buildWanT2VWorkflow(opts: WanWorkflowOptions): any {
 
   return {
     prompt: {
+      // 1. Load T5 Text Encoder
       '1': {
+        class_type: 'LoadWanVideoT5TextEncoder',
+        inputs: {
+          model_name: 'umt5-xxl-enc-bf16.safetensors',
+          precision: 'bf16',
+          load_device: 'offload_device',
+          quantization: 'disabled',
+        },
+      },
+      // 2. Load VAE
+      '2': {
+        class_type: 'WanVideoVAELoader',
+        inputs: { model_name: 'Wan2.1_VAE.pth', precision: 'bf16' },
+      },
+      // 3. Load Model (Wan2.1-T2V-1.3B)
+      '3': {
         class_type: 'WanVideoModelLoader',
         inputs: {
           model: 'Wan2.1-T2V-1.3B_diffusion.safetensors',
@@ -51,24 +67,25 @@ export function buildWanT2VWorkflow(opts: WanWorkflowOptions): any {
           attention_mode: 'sdpa',
         },
       },
-      '2': {
-        class_type: 'WanVideoVAELoader',
-        inputs: { model_name: 'Wan2.1_VAE.pth', precision: 'bf16' },
-      },
-      '3': {
+      // 4. Encode positive prompt with T5
+      '4': {
         class_type: 'WanVideoTextEncode',
         inputs: {
-          wan_model: ['1', 0],
-          force_offload: true,
+          t5: ['1', 0],
+          model_to_offload: ['3', 0],
           positive_prompt: prompt,
           negative_prompt: negativePrompt,
+          force_offload: true,
+          offload_device: 'gpu',
         },
       },
-      '4': {
+      // 5. Empty latent video
+      '5': {
         class_type: 'WanVideoEmptyEmbeds',
         inputs: { width, height, num_frames: numFrames },
       },
-      '5': {
+      // 6. Sampler
+      '6': {
         class_type: 'WanVideoSampler',
         inputs: {
           seed,
@@ -78,17 +95,18 @@ export function buildWanT2VWorkflow(opts: WanWorkflowOptions): any {
           sampler_name: 'unipc',
           scheduler: 'unipc',
           force_offload: true,
-          model: ['1', 0],
-          text_embeds: ['3', 0],
-          image_embeds: ['4', 0],
+          model: ['3', 0],
+          text_embeds: ['4', 0],
+          image_embeds: ['5', 0],
           riflex_freq_index: 0,
         },
       },
-      '6': {
+      // 7. Decode with VAE
+      '7': {
         class_type: 'WanVideoDecode',
         inputs: {
           vae: ['2', 0],
-          samples: ['5', 0],
+          samples: ['6', 0],
           enable_vae_tiling: true,
           tile_x: 272,
           tile_y: 272,
@@ -96,10 +114,11 @@ export function buildWanT2VWorkflow(opts: WanWorkflowOptions): any {
           tile_stride_y: 128,
         },
       },
-      '7': {
+      // 8. Save video
+      '8': {
         class_type: 'SaveWEBM',
         inputs: {
-          images: ['6', 0],
+          images: ['7', 0],
           filename_prefix: filenamePrefix,
           codec: 'vp9',
           fps: 24,

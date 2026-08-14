@@ -205,35 +205,42 @@ export default function DevelopersPage() {
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-rafan-27b</span>
+                <span className="font-mono text-sm font-semibold">rafan</span>
                 <span className="text-xs text-zinc-500">1M context</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">Rafan-27B — fast conversational model (Bonsai-27B, local GPU)</p>
+              <p className="mt-1 text-sm text-zinc-600">Rafan — fast conversational model (always-on local)</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-borna</span>
+                <span className="font-mono text-sm font-semibold">rushan</span>
                 <span className="text-xs text-zinc-500">1M context</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">Borna — Gemma 4 31B, strong general + multilingual (AirLLM)</p>
+              <p className="mt-1 text-sm text-zinc-600">Rushan — Qwen3.6-35B MoE, high-capability chat</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-hostamar</span>
+                <span className="font-mono text-sm font-semibold">borna</span>
                 <span className="text-xs text-zinc-500">1M context</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">Hostamar — Muse Glimmer 30B (Meta), agentic + tool use (AirLLM)</p>
+              <p className="mt-1 text-sm text-zinc-600">Borna — Gemma 4 31B, strong general + multilingual</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-image</span>
+                <span className="font-mono text-sm font-semibold">hostamar</span>
+                <span className="text-xs text-zinc-500">1M context</span>
+              </div>
+              <p className="mt-1 text-sm text-zinc-600">Hostamar — agentic + tool use</p>
+            </div>
+            <div className="rounded-xl border border-zinc-200 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-sm font-semibold">image</span>
                 <span className="text-xs text-zinc-500">ComfyUI</span>
               </div>
               <p className="mt-1 text-sm text-zinc-600">Text-to-image generation</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-sm font-semibold">hostamar-video</span>
+                <span className="font-mono text-sm font-semibold">video</span>
                 <span className="text-xs text-zinc-500">ComfyUI</span>
               </div>
               <p className="mt-1 text-sm text-zinc-600">Text-to-video generation</p>
@@ -246,7 +253,7 @@ export default function DevelopersPage() {
             <div>{`client = OpenAI(base_url="https://hostamar.com/v1", api_key="hk_live_...")`}</div>
             <div>&nbsp;</div>
             <div>{`resp = client.chat.completions.create(`}</div>
-            <div>{`  model="hostamar-rafan-27b",`}</div>
+            <div>{`  model="rafan",`}</div>
             <div>{`  messages=[{"role": "user", "content": "Hello"}]`}</div>
             <div>{`)`}</div>
             <div>{`print(resp.choices[0].message.content)`}</div>
@@ -257,7 +264,7 @@ export default function DevelopersPage() {
             <div>curl https://hostamar.com/v1/chat/completions \</div>
             <div className="text-zinc-400">&nbsp;&nbsp;-H "Authorization: Bearer hk_live_..." \</div>
             <div className="text-zinc-400">&nbsp;&nbsp;-H "Content-Type: application/json" \</div>
-            <div className="text-zinc-400">{`  -d '{"model":"hostamar-rafan-27b","messages":[{"role":"user","content":"Hello"}],"stream":false}'`}</div>
+            <div className="text-zinc-400">{`  -d '{"model":"rafan","messages":[{"role":"user","content":"Hello"}],"stream":false}'`}</div>
           </div>
 
           <h3 className="mt-6 font-medium">List models</h3>

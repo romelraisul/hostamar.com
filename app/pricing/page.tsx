@@ -63,12 +63,12 @@ export default function PricingPage() {
       name: 'Chat / Language Model API',
       endpoint: '/v1/chat/completions',
       price: '৳0.5-2 / 1K tokens',
-      desc: 'OpenAI-compatible. Models: hostamar-rafan-27b (fast) & hostamar-rushan-35b (35B MoE), both with 1M token context. Host your own AI assistant, support bot, or agent.',
+      desc: 'OpenAI-compatible. Models: rafan (fast, always-on) & rushan/borna/hostamar (high-capability), all with 1M token context. Host your own AI assistant, support bot, or agent.',
       example:
 `curl -X POST https://hostamar.com/v1/chat/completions \\
   -H "Authorization: Bearer ***" \\
   -H "Content-Type: application/json" \\
-  -d '{"model": "hostamar-rafan-27b", "messages": [{"role": "user", "content": "আমার পণ্যের জন্য মার্কেটিং টিপস দিন"}]}'`,
+  -d '{"model": "rafan", "messages": [{"role": "user", "content": "আমার পণ্যের জন্য মার্কেটিং টিপস দিন"}]}'`,
     },
     {
       name: 'Image Generation',

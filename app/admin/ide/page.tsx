@@ -71,7 +71,7 @@ export default function AdminIdePage() {
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-400">
             <p className="text-slate-300 font-semibold mb-1">Model API for customers</p>
             <p>Customers use <span className="font-mono text-green-400">https://hostamar.com/v1</span> with their own API key (from /api/keys).</p>
-            <p className="mt-1">Base URL: <span className="font-mono">https://hostamar.com/v1</span> · Models: <span className="font-mono">hostamar-bonsai-27b</span>, <span className="font-mono">hostamar-qwen3.6-35b</span>, <span className="font-mono">hostamar-image</span>, <span className="font-mono">hostamar-video</span></p>
+            <p className="mt-1">Base URL: <span className="font-mono">https://hostamar.com/v1</span> · Models: <span className="font-mono">rafan</span>, <span className="font-mono">rushan</span>, <span className="font-mono">borna</span>, <span className="font-mono">hostamar</span>, <span className="font-mono">image</span>, <span className="font-mono">video</span></p>
           </div>
         </>
       )}
