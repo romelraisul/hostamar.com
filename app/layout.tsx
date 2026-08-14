@@ -7,8 +7,9 @@ import ThemeToggle from '@/components/ThemeToggle'
 import SupportWidget from '@/components/SupportWidget'
 import ChromeGuard from '@/components/layout/ChromeGuard'
 import { LocaleProvider } from '@/lib/locale-context'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
+import { getCountryLocale } from '@/lib/i18n'
 
 // The root layout reads `cookies()` (request data), so the entire app is
 // dynamic. Force it explicitly to prevent Next from attempting static
@@ -145,12 +146,20 @@ export default async function RootLayout({
   // outside of pages/_document". Guard it so the prerender completes with the
   // default locale instead of throwing.
   let locale: Locale = 'en'
-  try {
-    const cookieStore = await cookies()
-    locale = (cookieStore.get('locale')?.value || 'en') as Locale
-  } catch {
-    locale = 'en'
-  }
+    try {
+      const cookieStore = await cookies()
+      const cookieLocale = cookieStore.get('locale')?.value
+      if (cookieLocale && ['en', 'bn', 'ur', 'hi', 'ar'].includes(cookieLocale)) {
+        locale = cookieLocale as Locale
+      } else {
+        // No locale cookie → geo-detect via Vercel edge header
+        const headersList = await headers()
+        const country = headersList.get('x-vercel-ip-country')
+        locale = getCountryLocale(country)
+      }
+    } catch {
+      locale = 'en'
+    }
     const isBengali = locale === 'bn'
     const htmlFontClass = isBengali ? bengali.variable : ''
 

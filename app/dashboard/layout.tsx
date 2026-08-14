@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useLocale } from '@/lib/locale-context'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import {
   LayoutDashboard,
   Video,
@@ -177,25 +178,26 @@ export default function DashboardLayout({
 
           {/* User Section */}
           <div className="border-t p-4 space-y-3">
-            {credits && (
-              <div className="rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <Coins className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-semibold text-blue-700">Credit Balance</span>
-                  </div>
-                  <span className="text-sm font-bold text-blue-700">{credits.credits.toLocaleString()}</span>
-                </div>
-                <div className="text-[10px] text-gray-500">Used {credits.consumed.toLocaleString()} of {(credits.credits + credits.consumed).toLocaleString()}</div>
-                <div className="mt-2 grid grid-cols-4 gap-1 text-[9px] text-gray-500">
-                  <span>🎬 {credits.videoCredits}</span>
-                  <span>🖼️ {credits.imageCredits}</span>
-                  <span>💬 {credits.chatCredits}</span>
-                  <span>🌐 {credits.browserCredits}</span>
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-3">
+                      {credits && (
+                        <div className="rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <Coins className="w-4 h-4 text-blue-600" />
+                              <span className="text-xs font-semibold text-blue-700">Credit Balance</span>
+                            </div>
+                            <span className="text-sm font-bold text-blue-700">{credits.credits.toLocaleString()}</span>
+                          </div>
+                          <div className="text-[10px] text-gray-500">Used {credits.consumed.toLocaleString()} of {(credits.credits + credits.consumed).toLocaleString()}</div>
+                          <div className="mt-2 grid grid-cols-4 gap-1 text-[9px] text-gray-500">
+                            <span>���� {credits.videoCredits}</span>
+                            <span>������� {credits.imageCredits}</span>
+                            <span>���� {credits.chatCredits}</span>
+                            <span>���� {credits.browserCredits}</span>
+                          </div>
+                        </div>
+                      )}
+                      <LanguageSwitcher />
+                      <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                             <User className="w-5 h-5 text-blue-600" />
                           </div>

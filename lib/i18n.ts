@@ -1,12 +1,14 @@
-export type Locale = 'en' | 'bn' | 'ur'
+export type Locale = 'en' | 'bn' | 'ur' | 'hi' | 'ar'
 
-export const locales: Locale[] = ['en', 'bn', 'ur']
+export const locales: Locale[] = ['en', 'bn', 'ur', 'hi', 'ar']
 export const defaultLocale: Locale = 'en'
 
 export const localeNames: Record<Locale, string> = {
   en: 'English',
   bn: 'বাংলা',
   ur: 'اردو',
+  hi: 'हिन्दी',
+  ar: 'العربية',
 }
 
 const en: Record<string, string> = {
@@ -2618,10 +2620,40 @@ const ur: Record<string, string> = {
   'payment.hostamarBrand': 'Hostamar.com',
 }
 
-export const translations: Record<Locale, Record<string, string>> = { en, bn, ur }
+const hi: Record<string, string> = {}
+
+const ar: Record<string, string> = {}
+
+export const translations: Record<Locale, Record<string, string>> = { en, bn, ur, hi, ar }
 
 export function t(key: string, lang: Locale = 'en'): string {
   return translations[lang]?.[key] || translations['en']?.[key] || key
+}
+
+// Country code → Locale mapping (Vercel x-vercel-ip-country provides ISO 3166-1 alpha-2).
+// Covers major geos for BD, IN, PK, Middle East, rest fall back to en.
+export function getCountryLocale(countryCode: string | null): Locale {
+  if (!countryCode) return defaultLocale
+  const code = countryCode.toUpperCase()
+  switch (code) {
+    case 'BD': return 'bn'
+    case 'PK': return 'ur'
+    case 'IN': return 'hi'
+    case 'SA':
+    case 'AE':
+    case 'EG':
+    case 'QA':
+    case 'KW':
+    case 'BH':
+    case 'OM':
+    case 'JO':
+    case 'LB':
+    case 'SY':
+    case 'IQ':
+    case 'PS':
+    case 'YE': return 'ar'
+    default: return defaultLocale
+  }
 }
 
 export function getLocaleFromCookie(cookie: string): Locale {
@@ -2630,11 +2662,19 @@ export function getLocaleFromCookie(cookie: string): Locale {
   return defaultLocale
 }
 
-export function getLocaleFromHeader(acceptLanguage: string | null): Locale {
+export function getLocaleFromHeader(acceptLanguage: string | null, countryCode?: string | null): Locale {
+  // Priority: explicit country geo → Accept-Language header → default
+  if (countryCode) {
+    const geo = getCountryLocale(countryCode)
+    if (geo !== defaultLocale) return geo
+  }
   if (!acceptLanguage) return defaultLocale
   const langs = acceptLanguage.split(',').map((l) => l.trim().toLowerCase())
   for (const lang of langs) {
     if (lang.startsWith('bn')) return 'bn'
+    if (lang.startsWith('ur')) return 'ur'
+    if (lang.startsWith('hi')) return 'hi'
+    if (lang.startsWith('ar')) return 'ar'
     if (lang.startsWith('en')) return 'en'
   }
   return defaultLocale

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useLocale } from '@/lib/locale-context'
 import { PRODUCT_NAV } from '@/lib/products'
 import AppMenu from './AppMenu'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 
 const GREEN = '#0E7C3A'
 
@@ -108,13 +109,7 @@ export default function AppHeader() {
 
         {/* Right: lang switch + CTA + user + mobile toggle */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setLocale(isBn ? 'en' : 'bn')}
-            className="hidden items-center gap-1 rounded-full border border-zinc-200 px-2.5 py-1 text-[12px] font-medium text-zinc-600 transition hover:text-zinc-900 md:inline-flex"
-            aria-label="Toggle language"
-          >
-            {isBn ? 'EN' : 'বাং'}
-          </button>
+          <LanguageSwitcher />
           <Link
             href="/login"
             className="hidden text-[14px] font-medium text-zinc-600 hover:text-zinc-900 md:block"
