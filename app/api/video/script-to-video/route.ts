@@ -3,12 +3,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { deductCredits, getCreditAccount, CREDIT_COSTS } from '@/lib/credits'
-import { buildHunyuanScriptWorkflow } from '@/lib/comfyWorkflow'
+import { buildHunyuanScriptWorkflow, buildWanT2VWorkflow } from '@/lib/comfyWorkflow'
 
 const COMFYUI_INTERNAL = process.env.COMFYUI_URL || 'http://localhost:8188'
 
 async function generateScript(prompt: string): Promise<any> {
-  // Direct fallback script - no LLM call needed, already comprehensive
   return {
     title: 'Hostamar.com - Bangladeshi AI Video Maker',
     duration: 30,
@@ -63,6 +62,29 @@ async function generateScript(prompt: string): Promise<any> {
   }
 }
 
+async function tryComfyUI(body: any): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const response = await fetch(`${COMFYUI_INTERNAL}/prompt`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const err = await response.text().catch(() => '')
+      return { success: false, error: `ComfyUI HTTP ${response.status}: ${err.slice(0, 300)}` }
+    }
+
+    const data = await response.json()
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Network error' }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request)
@@ -86,42 +108,49 @@ export async function POST(request: NextRequest) {
     // Step 1: Generate script from simple prompt
     const script = await generateScript(prompt)
 
-    // Step 2: Build Hunyuan workflow with the combined detailed prompt
-    const body = buildHunyuanScriptWorkflow({
+    // Step 2: Try Hunyuan first, fallback to Wan2.1
+    let body = buildHunyuanScriptWorkflow({
       prompt: script.combinedPrompt,
       numFrames: duration <= 5 ? 49 : duration <= 10 ? 81 : 121,
       steps: 30,
       filenamePrefix: `hostamar_script_${Date.now()}`,
     })
 
-    // Step 3: Submit to ComfyUI
-    const response = await fetch(`${COMFYUI_INTERNAL}/prompt`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-      body: JSON.stringify(body),
-    })
+    let result = await tryComfyUI(body)
+    let modelUsed = 'hunyuan1.5'
+    let productBucket: 'video_hunyuan_5s' | 'video_wan_5s' = 'video_hunyuan_5s'
 
-    if (!response.ok) {
-      const err = await response.text().catch(() => '')
-      return NextResponse.json({ error: 'ComfyUI unavailable', detail: err.slice(0, 300) }, { status: 503 })
+    // If Hunyuan fails (e.g., GGUF node not loaded), fallback to Wan2.1
+    if (!result.success) {
+      console.log('Hunyuan failed, falling back to Wan2.1:', result.error)
+      body = buildWanT2VWorkflow({
+        prompt: script.combinedPrompt,
+        numFrames: duration <= 5 ? 49 : 81,
+        steps: 30,
+        filenamePrefix: `hostamar_script_${Date.now()}`,
+      })
+      result = await tryComfyUI(body)
+      modelUsed = 'wan2.1'
+      productBucket = 'video_wan_5s'
+
+      if (!result.success) {
+        return NextResponse.json({ error: 'All video models unavailable', detail: result.error }, { status: 503 })
+      }
     }
 
-    const data = await response.json()
+    const data = result.data!
 
     if (customerId) {
-      await deductCredits(customerId, cost, 'video_hunyuan_5s', `Script-to-video: ${prompt.slice(0, 50)}...`)
+      await deductCredits(customerId, cost, productBucket, `Script-to-video: ${prompt.slice(0, 50)}...`)
     }
 
     return NextResponse.json({
       success: true,
       prompt_id: data.prompt_id,
-      model: 'hunyuan1.5',
+      model: modelUsed,
       duration,
       credits_cost: cost,
-      message: 'Script-to-video generation started',
+      message: `Script-to-video generation started (${modelUsed})`,
       script: {
         title: script.title,
         scenes: script.scenes.length,
@@ -138,8 +167,8 @@ export async function GET() {
   return NextResponse.json({
     available: true,
     comfyui_url: COMFYUI_INTERNAL,
-    model: 'hunyuan1.5',
-    description: 'Script-to-video: simple prompt → LLM script → Hunyuan 1.5 video',
+    models: ['hunyuan1.5', 'wan2.1'],
+    description: 'Script-to-video: simple prompt → LLM script → Hunyuan 1.5 (fallback Wan2.1) video',
     cost: CREDIT_COSTS.video_hunyuan_5s,
   })
 }
