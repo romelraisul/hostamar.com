@@ -7,8 +7,8 @@ const COMFYUI_BASE = process.env.COMFYUI_PUBLIC_URL || 'https://comfy.hostamar.c
 const COMFYUI_INTERNAL = process.env.COMFYUI_URL || 'http://localhost:8188'
 
 const AVAILABLE_MODELS = [
-  { id: 'wan2.1', name: 'Wan2.1 T2V 1.3B', provider: 'local-comfyui', creditsPer5s: CREDIT_COSTS.video_wan_5s },
   { id: 'hunyuan1.5', name: 'HunyuanVideo 1.5 8B GGUF', provider: 'local-comfyui', creditsPer5s: CREDIT_COSTS.video_hunyuan_5s },
+  { id: 'wan2.1', name: 'Wan2.1 T2V 1.3B', provider: 'local-comfyui', creditsPer5s: CREDIT_COSTS.video_wan_5s },
 ]
 
 export async function POST(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const user = await getAuthUser(request)
     const customerId = user?.id
 
-    const { prompt, duration = 5, model = 'wan2.1' } = await request.json()
+    const { prompt, duration = 30, model = 'hunyuan1.5' } = await request.json()
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })

@@ -1,6 +1,6 @@
 // Shared ComfyUI video workflow builders.
 // Wan2.1-T2V-1.3B uses WanVideoWrapper nodes.
-// HunyuanVideo 1.5 8B GGUF uses UnetLoaderGGUF + native Hunyuan nodes (requires ComfyUI-GGUF).
+// HunyuanVideo 1.5 8B GGUF uses UnetLoaderGGUF + ComfyUI native nodes (requires ComfyUI-GGUF).
 
 export interface WanWorkflowOptions {
   prompt: string
@@ -113,7 +113,7 @@ export function buildWanT2VWorkflow(opts: WanWorkflowOptions): any {
 export function buildHunyuanT2VWorkflow(opts: HunyuanWorkflowOptions): any {
   const {
     prompt,
-    negativePrompt = 'blurry, low quality, distorted, watermark, text overlay, static, ugly, deformed',
+    negativePrompt = 'blurry, low quality, distorted, watermark, text overlay, static, ugly, deformed, jittery motion',
     width = 720,
     height = 720,
     numFrames = 49,
@@ -232,4 +232,17 @@ export function buildHunyuanT2VWorkflow(opts: HunyuanWorkflowOptions): any {
       },
     },
   }
+}
+
+// Script-to-video uses the same Hunyuan GGUF workflow but with detailed prompt
+export function buildHunyuanScriptWorkflow(opts: HunyuanWorkflowOptions): any {
+  return buildHunyuanT2VWorkflow({
+    ...opts,
+    negativePrompt: 'blurry, low quality, distorted, watermark, text overlay, static, ugly, deformed, jittery motion, bad anatomy, extra limbs, missing limbs, floating objects, disconnected elements, flickering, inconsistent lighting, color bleeding',
+    filenamePrefix: opts.filenamePrefix || `hostamar_script_${Date.now()}`,
+    // 30 seconds at 24fps = 720 frames, but Hunyuan works in 4-frame chunks
+    // 30s * 24fps = 720 frames, but we use 49 frames for 5s chunks
+    // For 30s we'd need multiple generations, so let's do 5s (49 frames) as a segment
+    numFrames: opts.numFrames || 49,
+  })
 }
