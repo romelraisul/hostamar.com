@@ -2,7 +2,7 @@
 
 import { useLocale } from '@/lib/locale-context'
 import { locales, localeNames, type Locale } from '@/lib/i18n'
-import { Globe, ChevronDown } from 'lucide-react'
+import { Globe, ChevronDown, Check } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 export default function LanguageSwitcher() {
@@ -52,7 +52,7 @@ export default function LanguageSwitcher() {
               >
                 <span className="font-medium">{localeNames[loc]}</span>
                 {locale === loc && (
-                  <span className="ml-auto text-blue-600">���</span>
+                  <Check className="ml-auto w-4 h-4 text-blue-600" />
                 )}
               </button>
             </li>

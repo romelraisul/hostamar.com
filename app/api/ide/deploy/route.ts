@@ -7,7 +7,7 @@ import path from 'path'
 
 export const runtime = 'nodejs'
 
-const WORKSPACE_ROOT = path.join(process.cwd(), 'tmp', 'ide-workspace')
+const WORKSPACE_ROOT = path.join('/tmp', 'ide-workspace')
 
 export async function POST(request: NextRequest) {
   try {
