@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 import { getCreditAccount, deductCredits, CREDIT_COSTS } from '@/lib/credits'
 
 const OLLAMA_BASE = process.env.QWEN_URL || process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
-const DEFAULT_MODEL = process.env.OLLAMA_CHAT_MODEL || 'Qwen/Qwen3.6-35B-A3B-FP8'
+const DEFAULT_MODEL = process.env.OLLAMA_CHAT_MODEL || 'Qwen/Qwen3.8-27B-FP8'
 
 // Google Token Guard for fallback
 let googleGuard: any = null

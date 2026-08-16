@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 const MODELS = [
-  { id: 'qwen3.6:latest', label: 'Qwen 3.6' },
+  { id: 'qwen3.8:latest', label: 'Qwen 3.8' },
   { id: 'hermes3:latest', label: 'Hermes 3' },
   { id: 'granite4.1:8b', label: 'Granite 4.1' },
 ]

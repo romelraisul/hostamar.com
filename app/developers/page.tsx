@@ -215,7 +215,7 @@ export default function DevelopersPage() {
                 <span className="font-mono text-sm font-semibold">rushan</span>
                 <span className="text-xs text-zinc-500">1M context</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">Rushan — Qwen3.6-35B MoE, high-capability chat</p>
+              <p className="mt-1 text-sm text-zinc-600">Rushan — Qwen3.8-27B, high-capability chat</p>
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <div className="flex items-center justify-between">

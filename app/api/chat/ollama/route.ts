@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 
 const OLLAMA_HOST = process.env.QWEN_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
-const OLLAMA_MODEL = process.env.OLLAMA_CHAT_MODEL || process.env.OLLAMA_MODEL || 'Qwen/Qwen3.6-35B-A3B-FP8'
+const OLLAMA_MODEL = process.env.OLLAMA_CHAT_MODEL || process.env.OLLAMA_MODEL || 'Qwen/Qwen3.8-27B-FP8'
 const FALLBACK_API_URL = process.env.FALLBACK_API_URL || ''
 const FALLBACK_API_KEY = process.env.FALLBACK_API_KEY || ''
 const FALLBACK_MODEL = process.env.FALLBACK_MODEL || OLLAMA_MODEL
