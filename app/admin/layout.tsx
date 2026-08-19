@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { 
@@ -15,8 +15,16 @@ import {
   X,
   BarChart3,
   ShoppingCart,
-  Gift
+  Gift,
+  User,
+  Mail,
 } from 'lucide-react'
+
+interface AdminUser {
+  id: string
+  name: string
+  email: string
+}
 
 const navItems = [
   { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
@@ -39,6 +47,31 @@ export default function AdminLayout({
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
+  const [userLoading, setUserLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.user) {
+            setUser({
+              id: data.user.id,
+              name: data.user.name || 'Admin',
+              email: data.user.email || 'admin@hostamar.com',
+            })
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch user:', err)
+      } finally {
+        setUserLoading(false)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -50,7 +83,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
         <button
@@ -72,12 +105,7 @@ export default function AdminLayout({
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-slate-900 text-white z-50 
-        transform transition-transform duration-200 ease-in-out
-        lg:translate-x-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      <aside className={`...`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="px-6 py-5 border-b border-slate-700">
@@ -104,13 +132,7 @@ export default function AdminLayout({
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                    ${isActive 
-                      ? 'bg-blue-600 text-white' 
-                      : 'text-slate-300 hover:bg-slate-800'
-                    }
-                  `}
+                  className={`...`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
@@ -121,32 +143,38 @@ export default function AdminLayout({
 
           {/* User Section */}
           <div className="border-t border-slate-700 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="font-medium">A</span>
+            {userLoading ? (
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-slate-700 animate-pulse flex items-center justify-center" />
+                <div className="flex-1 min-w-0">
+                  <div className="h-4 bg-slate-700 rounded w-3/4 animate-pulse" />
+                  <div className="h-3 bg-slate-700 rounded w-1/2 animate-pulse mt-1" />
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Admin</p>
-                <p className="text-xs text-slate-400">{process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'admin@hostamar.com'}</p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-slate-300 hover:text-red-400 w-full px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="text-sm">Logout</span>
-            </button>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{user?.name || 'Admin'}</p>
+                    <p className="text-xs text-slate-400 truncate">{user?.email || 'admin@hostamar.com'}</p>
+                    <p className="text-[10px] text-slate-500 truncate mt-0.5">ID: {user?.id || '—'}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-slate-300 hover:text-red-400 w-full px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-sm">Logout</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </aside>
-
-      {/* Main Content */}
-      <main className="lg:ml-64 min-h-screen pt-16 lg:pt-0">
-        <div className="p-6 lg:p-8">
-          {children}
-        </div>
-      </main>
     </div>
   )
 }
