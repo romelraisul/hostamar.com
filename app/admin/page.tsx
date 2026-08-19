@@ -225,6 +225,56 @@ function AdminSettingsSection() {
   )
 }
 
+function AdminModelsSection() {
+  const [models, setModels] = useState<any[]>([])
+  const [source, setSource] = useState<'live' | 'static'>('static')
+  const [gatewayUrl, setGatewayUrl] = useState('')
+  const [error, setError] = useState('')
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await fetch('/api/gateway/models', { credentials: 'include' })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        setModels(data.data || [])
+        setSource(data.source || 'static')
+        setGatewayUrl(data.gatewayUrl || '')
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load models')
+      }
+    })()
+  }, [])
+  return (
+    <div className="space-y-4">
+      <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-white">AI Models (gateway /v1/models)</h3>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${source === 'live' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}`}>
+            {source === 'live' ? '● live' : '● offline (cached catalog)'}
+          </span>
+        </div>
+        {gatewayUrl && <p className="text-xs text-slate-400 mb-3">Gateway: <code className="font-mono">{gatewayUrl}</code></p>}
+        {error && <p className="text-xs text-red-400 mb-3">{error}</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {models.map((m) => (
+            <div key={m.id} className="bg-white/5 border border-white/10 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-white text-sm">{m.id}</p>
+                <span className="text-[10px] text-slate-400 uppercase">{m.owned_by || 'hostamar'}</span>
+              </div>
+              {m.description && <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">{m.description}</p>}
+              {typeof m.context_window === 'number' && (
+                <p className="mt-1.5 text-[11px] text-slate-500">Context: {m.context_window.toLocaleString()} tokens</p>
+              )}
+            </div>
+          ))}
+          {!models.length && <p className="text-sm text-slate-400">No models found.</p>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
   const { t } = useLocale()
   const router = useRouter()
@@ -302,7 +352,7 @@ export default function AdminDashboard() {
         <StatCards stats={stats} orders={orders} services={services} subscriptions={subscriptions} />
 
         <div className="flex gap-2 mb-6 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-1 inline-flex flex-wrap">
-          {["overview", "customers", "orders", "payments", "services", "subscriptions", "analytics", "settings"].map((tab) => (
+          {["overview", "customers", "orders", "payments", "services", "subscriptions", "analytics", "models", "settings"].map((tab) => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === tab ? "bg-blue-600 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
               {tab === "overview" && (t("admin.overview") || "Overview")}
               {tab === "customers" && (t("admin.customers.title") || "Customers")}
@@ -311,6 +361,7 @@ export default function AdminDashboard() {
               {tab === "services" && "Services"}
               {tab === "subscriptions" && "Subscriptions"}
               {tab === "analytics" && "Analytics"}
+              {tab === "models" && "Models"}
               {tab === "settings" && "Settings"}
             </button>
           ))}
@@ -377,6 +428,7 @@ export default function AdminDashboard() {
           {activeTab === "services" && <AdminServicesSection services={services} />}
           {activeTab === "subscriptions" && <AdminSubscriptionsSection subscriptions={subscriptions} />}
           {activeTab === "analytics" && <AdminAnalyticsSection analytics={analyticsData} />}
+          {activeTab === "models" && <AdminModelsSection />}
           {activeTab === "settings" && <AdminSettingsSection />}
         </div>
       </section>
