@@ -6,7 +6,15 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value
+      // Check Authorization header first (for API clients)
+      const authHeader = request.headers.get('authorization')
+      let token: string | null = null
+      if (authHeader?.startsWith('Bearer ')) {
+        token = authHeader.slice(7)
+      } else {
+        // Fallback to cookie
+        token = request.cookies.get('auth_token')?.value ?? null
+      }
 
     if (!token) {
       return NextResponse.json(
@@ -48,4 +56,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+}

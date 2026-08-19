@@ -76,6 +76,7 @@ model Customer {
   services          Service[]
   payments          Payment[]
   transactions      Transaction[]
+  creditTransactions CreditTransaction[]
   orders            Order[]
   notifications     Notification[]
   leads             Lead[]
@@ -162,8 +163,8 @@ model Video {
   templateId  String?
 
   duration   Int
-  format     String @default("mp4")
-  resolution String @default("1080p")
+  format     String @default("webm")
+  resolution String @default("720p")
   fileSize   Int?
 
   url          String?
@@ -185,6 +186,8 @@ model Video {
   @@index([createdAt])
   @@index([organizationId])
   @@index([customerId, organizationId])
+  
+  creditTransactions CreditTransaction[]
 }
 
 model Preview {
@@ -280,6 +283,8 @@ model VideoQueue {
   processedAt DateTime?
 
   @@index([status, priority])
+  
+  creditTransactions CreditTransaction[]
 }
 
 model ActivityLog {
@@ -359,6 +364,21 @@ model Transaction {
   @@index([customerId, status])
   @@index([gatewayTrxId])
   @@index([createdAt])
+}
+
+model CreditTransaction {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  amount       Int
+  type         String
+  description  String?
+  balanceAfter Int
+  
+  createdAt DateTime @default(now())
+
+  @@index([customerId, createdAt])
 }
 
 model Notification {
