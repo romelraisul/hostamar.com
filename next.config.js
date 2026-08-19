@@ -20,8 +20,24 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com; frame-ancestors 'none'" },
+        ],
+      },
+    ]
+  },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -29,6 +45,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
     scrollRestoration: true,
+    serverComponentsExternalPackages: ['playwright-core'],
     // Trace the forked CodeAct worker into the standalone bundle (alongside the
     // Dockerfile safety COPY) so fork() finds it in both dev and prod.
     outputFileTracingIncludes: {
@@ -48,8 +65,57 @@ const nextConfig = {
     if (process.env.NEXT_PUBLIC_BUILD_TARGET === 'api') return []
     return [
       {
+        // Hostamar AI Gateway — our own OpenAI-compatible models under hostamar.com/v1
+        // (proxies to the local gateway exposed via ai.hostamar.com tunnel)
+        source: '/v1/:path*',
+        destination: 'https://ai.hostamar.com/v1/:path*',
+      },
+      {
         source: '/api/:path*',
-        destination: 'https://api.hostamar.com/api/:path*',
+        has: [
+          { type: 'header', key: 'x-skip-rewrite' }
+        ],
+        destination: '/api/:path*'
+      },
+      {
+        source: '/api/video/:path*',
+        destination: '/api/video/:path*'
+      },
+      {
+        source: '/api/ai/:path*',
+        destination: '/api/ai/:path*'
+      },
+      {
+        source: '/api/storage/:path*',
+        destination: '/api/storage/:path*'
+      },
+      {
+        source: '/api/metrics',
+        destination: '/api/metrics'
+      },
+      {
+        source: '/api/health',
+        destination: '/api/health'
+      },
+      {
+        source: '/api/payment/:path*',
+        destination: '/api/payment/:path*'
+      },
+      {
+        source: '/api/auth/:path*',
+        destination: '/api/auth/:path*'
+      },
+      {
+        source: '/api/admin/:path*',
+        destination: '/api/admin/:path*'
+      },
+      {
+        source: '/api/dashboard/:path*',
+        destination: '/api/dashboard/:path*'
+      },
+      {
+        source: '/api/:path*',
+        destination: 'https://api.hostamar.com/api/:path*'
       },
     ]
   },
@@ -67,6 +133,12 @@ const nextConfig = {
       mysql2: false,
       mongodb: false,
       'pg-native': false,
+      // playwright-core is used only in the Steel (cloud CDP) browser branch.
+      // It must NOT be webpack-bundled — it has optional native deps
+      // (chromium-bidi, electron, bufferutil, utf-8-validate, fsevents) that
+      // fail to resolve at build time. Externalizing keeps it as a runtime
+      // require() so connectOverCDP works on the server without a browser binary.
+      'playwright-core': 'playwright-core',
     }
     // typeorm + protobufjs use dynamic require() for optional drivers; webpack
     // can't statically analyze those, producing "Critical dependency" warnings.

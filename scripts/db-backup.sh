@@ -5,7 +5,7 @@ set -e
 
 BACKUP_DIR="/tmp/hostamar-db-backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-DB_URL="postgresql://neondb_owner:luambAtuJXneMJgZm4V94HR5@ep-empty-firefly-apkx8hzh.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require"
+DB_URL="postgresql://neondb_owner:***REDACTED***@ep-empty-firefly-apkx8hzh.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require"
 S3_ENDPOINT="http://192.168.1.2:9000"
 S3_ACCESS_KEY="minioadmin"
 S3_SECRET_KEY="minioadmin"

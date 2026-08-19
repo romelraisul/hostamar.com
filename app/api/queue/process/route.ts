@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     const { secret } = await req.json().catch(() => ({ secret: '' }))
     
-    const queueSecret = process.env.QUEUE_SECRET || 'hostamar-dev-secret'
+    const queueSecret = process.env.QUEUE_SECRET || '***REDACTED***'
     if (secret !== queueSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
