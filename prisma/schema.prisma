@@ -89,6 +89,7 @@ model Customer {
   conversations     Conversation[]
   gameBalances      GameBalance[]
   gameSpins         GameSpin[]
+  apiKeys           ApiKey[]
 
   // Twitter OAuth 2.0
   twitterAccessToken       String?
@@ -905,4 +906,58 @@ model Membership {
 
   @@unique([customerId, organizationId])
   @@index([customerId, isDefault])
+}
+
+// ============================================================================
+// API Keys — per-customer OpenAI-compatible keys (hk_live_...) for the AI gateway.
+// The local hostamar-ai-gateway validates each key against
+// /api/ai-gateway/validate. Key stored as a SHA-256 hash; plaintext returned
+// exactly once at creation time.
+// ============================================================================
+model ApiKey {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  name          String
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Permissions
+  canGenerateImage  Boolean @default(true)
+  canGenerateVideo Boolean @default(true)
+  canUseChat       Boolean @default(true)
+
+  // Rate limiting
+  rateLimitPerMinute Int @default(10)
+
+  // Usage tracking
+  totalRequests Int       @default(0)
+  lastUsedAt    DateTime?
+
+  // Status
+  isActive   Boolean   @default(true)
+  expiresAt  DateTime?
+
+  // Relations
+  apiRequestLogs ApiRequestLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([key])
+}
+
+model ApiRequestLog {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  endpoint    String
+  method      String
+  statusCode  Int
+  responseTime Int // ms
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([apiKeyId, createdAt])
 }
