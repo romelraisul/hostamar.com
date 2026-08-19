@@ -1,26 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
-// BUILD-CACHE-BUSTER: this file is deliberately clean (no @/lib/metrics-store
-// import) so the Edge bundle has zero Node-only deps. Do not re-add it here.
+
+const PRODUCT_SUBDOMAIN_PATHS: Record<string, string> = {
+  'studio.hostamar.com': '/studio',
+  'video.hostamar.com': '/video',
+  'voice.hostamar.com': '/chat',
+  'chat.hostamar.com': '/chat',
+  'browser.hostamar.com': '/browser',
+  'ide.hostamar.com': '/ide',
+  'game.hostamar.com': '/game',
+  'hosting.hostamar.com': '/hosting',
+}
 
 async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string; orgId?: string } | null> {
   try {
-    const secret = process.env.NEXTAUTH_SECRET
+    const secret = process.env.JWT_SECRET
     if (!secret || !token) return null
 
-    // Decode the JWT payload without verification (just read contents)
     const parts = token.split('.')
     if (parts.length !== 3) return null
 
-    // Use base64url decode compatible with Edge Runtime
-    const base64Url = parts[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
-    const payload = JSON.parse(atob(padded))
+    const header = JSON.parse(decodeBase64Url(parts[0]))
+    if (header.alg !== 'HS256') return null
 
-    // Check expiration
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+    const signature = base64UrlToBytes(parts[2])
+    const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`)
+    const verified = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signature.buffer as ArrayBuffer,
+      data
+    )
+    if (!verified) return null
+
+    const payload = JSON.parse(decodeBase64Url(parts[1]))
+
     if (payload.exp && Date.now() >= payload.exp * 1000) return null
 
-    // Return payload if it matches expected shape
     if (payload.id && payload.email) {
       return {
         id: String(payload.id),
@@ -35,10 +57,38 @@ async function verifyTokenEdge(token: string): Promise<{ id: string; email: stri
     return null
   }
 }
+
+function decodeBase64Url(value: string): string {
+  return new TextDecoder().decode(base64UrlToBytes(value))
+}
+
+function base64UrlToBytes(value: string): Uint8Array {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
+  const binary = atob(padded)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return bytes
+}
+
 export async function middleware(request: NextRequest) {
-  // Check for custom JWT auth token (set by /api/auth/login)
   const authToken = request.cookies.get('auth_token')?.value
-  const pathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
+  const requestedPathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
+  const hostname = (request.headers.get('host') || '').split(':')[0].toLowerCase()
+  const subdomainPath = PRODUCT_SUBDOMAIN_PATHS[hostname]
+  const pathname = requestedPathname === '/' && subdomainPath ? subdomainPath : requestedPathname
+
+  const continueRequest = (requestHeaders?: Headers) => {
+    const init = requestHeaders ? { request: { headers: requestHeaders } } : undefined
+    if (pathname !== requestedPathname) {
+      const destination = request.nextUrl.clone()
+      destination.pathname = pathname
+      return NextResponse.rewrite(destination, init)
+    }
+    return NextResponse.next(init)
+  }
 
   // Static assets — always allow
   if (
@@ -51,80 +101,68 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Public API paths — no auth needed (include all NextAuth endpoints + custom auth + video public APIs)
-  const publicApiPaths = [
-    '/api/auth/login',
-    '/api/auth/register',
-    '/api/health',
-    '/api/auth/signup',
-    '/api/auth/forgot-password',
-    '/api/auth/forgot',
-    '/api/auth/reset',
-    '/api/auth/reset-password',
-    '/api/bootstrap-admin',
-    '/api/storage',
-    '/api/metrics',
-    '/api/auth/providers',
-    '/api/auth/callback',
-    '/api/auth/signin',
-    '/api/auth/signout',
-    '/api/auth/csrf',
-    '/api/auth/session',
-    '/api/admin',
-    '/api/ai/videos/generate',
-    '/api/video/status',
-    '/api/dashboard/videos',
-    '/api/game/balance',
-    '/api/game/spin',
-    '/api/ai/browser/search',
-    '/api/browser/proxy',
-        '/api/browser/screenshot',
-        '/api/browser/summarize',
-        '/api/dev/chat',
-        '/api/email/setup-brevo',
-        '/api/debug/env',
-        '/api/support-chat',   // self-hosted Ollama L1 support, public
-        '/api/auth/twitter/connect',
-        '/api/metrics',
-        '/api/invoices',   // server-to-server invoice generation (triggered by webhook)
-        '/api/payment/verify',   // payment gateway callback — must be reachable without a session
-        '/api/internal/provision',   // self-guarded by INTERNAL_API_KEY header (server-to-server)
-      ]
-  if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-    return NextResponse.next()
-  }
-
-  // Self-guarded server-to-server / webhook paths (no cookie auth possible):
-  // guarded by INTERNAL_API_KEY at the route, exactly like /api/internal/provision.
-  const selfGuardedPaths = [
-    '/api/harness/run',       // harness plan/execute — x-internal-api-key
-    '/api/telegram/webhook',  // Telegram bot callback (cannot carry our session cookie)
-    '/api/inngest',           // Inngest serve endpoint (dev server self-validates its handshake)
-    '/api/webhooks/call-ended', // voice post-call webhook (server-to-server, no session cookie)
-    '/api/auth/saml/metadata', // SAML SP metadata (IdP fetch, no session cookie)
-    '/api/auth/saml/acs',     // SAML ACS — IdP POST, cannot carry our session cookie
-    '/api/auth/saml/callback', // SAML OAuth code exchange (cross-site redirect from IdP)
-    '/api/auth/oidc/authorize', // OIDC SP-initiated redirect (no session needed)
-    '/api/auth/oidc/login',     // OIDC IdP-initiated entry
-    '/api/auth/oidc/callback',  // OIDC code exchange (cross-site redirect from IdP)
-    '/api/scim/v2',             // SCIM 2.0 — Bearer-token server-to-server (no session cookie)
+  // Public pages — no auth needed (marketing + auth pages + product landing pages)
+  const publicPages = [
+    '/', '/login', '/signup', '/pricing', '/about', '/contact',
+    '/privacy', '/terms', '/blog', '/forgot-password', '/reset-password',
+    '/verify-email', '/signin', '/developers',
+    '/dev', '/products',
+    '/generate', '/ai-browser', '/ide',
   ]
-  if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-    return NextResponse.next()
-  }
-
-  // Public page paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide']
-  for (const p of publicPaths) {
+  for (const p of publicPages) {
     if (pathname === p || pathname.startsWith(p + '/')) {
-      return NextResponse.next()
+      return continueRequest()
     }
   }
 
-  // API routes — validate token
+  // Public API paths — auth, health, webhooks, payment (NO AI generation here)
+  const publicApiPaths = [
+    '/api/auth/',
+    '/api/health',
+    '/api/bootstrap-admin',
+    '/api/auth/saml/',
+    '/api/auth/oidc/',
+    '/api/auth/sso/',
+    '/api/auth/twitter/',
+    '/api/webhooks/',
+    '/api/telegram/',
+    '/api/inngest',
+    '/api/harness/',
+    '/api/scim/',
+    '/api/internal/',
+    '/api/cron/',
+    '/api/video/render/process',
+    '/api/queue/process',
+    '/api/payment/verify',
+    '/api/payment/personal',
+    '/api/payment/webhook',
+    '/api/payment/ipn',
+    '/api/payment/bkash-verify',
+    '/api/video/status',
+    '/api/billing/',
+    '/api/dashboard/videos',
+    '/api/storage',
+    '/api/metrics',
+    '/api/invoices',
+    '/api/support-chat',
+    '/api/debug/env',
+    '/api/test-signup',
+    '/api/test-redis',
+    '/api/test-video-gen',
+    '/api/test-bullmq',
+    '/api/email/setup-brevo',
+    '/api/browser/',
+    '/api/ai-gateway/',
+    '/api/keys',
+  ]
   if (pathname.startsWith('/api/')) {
+    const isPublicApi = publicApiPaths.some((p) => pathname === p || pathname.startsWith(p))
+    if (isPublicApi) {
+      return NextResponse.next()
+    }
+    // Protected API — require auth
     if (!authToken) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const payload = await verifyTokenEdge(authToken)
     if (!payload) {
@@ -134,30 +172,49 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-id', payload.id)
     requestHeaders.set('x-user-email', payload.email)
     requestHeaders.set('x-user-name', payload.name)
+    requestHeaders.set('x-user-role', payload.role || 'customer')
     if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
     return NextResponse.next({
       request: { headers: requestHeaders },
     })
   }
 
-  // Protected pages — redirect to login
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-    if (!authToken) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-    const payload = await verifyTokenEdge(authToken)
-    if (!payload) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-    // /admin area requires elevated role
-    if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+  // Protected pages — require auth (internal/dashboard/admin tools)
+  // Pages that REQUIRE login: /dashboard, /admin, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
+  const protectedPages = [
+    '/dashboard', '/admin', '/studio', '/video', '/image',
+    '/voice', '/chat', '/browser', '/game', '/hosting',
+    '/ltx-studio', '/gallery', '/prompts', '/ossu', '/subscription',
+    '/payment', '/profile', '/collab', '/crm',
+    '/editor', '/setup',
+  ]
+  for (const p of protectedPages) {
+    if (pathname === p || pathname.startsWith(p + '/')) {
+      if (!authToken) {
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+      const payload = await verifyTokenEdge(authToken)
+      if (!payload) {
+        return NextResponse.redirect(new URL('/login', request.url))
+      }
+      // Admin pages require admin role
+      if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-user-id', payload.id)
+      requestHeaders.set('x-user-email', payload.email)
+      requestHeaders.set('x-user-name', payload.name)
+      requestHeaders.set('x-user-role', payload.role || 'customer')
+      if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
+      return continueRequest(requestHeaders)
     }
   }
 
-  return NextResponse.next()
+  // Default: allow (for any unmatched paths)
+  return continueRequest()
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image).*)']
+  matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image).*)'],
 }
