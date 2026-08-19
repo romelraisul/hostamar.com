@@ -12,6 +12,8 @@ interface VideoItem {
   status: string
   customerEmail: string
   createdAt: string
+  creditsUsed?: number
+  creditsRemaining?: number
 }
 
 interface QueueItem {
@@ -22,6 +24,8 @@ interface QueueItem {
   attempts: number
   customerEmail: string
   createdAt: string
+  creditsUsed?: number
+  creditsRemaining?: number
 }
 
 export default function AdminVideosPage() {
@@ -30,10 +34,20 @@ export default function AdminVideosPage() {
   const [queue, setQueue] = useState<QueueItem[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'videos' | 'queue'>('queue')
+  const [autoRefresh, setAutoRefresh] = useState(true)
 
   useEffect(() => {
     fetchData()
-  }, [])
+    
+    // Auto-refresh every 10 seconds when on queue tab
+    const interval = setInterval(() => {
+      if (autoRefresh && activeTab === 'queue') {
+        fetchData()
+      }
+    }, 10000)
+    
+    return () => clearInterval(interval)
+  }, [activeTab, autoRefresh])
 
   async function fetchData() {
     try {
@@ -136,6 +150,7 @@ export default function AdminVideosPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Topic</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Credits</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Attempts</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
@@ -155,6 +170,15 @@ export default function AdminVideosPage() {
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-500">{item.customerEmail}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                          <span>💰</span>
+                          <span>Used: {item.creditsUsed || 0}</span>
+                          {item.creditsRemaining !== null && item.creditsRemaining !== undefined && (
+                            <span className="ml-2">| Remaining: {item.creditsRemaining}</span>
+                          )}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(item.status)}`}>
@@ -225,6 +249,7 @@ export default function AdminVideosPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Topic</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Credits</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
                   </tr>
@@ -245,6 +270,15 @@ export default function AdminVideosPage() {
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-500">{video.customerEmail}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                          <span>💰</span>
+                          <span>Used: {video.creditsUsed || 0}</span>
+                          {video.creditsRemaining !== null && video.creditsRemaining !== undefined && (
+                            <span className="ml-2">| Remaining: {video.creditsRemaining}</span>
+                          )}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(video.status)}`}>
