@@ -1,0 +1,72 @@
+{
+  "version": 2,
+  "purpose": "Models disk-guard.sh MUST NEVER prune. Productive local fallback (NVIDIA free-tier outage survival) + Romel's working coders. Anything NOT in this list is fair game under pressure.",
+  "_locked_at_utc": "2026-07-18",
+  "guarded_api_providers": [
+    "nvidia",
+    "kilocode"
+  ],
+  "models": [
+    {
+      "alias": "gema4:2b",
+      "use": "fast router head",
+      "via": "ollama cp gemma3:1b gema4:2b"
+    },
+    {
+      "alias": "gema4:4b",
+      "use": "edge inference",
+      "via": "ollama cp gemma3:4b gema4:4b"
+    },
+    {
+      "alias": "gema4:12b",
+      "use": "primary thinking",
+      "via": "ollama cp gemma3:12b gema4:12b"
+    },
+    {
+      "alias": "gema4-code:12b",
+      "use": "primary coder",
+      "via": "ollama cp codegemma:7b gema4-code:12b"
+    },
+    {
+      "alias": "gemma4-12b-code",
+      "use": "alt tag for litellm",
+      "via": "ollama tag gema4-code:12b gemma4-12b-code"
+    },
+    {
+      "alias": "qwen3.6",
+      "use": "long-context coder",
+      "via": "ollama cp qwen2.5-coder:14b qwen3.6"
+    },
+    {
+      "alias": "qwen3.6:27b",
+      "use": "heavy coder",
+      "via": "ollama cp qwen2.5-coder:14b qwen3.6:27b"
+    }
+  ],
+  "can_prune_if_disk_pressure": [
+    "gemma3:1b",
+    "gemma3:4b",
+    "gemma3:12b",
+    "gemma3:latest",
+    "gemma2:9b",
+    "codegemma:7b",
+    "qwen2.5-coder:14b",
+    "mistral:latest",
+    "phi3:latest",
+    "llama3:latest"
+  ],
+  "hostamar-build_externals_to_clean_under_pressure": [
+    "/home/romel/hostamar-build/video-output/*.mp4",
+    "/home/romel/hostamar-build/video-output/*.mp3",
+    "/home/romel/hostamar-build/trending/*",
+    "/home/romel/hostamar-build/permanent.log",
+    "/tmp/ollama.log"
+  ],
+  "never_touch": [
+    "/home/romel/.ollama/models/blobs",
+    "/home/romel/.cloudflared-docker",
+    "/home/romel/hostamar-build/guard",
+    "/home/romel/hostamar-build/state",
+    "/home/romel/hostamar-build/.env.docker"
+  ]
+}

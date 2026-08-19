@@ -1,0 +1,29 @@
+services:
+  video-api:
+    build:
+      context: ./video-api
+      dockerfile: Dockerfile.v4
+    container_name: hostamar-video
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./video-output:/app/video-output
+      - ./trending:/app/trending
+      - ./copyright:/app/copyright:ro
+      - ./copyright-db:/app/copyright-db
+      - ./cloud-backup:/app/cloud-backup:ro
+      - ./video-pipeline-lowvram/workflows:/app/video-pipeline-lowvram/workflows:ro
+    environment:
+      - ROUTER_URL=http://host.docker.internal:4000/v1
+      - MODEL=hostamar-own-fast
+      - COMFYUI_URL=http://host.docker.internal:8188
+      - LTX_URL=http://host.docker.internal:8189
+      - OPENCUT=http://host.docker.internal:8193
+      - CHATTERBOX=http://host.docker.internal:8190
+      - ACE_STEP=http://host.docker.internal:8191
+      - INFINITALK=http://host.docker.internal:8192
+      - BUILD_DIR=/app
+      - LITELLM_API_KEY=${LITELLM_API_KEY:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

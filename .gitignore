@@ -121,3 +121,8 @@ video-pipeline-lowvram/output/
 Dockerfile.bak.*
 test-autonomous-video.mjs
 voice-call-test_*.json
+
+# Netlify
+.netlify/.cloudflared/.api_token
+.env.migrate
+.vercel.env

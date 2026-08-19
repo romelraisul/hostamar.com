@@ -1,0 +1,16 @@
++ set -uo pipefail
++ URL=http://127.0.0.1:8188
++++ dirname smoke-test-8gb.sh
+++ cd ./workflows/lowvram
+++ pwd
++ WF_DIR=/home/romel/hostamar-build/video-pipeline-lowvram/workflows/lowvram
++ OUT_DIR=output
++ mkdir -p output
++ REPORT=SMOKE_REPORT_8GB.md
++ :
++ RES=512x768
++ FRAMES=49
++ PASS=0
++ FAIL=0
+smoke-test-8gb.sh: line 73: syntax error near unexpected token `('
+smoke-test-8gb.sh: line 73: `log "# 8GB smoke test (RES=$RES FRAMES=$FRAMES)"'

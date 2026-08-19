@@ -1,0 +1,12 @@
+# Orchestrator image for hostamar-video-v4-real (app.py).
+# Lightweight: fastapi + requests only (no torch/comfy — those run in sidecar services).
+FROM python:3.11-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY requirements.v4.txt .
+RUN pip install --no-cache-dir -r requirements.v4.txt
+COPY app.py ./
+COPY copyright ./copyright
+COPY common ./common
+EXPOSE 3000
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "3000"]

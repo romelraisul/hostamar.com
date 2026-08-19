@@ -25,7 +25,7 @@ export default function RoadmapPage() {
           <span className="inline-block rounded-full bg-[#0E7C3A]/10 px-3 py-1 text-sm font-semibold text-[#0E7C3A]">
             রোডম্যাপ
           </span>
-          <h1 className="mt-4 font-hind text-4xl font-bold tracking-tight">
+          <h1 className="mt-4 bangla text-4xl font-bold tracking-tight">
             আমরা কোন দিকে যাচ্ছি
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-zinc-600">
@@ -36,7 +36,7 @@ export default function RoadmapPage() {
 
         {/* This quarter highlight */}
         <section className="mb-14 rounded-2xl border border-[#0E7C3A]/30 bg-[#0E7C3A]/5 p-7">
-          <h2 className="mb-4 font-hind text-2xl font-bold text-[#0E7C3A]">
+          <h2 className="mb-4 bangla text-2xl font-bold text-[#0E7C3A]">
             এই কোয়ার্টারে (Q3 2026)
           </h2>
           <ul className="grid gap-2 md:grid-cols-2">
@@ -57,7 +57,7 @@ export default function RoadmapPage() {
           if (!items.length) return null
           return (
             <section key={q} className="mb-10">
-              <h2 className="mb-4 font-hind text-xl font-bold">{q}</h2>
+              <h2 className="mb-4 bangla text-xl font-bold">{q}</h2>
               <div className="grid gap-3 md:grid-cols-2">
                 {items.map((it, i) => (
                   <div key={i} className="rounded-xl border border-zinc-200 bg-white p-4">
@@ -72,13 +72,13 @@ export default function RoadmapPage() {
 
         {/* Per-product deep dive */}
         <section className="mt-16">
-          <h2 className="mb-6 font-hind text-2xl font-bold">প্রোডাক্ট অনুযায়ী</h2>
+          <h2 className="mb-6 bangla text-2xl font-bold">প্রোডাক্ট অনুযায়ী</h2>
           <div className="space-y-6">
             {PRODUCTS.map((p) => (
               <div key={p.slug} className="rounded-2xl border border-zinc-200 bg-white p-6">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{p.emoji}</span>
-                  <h3 className="font-hind text-lg font-bold">{p.nameBn}</h3>
+                  <h3 className="bangla text-lg font-bold">{p.nameBn}</h3>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
                     {p.badge}
                   </span>

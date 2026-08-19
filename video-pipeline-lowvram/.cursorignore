@@ -1,0 +1,10 @@
+# Permanent indexing protection — Hermes/IDE must never recursively scan these.
+# Root cause of past hangs: opening hostamar-build root indexed models/ (115G)
+# and node_modules/ -> RAM 100% -> WSL crash -> daemon.json \x00 -> Docker dead.
+# RULE: always open video-pipeline-lowvram/ directly, never hostamar-build root.
+models/
+node_modules/
+.next/
+output/
+*.safetensors
+*.gguf
