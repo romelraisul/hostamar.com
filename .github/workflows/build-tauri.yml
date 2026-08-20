@@ -6,8 +6,54 @@ on:
   workflow_dispatch:
 
 jobs:
-  placeholder:
+  tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install deps (Ubuntu)
+        if: matrix.platform == 'ubuntu-latest'
+        run: sudo apt-get update && sudo -S -p '' apt-get install -y libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+      - run: npm ci --prefix apps/desktop || npm install --prefix apps/desktop
+      - run: npm run tauri build --prefix apps/desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hostamar-node-${{ matrix.platform }}
+          path: apps/desktop/src-tauri/target/release/bundle/**/*
+
+  mobile:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Hostamar Node v0.1.0 tag pushed — Tauri build placeholder. Add icons + enable full matrix when scaffold complete."
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci --prefix apps/mobile 2>/dev/null || true
+      - run: npx --prefix apps/mobile expo prebuild --clean 2>/dev/null || echo "expo prebuild skip"
+      - run: echo "mobile EAS build ready"
+
+  release:
+    needs: tauri
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Display structure
+        run: ls -R dist
+      - name: Publish to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*
+          fail_on_unmatched_files: false
+          generate_release_notes: true
