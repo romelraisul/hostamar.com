@@ -31,7 +31,7 @@
       ],
       "foregroundService": {
         "notificationTitle": "Hostamar Node Online 6000",
-        "notificationText": "Phone datacenter — tunnel + gateway alive"
+        "notificationText": "Phone datacenter \u2014 tunnel + gateway alive"
       }
     },
     "ios": {
