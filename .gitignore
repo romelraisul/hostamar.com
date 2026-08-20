@@ -129,3 +129,4 @@ voice-call-test_*.json
 
 # Tauri / Rust
 apps/desktop/src-tauri/target/
+camofox/
