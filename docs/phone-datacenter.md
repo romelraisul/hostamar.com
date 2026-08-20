@@ -14,3 +14,8 @@ Windows host may sleep. Phone stays online and serves browser/comfy via tunnel f
 
 ## Verify
 PC down → phone tunnel up → `curl -I https://browser.hostamar.com` still 200 via FALLBACK_URL/phone.
+
+## Dev IDE + AI Android (v0.1.5)
+- /dev — Monaco + File Explorer + Terminal + AI Chat 93 models, credit 6000 #0E7C3A, Run (5) Build (100)
+- /dev/android — prompt "Build todo app" → Expo 51 → Build APK 0 Taka (gradle local, no EXPO_TOKEN)
+- Desktop Dev tab embeds http://127.0.0.1:3000/dev via webview + Tauri shell plugin — builds locally 0 Taka
