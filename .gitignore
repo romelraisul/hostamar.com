@@ -132,3 +132,6 @@ apps/desktop/src-tauri/target/
 camofox/
 comfyui/custom_nodes/ComfyUI-AnimateDiff-Evolved
 comfyui/custom_nodes/ComfyUI-VideoHelperSuite
+apps/mobile/.expo/
+apps/mobile/android/
+apps/mobile/package-lock.json
