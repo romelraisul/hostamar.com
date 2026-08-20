@@ -1,6 +1,6 @@
 {
   "name": "hostamar-platform",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Hostamar.com - Cloud Hosting + AI Video Marketing Platform",
   "scripts": {
     "dev": "next dev",
