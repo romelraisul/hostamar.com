@@ -22,7 +22,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo -S -p '' apt-get update
-          sudo -S -p '' apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libsoup-3.0-dev libsoup2.4-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev
+          sudo -S -p '' apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev patchelf libsoup-3.0-dev libsoup2.4-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev
           for f in /usr/lib/pkgconfig/javascriptcoregtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/javascriptcoregtk-4.1.pc; do
             if [ -f "$f" ]; then sudo cp "$f" "$(dirname "$f")/javascriptcoregtk-4.0.pc" && echo "jsc compat $f -> 4.0"; fi
           done
