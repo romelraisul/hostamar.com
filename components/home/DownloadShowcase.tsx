@@ -2,13 +2,13 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const RELEASE = 'v0.1.0'
-const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.0'
+const RELEASE = 'v0.1.2'
+const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.2'
 const LINKS = [
   { os: 'Windows', file: 'Hostamar-Node_x64_en-US.msi', label: 'Download for Windows', icon: '🪟', href: `${GH}/Hostamar-Node_x64_en-US.msi`, secondary: `${GH}/Hostamar-Node_x64-setup.exe` },
-  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', label: 'Download for Linux', icon: '🐧', href: `${GH}/Hostamar-Node_1.0.0_amd64.deb`, secondary: `${GH}/Hostamar-Node_1.0.0_amd64.AppImage` },
-  { os: 'macOS', file: 'Hostamar-Node_x64.dmg', label: 'Download for Mac', icon: '🍎', href: `${GH}/Hostamar-Node_x64.dmg`, secondary: null },
-  { os: 'Android', file: 'Hostamar-Node.apk', label: 'Download for Android', icon: '🤖', href: `${GH}/Hostamar-Node.apk`, secondary: null },
+  { os: 'macOS', file: 'Hostamar-Node_aarch64.dmg', label: 'Download for Mac', icon: '🍎', href: `${GH}/Hostamar-Node_aarch64.dmg`, secondary: null },
+  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', label: 'Download for Linux', icon: '🐧', href: 'https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2', secondary: null },
+  { os: 'Android', file: 'Hostamar-Node.apk', label: 'Download for Android', icon: '🤖', href: 'https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2', secondary: null },
   { os: 'iOS', file: 'TestFlight', label: 'Join TestFlight', icon: '📱', href: 'https://testflight.apple.com/join/hostamar', secondary: null },
 ]
 
@@ -98,7 +98,7 @@ export default function DownloadShowcase() {
 
       {/* Sticky CTA */}
       <div className="sticky bottom-0 bg-white/80 backdrop-blur border-t px-5 py-3 flex items-center justify-between gap-3">
-        <span className="text-sm"><span className="font-bold">Download for {os}</span> • v0.1.0 • {primary.file}</span>
+        <span className="text-sm"><span className="font-bold">Download for {os}</span> • v0.1.2 • {primary.file}</span>
         <a href={primary.href} className="rounded-full bg-[#0E7C3A] text-white px-5 py-2 text-sm font-bold hover:bg-[#0c6a32]">Download →</a>
       </div>
     </section>
