@@ -7,7 +7,7 @@ const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.2
 const LINKS = [
   { os: 'Windows', file: 'Hostamar-Node_x64_en-US.msi', label: 'Download for Windows', icon: '🪟', href: `${GH}/Hostamar-Node_x64_en-US.msi`, secondary: `${GH}/Hostamar-Node_x64-setup.exe` },
   { os: 'macOS', file: 'Hostamar-Node_aarch64.dmg', label: 'Download for Mac', icon: '🍎', href: `${GH}/Hostamar-Node_aarch64.dmg`, secondary: null },
-  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', label: 'Download for Linux', icon: '🐧', href: 'https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2', secondary: null },
+  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', label: 'Download for Linux', icon: '🐧', href: `${GH}/Hostamar-Node_1.0.0_amd64.deb`, secondary: `${GH}/Hostamar-Node_1.0.0_amd64.AppImage` },
   { os: 'Android', file: 'Hostamar-Node.apk', label: 'Download for Android', icon: '🤖', href: 'https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2', secondary: null },
   { os: 'iOS', file: 'TestFlight', label: 'Join TestFlight', icon: '📱', href: 'https://testflight.apple.com/join/hostamar', secondary: null },
 ]

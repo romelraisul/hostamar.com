@@ -6,8 +6,8 @@
 |---|---|---|---|---|
 | Windows | Hostamar-Node_x64_en-US.msi | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.2/Hostamar-Node_x64_en-US.msi | 3.3 MB | windows-latest |
 | Windows | Hostamar-Node_x64-setup.exe (NSIS) | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.2/Hostamar-Node_x64-setup.exe | same |
-| Linux | Hostamar-Node_1.0.0_amd64.deb | https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2 | pending — ubuntu noble fix next push |
-| Linux | Hostamar-Node_1.0.0_amd64.AppImage | https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2 | pending |
+| Linux | Hostamar-Node_1.0.0_amd64.deb | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.2/Hostamar-Node_1.0.0_amd64.deb | 5.1 MB | ubuntu-latest |
+| Linux | Hostamar-Node_1.0.0_amd64.AppImage | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.2/Hostamar-Node_1.0.0_amd64.AppImage | 87 MB | same |
 | Mac | Hostamar-Node_aarch64.dmg | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.2/Hostamar-Node_aarch64.dmg | 3.7 MB | macos-latest |
 | Android | Hostamar-Node.apk | https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2 | pending — EAS build next |
 | iOS | TestFlight | https://testflight.apple.com/join/hostamar | `eas build --platform ios` |
