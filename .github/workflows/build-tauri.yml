@@ -20,7 +20,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install deps (Ubuntu)
         if: matrix.platform == 'ubuntu-latest'
-        run: sudo apt-get update && sudo -S -p '' apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libsoup-3.0-dev libsoup2.4-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev && sudo bash -c 'pc=$(pkg-config --variable pc_path pkg-config | cut -d: -f1); for f in /usr/lib/pkgconfig/javascriptcoregtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/javascriptcoregtk-4.1.pc; do if [ -f "$f" ]; then cp "$f" "$(dirname "$f")/javascriptcoregtk-4.0.pc" && echo "jsc compat $f -> 4.0"; fi; done; for f in /usr/lib/pkgconfig/webkit2gtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/webkit2gtk-4.1.pc; do if [ -f "$f" ]; then cp "$f" "$(dirname "$f")/webkit2gtk-4.0.pc" && echo "webkit compat $f -> 4.0"; fi; done'
+        run: |
+          sudo -S -p '' apt-get update
+          sudo -S -p '' apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libsoup-3.0-dev libsoup2.4-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev
+          for f in /usr/lib/pkgconfig/javascriptcoregtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/javascriptcoregtk-4.1.pc; do
+            if [ -f "$f" ]; then sudo cp "$f" "$(dirname "$f")/javascriptcoregtk-4.0.pc" && echo "jsc compat $f -> 4.0"; fi
+          done
+          for f in /usr/lib/pkgconfig/webkit2gtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/webkit2gtk-4.1.pc; do
+            if [ -f "$f" ]; then sudo cp "$f" "$(dirname "$f")/webkit2gtk-4.0.pc" && echo "webkit compat $f -> 4.0"; fi
+          done
       - run: npm ci --prefix apps/desktop || npm install --prefix apps/desktop
       - run: npm run tauri build --prefix apps/desktop
       - uses: actions/upload-artifact@v4
