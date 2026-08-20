@@ -3,9 +3,8 @@ on:
   push:
     tags:
       - 'v*'
-    branches-ignore:
-      - '**'
   workflow_dispatch:
+
 jobs:
   tauri:
     strategy:
@@ -21,13 +20,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install deps (Ubuntu)
         if: matrix.platform == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+        run: sudo apt-get update && sudo -S -p '' apt-get install -y libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
       - run: npm ci --prefix apps/desktop || npm install --prefix apps/desktop
       - run: npm run tauri build --prefix apps/desktop
       - uses: actions/upload-artifact@v4
         with:
           name: hostamar-node-${{ matrix.platform }}
           path: apps/desktop/src-tauri/target/release/bundle/**/*
+
   mobile:
     runs-on: ubuntu-latest
     steps:
