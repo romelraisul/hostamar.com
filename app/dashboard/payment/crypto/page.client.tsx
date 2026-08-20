@@ -23,8 +23,8 @@ export default function CryptoPaymentPageClient() {
               <h2 className="text-xl font-bold mb-4">{t('crypto.howItWorks')}</h2>
               <div className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-600 font-bold">1</span>
+                  <div className="w-8 h-8 bg-[#0E7C3A]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-[#0E7C3A] font-bold">1</span>
                   </div>
                   <div>
                     <h3 className="font-semibold">{t('crypto.choosePlan')}</h3>
@@ -32,8 +32,8 @@ export default function CryptoPaymentPageClient() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-600 font-bold">2</span>
+                  <div className="w-8 h-8 bg-[#0E7C3A]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-[#0E7C3A] font-bold">2</span>
                   </div>
                   <div>
                     <h3 className="font-semibold">{t('crypto.sendUSDT')}</h3>
@@ -41,8 +41,8 @@ export default function CryptoPaymentPageClient() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-600 font-bold">3</span>
+                  <div className="w-8 h-8 bg-[#0E7C3A]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-[#0E7C3A] font-bold">3</span>
                   </div>
                   <div>
                     <h3 className="font-semibold">{t('crypto.shareTXID')}</h3>
@@ -50,8 +50,8 @@ export default function CryptoPaymentPageClient() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-600 font-bold">4</span>
+                  <div className="w-8 h-8 bg-[#0E7C3A]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-[#0E7C3A] font-bold">4</span>
                   </div>
                   <div>
                     <h3 className="font-semibold">{t('crypto.getVerified')}</h3>
@@ -66,15 +66,15 @@ export default function CryptoPaymentPageClient() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span>Starter</span>
-                  <span className="font-bold text-blue-600">৳2,000</span>
+                  <span className="font-bold text-[#0E7C3A]">৳2,000</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-[#0E7C3A]/10 border border-[#0E7C3A]/20 rounded-lg">
                   <span className="font-semibold">Business</span>
-                  <span className="font-bold text-blue-600">৳3,500</span>
+                  <span className="font-bold text-[#0E7C3A]">৳3,500</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span>Enterprise</span>
-                  <span className="font-bold text-blue-600">৳6,000</span>
+                  <span className="font-bold text-[#0E7C3A]">৳6,000</span>
                 </div>
               </div>
             </div>

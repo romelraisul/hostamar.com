@@ -7,7 +7,7 @@ export default function CollabHero() {
         <Sparkles className="w-4 h-4" />
         <span>Real-time Collaboration</span>
       </div>
-      <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+      <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-#0E7C3A bg-clip-text text-transparent">
         Code Together, In Real-Time
       </h1>
       <p className="text-xl text-gray-400 max-w-2xl mx-auto">

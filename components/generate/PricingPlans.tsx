@@ -28,7 +28,7 @@ export default function PricingPlans({ tiers, onSelectTier, showPayment, selecte
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {tiers.map((tier, idx) => (
           <div key={tier.name} className={`relative rounded-2xl p-6 transition-all ${
-            idx === 2 ? 'bg-blue-600 text-white shadow-2xl scale-105 ring-2 ring-blue-300' : 'bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg'
+            idx === 2 ? 'bg-[#0E7C3A] text-white shadow-2xl scale-105 ring-2 ring-#0E7C3A' : 'bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg'
           }`}>
             {idx === 2 && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-1 rounded-full text-sm font-bold">⭐ জনপ্রিয়</div>}
             <div className="text-center mb-4">
@@ -47,7 +47,7 @@ export default function PricingPlans({ tiers, onSelectTier, showPayment, selecte
             </ul>
             <button onClick={() => onSelectTier(tier.name)}
               className={`w-full py-3 rounded-xl font-bold transition-all ${
-                idx === 2 ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-blue-600 text-white hover:bg-blue-700'
+                idx === 2 ? 'bg-white text-[#0E7C3A] hover:bg-[#0E7C3A]/10' : 'bg-[#0E7C3A] text-white hover:bg-[#0A5A2B]'
               }`}>
               {tier.name === 'Free' ? 'শুরু করুন (মুক্ত)' : 'কিনুন'}
             </button>

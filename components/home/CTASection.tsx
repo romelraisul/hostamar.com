@@ -7,7 +7,7 @@ export default function CTASection() {
   const isBengali = locale === 'bn'
 
   return (
-    <section className="py-20 bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-800 dark:to-blue-900">
+    <section className="py-20 bg-gradient-to-r from-emerald-600 to-#0E7C3A dark:from-emerald-800 dark:to-green-900">
       <div className="max-w-4xl mx-auto px-4 text-center text-white">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
           {isBengali ? 'আজই শুরু করুন — ৳0 থেকে' : 'Start today — from ৳0'}

@@ -16,15 +16,15 @@ function ProgressIndicator({ progress }: { progress: number }) {
       <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-xl overflow-hidden">
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
           <div className="bg-white/20 rounded-full h-3 overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${Math.min(progress, 100)}%` }} />
+            <div className="h-full bg-[#0E7C3A]/100 rounded-full transition-all duration-500 ease-out" style={{ width: `${Math.min(progress, 100)}%` }} />
           </div>
           <p className="text-white text-sm mt-2 font-medium">{Math.round(progress)}% সম্পন্ন...</p>
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-16 h-16 border-4 border-[#0E7C3A] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-white font-medium text-lg">AI কাজ করছে...</p>
-            <p className="text-blue-200 text-sm mt-1">
+            <p className="text-#0E7C3A text-sm mt-1">
               {progress < 30 ? 'ভিডিও স্ক্রিপ্ট লেখা হচ্ছে...' :
                progress < 60 ? 'ভিডিও জেনারেট হচ্ছে...' :
                progress < 90 ? 'অডিও যোগ করা হচ্ছে...' : 'শেষ স্পর্শ দেওয়া হচ্ছে...'}
@@ -47,7 +47,7 @@ function VideoResult({ url }: { url: string }) {
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
         <CopyUrlButton url={typeof window !== 'undefined' ? window.location.origin + url : (process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com') + url} />
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">✏️ সম্পাদনা করুন</button>
+        <button className="px-4 py-2 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B] transition">✏️ সম্পাদনা করুন</button>
         <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">📤 ডাউনলোড</button>
         <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">📱 শেয়ার করুন</button>
       </div>
@@ -74,15 +74,15 @@ export default function VideoPreview({ isGenerating, generatedUrl, progress, sta
         <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700 rounded-xl overflow-hidden">
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
             <div className="bg-white/20 rounded-full h-3 overflow-hidden">
-              <div className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out" style={{ width: `${Math.min(progress, 100)}%` }} />
+              <div className="h-full bg-[#0E7C3A]/100 rounded-full transition-all duration-500 ease-out" style={{ width: `${Math.min(progress, 100)}%` }} />
             </div>
             <p className="text-white text-sm mt-2 font-medium">{Math.round(progress)}% সম্পন্ন...</p>
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <div className="w-16 h-16 border-4 border-[#0E7C3A] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
               <p className="text-white font-medium text-lg">AI কাজ করছে...</p>
-              <p className="text-blue-200 text-sm mt-1">
+              <p className="text-#0E7C3A text-sm mt-1">
                 {progress < 30 ? 'ভিডিও স্ক্রিপ্ট লেখা হচ্ছে...' :
                  progress < 60 ? 'ভিডিও জেনারেট হচ্ছে...' :
                  progress < 90 ? 'অডিও যোগ করা হচ্ছে...' : 'শেষ স্পর্শ দেওয়া হচ্ছে...'}

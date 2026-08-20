@@ -13,7 +13,7 @@ export default function PlanSelector({ selectedPlan, onSelect, disabled }: PlanS
   return (
     <div>
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <Shield className="w-5 h-5 text-blue-400" />
+        <Shield className="w-5 h-5 text-[#0E7C3A]" />
         প্ল্যান নির্বাচন করুন
         <span className="text-sm text-gray-500 font-normal ml-2">(Select Plan)</span>
       </h3>
@@ -25,7 +25,7 @@ export default function PlanSelector({ selectedPlan, onSelect, disabled }: PlanS
             disabled={disabled}
             className={`w-full text-left p-4 rounded-xl border transition-all ${
               selectedPlan === key
-                ? 'bg-blue-500/10 border-blue-500/40 shadow-lg shadow-blue-500/10'
+                ? 'bg-[#0E7C3A]/100/10 border-[#0E7C3A]/40 shadow-lg shadow-#0E7C3A/10'
                 : 'bg-gray-900/50 border-gray-800 hover:border-gray-700'
             }`}
           >

@@ -130,9 +130,9 @@ export default function PaymentPage() {
 
         {/* Message Display */}
         {state.message && (state.status as string) !== 'completed' && (
-          <div className="mb-8 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <p className="text-blue-300 text-sm">{state.message}</p>
+          <div className="mb-8 bg-[#0E7C3A]/100/10 border border-[#0E7C3A]/20 rounded-xl p-4 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-[#0E7C3A] flex-shrink-0" />
+            <p className="text-[#0E7C3A] text-sm">{state.message}</p>
           </div>
         )}
 
@@ -163,7 +163,7 @@ export default function PaymentPage() {
               disabled={!selectedPlan || !selectedMethod || !phone || isBusy}
               className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
                 selectedPlan && selectedMethod && phone
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-600/25'
+                  ? 'bg-gradient-to-r from-#0E7C3A to-purple-600 text-white hover:from-#0E7C3A hover:to-purple-500 shadow-lg shadow-#0E7C3A/25'
                   : 'bg-gray-800 text-gray-500 cursor-not-allowed'
               }`}
             >

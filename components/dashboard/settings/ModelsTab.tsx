@@ -46,7 +46,7 @@ export default function ModelsTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-#0E7C3A" />
       </div>
     )
   }
@@ -74,7 +74,7 @@ export default function ModelsTab() {
       </div>
 
       {!hasKey && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+        <div className="rounded-lg border border-[#0E7C3A]/20 bg-[#0E7C3A]/10 px-4 py-3 text-xs text-[#0A5A2B]">
           আপনার এখনো কোনো API key নেই — নিচের `API Keys` ট্যাব থেকে একটি তৈরি করুন যাতে লাইভ মডেল তালিকা দেখতে পারেন।
         </div>
       )}
@@ -87,7 +87,7 @@ export default function ModelsTab() {
                 <p className="font-medium text-gray-900">{m.id}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{m.owned_by || 'hostamar'}</p>
               </div>
-              <span className="rounded bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 uppercase">
+              <span className="rounded bg-[#0E7C3A]/10 px-2 py-0.5 text-[10px] font-semibold text-[#0E7C3A] uppercase">
                 {m.object?.replace('model', 'AI') || 'model'}
               </span>
             </div>

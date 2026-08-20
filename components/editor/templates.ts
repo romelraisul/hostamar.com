@@ -84,7 +84,7 @@ const templates: VideoTemplate[] = [
     colors: {
       primary: '#1E3A5F',    // deep blue
       secondary: '#FFFFFF',  // white
-      accent: '#3B82F6',     // blue-500
+      accent: '#3B82F6',     // #0E7C3A
       background: '#0F172A', // slate-900
       text: '#FFFFFF',       // white text
     },

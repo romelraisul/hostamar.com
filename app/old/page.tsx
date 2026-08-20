@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 // Archived pre-redesign landing page. Kept for reference; not linked from the new nav.
 export default function OldLandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-br from-[#0E7C3A]/10 to-emerald-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
       <Navbar />
       <HeroSection />
       <HowItWorksSection />

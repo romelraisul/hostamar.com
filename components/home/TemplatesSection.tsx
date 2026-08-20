@@ -7,7 +7,7 @@ const TEMPLATES_BN = [
   { name: 'ঈদ উদযাপন', tag: 'ঈদ অফার', emoji: '🌙', bg: 'from-emerald-500/15 to-emerald-500/5' },
   { name: 'পহেলা বৈশাখ', tag: 'নববর্ষ', emoji: '🌿', bg: 'from-red-500/15 to-red-500/5' },
   { name: '১১.১১ সেল', tag: 'মেগা অফার', emoji: '🛍️', bg: 'from-amber-500/15 to-amber-500/5' },
-  { name: 'ব্যবসা প্রোমো', tag: 'প্রোডাক্ট', emoji: '📈', bg: 'from-blue-500/15 to-blue-500/5' },
+  { name: 'ব্যবসা প্রোমো', tag: 'প্রোডাক্ট', emoji: '📈', bg: 'from-#0E7C3A/15 to-#0E7C3A/5' },
   { name: 'ইসলামিক নতুন বছর', tag: 'ধর্মীয়', emoji: '🕌', bg: 'from-green-600/15 to-green-600/5' },
   { name: 'ফুড প্রমো', tag: 'রেস্টুরেন্ট', emoji: '🍜', bg: 'from-orange-500/15 to-orange-500/5' },
 ]
@@ -15,7 +15,7 @@ const TEMPLATES_EN = [
   { name: 'Eid Celebration', tag: 'Eid Offer', emoji: '🌙', bg: 'from-emerald-500/15 to-emerald-500/5' },
   { name: 'Pohela Boishakh', tag: 'New Year', emoji: '🌿', bg: 'from-red-500/15 to-red-500/5' },
   { name: '11.11 Sale', tag: 'Mega Offer', emoji: '🛍️', bg: 'from-amber-500/15 to-amber-500/5' },
-  { name: 'Business Promo', tag: 'Product', emoji: '📈', bg: 'from-blue-500/15 to-blue-500/5' },
+  { name: 'Business Promo', tag: 'Product', emoji: '📈', bg: 'from-#0E7C3A/15 to-#0E7C3A/5' },
   { name: 'Islamic New Year', tag: 'Religious', emoji: '🕌', bg: 'from-green-600/15 to-green-600/5' },
   { name: 'Food Promo', tag: 'Restaurant', emoji: '🍜', bg: 'from-orange-500/15 to-orange-500/5' },
 ]

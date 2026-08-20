@@ -96,7 +96,7 @@ export default function TriagePage() {
                 <p><b>Cause:</b> {item.triage.probableCause}</p>
                 <p><b>Confidence:</b> {(item.triage.confidence * 100).toFixed(0)}%</p>
                 <p><b>Suggested fix:</b> <code className="text-xs bg-slate-100 px-1 rounded">{item.triage.suggestedFix}</code></p>
-                <p><b>Runbook:</b> <a className="text-blue-600" href={item.triage.runbookLink}>{item.triage.runbookLink}</a></p>
+                <p><b>Runbook:</b> <a className="text-[#0E7C3A]" href={item.triage.runbookLink}>{item.triage.runbookLink}</a></p>
                 {item.triage.destructive && <span className="inline-block mt-1 px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs">⚠ DESTRUCTIVE — needs approval</span>}
                 {item.triage.needsHumanApproval && !item.triage.destructive && <span className="inline-block mt-1 px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-xs">needs human approval</span>}
               </div>

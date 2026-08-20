@@ -51,7 +51,7 @@ export default function AdminCustomersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-#0E7C3A" />
       </div>
     )
   }
@@ -77,7 +77,7 @@ export default function AdminCustomersPage() {
           placeholder={t('admin.customers.search')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A] focus:border-transparent"
         />
       </div>
 
@@ -99,8 +99,8 @@ export default function AdminCustomersPage() {
                 <tr key={customer.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-blue-600 font-medium">
+                      <div className="w-10 h-10 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center">
+                        <span className="text-[#0E7C3A] font-medium">
                           {customer.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -128,7 +128,7 @@ export default function AdminCustomersPage() {
                     <div className="flex items-center justify-end gap-2">
                       <button 
                         onClick={() => setSelectedCustomer(customer)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-2 text-gray-400 hover:text-[#0E7C3A] hover:bg-[#0E7C3A]/10 rounded-lg"
                         title={t('admin.customers.viewDetails')}
                       >
                         <Eye className="w-4 h-4" />
@@ -214,13 +214,13 @@ function CustomerDetailModal({
 
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-#0E7C3A" />
           </div>
         ) : (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-2xl text-blue-600 font-bold">
+              <div className="w-16 h-16 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center">
+                <span className="text-2xl text-[#0E7C3A] font-bold">
                   {customer.name.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -255,7 +255,7 @@ function CustomerDetailModal({
             {customerDetails?.subscriptions?.length > 0 && (
               <div>
                 <h4 className="font-semibold mb-2">{t('admin.customers.activeSubscription')}</h4>
-                <div className="bg-blue-50 rounded-lg p-4">
+                <div className="bg-[#0E7C3A]/10 rounded-lg p-4">
                   <p className="font-medium capitalize">{customerDetails.subscriptions[0].plan} Plan</p>
                   <p className="text-sm text-gray-600">৳{customerDetails.subscriptions[0].price}/month</p>
                   <p className="text-xs text-gray-500 mt-1">

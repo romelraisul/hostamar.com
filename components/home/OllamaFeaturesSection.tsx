@@ -5,7 +5,7 @@ import { useLocale } from '@/lib/locale-context'
 export default function OllamaFeaturesSection() {
   const { t } = useLocale()
   return (
-    <section id="ollama-features" className="py-20 bg-gradient-to-r from-indigo-50 to-blue-50">
+    <section id="ollama-features" className="py-20 bg-gradient-to-r from-emerald-50 to-[#0E7C3A]/10">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
           <span className="inline-block px-3 py-1 text-xs font-semibold text-indigo-600 bg-indigo-100 rounded-full mb-4">

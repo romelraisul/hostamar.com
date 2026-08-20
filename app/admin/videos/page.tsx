@@ -82,7 +82,7 @@ export default function AdminVideosPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ready': return 'bg-green-100 text-green-700 border-green-200'
-      case 'processing': return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'processing': return 'bg-[#0E7C3A]/10 text-[#0A5A2B] border-[#0E7C3A]/20'
       case 'completed': return 'bg-green-100 text-green-700 border-green-200'
       case 'failed': return 'bg-red-100 text-red-700 border-red-200'
       case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
@@ -93,7 +93,7 @@ export default function AdminVideosPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-#0E7C3A" />
       </div>
     )
   }
@@ -121,7 +121,7 @@ export default function AdminVideosPage() {
           onClick={() => setActiveTab('queue')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'queue'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#0E7C3A] text-white'
               : 'bg-white border text-gray-600 hover:bg-gray-50'
           }`}
         >
@@ -131,7 +131,7 @@ export default function AdminVideosPage() {
           onClick={() => setActiveTab('videos')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'videos'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#0E7C3A] text-white'
               : 'bg-white border text-gray-600 hover:bg-gray-50'
           }`}
         >
@@ -172,7 +172,7 @@ export default function AdminVideosPage() {
                         <p className="text-sm text-gray-500">{item.customerEmail}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#0E7C3A]/10 text-[#0A5A2B]">
                           <span>💰</span>
                           <span>Used: {item.creditsUsed || 0}</span>
                           {item.creditsRemaining !== null && item.creditsRemaining !== undefined && (
@@ -198,7 +198,7 @@ export default function AdminVideosPage() {
                           {item.status === 'pending' && (
                             <button
                               onClick={() => updateQueueStatus(item.id, 'processing')}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                              className="p-2 text-[#0E7C3A] hover:bg-[#0E7C3A]/10 rounded-lg"
                               title="Start Processing"
                             >
                               <Play className="w-4 h-4" />
@@ -272,7 +272,7 @@ export default function AdminVideosPage() {
                         <p className="text-sm text-gray-500">{video.customerEmail}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#0E7C3A]/10 text-[#0A5A2B]">
                           <span>💰</span>
                           <span>Used: {video.creditsUsed || 0}</span>
                           {video.creditsRemaining !== null && video.creditsRemaining !== undefined && (

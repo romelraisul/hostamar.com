@@ -37,7 +37,7 @@ export default function NotificationsTab({ notifications, setNotifications }: Pr
               type="checkbox"
               checked={notifications[item.key]}
               onChange={() => toggle(item.key)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#0E7C3A] focus:ring-[#0E7C3A]"
             />
             <div>
               <p className="text-sm font-medium text-gray-900">{item.label}</p>

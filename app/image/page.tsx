@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import PromptSuggestions from '@/components/PromptSuggestions'
 
-const GREEN = '#2563EB'
+const GREEN = '#0E7C3A'
 
 export default function ImageGeneratePage() {
   const [prompt, setPrompt] = useState('')
@@ -94,7 +94,7 @@ export default function ImageGeneratePage() {
               onChange={(e) => setPrompt(e.target.value)}
               required
               rows={3}
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#2563EB]"
+              className="w-full px-4 py-3 border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A]"
               placeholder="Professional product photo of a white cotton tajbiya on wooden table, soft lighting, 4K"
             />
           </div>
@@ -104,7 +104,7 @@ export default function ImageGeneratePage() {
             <input
               value={negativePrompt}
               onChange={(e) => setNegativePrompt(e.target.value)}
-              className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#2563EB]"
+              className="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A]"
             />
           </div>
 
@@ -169,7 +169,7 @@ export default function ImageGeneratePage() {
           <button
             type="submit"
             disabled={loading || !prompt.trim()}
-            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] disabled:bg-zinc-300 text-white font-semibold py-3 rounded-xl transition text-[14px]"
+            className="w-full bg-[#0E7C3A] hover:bg-[#0A5A2B] disabled:bg-zinc-300 text-white font-semibold py-3 rounded-xl transition text-[14px]"
           >
             {loading ? `Generating... ${timeElapsed}s` : 'Generate Image'}
           </button>
@@ -177,7 +177,7 @@ export default function ImageGeneratePage() {
 
         {loading && (
           <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6 text-center">
-            <div className="inline-block w-8 h-8 border-4 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+            <div className="inline-block w-8 h-8 border-4 border-[#0E7C3A] border-t-transparent rounded-full animate-spin" />
             <p className="mt-3 text-zinc-600">
               Generating with {model.split('.')[0]}... ({timeElapsed}s)
             </p>

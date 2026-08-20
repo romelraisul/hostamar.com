@@ -118,3 +118,11 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Hostamar green links — not blue */
+a { text-underline-offset: 4px; }
+a:not(.no-green) { color: #0E7C3A; }
+a:not(.no-green):hover { color: #0A5A2B; }
+.prose a { color: #0E7C3A; }
+.prose a:hover { color: #0A5A2B; }
+/* Code blocks stay neutral/blue — override via .prose code */

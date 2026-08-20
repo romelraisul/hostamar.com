@@ -24,7 +24,7 @@ export default function SettingsSidebar({ activeTab, onTabChange }: Props) {
           onClick={() => onTabChange(tab.id)}
           className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === tab.id
-              ? 'bg-blue-50 text-blue-700'
+              ? 'bg-[#0E7C3A]/10 text-[#0A5A2B]'
               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
           }`}
         >

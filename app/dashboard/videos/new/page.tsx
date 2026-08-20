@@ -87,7 +87,7 @@ export default function NewVideoPage() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="উদাহরণ: একটি রঙিন ইসলামিক নতুন বছরের ভিডিও..."
-            className="w-full h-32 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full h-32 p-3 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
             required
             disabled={loading}
           />
@@ -95,7 +95,7 @@ export default function NewVideoPage() {
         <button 
           type="submit" 
           disabled={loading || !prompt.trim()}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="w-full py-3 bg-[#0E7C3A] text-white rounded-lg font-medium hover:bg-[#0A5A2B] disabled:opacity-50 transition-colors"
         >
           {loading ? 'ভিডিও তৈরি হচ্ছে...' : 'ভিডিও তৈরি করুন'}
         </button>

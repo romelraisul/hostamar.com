@@ -92,7 +92,7 @@ export default function AdminOrdersClient() {
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
           <div className="text-sm text-slate-400">Revenue</div>
-          <div className="text-2xl font-semibold text-blue-400">{formatCurrency(stats.revenue)}</div>
+          <div className="text-2xl font-semibold text-[#0E7C3A]">{formatCurrency(stats.revenue)}</div>
         </div>
       </div>
 

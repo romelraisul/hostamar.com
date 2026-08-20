@@ -45,7 +45,7 @@ export default function PromptsPage() {
   const { t } = useLocale()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:to-slate-800 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0E7C3A]/10 to-emerald-50 dark:from-slate-900 dark:to-slate-800 py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -63,7 +63,7 @@ export default function PromptsPage() {
               className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#0E7C3A] dark:text-[#0E7C3A] uppercase tracking-wider">
                   {t(`prompts.category.${p.cat}`)}
                 </span>
               </div>
@@ -77,7 +77,7 @@ export default function PromptsPage() {
                 {p.bodyEn}
               </p>
               <button
-                className="mt-4 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"
+                className="mt-4 px-4 py-2 bg-[#0E7C3A]/10 dark:bg-[#0E7C3A]/20 text-[#0A5A2B] dark:text-[#0E7C3A] rounded-lg text-sm font-medium hover:bg-[#0E7C3A]/20 dark:hover:bg-[#0E7C3A]/30 transition"
                 onClick={() => {
                   if (typeof navigator !== 'undefined' && navigator.clipboard) {
                     navigator.clipboard.writeText(p.bodyEn)
@@ -92,7 +92,7 @@ export default function PromptsPage() {
 
         <div className="text-center mt-12">
           <button
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition"
+            className="px-6 py-3 bg-[#0E7C3A] hover:bg-[#0A5A2B] text-white font-semibold rounded-xl shadow-lg transition"
             onClick={() => {
               if (typeof navigator !== 'undefined' && navigator.clipboard) {
                 navigator.clipboard.writeText(JSON.stringify(PROMPTS, null, 2))

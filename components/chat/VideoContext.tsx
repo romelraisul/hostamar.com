@@ -54,7 +54,7 @@ export default function VideoContext({ selectedVideoId, onSelectVideo }: VideoCo
             <button
               onClick={() => onSelectVideo('', '')}
               className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-white/5 ${
-                selectedVideoId === '' || selectedVideoId === null ? 'bg-blue-500/10 text-blue-400' : 'text-gray-300'
+                selectedVideoId === '' || selectedVideoId === null ? 'bg-[#0E7C3A]/100/10 text-[#0E7C3A]' : 'text-gray-300'
               }`}
             >
               General Chat (no specific video)
@@ -64,7 +64,7 @@ export default function VideoContext({ selectedVideoId, onSelectVideo }: VideoCo
                 key={v.id}
                 onClick={() => onSelectVideo(v.id, v.title)}
                 className={`w-full text-left px-4 py-3 transition-colors hover:bg-white/5 ${
-                  selectedVideoId === v.id ? 'bg-blue-500/10 border-l-2 border-blue-400' : ''
+                  selectedVideoId === v.id ? 'bg-[#0E7C3A]/100/10 border-l-2 border-#0E7C3A' : ''
                 }`}
               >
                 <p className="text-sm font-medium text-white truncate">{v.title}</p>

@@ -32,7 +32,7 @@ export default function DevChat({ tool }: { tool: string }) {
     <div className="mt-4">
       <div className="space-y-2">
         {messages.map((m, i) => (
-          <div key={i} className={`rounded p-3 ${m.role === 'user' ? 'bg-blue-50 text-blue-900' : 'bg-gray-100 text-gray-900'}`}>
+          <div key={i} className={`rounded p-3 ${m.role === 'user' ? 'bg-[#0E7C3A]/10 text-[#062B1A]' : 'bg-gray-100 text-gray-900'}`}>
             <strong>{m.role === 'user' ? 'You' : 'AI'}:</strong> {m.content}
           </div>
         ))}

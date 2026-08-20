@@ -37,7 +37,7 @@ export default function PaymentInstructions({ state, onVerify, onReset, copied, 
       <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
         <div className="text-xs text-gray-500 mb-1">Transaction ID</div>
         <div className="flex items-center justify-between">
-          <code className="text-sm font-mono text-blue-400">{state.trxId}</code>
+          <code className="text-sm font-mono text-[#0E7C3A]">{state.trxId}</code>
           <button
             onClick={onCopy}
             className="p-2 hover:bg-gray-700/50 rounded-lg transition"
@@ -57,7 +57,7 @@ export default function PaymentInstructions({ state, onVerify, onReset, copied, 
       <ol className="space-y-4 mb-8">
         {state.instructions.map((instruction, i) => (
           <li key={i} className="flex gap-3">
-            <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 rounded-full flex items-center justify-center text-xs text-blue-400 font-semibold">
+            <span className="flex-shrink-0 w-6 h-6 bg-[#0E7C3A]/20 rounded-full flex items-center justify-center text-xs text-[#0E7C3A] font-semibold">
               {i + 1}
             </span>
             <span className="text-sm text-gray-300 leading-relaxed">{instruction}</span>

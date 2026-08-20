@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Check, X, ShieldCheck, Sparkles } from 'lucide-react'
 
 // Locked brand
-const PRIMARY = '#2563EB'
+const PRIMARY = '#0E7C3A'
 const ACCENT = '#F59E0B'
 const TEXT = '#0F172A'
 const MUTED = '#475569'
@@ -129,9 +129,9 @@ export default function PricingPage() {
       <div className="w-full bg-[#F8FAFC] border-b border-[#E2E8F0]">
         <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 py-2 flex flex-wrap items-center justify-center gap-2 text-[12px]">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#E2E8F0] px-2.5 py-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#2563EB]" /> ৭ দিন মানি-ব্যাক গ্যারান্টি
+            <ShieldCheck className="h-3.5 w-3.5 text-[#0E7C3A]" /> ৭ দিন মানি-ব্যাক গ্যারান্টি
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] text-white px-2.5 py-1 font-semibold">bKash • Nagad • Rocket</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0E7C3A] text-white px-2.5 py-1 font-semibold">bKash • Nagad • Rocket</span>
           <span className="text-[#475569]">ক্রেডিট কার্ড লাগবে না</span>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 pt-8 sm:pt-12 md:pt-16 pb-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-1 text-[12px] font-medium text-[#475569]">
-          <Sparkles className="h-3.5 w-3.5 text-[#2563EB]" /> Simple Pricing
+          <Sparkles className="h-3.5 w-3.5 text-[#0E7C3A]" /> Simple Pricing
         </div>
         <h1 className="mt-4 text-[30px] sm:text-[36px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.05]">
           AI + হোস্টিং, <span style={{ color: PRIMARY }}>এক দামে</span>
@@ -179,13 +179,13 @@ export default function PricingPage() {
                 key={p.id}
                 className={`relative flex flex-col rounded-[20px] border bg-white p-5 sm:p-6 ${
                   isPopular
-                    ? 'border-[#2563EB] shadow-[0_16px_40px_-16px_rgba(37,99,235,0.35)] ring-1 ring-[#2563EB]/15 md:-mt-2 md:pb-8'
+                    ? 'border-[#0E7C3A] shadow-[0_16px_40px_-16px_rgba(14,124,58,0.35)] ring-1 ring-[#0E7C3A]/15 md:-mt-2 md:pb-8'
                     : 'border-[#E2E8F0]'
                 }`}
               >
                 {p.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <div className="rounded-full bg-[#2563EB] px-3 py-1 text-[11px] font-bold text-white shadow">{p.badge}</div>
+                    <div className="rounded-full bg-[#0E7C3A] px-3 py-1 text-[11px] font-bold text-white shadow">{p.badge}</div>
                   </div>
                 )}
                 <div>
@@ -206,7 +206,7 @@ export default function PricingPage() {
                 <ul className="mt-5 space-y-2.5">
                   {p.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-[13px] leading-6">
-                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-white">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0E7C3A] text-white">
                         <Check className="h-3 w-3" />
                       </span>
                       <span className="text-[#334155]">{f}</span>
@@ -228,7 +228,7 @@ export default function PricingPage() {
                       onClick={() => startCheckout(p.id as 'starter' | 'pro')}
                       disabled={checkoutPlan !== null}
                       data-ga="pricing_click"
-                      className="flex h-11 w-full items-center justify-center rounded-full bg-[#2563EB] text-[14px] font-semibold text-white hover:bg-[#1D4ED8] disabled:opacity-60 shadow-[0_8px_20px_-10px_rgba(37,99,235,0.6)]"
+                      className="flex h-11 w-full items-center justify-center rounded-full bg-[#0E7C3A] text-[14px] font-semibold text-white hover:bg-[#0A5A2B] disabled:opacity-60 shadow-[0_8px_20px_-10px_rgba(14,124,58,0.6)]"
                     >
                       {checkoutPlan === p.id ? 'bKash-এ নিয়ে যাচ্ছি…' : `${p.cta} — bKash`}
                     </button>
@@ -253,7 +253,7 @@ export default function PricingPage() {
                 <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
                   <th className="px-4 py-3 text-left font-semibold text-[#475569]">ফিচার</th>
                   <th className="px-4 py-3 text-center font-semibold text-[#475569]">HostSeba (৳২২০০/yr)</th>
-                  <th className="px-4 py-3 text-center font-semibold text-[#2563EB]">Hostamar (৳২,০০০/yr)</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#0E7C3A]">Hostamar (৳২,০০০/yr)</th>
                 </tr>
               </thead>
               <tbody>
@@ -264,14 +264,14 @@ export default function PricingPage() {
                       <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-[#94A3B8]" /> {r.hostSeba}</span>
                     </td>
                     <td className="px-4 py-3 text-center font-semibold text-[#0F172A]">
-                      <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-[#2563EB]" /> {r.hostamar}</span>
+                      <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-[#0E7C3A]" /> {r.hostamar}</span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="border-t border-[#E2E8F0] bg-[#2563EB]/5 px-4 py-3 text-center text-[13px] font-semibold text-[#0F172A]">
+          <div className="border-t border-[#E2E8F0] bg-[#0E7C3A]/5 px-4 py-3 text-center text-[13px] font-semibold text-[#0F172A]">
             একই ৳২,০০০-এ হোস্টিং + ৫০+ বাংলা টেমপ্লেট + bKash — ৩× ভ্যালু
           </div>
         </div>
@@ -283,7 +283,7 @@ export default function PricingPage() {
           <div className="rounded-[19px] bg-white px-6 py-6 sm:py-8 text-center">
             <h3 className="text-[18px] sm:text-[20px] font-bold">ফ্রিতে শুরু করুন — ৭ দিন মানি-ব্যাক</h3>
             <p className="mt-1 text-[13px] text-[#475569]">SSL সুরক্ষিত • ভ্যাট সহ ইনভয়েস • যেকোনো সময় Cancel</p>
-            <Link href="/generate" className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[#2563EB] px-6 text-[14px] font-semibold text-white hover:bg-[#1D4ED8]">
+            <Link href="/generate" className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[#0E7C3A] px-6 text-[14px] font-semibold text-white hover:bg-[#0A5A2B]">
               ফ্রিতে ভিডিও বানান - ৳০
             </Link>
           </div>
