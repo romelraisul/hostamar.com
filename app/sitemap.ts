@@ -32,6 +32,9 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/beta', changeFrequency: 'monthly', priority: 0.4 },
   { path: '/ossu', changeFrequency: 'weekly', priority: 0.5 },
   { path: '/ossu/curriculum', changeFrequency: 'weekly', priority: 0.5 },
+  { path: '/download', changeFrequency: 'daily', priority: 0.9 },
+  { path: '/dev', changeFrequency: 'daily', priority: 0.8 },
+  { path: '/dev/android', changeFrequency: 'weekly', priority: 0.7 },
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {
