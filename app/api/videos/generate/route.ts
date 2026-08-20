@@ -52,6 +52,11 @@ export async function POST(req: NextRequest) {
         try { fallback = await prisma.customer.create({ data: { id: fallbackId, email: 'guest@hostamar.local', name: 'Guest 0 Taka', password: 'guest' } as any }) } catch {}
       }
       const cid = fallback?.id || fallbackId
+      // Try gateway ffmpeg first (C:\hostamar local), fallback to copying existing public/showcase file
+      try {
+        const gw = await fetch("http://127.0.0.1:3000/v1/videos/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ title: body.title||"6y7", topic: body.topic||"y78", videoId: "cmt"+Date.now().toString(36) }) } as any).catch(()=>null) as any
+        if (gw?.ok) { const j=await gw.json(); console.log("gateway video", j.videoUrl) }
+      } catch {}
       const video = await prisma.video.create({
         data: {
           title: body.title || "6y7",
