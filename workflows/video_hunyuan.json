@@ -1,0 +1,10 @@
+{
+  "1": {"class_type": "HyVideoModelLoader", "inputs": {"model": "hunyuan-video-t2v-720p-Q4_K_S.gguf"}},
+  "7": {"class_type": "HyVideoVAELoader", "inputs": {}},
+  "16": {"class_type": "DownloadAndLoadHyVideoTextEncoder", "inputs": {}},
+  "30": {"class_type": "HyVideoTextEncode", "inputs": {"prompt": "Bangladeshi Eid marketing video, shop owner smiling, vibrant colors, 6y7 y78", "clip_l": "", "text_encoders": ["16", 0]}},
+  "3": {"class_type": "HyVideoSampler", "inputs": {"model": ["1", 0], "hyvid_embeds": ["30", 0], "samples": ["10", 0]}},
+  "10": {"class_type": "HyVideoEmptyLatent", "inputs": {"width": 832, "height": 480, "length": 49, "batch_size": 1}},
+  "5": {"class_type": "HyVideoDecode", "inputs": {"vae": ["7", 0], "samples": ["3", 0]}},
+  "34": {"class_type": "VHS_VideoCombine", "inputs": {"images": ["5", 0], "frame_rate": 24, "loop_count": 0, "filename_prefix": "hostamar", "format": "video/h264-mp4", "pix_fmt": "yuv420p", "save_output": true}}
+}
