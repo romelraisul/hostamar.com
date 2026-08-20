@@ -42,9 +42,22 @@ jobs:
       - run: npm ci --prefix apps/desktop || npm install --prefix apps/desktop
       - run: npm run tauri build --prefix apps/desktop
       - uses: actions/upload-artifact@v4
+        if: matrix.platform != 'ubuntu-latest'
         with:
           name: hostamar-node-${{ matrix.platform }}
           path: apps/desktop/src-tauri/target/release/bundle/**/*
+      - uses: actions/upload-artifact@v4
+        if: matrix.platform == 'ubuntu-latest'
+        with:
+          name: hostamar-node-deb
+          path: apps/desktop/src-tauri/target/release/bundle/deb/*.deb
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: matrix.platform == 'ubuntu-latest'
+        with:
+          name: hostamar-node-appimage
+          path: apps/desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
 
   mobile:
     runs-on: ubuntu-latest
