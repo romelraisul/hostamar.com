@@ -16,18 +16,18 @@ export async function GET(req: NextRequest){
       id: v.id,
       title: v.title || v.topic || 'Untitled',
       topic: v.topic || '',
-      videoUrl: '',
-      thumbnail: '',
+      videoUrl: `/showcase/${v.id}.mp4`,
+      thumbnail: `/showcase/${v.id}.jpg`,
       createdAt: v.createdAt,
       status: v.status,
     }))
     if(mapped.length===0){
       return NextResponse.json([
-        { id:'guest-demo1', title:'ঈদ অফার ৫০% ছাড়', topic:'y78 Bengali Shop', videoUrl:'', thumbnail:'', createdAt: new Date().toISOString(), status:'completed' },
+        { id:'guest-demo1', title:'ঈদ অফার ৫০% ছাড়', topic:'y78 Bengali Shop', videoUrl:'/showcase/guest-demo1.mp4', thumbnail:'/showcase/guest-demo1.jpg', createdAt: new Date().toISOString(), status:'completed' },
       ])
     }
     return NextResponse.json(mapped)
   }catch(e:any){
-    return NextResponse.json([{ id:'guest-demo1', title:'ঈদ অফার', topic:'y78', videoUrl:'', thumbnail:'', createdAt: new Date().toISOString(), status:'completed' }])
+    return NextResponse.json([{ id:'guest-demo1', title:'ঈদ অফার', topic:'y78', videoUrl:'/showcase/guest-demo1.mp4', thumbnail:'/showcase/guest-demo1.jpg', createdAt: new Date().toISOString(), status:'completed' }])
   }
 }
