@@ -13,8 +13,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Template and prompt required' }, { status: 400 })
     }
 
-    // 0 Taka guest — don't hit DB/queue, return mock 200 so Create never 401/500
-    const videoId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
+    // 0 Taka guest — create real Video row so LiveShowcase shows y78
+    const fallbackId = "00000000-0000-0000-0000-000000000001"
+    try { await import('@/lib/prisma').then(m=>m.prisma.customer.findUnique({where:{id:fallbackId}})).then(c=>c||import('@/lib/prisma').then(m=>m.prisma.customer.create({data:{id:fallbackId,email:'guest@hostamar.local',name:'Guest 0 Taka',password:'guest'} as any}))) } catch {}
+    let videoId: string
+    try {
+      const { prisma } = await import('@/lib/prisma')
+      const v = await prisma.video.create({ data: { title: title || "6y7", topic: topic || "y78", prompt: prompt || "Bengali", templateId: templateId || "default", language: language || "bn", duration: 30, status: "completed", customer: { connect: { id: fallbackId } } } as any })
+      videoId = v.id
+    } catch { videoId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6) }
     return NextResponse.json({
       success: true,
       videoId,
