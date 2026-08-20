@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FAQS, FEATURED_FAQS } from '@/lib/faqs';
 import HeroC from '@/components/home/HeroC';
 import DownloadShowcase from '@/components/home/DownloadShowcase';
+import LiveShowcase from '@/components/home/LiveShowcase';
 
 const GREEN = "#0E7C3A";
 const RED = "#F59E0B";
@@ -218,6 +219,7 @@ export default function App() {
         </section>
 
         {/* Pricing */}
+        <LiveShowcase />
         <section id="pricing" className="mt-20">
           <div className="text-center max-w-[620px] mx-auto">
             <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium bangla mb-4"><span className="h-2 w-2 rounded-full" style={{background:GREEN}}></span>একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট</span>
