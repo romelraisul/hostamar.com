@@ -164,6 +164,8 @@ export async function middleware(request: NextRequest) {
     '/api/email/setup-brevo',
     '/api/browser/',
     '/api/ai-gateway/',
+    '/api/videos/generate',
+    '/api/ai/videos/generate',
     '/api/keys',
   ]
   if (pathname.startsWith('/api/')) {
