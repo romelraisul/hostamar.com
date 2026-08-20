@@ -166,6 +166,7 @@ export async function middleware(request: NextRequest) {
     '/api/ai-gateway/',
     '/api/videos/generate',
     '/api/showcase',
+    '/api/comfy',
     '/api/ai/videos/generate',
     '/api/keys',
   ]
