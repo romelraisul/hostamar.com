@@ -12,17 +12,9 @@
   "tauri": {
     "bundle": {
       "active": true,
-      "targets": [
-        "msi",
-        "nsis",
-        "deb",
-        "appimage",
-        "dmg"
-      ],
+      "targets": ["msi", "nsis", "deb", "appimage", "dmg"],
       "identifier": "com.hostamar.node",
-      "icon": [
-        "icons/icon.png"
-      ]
+      "icon": ["icons/icon.png", "icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.ico"]
     },
     "allowlist": {
       "all": true
@@ -35,7 +27,8 @@
       {
         "title": "Hostamar Node",
         "width": 900,
-        "height": 600
+        "height": 600,
+        "resizable": true
       }
     ]
   }
