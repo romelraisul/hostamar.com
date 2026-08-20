@@ -73,7 +73,7 @@ export default function DownloadShowcase() {
         {/* How it works */}
         <div className="mt-8 rounded-2xl bg-[#F8FAFC] border p-5">
           <div className="text-xs font-semibold tracking-widest text-zinc-500">HOW IT WORKS</div>
-          <div className="mt-3 font-mono text-xs text-zinc-700">Phone + Windows + Linux + Mac → <span className="text-[#0E7C3A] font-bold">cloudflared tunnel run hostamar-app</span> → Worker PRIMARY→FALLBACK_URL Railway → hostamar.com 200 + browser 200 + comfy 200 + ai 200 93 models</div>
+          <div className="mt-3 font-mono text-xs text-zinc-700">Phone + Windows + Linux + Mac → <span className="text-[#0E7C3A] font-bold">cloudflared tunnel run hostamar-prod-new</span> → Worker PRIMARY→FALLBACK_URL Railway → hostamar.com 200 + browser 200 + comfy 200 + ai 200 93 models</div>
           <ol className="mt-3 text-sm text-zinc-600 list-decimal list-inside space-y-1">
             <li>Download Node App</li><li>Login</li><li>Dashboard → My Nodes ONLINE/OFFLINE + 6 products + 6000 credit</li>
           </ol>
@@ -84,7 +84,7 @@ export default function DownloadShowcase() {
           <div className="rounded-2xl border p-5">
             <div className="text-xs font-semibold tracking-widest text-[#0E7C3A]">CUSTOMER</div>
             <div className="text-sm font-bold mt-1">Dashboard 6 products + NodeStatus</div>
-            <div className="text-xs text-zinc-600 mt-1">Video/Hosting/Chat/Browser/IDE·93/Game + Windows OFFLINE/browser 530 → run <span className="font-mono bg-zinc-100 px-1 rounded">cloudflared tunnel run hostamar-app</span> + <span className="font-mono bg-zinc-100 px-1 rounded">python C:\hostamar\gateway.py</span> → 200</div>
+            <div className="text-xs text-zinc-600 mt-1">Video/Hosting/Chat/Browser/IDE·93/Game + Windows OFFLINE/browser 530 → run <span className="font-mono bg-zinc-100 px-1 rounded">cloudflared tunnel run hostamar-prod-new</span> + <span className="font-mono bg-zinc-100 px-1 rounded">python C:\hostamar\gateway.py</span> → 200</div>
             <Link href="/dashboard" className="mt-3 inline-flex rounded-full bg-[#0E7C3A] text-white px-4 py-2 text-xs font-bold">Open Dashboard →</Link>
           </div>
           <div className="rounded-2xl border p-5 bg-[#0F172A] text-white">

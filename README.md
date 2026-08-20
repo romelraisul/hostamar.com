@@ -93,7 +93,7 @@ Camofox-based browser automation for research and content gathering:
 ## Tunnel (Windows)
 ```bat
 cloudflared tunnel list
-cloudflared tunnel run hostamar-app
+cloudflared tunnel run hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b)
 python C:\hostamar\gateway.py
 ```
-Auto-start: Task Scheduler → hostamar-app + gateway.py on boot.
+Auto-start: Task Scheduler → hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b) + gateway.py on boot.
