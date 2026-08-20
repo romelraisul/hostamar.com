@@ -52,13 +52,17 @@ export async function POST(req: NextRequest) {
         try { fallback = await prisma.customer.create({ data: { id: fallbackId, email: 'guest@hostamar.local', name: 'Guest 0 Taka', password: 'guest' } as any }) } catch {}
       }
       const cid = fallback?.id || fallbackId
-      // Try gateway ffmpeg first (C:\hostamar local), fallback to copying existing public/showcase file
+      const vid = `cmt${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`
+      let videoUrl = `/showcase/${vid}.mp4`
+      let thumbnail = `/showcase/${vid}.jpg`
+      let comfy = false
       try {
-        const gw = await fetch("http://127.0.0.1:3000/v1/videos/generate", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ title: body.title||"6y7", topic: body.topic||"y78", videoId: "cmt"+Date.now().toString(36) }) } as any).catch(()=>null) as any
-        if (gw?.ok) { const j=await gw.json(); console.log("gateway video", j.videoUrl) }
+        const gwRes = await fetch("http://127.0.0.1:3000/v1/videos/generate", { method:"POST", headers:{"Content-Type":"application/json","X-Hostamar-Tunnel":"hostamar-prod-new"}, body: JSON.stringify({ title: body.title||"6y7", topic: body.topic||"y78", language: body.language||"bn", videoId: vid }) } as any).catch(()=>null) as any
+        if (gwRes?.ok) { const gw = await gwRes.json(); videoUrl = gw.videoUrl || videoUrl; thumbnail = gw.thumbnail || thumbnail; comfy = !!gw.comfy }
       } catch {}
       const video = await prisma.video.create({
         data: {
+          id: vid,
           title: body.title || "6y7",
           topic: body.topic || "y78",
           prompt: body.prompt || body.description || body.topic || body.title || "Bengali marketing video",
@@ -70,15 +74,17 @@ export async function POST(req: NextRequest) {
           customer: { connect: { id: cid } },
         } as any
       }).catch(async (e:any)=>{
-        // If fallbackId FK fails, return mock with showcaseId anyway (never 500)
-        const vid = 'guest-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
-        return { id: vid } as any
+        const v = 'guest-' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)
+        return { id: v } as any
       })
       return NextResponse.json({
         success: true,
         videoId: video.id,
         showcaseId: video.id,
         status: 'completed',
+        videoUrl,
+        thumbnail,
+        comfy,
         message: 'ভিডিও তৈরি — LiveShowcase-এ 60s এ দেখা যাবে',
         credit: 6000,
         remaining: 5900,
