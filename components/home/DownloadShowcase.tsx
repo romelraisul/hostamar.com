@@ -2,14 +2,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const RELEASE = 'v0.1.6'
-const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.6'
+const RELEASE = 'v0.1.7'
+const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.7'
 const LINKS = [
   { os: 'Windows', file: 'Hostamar-Node_x64_en-US.msi', label: 'Download for Windows', icon: '🪟', href: `${GH}/Hostamar-Node_x64_en-US.msi`, secondary: `${GH}/Hostamar-Node_x64-setup.exe` },
   { os: 'macOS', file: 'Hostamar-Node_aarch64.dmg', label: 'Download for Mac', icon: '🍎', href: `${GH}/Hostamar-Node_aarch64.dmg`, secondary: null },
   { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', label: 'Download for Linux', icon: '🐧', href: `${GH}/Hostamar-Node_1.0.0_amd64.deb`, secondary: `${GH}/Hostamar-Node_1.0.0_amd64.AppImage` },
   { os: 'Android', file: 'Hostamar-Node.apk', label: 'Download for Android', icon: '🤖', href: `${GH}/Hostamar-Node.apk`, secondary: null },
-  { os: 'iOS', file: 'TestFlight', label: 'Join TestFlight', icon: '📱', href: 'https://testflight.apple.com/join/hostamar', secondary: null },
+  { os: 'iOS', file: 'Hostamar-Node.ipa', label: 'Download for iOS', icon: '📱', href: `${GH}/Hostamar-Node.ipa`, secondary: 'https://testflight.apple.com/join/hostamar' },
 ]
 
 function detectOS(): string {

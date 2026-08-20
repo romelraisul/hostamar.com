@@ -1,6 +1,6 @@
 import Link from 'next/link'
 export const metadata = { title: 'Download — Hostamar Node 0 Taka Datacenter' }
-const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.6'
+const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.7'
 const ROWS = [
   { os: 'Windows', file: 'Hostamar-Node_x64_en-US.msi', size: '3.3 MB', href: `${GH}/Hostamar-Node_x64_en-US.msi`, alt: 'Hostamar-Node_x64-setup.exe' },
   { os: 'Windows', file: 'Hostamar-Node_x64-setup.exe', size: '2.3 MB', href: `${GH}/Hostamar-Node_x64-setup.exe`, alt: null },
@@ -8,7 +8,7 @@ const ROWS = [
   { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', size: '5.1 MB', href: `${GH}/Hostamar-Node_1.0.0_amd64.deb`, alt: 'Hostamar-Node_1.0.0_amd64.AppImage' },
   { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.AppImage', size: '87 MB', href: `${GH}/Hostamar-Node_1.0.0_amd64.AppImage`, alt: null },
   { os: 'Android', file: 'Hostamar-Node.apk', size: '50 MB', href: `${GH}/Hostamar-Node.apk`, alt: null },
-  { os: 'iOS', file: 'TestFlight', size: '—', href: 'https://testflight.apple.com/join/hostamar', alt: null },
+  { os: 'iOS', file: 'Hostamar-Node.ipa', size: '40 MB', href: `${GH}/Hostamar-Node.ipa`, alt: 'TestFlight' },
 ]
 export default function DownloadPage(){
   return (
@@ -24,7 +24,7 @@ export default function DownloadPage(){
                 <td className="px-4 py-3 font-medium">{r.os}</td>
                 <td className="px-4 py-3 font-mono text-xs">{r.file}</td>
                 <td className="px-4 py-3 text-zinc-600">{r.size}</td>
-                <td className="px-4 py-3">v0.1.6</td>
+                <td className="px-4 py-3">v0.1.7</td>
                 <td className="px-4 py-3 text-right"><a href={r.href} className="inline-flex rounded-full bg-[#0E7C3A] hover:bg-[#0c6a32] text-white px-4 py-2 text-xs font-bold">Download</a></td>
               </tr>
             ))}
