@@ -29,6 +29,18 @@ jobs:
           for f in /usr/lib/pkgconfig/webkit2gtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/webkit2gtk-4.1.pc; do
             if [ -f "$f" ]; then sudo cp "$f" "$(dirname "$f")/webkit2gtk-4.0.pc" && echo "webkit compat $f -> 4.0"; fi
           done
+          for lib in libwebkit2gtk-4.0 libjavascriptcoregtk-4.0; do
+            for d in /usr/lib/x86_64-linux-gnu /usr/lib; do
+              if [ -f "$d/${lib%.so*}-4.1.so" ] || ls "$d"/${lib%.so*}-4.1.so* >/dev/null 2>&1; then
+                src=$(ls "$d"/${lib%.so*}-4.1.so* 2>/dev/null | head -1)
+                # src is e.g. libwebkit2gtk-4.1.so or libwebkit2gtk-4.1.so.0.1.1 — link the .so name
+                if [ -n "$src" ]; then sudo ln -sf "$src" "$d/${lib}.so" && echo "so compat $d/${lib}.so -> $src"; fi
+                # also link versioned .so
+                for s in "$d"/${lib%.so*}-4.1.so*; do [ -f "$s" ] && ver=${s##*-4.1}; sudo ln -sf "$s" "$d/${lib}${ver}" 2>/dev/null || true; done
+              fi
+            done
+          done
+          sudo ldconfig
       - run: npm ci --prefix apps/desktop || npm install --prefix apps/desktop
       - run: npm run tauri build --prefix apps/desktop
       - uses: actions/upload-artifact@v4
