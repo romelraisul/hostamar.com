@@ -34,7 +34,7 @@ export default function DownloadPage(){
       <div className="mt-8 rounded-2xl bg-[#F8FAFC] border p-5">
         <div className="text-xs font-semibold tracking-widest">COMMANDS</div>
         <pre className="mt-2 text-xs bg-black text-green-400 p-3 rounded-xl overflow-auto">cloudflared tunnel list
-cloudflared tunnel run hostamar-app
+cloudflared tunnel run hostamar-prod-new
 python C:\hostamar\gateway.py
 # NOT --name, NOT C:\Users\User\gateway.py</pre>
         <div className="text-xs text-zinc-600 mt-2">Task Scheduler: Hostamar Node at logon → cloudflared + gateway. Build: <span className="font-mono bg-white border px-1 rounded">.github/workflows/build-tauri.yml</span> on windows-latest/ubuntu-latest/macos-latest.</div>

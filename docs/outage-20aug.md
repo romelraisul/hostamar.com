@@ -10,7 +10,7 @@
 | comfy.hostamar.com | 2606:4700:3036::6815:210e | 530 error 1033 | Same tunnel DOWN |
 | api.hostamar.com | 2606:4700:3036::6815:210e — Worker api-router.js | 530 (primary https://api-primary.hostamar.com tunnel DOWN, fallback FALLBACK_URL not set / Railway paused) | Worker circuit open, both origins unreachable |
 
-DNS is FINE (all 4 resolve to Cloudflare edge). Deploys dpl_J9... did NOT delete DNS or Vercel aliases. Main hostamar.com still 114p aliased. Subdomains are tunnel-backed (not Vercel projects): browser/comfy/api via api-primary.hostamar.com Cloudflare Tunnel -> Windows hostamar-app:3000. Tunnel is DOWN (Windows not running).
+DNS is FINE (all 4 resolve to Cloudflare edge). Deploys dpl_J9... did NOT delete DNS or Vercel aliases. Main hostamar.com still 114p aliased. Subdomains are tunnel-backed (not Vercel projects): browser/comfy/api via api-primary.hostamar.com Cloudflare Tunnel -> Windows hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b):3000. Tunnel is DOWN (Windows not running).
 
 ## What Happened
 - Vercel: only hostamar.com + www.hostamar.com aliased to hostamar-build project — browser/comfy/ai NOT separate Vercel projects, never were.
@@ -18,7 +18,7 @@ DNS is FINE (all 4 resolve to Cloudflare edge). Deploys dpl_J9... did NOT delete
 - Worker wrangler.toml: only api.hostamar.com/* route, falls back to https://web-production-1234d.up.railway.app when primary tunnel fails. Primary is https://api-primary.hostamar.com (tunnel) — DOWN.
 
 ## Recovery
-1. Start Windows host: cloudflared tunnel run --name hostamar-app (or restart Windows host where gateway.py runs). Tunnel exposes api-primary + comfy + browser origins.
+1. Start Windows host: cloudflared tunnel run --name hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b) (or restart Windows host where gateway.py runs). Tunnel exposes api-primary + comfy + browser origins.
 2. If Windows host stays off: set Worker env FALLBACK_URL to live Railway deployment URL (redeploy Railway if paused) so api.hostamar.com falls back without 530.
 3. For production-grade per spec:
    - browser.hostamar.com: Opera Aria FREE spec — URL bar + iframe sandbox + /api/browser/summarize (already built in app/browser with fallback)
@@ -42,9 +42,9 @@ npm run build -> 114 pages 0 errors, shared 87.6kB
 **You typed wrong — correct is:**
 ```bat
 cloudflared tunnel list
-cloudflared tunnel run hostamar-app
+cloudflared tunnel run hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b)
 ```
-NOT `cloudflared tunnel run --name hostamar-app` (flag `--name` does not exist)
+NOT `cloudflared tunnel run --name hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b)` (flag `--name` does not exist)
 
 ```bat
 dir C:\hostamar\gateway.py
@@ -55,8 +55,11 @@ NOT `python gateway.py` from `C:\Users\User\` (file is in `C:\hostamar\`)
 **Auto-start on boot (Task Scheduler):**
 1. Win+R → `taskschd.msc`
 2. Create Task → Name `Hostamar Node`
-3. Trigger: At log on → Action: Start program `C:\Program Files\cloudflared\cloudflared.exe` Args `tunnel run hostamar-app`
+3. Trigger: At log on → Action: Start program `C:\Program Files\cloudflared\cloudflared.exe` Args `tunnel run hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b)`
 4. Second task: Program `python` Args `C:\hostamar\gateway.py` Start in `C:\hostamar`
 5. Check "Run whether user is logged on or not" → OK
 
 Verify: `curl -I https://browser.hostamar.com` → 200, `curl -I https://comfy.hostamar.com` → 200, `curl https://ai.hostamar.com` → {"status":"ok"}
+
+
+Correct: `cloudflared tunnel run hostamar-prod-new` (positional, NOT --name). Real ingress: browser→9377, comfy→8190, ai→11442, api/hostamar→3000.
