@@ -5,6 +5,7 @@ import { FAQS, FEATURED_FAQS } from '@/lib/faqs';
 import HeroC from '@/components/home/HeroC';
 import DownloadShowcase from '@/components/home/DownloadShowcase';
 import LiveShowcase from '@/components/home/LiveShowcase';
+import HeroVideoGenerator from '@/components/home/HeroVideoGenerator';
 
 const GREEN = "#0E7C3A";
 const RED = "#F59E0B";
@@ -64,7 +65,7 @@ export default function App() {
       `}</style>
 
       {/* HERO C — Unified bundle, single CTA, trust bar inside */}
-      <HeroC />
+      <HeroVideoGenerator />
       <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0"> <DownloadShowcase /> </div>
 
       <main className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 overflow-hidden">
@@ -80,12 +81,14 @@ export default function App() {
             <a href="/hosting" data-ga="pricing_click" className="h-9 px-5 rounded-full bg-[#2563EB] text-white text-sm font-semibold inline-flex items-center hover:bg-[#1D4ED8]">হোস্টিং দেখুন →</a>
           </div>
         </section>
+        <div className="mt-4 rounded-2xl overflow-hidden border border-[#0E7C3A]/20"><video src="/api/showcase/2/video" className="w-full h-48 object-cover" muted loop playsInline autoPlay controls poster="" /><div className="bg-[#0E7C3A] text-white text-xs px-3 py-1">BDIX 20ms Dhaka PoP — video demo</div></div>
 
         {/* 10% Tools — Chat + IDE only */}
         <section className="mt-4 grid sm:grid-cols-2 gap-4">
           <a href="/chat" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
             <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳1000/mo early bundle</div>
             <div className="mt-1 font-bold">💬 AI চ্যাট — ৳0 100msg/day</div>
+            <video src="/api/showcase/3/video" className="mt-2 w-full h-24 object-cover rounded-xl border border-[#0E7C3A]/20" muted loop playsInline />
             <div className="text-sm text-zinc-600 mt-1">বাংলা ভয়েস ইনপুট • Messenger till 11pm • SupportWidget live</div>
           </a>
           <a href="/dev" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
@@ -170,7 +173,8 @@ export default function App() {
                 <p className="bangla mt-1.5 text-[13px] text-white/60 leading-[1.6]">AI ক্যাপশন, ভাইরাল হুক, CTA — ফেসবুক রিলস ও টিকটকের জন্য অপটিমাইজড।</p>
               </div>
               <div className="relative z-10 w-full md:w-[260px] rounded-[16px] bg-white text-zinc-900 p-3 shadow-xl">
-                <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Generated Hooks</div>
+                <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Generated Hooks — video</div>
+                <video src="/api/showcase/1/video" className="mt-2 w-full h-28 object-cover rounded-xl border border-[#0E7C3A]/20" muted loop playsInline autoPlay />
                 <div className="mt-2 space-y-2">
                   {["এই ঈদে সবাই তাকিয়ে থাকবে আপনার দিকে 👀","১০০০+ মেয়ে ইতিমধ্যে নিয়েছে, আপনি বাকি কেন?","দাম শুনলে বিশ্বাস করবেন না..."].map((t,i)=>(
                     <div key={i} className={`rounded-xl px-3 py-2.5 text-[13px] bangla leading-[1.4] border ${i===0 ? "bg-zinc-900 text-white border-zinc-900" : "bg-zinc-50 border-zinc-200 text-zinc-700"}`}>{t}</div>
@@ -180,6 +184,7 @@ export default function App() {
             </div>
           </div>
         </section>
+        <LiveShowcase />
 
         {/* Templates */}
         <section id="templates" className="mt-20">
@@ -219,7 +224,6 @@ export default function App() {
         </section>
 
         {/* Pricing */}
-        <LiveShowcase />
         <section id="pricing" className="mt-20">
           <div className="text-center max-w-[620px] mx-auto">
             <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium bangla mb-4"><span className="h-2 w-2 rounded-full" style={{background:GREEN}}></span>একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট</span>
