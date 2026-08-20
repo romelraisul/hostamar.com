@@ -153,14 +153,14 @@ export default function ChatInterface({ videoId, videoTitle }: ChatInterfaceProp
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
                 msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-br-md'
+                  ? 'bg-[#0E7C3A] text-white rounded-br-md'
                   : 'bg-white/10 text-gray-200 rounded-bl-md'
               }`}
             >
               <div className="whitespace-pre-wrap">{msg.content || (loading && i === messages.length - 1 ? <Loader2 className="w-4 h-4 animate-spin inline" /> : '')}</div>
             </div>
             {msg.role === 'user' && (
-              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#0E7C3A] flex items-center justify-center shrink-0">
                 <User className="w-4 h-4 text-white" />
               </div>
             )}
@@ -182,7 +182,7 @@ export default function ChatInterface({ videoId, videoTitle }: ChatInterfaceProp
             onKeyDown={handleKeyDown}
             placeholder={videoId ? 'Ask about this video...' : 'Ask anything about video content...'}
             rows={1}
-            className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none max-h-[120px]"
+            className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0E7C3A] resize-none max-h-[120px]"
           />
           <button
             onClick={handleSend}

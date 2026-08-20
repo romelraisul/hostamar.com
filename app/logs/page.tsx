@@ -15,13 +15,13 @@ interface LogEntry {
 }
 
 const levelColors: Record<LogLevel, string> = {
-  info: 'text-blue-400',
+  info: 'text-[#0E7C3A]',
   warn: 'text-yellow-400',
   error: 'text-red-400',
 };
 
 const levelBg: Record<LogLevel, string> = {
-  info: 'bg-blue-400/10 border-blue-400/30',
+  info: 'border-[#0E7C3A]/10 border-[#0E7C3A]/20',
   warn: 'bg-yellow-400/10 border-yellow-400/30',
   error: 'bg-red-400/10 border-red-400/30',
 };
@@ -101,7 +101,7 @@ export default function LogsPage() {
                 type="checkbox"
                 checked={autoRefresh}
                 onChange={(e) => setAutoRefresh(e.target.checked)}
-                className="rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-blue-500"
+                className="rounded bg-gray-800 border-gray-700 text-[#0E7C3A] focus:ring-[#0E7C3A]"
               />
               {t('logs.autoRefresh')}
             </label>
@@ -123,7 +123,7 @@ export default function LogsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('logs.searchPlaceholder')}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0E7C3A]"
               />
             </div>
 
@@ -155,7 +155,7 @@ export default function LogsPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0E7C3A]"
               />
             </div>
 
@@ -165,13 +165,13 @@ export default function LogsPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0E7C3A]"
               />
             </div>
 
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors"
+              className="px-6 py-2 bg-[#0E7C3A] hover:bg-[#0E7C3A]/100 rounded-lg text-sm font-medium transition-colors"
             >
               {t('logs.apply')}
             </button>

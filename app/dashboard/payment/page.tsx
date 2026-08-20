@@ -187,9 +187,9 @@ export default function PaymentPage() {
         )}
 
         {state.message && (state.status as string) !== 'completed' && (
-          <div className="mb-8 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <p className="text-blue-300 text-sm">{state.message}</p>
+          <div className="mb-8 bg-[#0E7C3A]/100/10 border border-[#0E7C3A]/20 rounded-xl p-4 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-[#0E7C3A] flex-shrink-0" />
+            <p className="text-[#0E7C3A] text-sm">{state.message}</p>
           </div>
         )}
 
@@ -198,7 +198,7 @@ export default function PaymentPage() {
             {/* Plan Selection */}
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-blue-400" />
+                <Shield className="w-5 h-5 text-[#0E7C3A]" />
                 {t('payment.selectPlanHeading')}
               </h3>
               <div className="space-y-3">
@@ -209,7 +209,7 @@ export default function PaymentPage() {
                     disabled={state.status === 'creating' || state.status === 'verifying'}
                     className={`w-full text-left p-4 rounded-xl border transition-all ${
                       selectedPlan === key
-                        ? 'bg-blue-500/10 border-blue-500/40 shadow-lg shadow-blue-500/10'
+                        ? 'bg-[#0E7C3A]/100/10 border-[#0E7C3A]/40 shadow-lg shadow-#0E7C3A/10'
                         : 'bg-gray-900/50 border-gray-800 hover:border-gray-700'
                     }`}
                   >
@@ -293,7 +293,7 @@ export default function PaymentPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={t('payment.phonePlaceholder')}
                   disabled={state.status === 'creating' || state.status === 'verifying'}
-                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition"
+                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#0E7C3A]/50 focus:ring-2 focus:ring-[#0E7C3A]/20 transition"
                 />
                 <p className="text-xs text-gray-500 mt-2">{t('payment.phoneHint')}</p>
               </div>
@@ -309,9 +309,9 @@ export default function PaymentPage() {
                   onChange={(e) => setWalletAddress(e.target.value)}
                   placeholder={t('payment.walletPlaceholder')}
                   disabled={state.status === 'creating' || state.status === 'verifying'}
-                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition font-mono"
+                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#0E7C3A]/50 focus:ring-2 focus:ring-[#0E7C3A]/20 transition font-mono"
                 />
-                <p className="text-xs text-gray-500 mt-2">Send <strong>{(selectedPlan && PLANS[selectedPlan]?.amount) || 0 * 0.0025} USDT</strong> to: <code className="text-blue-400">0x16Bfd806297feaC12FC4b8A6c95079E8aADeC858</code></p>
+                <p className="text-xs text-gray-500 mt-2">Send <strong>{(selectedPlan && PLANS[selectedPlan]?.amount) || 0 * 0.0025} USDT</strong> to: <code className="text-[#0E7C3A]">0x16Bfd806297feaC12FC4b8A6c95079E8aADeC858</code></p>
               </div>
             ) : null}
 
@@ -326,7 +326,7 @@ export default function PaymentPage() {
               }
               className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
                 selectedPlan && selectedMethod && (isPhoneMethod ? phone : (selectedMethod === 'usdt' ? walletAddress : true))
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-600/25'
+                  ? 'bg-gradient-to-r from-#0E7C3A to-purple-600 text-white hover:from-#0E7C3A hover:to-purple-500 shadow-lg shadow-#0E7C3A/25'
                   : 'bg-gray-800 text-gray-500 cursor-not-allowed'
               }`}
             >
@@ -353,7 +353,7 @@ export default function PaymentPage() {
                 <div className="bg-gray-800/50 rounded-xl p-4 mb-6">
                   <div className="text-xs text-gray-500 mb-1">{t('payment.transactionId')}</div>
                   <div className="flex items-center justify-between">
-                    <code className="text-sm font-mono text-blue-400">{state.trxId}</code>
+                    <code className="text-sm font-mono text-[#0E7C3A]">{state.trxId}</code>
                     <button onClick={copyTrxId} className="p-2 hover:bg-gray-700/50 rounded-lg transition" title={t('payment.transactionId')}>
                       {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 text-gray-400" />}
                     </button>
@@ -367,7 +367,7 @@ export default function PaymentPage() {
                 <ol className="space-y-4 mb-8">
                   {state.instructions.map((instruction, i) => (
                     <li key={i} className="flex gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-blue-500/20 rounded-full flex items-center justify-center text-xs text-blue-400 font-semibold">
+                      <span className="flex-shrink-0 w-6 h-6 bg-[#0E7C3A]/20 rounded-full flex items-center justify-center text-xs text-[#0E7C3A] font-semibold">
                         {i + 1}
                       </span>
                       <span className="text-sm text-gray-300 leading-relaxed">{instruction}</span>

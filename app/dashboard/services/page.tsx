@@ -75,7 +75,7 @@ export default function ServicesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-#0E7C3A" />
       </div>
     )
   }
@@ -90,7 +90,7 @@ export default function ServicesPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B] transition-colors"
         >
           <Plus className="w-4 h-4" />
           {t('dashServices.order')}
@@ -107,8 +107,8 @@ export default function ServicesPage() {
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   {/* Icon & Basic Info */}
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-[#0E7C3A]/10 rounded-lg flex items-center justify-center">
+                      <Icon className="w-6 h-6 text-[#0E7C3A]" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{service.name}</h3>
@@ -160,7 +160,7 @@ export default function ServicesPage() {
                           <Power className="w-4 h-4" />
                         </button>
                       )}
-                      <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
+                      <button className="p-2 text-gray-400 hover:text-[#0E7C3A] hover:bg-[#0E7C3A]/10 rounded-lg">
                         <RefreshCw className="w-4 h-4" />
                       </button>
                       <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
@@ -195,7 +195,7 @@ export default function ServicesPage() {
           <p className="text-gray-500 mb-4">{t('dashServices.orderFirst')}</p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B]"
           >
             <Plus className="w-4 h-4" />
             {t('dashServices.order')}
@@ -288,7 +288,7 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
             >
               <option value="vps">{t('dashServices.vps')}</option>
               <option value="rdp">{t('dashServices.rdp')}</option>
@@ -304,7 +304,7 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
               placeholder={t('dashServices.serviceNamePlaceholder')}
             />
           </div>
@@ -355,8 +355,8 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
             </>
           )}
 
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-700">
+          <div className="bg-[#0E7C3A]/10 p-4 rounded-lg">
+            <p className="text-sm text-[#0A5A2B]">
               <strong>Price:</strong> ৳{prices[formData.type]}/month
             </p>
           </div>
@@ -374,7 +374,7 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B] disabled:opacity-50"
             >
               {loading ? t('dashServices.creating') : t('dashServices.orderNow')}
             </button>

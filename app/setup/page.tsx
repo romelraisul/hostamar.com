@@ -80,7 +80,7 @@ export default function SetupPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <div className="bg-gray-800 rounded-xl p-5 border border-gray-700">
             <div className="flex items-center gap-3 mb-3">
-              <Server className="w-5 h-5 text-blue-400" />
+              <Server className="w-5 h-5 text-[#0E7C3A]" />
               <h3 className="font-semibold">Remote Machine</h3>
             </div>
             <p className="text-sm text-gray-400">192.168.1.2 — Windows DESKTOP-9KA03CQ</p>
@@ -99,8 +99,8 @@ export default function SetupPage() {
         {/* Step 1: Mailpit (Self-hosted SMTP) */}
         <div className="bg-gray-800 rounded-xl p-6 mb-4 border border-gray-700">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">1</div>
-            <Mail className="w-5 h-5 text-blue-400" />
+            <div className="w-8 h-8 rounded-full bg-[#0E7C3A] flex items-center justify-center text-sm font-bold">1</div>
+            <Mail className="w-5 h-5 text-[#0E7C3A]" />
             <h2 className="text-xl font-semibold">Mailpit — SMTP Server</h2>
             <span className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full">Self-hosted ✓</span>
           </div>
@@ -171,7 +171,7 @@ export default function SetupPage() {
           {/* Copy All Button */}
           <button
             onClick={copyAll}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg mb-4 flex items-center justify-center gap-2 transition-colors"
+            className="w-full bg-[#0E7C3A] hover:bg-[#0A5A2B] text-white py-3 rounded-lg mb-4 flex items-center justify-center gap-2 transition-colors"
           >
             {copied === 'all' ? (
               <><CheckCircle className="w-5 h-5" /> {t('setup.copied')}</>
@@ -221,7 +221,7 @@ export default function SetupPage() {
           </ul>
           <Link
             href="/dashboard"
-            className="inline-block mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors"
+            className="inline-block mt-6 bg-[#0E7C3A] hover:bg-[#0A5A2B] text-white px-8 py-3 rounded-lg transition-colors"
           >
             Go to {t('setup.goToDashboard')}
           </Link>

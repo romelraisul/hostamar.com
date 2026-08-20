@@ -159,7 +159,7 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
         onClick={() => setOpen(true)}
         className={
           className ||
-          'inline-block w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 text-center font-semibold text-white transition hover:opacity-90'
+          'inline-block w-full rounded-xl bg-gradient-to-r from-#0E7C3A to-purple-600 px-6 py-3 text-center font-semibold text-white transition hover:opacity-90'
         }
       >
         {btnLabel}
@@ -199,7 +199,7 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
                         onClick={() => setMethod(m.key)}
                         className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
                           method === m.key
-                            ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                            ? 'border-[#0E7C3A] bg-[#0E7C3A]/10 text-[#0A5A2B] dark:bg-[#0E7C3A]/20 dark:text-emerald-300'
                             : 'border-slate-200 dark:border-slate-700'
                         }`}
                       >
@@ -218,7 +218,7 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
                       placeholder="01XXXXXXXXX"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#0E7C3A] dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
                 ) : (
@@ -229,7 +229,7 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
                       placeholder="0x..."
                       value={walletAddress}
                       onChange={(e) => setWalletAddress(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#0E7C3A] dark:border-slate-700 dark:bg-slate-800"
                     />
                   </div>
                 )}
@@ -240,7 +240,7 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
                   type="button"
                   onClick={() => void handleCreate()}
                   disabled={loading}
-                  className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                  className="w-full rounded-xl bg-gradient-to-r from-#0E7C3A to-purple-600 px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
                 >
                   {loading ? 'Creating order…' : 'Continue to payment'}
                 </button>

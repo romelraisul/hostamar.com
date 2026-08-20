@@ -31,9 +31,9 @@ export default function PaymentModal({ tier, onClose }: PaymentModalProps) {
           <h3 className="text-xl font-bold">পেমেন্ট করুন</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">✕</button>
         </div>
-        <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-4 mb-6">
+        <div className="bg-[#0E7C3A]/10 dark:bg-green-900/30 rounded-xl p-4 mb-6">
           <p className="font-bold text-lg">{tier} প্ল্যান</p>
-          <p className="text-blue-600 dark:text-blue-400">৳{prices[tier]}/মাস</p>
+          <p className="text-[#0E7C3A] dark:text-[#0E7C3A]">৳{prices[tier]}/মাস</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -49,8 +49,8 @@ export default function PaymentModal({ tier, onClose }: PaymentModalProps) {
                   onClick={() => setPaymentMethod(m.key)}
                   className={`p-3 rounded-lg border-2 text-center transition-all ${
                     paymentMethod === m.key
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                      ? 'border-[#0E7C3A] bg-[#0E7C3A]/10 dark:bg-green-900/30'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-#0E7C3A'
                   }`}>
                   <span className="text-xl block">{m.icon}</span>
                   <span className="text-sm font-medium">{m.label}</span>
@@ -63,7 +63,7 @@ export default function PaymentModal({ tier, onClose }: PaymentModalProps) {
               <label className="block text-sm font-medium mb-1">মোবাইল নম্বর</label>
               <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
                 placeholder="০১XXXXXXXXX" required pattern="^01[0-9]{9}$"
-                className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-slate-700 dark:text-white" />
+                className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-[#0E7C3A] focus:ring-2 focus:ring-#0E7C3A dark:bg-slate-700 dark:text-white" />
             </div>
           )}
           {paymentMethod === 'usdt' && (
@@ -71,7 +71,7 @@ export default function PaymentModal({ tier, onClose }: PaymentModalProps) {
               <label className="block text-sm font-medium mb-1">USDT (BEP20) ওয়ালেট অ্যাড্রেস</label>
               <input type="text" value={phone} onChange={e => setPhone(e.target.value)}
                 placeholder="0x..." required
-                className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-slate-700 dark:text-white font-mono" />
+                className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-[#0E7C3A] focus:ring-2 focus:ring-#0E7C3A dark:bg-slate-700 dark:text-white font-mono" />
             </div>
           )}
           {paymentMethod !== 'usdt' && (
@@ -79,12 +79,12 @@ export default function PaymentModal({ tier, onClose }: PaymentModalProps) {
               <label className="block text-sm font-medium mb-1">ট্রানজেকশন ID</label>
               <input type="text" value={trxId} onChange={e => setTrxId(e.target.value)}
                 placeholder="TRX-XXXXXXXXXX" required
-                className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-slate-700 dark:text-white" />
+                className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-[#0E7C3A] focus:ring-2 focus:ring-#0E7C3A dark:bg-slate-700 dark:text-white" />
             </div>
           )}
           <button type="submit" disabled={isSubmitting}
             className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
-              isSubmitting ? 'bg-gray-400' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg'
+              isSubmitting ? 'bg-gray-400' : 'bg-gradient-to-r from-#0E7C3A to-purple-600 hover:shadow-lg'
             }`}>
             {isSubmitting ? '⏳ যাচাই করা হচ্ছে...' : '✅ পেমেন্ট পাঠান'}
           </button>

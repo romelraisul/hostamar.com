@@ -15,7 +15,7 @@ export default function ChatWidget() {
       )}
       <button
         onClick={() => setOpen(!open)}
-        className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center"
+        className="bg-[#0E7C3A] text-white rounded-full w-12 h-12 flex items-center justify-center"
       >
         💬
       </button>

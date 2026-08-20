@@ -20,8 +20,8 @@ export default function TemplateSelector({ templates, selectedTemplate, onSelect
           <button key={t.id} onClick={() => onSelect(t.id)}
             className={`p-5 rounded-xl border-2 transition-all text-left ${
               selectedTemplate === t.id
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-lg shadow-blue-200'
-                : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md'
+                ? 'border-[#0E7C3A] bg-[#0E7C3A]/10 dark:bg-green-900/30 shadow-lg shadow-#0E7C3A'
+                : 'border-gray-200 dark:border-gray-700 hover:border-[#0E7C3A] dark:hover:border-[#0E7C3A] hover:shadow-md'
             }`}>
             <span className="text-3xl mb-2 block">{t.icon}</span>
             <h3 className="font-semibold text-gray-800 dark:text-white">{t.label}</h3>

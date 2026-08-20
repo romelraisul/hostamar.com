@@ -16,7 +16,7 @@ import {
   X,
 } from 'lucide-react'
 
-const GREEN = '#2563EB'
+const GREEN = '#0E7C3A'
 
 // All facts grounded in repo: app/dev/page.tsx (Monaco, Pyodide pandas/numpy/
 // matplotlib, hostamar.dev free subdomain+SSL, Team Live Share, Starter ৳2000

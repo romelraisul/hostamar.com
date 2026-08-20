@@ -69,7 +69,7 @@ export default function TwitterTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-#0E7C3A" />
       </div>
     )
   }
@@ -155,8 +155,8 @@ export default function TwitterTab() {
         </div>
       )}
 
-      <div className="bg-blue-50 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-[#0E7C3A]/10 rounded-lg p-4">
+        <p className="text-sm text-[#0A5A2B]">
           <strong>How it works:</strong> When you publish a video or service on Hostamar,
           you can choose to automatically post about it on Twitter. Your access token
           is stored securely and never shared.

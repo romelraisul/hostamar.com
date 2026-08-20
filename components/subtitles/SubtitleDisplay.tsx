@@ -69,11 +69,11 @@ export default function SubtitleDisplay({ subtitle, videoTitle }: { subtitle: Su
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <FileText className="w-4 h-4 text-[#0E7C3A] dark:text-[#0E7C3A]" />
             <span className="font-medium text-gray-900 dark:text-white text-sm">
               {subtitle.language === 'bn' ? 'বাংলা সাবটাইটেল' : 'English Subtitles'}
             </span>
-            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-#0E7C3A dark:bg-green-900/30 text-[#0A5A2B] dark:text-[#0E7C3A] px-2 py-0.5 rounded-full">
               {subtitle.timestamps.length} segments
             </span>
           </div>
@@ -89,7 +89,7 @@ export default function SubtitleDisplay({ subtitle, videoTitle }: { subtitle: Su
       {/* Full transcript */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{subtitle.content}</p>
-        <button onClick={handleDownloadText} className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+        <button onClick={handleDownloadText} className="mt-2 text-xs text-[#0E7C3A] dark:text-[#0E7C3A] hover:underline flex items-center gap-1">
           <FileText className="w-3 h-3" /> Download full transcript
         </button>
       </div>
@@ -101,7 +101,7 @@ export default function SubtitleDisplay({ subtitle, videoTitle }: { subtitle: Su
             key={i}
             onClick={() => handleSegmentClick(i)}
             className={`w-full text-left px-4 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
-              activeIndex === i ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+              activeIndex === i ? 'bg-[#0E7C3A]/10 dark:bg-green-900/20' : ''
             }`}
           >
             <div className="flex items-start gap-3">
@@ -109,11 +109,11 @@ export default function SubtitleDisplay({ subtitle, videoTitle }: { subtitle: Su
                 <Clock className="w-3 h-3 inline mr-1" />
                 {formatTime(seg.start)} - {formatTime(seg.end)}
               </span>
-              <span className={`text-sm ${activeIndex === i ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
+              <span className={`text-sm ${activeIndex === i ? 'text-[#0A5A2B] dark:text-[#0E7C3A] font-medium' : 'text-gray-600 dark:text-gray-300'}`}>
                 {seg.text}
               </span>
               {activeIndex === i && (
-                <Play className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                <Play className="w-4 h-4 text-[#0E7C3A] shrink-0 mt-0.5" />
               )}
             </div>
           </button>

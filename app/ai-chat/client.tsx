@@ -268,7 +268,7 @@ export default function AiChatClient() {
           </div>
           <button
             onClick={createConversation}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition"
+            className="px-3 py-1.5 bg-[#0E7C3A] hover:bg-[#0E7C3A]/100 text-white text-xs rounded-lg transition"
           >
             New chat
           </button>
@@ -284,7 +284,7 @@ export default function AiChatClient() {
               }}
               className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition ${
                 activeConversationId === c.id
-                  ? 'bg-blue-500/10 text-blue-300 border border-blue-400/40'
+                  ? 'bg-[#0E7C3A]/100/10 text-[#0E7C3A] border border-#0E7C3A/40'
                   : 'text-gray-300 hover:bg-white/5'
               }`}
             >
@@ -348,14 +348,14 @@ export default function AiChatClient() {
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
                   msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-sm'
+                    ? 'bg-[#0E7C3A] text-white rounded-br-sm'
                     : 'bg-white/10 text-gray-200 rounded-bl-sm'
                 }`}
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
               </div>
               {msg.role === 'user' && (
-                <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center shrink-0 mt-1">
+                <div className="w-7 h-7 rounded-full bg-[#0E7C3A] flex items-center justify-center shrink-0 mt-1">
                   <span className="text-[10px] font-bold text-white">You</span>
                 </div>
               )}
@@ -405,12 +405,12 @@ export default function AiChatClient() {
               disabled={!activeConversationId}
               placeholder={activeConversationId ? 'Type your message...' : 'Select a conversation first'}
               rows={1}
-              className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none max-h-[120px] disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/50 resize-none max-h-[120px] disabled:opacity-50"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || loading || thinking || !activeConversationId}
-              className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed hover:from-blue-700 hover:to-blue-800 transition-all shrink-0"
+              className="px-4 py-2.5 bg-gradient-to-r from-#0E7C3A to-#0A5A2B rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed hover:from-#0A5A2B hover:to-#0A5A2B transition-all shrink-0"
             >
               Send
             </button>

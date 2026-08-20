@@ -76,7 +76,7 @@ export default function AnalyticsDashboard() {
           <p className="text-gray-400">{t('analytics.noDataDesc')}</p>
           <button
             onClick={() => router.push('/generate')}
-            className="mt-6 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition"
+            className="mt-6 px-8 py-3 bg-[#0E7C3A] hover:bg-[#0A5A2B] text-white rounded-xl font-medium transition"
           >
             {t('analytics.createVideos')}
           </button>
@@ -116,8 +116,8 @@ export default function AnalyticsDashboard() {
           ].map((stat, idx) => (
             <div key={idx} className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                  <stat.icon className="w-5 h-5 text-blue-400" />
+                <div className="w-10 h-10 rounded-xl bg-[#0E7C3A]/20 flex items-center justify-center">
+                  <stat.icon className="w-5 h-5 text-[#0E7C3A]" />
                 </div>
                 <span className="text-green-400 text-sm font-medium">↑ {stat.change}%</span>
               </div>
@@ -128,11 +128,11 @@ export default function AnalyticsDashboard() {
         </div>
 
         {/* Engagement Rate Card */}
-        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-white/10 rounded-2xl p-6 mb-8">
+        <div className="bg-gradient-to-r from-#0E7C3A/20 to-purple-600/20 border border-white/10 rounded-2xl p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-white">{t('analytics.engagementRate')}</h3>
-              <p className="text-3xl font-bold text-blue-400 mt-2">{analytics.overview.engagementRate}%</p>
+              <p className="text-3xl font-bold text-[#0E7C3A] mt-2">{analytics.overview.engagementRate}%</p>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-400">{analytics.overview.totalVideos} {t('analytics.videosCreated')}</p>
@@ -216,7 +216,7 @@ export default function AnalyticsDashboard() {
                   <tr key={idx} className="border-b border-white/5 hover:bg-white/5 transition">
                     <td className="px-6 py-4 text-white font-medium">{video.title}</td>
                     <td className="px-6 py-4 text-center text-gray-300">
-                      <Eye className="w-4 h-4 inline mr-1 text-blue-400" />{video.views}
+                      <Eye className="w-4 h-4 inline mr-1 text-[#0E7C3A]" />{video.views}
                     </td>
                     <td className="px-6 py-4 text-center text-gray-300">
                       <Download className="w-4 h-4 inline mr-1 text-green-400" />{video.downloads}

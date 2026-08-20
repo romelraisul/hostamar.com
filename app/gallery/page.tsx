@@ -78,7 +78,7 @@ export default function VideoGallery() {
       completed: "bg-green-500/20 text-green-400",
       processing: "bg-yellow-500/20 text-yellow-400",
       failed: "bg-red-500/20 text-red-400",
-      queued: "bg-blue-500/20 text-blue-400"
+      queued: "bg-[#0E7C3A]/20 text-[#0E7C3A]"
     }
     const labels: Record<string, string> = {
       completed: t('gallery.statusCompleted'),

@@ -9,7 +9,7 @@ export default function CollabHeader({ user }: CollabHeaderProps) {
     <header className="container mx-auto px-4 py-6">
       <nav className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <a href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <a href="/" className="text-2xl font-bold bg-gradient-to-r from-#0E7C3A via-purple-400 to-pink-400 bg-clip-text text-transparent">
             Hostamar
           </a>
           <span className="text-gray-600">/</span>

@@ -3,7 +3,7 @@
 
 export default function CryptoPaymentInfo() {
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-6">
+    <div className="bg-gradient-to-r from-[#0E7C3A]/10 to-emerald-50 rounded-xl p-6 mb-6">
       <h3 className="text-lg font-bold text-gray-900 mb-3">🪙 Pay with Cryptocurrency</h3>
       <p className="text-gray-600 mb-4">
         Can't use bKash/Nagad merchant? Pay with crypto!
@@ -11,7 +11,7 @@ export default function CryptoPaymentInfo() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white rounded-lg p-4">
-          <h4 className="font-bold text-blue-600 mb-2">Wallet Addresses</h4>
+          <h4 className="font-bold text-[#0E7C3A] mb-2">Wallet Addresses</h4>
           <div className="space-y-2 text-sm">
             <div>
               <span className="text-gray-500">USDT (BEP20):</span>
@@ -41,7 +41,7 @@ export default function CryptoPaymentInfo() {
       
       <button 
         onClick={() => window.location.href = '/dashboard/payment/crypto'}
-        className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+        className="w-full mt-4 bg-[#0E7C3A] text-white py-2 rounded-lg hover:bg-[#0A5A2B]"
       >
         View Full Crypto Payment Guide
       </button>

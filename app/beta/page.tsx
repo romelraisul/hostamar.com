@@ -94,7 +94,7 @@ export default function BetaPage() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="bg-blue-600 text-white px-4 py-2 rounded w-full disabled:opacity-50"
+            className="bg-[#0E7C3A] text-white px-4 py-2 rounded w-full disabled:opacity-50"
           >
             {status === 'loading' ? 'Submitting...' : 'Request Beta Access'}
           </button>

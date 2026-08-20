@@ -15,7 +15,7 @@ export default function OSSUError({
         <p className="mb-6 text-sm text-slate-400">{error.message || 'Something went wrong'}</p>
         <button
           onClick={() => reset()}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-md bg-[#0E7C3A] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A5A2B]"
         >
           Try Again
         </button>

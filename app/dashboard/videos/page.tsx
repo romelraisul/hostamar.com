@@ -108,7 +108,7 @@ export default function VideosPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-#0E7C3A" />
       </div>
     )
   }
@@ -123,7 +123,7 @@ export default function VideosPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B] transition-colors"
         >
           <Plus className="w-4 h-4" />
           {t('dashVideos.create')}
@@ -139,7 +139,7 @@ export default function VideosPage() {
             placeholder={t('dashVideos.search')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A] focus:border-transparent"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export default function VideosPage() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
           >
             <option value="all">{t('dashVideos.allStatus')}</option>
             <option value="ready">{t('dashVideos.ready')}</option>
@@ -158,7 +158,7 @@ export default function VideosPage() {
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'grid' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                viewMode === 'grid' ? 'bg-[#0E7C3A]/10 text-[#0E7C3A]' : 'text-gray-400 hover:text-gray-600'
               }`}
               title={t('dashVideos.gridView')}
             >
@@ -167,7 +167,7 @@ export default function VideosPage() {
             <button
               onClick={() => setViewMode('table')}
               className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'table' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                viewMode === 'table' ? 'bg-[#0E7C3A]/10 text-[#0E7C3A]' : 'text-gray-400 hover:text-gray-600'
               }`}
               title={t('dashVideos.tableView')}
             >
@@ -266,7 +266,7 @@ export default function VideosPage() {
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
                     {video.status === 'ready' && (
                       <>
-                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-[#0E7C3A]/10 text-[#0E7C3A] rounded-lg hover:bg-[#0E7C3A]/10 transition-colors">
                           <Play className="w-4 h-4" />
                           {t('dashVideos.play')}
                         </button>
@@ -337,7 +337,7 @@ export default function VideosPage() {
                         <div className="flex items-center justify-end gap-1">
                           {video.status === 'ready' && (
                             <>
-                              <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title={t('dashVideos.play')}>
+                              <button className="p-2 text-[#0E7C3A] hover:bg-[#0E7C3A]/10 rounded-lg transition-colors" title={t('dashVideos.play')}>
                                 <Play className="w-4 h-4" />
                               </button>
                               <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title={t('dashVideos.download')}>
@@ -373,7 +373,7 @@ export default function VideosPage() {
           </p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B]"
           >
             <Plus className="w-4 h-4" />
             {t('dashVideos.create')}
@@ -459,7 +459,7 @@ function CreateVideoModal({
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
               placeholder={t('dashVideos.videoTitlePlaceholder')}
             />
           </div>
@@ -473,7 +473,7 @@ function CreateVideoModal({
               required
               value={formData.topic}
               onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
               placeholder={t('dashVideos.topicPlaceholder')}
             />
           </div>
@@ -485,7 +485,7 @@ function CreateVideoModal({
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
               rows={3}
               placeholder={t('dashVideos.descriptionPlaceholder')}
             />
@@ -498,7 +498,7 @@ function CreateVideoModal({
             <select
               value={formData.language}
               onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0E7C3A]"
             >
               <option value="bn">{t('dashVideos.bengali')}</option>
               <option value="en">{t('dashVideos.english')}</option>
@@ -518,7 +518,7 @@ function CreateVideoModal({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B] disabled:opacity-50"
             >
               {loading ? t('dashVideos.creating') : t('dashVideos.createBtn')}
             </button>

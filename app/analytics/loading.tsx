@@ -2,7 +2,7 @@ export default function AnalyticsLoading() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#0E7C3A] border-t-transparent" />
         <p className="text-sm text-slate-400">Loading analytics...</p>
       </div>
     </div>

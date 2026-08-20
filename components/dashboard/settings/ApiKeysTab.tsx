@@ -89,7 +89,7 @@ export default function ApiKeysTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-#0E7C3A" />
       </div>
     )
   }
@@ -129,7 +129,7 @@ export default function ApiKeysTab() {
             onChange={(e) => setName(e.target.value)}
             required
             placeholder="e.g. my-app-server"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div className="flex flex-wrap gap-4">
@@ -153,7 +153,7 @@ export default function ApiKeysTab() {
         <button
           type="submit"
           disabled={creating || !name.trim()}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:bg-gray-300"
+          className="rounded-lg bg-[#0E7C3A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A5A2B] disabled:bg-gray-300"
         >
           {creating ? 'Creating…' : 'Create key'}
         </button>

@@ -63,7 +63,7 @@ export default function SubtitlesPageClient() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search videos..."
-              className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
             />
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function SubtitlesPageClient() {
                   setGeneratedSubtitle(null)
                 }}
                 className={`w-full text-left px-4 py-3 transition-colors hover:bg-white/5 ${
-                  selectedVideoId === v.id ? 'bg-blue-500/10 border-l-2 border-blue-400' : ''
+                  selectedVideoId === v.id ? 'bg-[#0E7C3A]/100/10 border-l-2 border-#0E7C3A' : ''
                 }`}
               >
                 <p className="text-sm font-medium text-white truncate">{v.title}</p>

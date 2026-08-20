@@ -26,7 +26,7 @@ export default function PasswordTab({ passwords, setPasswords }: Props) {
             type="password"
             value={passwords.current}
             onChange={(e) => update('current', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -35,7 +35,7 @@ export default function PasswordTab({ passwords, setPasswords }: Props) {
             type="password"
             value={passwords.new}
             onChange={(e) => update('new', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -44,7 +44,7 @@ export default function PasswordTab({ passwords, setPasswords }: Props) {
             type="password"
             value={passwords.confirm}
             onChange={(e) => update('confirm', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
       </div>

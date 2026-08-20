@@ -133,7 +133,7 @@ export default function VideoEditor() {
                 onClick={() => setSelectedTemplate(t)}
                 className={`p-3 rounded-xl border text-left transition-all ${
                   selectedTemplate.id === t.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
+                    ? 'border-[#0E7C3A] bg-[#0E7C3A]/10 dark:bg-green-900/20 dark:border-[#0E7C3A]'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
                 }`}
               >
@@ -155,7 +155,7 @@ export default function VideoEditor() {
                 value={titleText}
                 onChange={(e) => setTitleText(e.target.value)}
                 placeholder="Enter title..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0E7C3A] focus:border-[#0E7C3A] outline-none"
               />
             </div>
             <div>
@@ -165,7 +165,7 @@ export default function VideoEditor() {
                 value={subtitleText}
                 onChange={(e) => setSubtitleText(e.target.value)}
                 placeholder="Enter subtitle..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-[#0E7C3A] focus:border-[#0E7C3A] outline-none"
               />
             </div>
           </div>
@@ -179,7 +179,7 @@ export default function VideoEditor() {
                 key={t.id}
                 className={`p-2 rounded-lg border text-center text-xs transition-colors ${
                   selectedTemplate.transition === t.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                    ? 'border-[#0E7C3A] bg-[#0E7C3A]/10 dark:bg-green-900/20 text-[#0A5A2B] dark:text-[#0E7C3A]'
                     : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >

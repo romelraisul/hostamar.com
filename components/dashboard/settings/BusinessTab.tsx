@@ -22,7 +22,7 @@ export default function BusinessTab({ business, setBusiness }: Props) {
             type="text"
             value={business.name}
             onChange={(e) => update('name', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -31,7 +31,7 @@ export default function BusinessTab({ business, setBusiness }: Props) {
             type="text"
             value={business.industry}
             onChange={(e) => update('industry', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div className="sm:col-span-2">
@@ -40,7 +40,7 @@ export default function BusinessTab({ business, setBusiness }: Props) {
             value={business.description}
             onChange={(e) => update('description', e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -49,7 +49,7 @@ export default function BusinessTab({ business, setBusiness }: Props) {
             type="url"
             value={business.website}
             onChange={(e) => update('website', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -58,7 +58,7 @@ export default function BusinessTab({ business, setBusiness }: Props) {
             type="text"
             value={business.facebook}
             onChange={(e) => update('facebook', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -67,7 +67,7 @@ export default function BusinessTab({ business, setBusiness }: Props) {
             type="text"
             value={business.instagram}
             onChange={(e) => update('instagram', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -76,7 +76,7 @@ export default function BusinessTab({ business, setBusiness }: Props) {
             type="text"
             value={business.youtube}
             onChange={(e) => update('youtube', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>

@@ -26,7 +26,7 @@ export default function AnalyticsPage() {
   ]
 
   const cards = [
-    { label: t('dashAnalytics.videosCreated'), value: stats.totalVideos, icon: Film, color: 'text-blue-400 bg-blue-500/10' },
+    { label: t('dashAnalytics.videosCreated'), value: stats.totalVideos, icon: Film, color: 'text-[#0E7C3A] bg-[#0E7C3A]/100/10' },
     { label: t('dashAnalytics.aiPreviews'), value: stats.totalPreviews, icon: Eye, color: 'text-purple-400 bg-purple-500/10' },
     { label: t('dashAnalytics.creditsLeft'), value: stats.creditsRemaining, icon: CreditCard, color: 'text-green-400 bg-green-500/10' },
     { label: t('dashAnalytics.growthRate'), value: '+24%', icon: TrendingUp, color: 'text-yellow-400 bg-yellow-500/10' },

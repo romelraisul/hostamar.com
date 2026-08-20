@@ -167,7 +167,7 @@ export default function SubscriptionPage() {
             <div className="text-xs text-gray-500 mt-1">{t('subscription.videoLimit')}</div>
           </div>
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold text-blue-400">{subscription?.quality || '720p'}</div>
+            <div className="text-2xl font-bold text-[#0E7C3A]">{subscription?.quality || '720p'}</div>
             <div className="text-xs text-gray-500 mt-1">{t('subscription.quality')}</div>
           </div>
         </div>
@@ -182,14 +182,14 @@ export default function SubscriptionPage() {
               key={plan.id}
               className={`rounded-2xl border p-6 relative transition-all ${
                 plan.popular
-                  ? 'border-blue-500 shadow-lg shadow-blue-500/20 bg-blue-600/10'
+                  ? 'border-[#0E7C3A] shadow-lg shadow-[#0E7C3A]/20 bg-[#0E7C3A]/10'
                   : plan.current
                     ? 'border-green-500 bg-green-600/10'
                     : 'border-white/10 bg-white/5 hover:border-white/20'
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0E7C3A] text-white text-xs font-bold px-4 py-1 rounded-full">
                   {t('subscription.popular')}
                 </div>
               )}
@@ -217,7 +217,7 @@ export default function SubscriptionPage() {
                 className={`w-full mt-6 py-2.5 rounded-xl font-medium transition ${
                   plan.current || plan.id === 'free'
                     ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-[#0E7C3A] hover:bg-[#0A5A2B] text-white'
                 }`}
               >
                 {plan.current || plan.id === 'free' ? t('subscription.current') : t('subscription.upgrade')}

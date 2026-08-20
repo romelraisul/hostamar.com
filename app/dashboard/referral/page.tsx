@@ -45,7 +45,7 @@ export default function ReferralPage() {
       </div>
 
       {/* Referral Link Card */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white mb-6">
+      <div className="bg-gradient-to-r from-#0E7C3A to-purple-600 rounded-xl p-6 text-white mb-6">
         <div className="flex items-center gap-3 mb-4">
           <Gift className="w-8 h-8" />
           <h2 className="text-xl font-semibold">আপনার রিফারেল লিঙ্ক</h2>
@@ -57,7 +57,7 @@ export default function ReferralPage() {
           </code>
           <button
             onClick={copyToClipboard}
-            className="ml-4 px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-gray-100 transition flex items-center gap-2"
+            className="ml-4 px-4 py-2 bg-white text-[#0E7C3A] rounded-lg font-medium hover:bg-gray-100 transition flex items-center gap-2"
           >
             {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             {copied ? 'কপি হয়েছে!' : 'কপি করুন'}
@@ -69,7 +69,7 @@ export default function ReferralPage() {
       <div className="grid md:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-xl p-6 border">
           <div className="flex items-center gap-3 mb-2">
-            <Users className="w-6 h-6 text-blue-600" />
+            <Users className="w-6 h-6 text-[#0E7C3A]" />
             <span className="text-gray-600">মোট রিফারেল</span>
           </div>
           <p className="text-3xl font-bold">{referralCount}</p>
@@ -105,7 +105,7 @@ export default function ReferralPage() {
 
       {/* Social Share Buttons */}
       <div className="flex gap-3">
-        <button className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2">
+        <button className="flex-1 bg-[#0E7C3A] text-white py-3 rounded-lg font-medium hover:bg-[#0A5A2B] transition flex items-center justify-center gap-2">
           <Share2 className="w-4 h-4" /> Facebook শেয়ার
         </button>
         <button className="flex-1 bg-sky-500 text-white py-3 rounded-lg font-medium hover:bg-sky-600 transition flex items-center justify-center gap-2">

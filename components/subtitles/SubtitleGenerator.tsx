@@ -65,7 +65,7 @@ export default function SubtitleGenerator({
       {/* Header */}
       <div className="p-4 border-b border-gray-100 bg-gray-50/50">
         <div className="flex items-center gap-2">
-          <Subtitles className="w-5 h-5 text-blue-600" />
+          <Subtitles className="w-5 h-5 text-[#0E7C3A]" />
           <h3 className="font-semibold text-gray-900">AI Subtitle Generator</h3>
         </div>
         {videoTitle && (
@@ -85,7 +85,7 @@ export default function SubtitleGenerator({
               onClick={() => setLanguage('bn')}
               className={`flex-1 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                 language === 'bn'
-                  ? 'bg-blue-50 border-blue-300 text-blue-700'
+                  ? 'bg-[#0E7C3A]/10 border-#0E7C3A text-[#0A5A2B]'
                   : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
               }`}
             >
@@ -95,7 +95,7 @@ export default function SubtitleGenerator({
               onClick={() => setLanguage('en')}
               className={`flex-1 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                 language === 'en'
-                  ? 'bg-blue-50 border-blue-300 text-blue-700'
+                  ? 'bg-[#0E7C3A]/10 border-#0E7C3A text-[#0A5A2B]'
                   : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
               }`}
             >
@@ -108,7 +108,7 @@ export default function SubtitleGenerator({
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0E7C3A] text-white rounded-lg hover:bg-[#0A5A2B] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
         >
           {loading ? (
             <>
@@ -130,8 +130,8 @@ export default function SubtitleGenerator({
 
         {/* Status info */}
         {loading && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 bg-blue-50 border border-blue-100 rounded-lg p-3">
-            <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+          <div className="flex items-center gap-2 text-sm text-gray-500 bg-[#0E7C3A]/10 border border-#0E7C3A rounded-lg p-3">
+            <Loader2 className="w-4 h-4 animate-spin text-[#0E7C3A]" />
             <span>Calling AI to generate subtitle transcript...</span>
           </div>
         )}

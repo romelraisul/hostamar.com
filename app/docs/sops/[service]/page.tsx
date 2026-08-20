@@ -18,7 +18,7 @@ export default function SopDetail({ params }: { params: { service: string } }) {
   const md = fs.readFileSync(file, 'utf8')
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <Link href="/docs/sops" className="text-blue-600 text-sm">← All SOPs</Link>
+      <Link href="/docs/sops" className="text-[#0E7C3A] text-sm">← All SOPs</Link>
       <pre className="mt-4 whitespace-pre-wrap bg-white border rounded-lg p-4 text-sm leading-relaxed">{md}</pre>
     </div>
   )

@@ -74,7 +74,7 @@ export default function VideoGeneratePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#0F172A] antialiased selection:bg-[#2563EB]/15">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#0F172A] antialiased selection:bg-[#0E7C3A]/15">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <div className="mx-auto max-w-[1180px] px-4 md:px-6 py-4">
         <Link href="/" className="inline-flex items-center gap-1.5 text-[13px] text-zinc-500 hover:text-zinc-800">← হোম</Link>
@@ -85,10 +85,10 @@ export default function VideoGeneratePage() {
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="px-2.5 py-1 rounded-full bg-white border text-zinc-700 font-medium">bKash • Nagad • Rocket</span>
             <span className="px-2.5 py-1 rounded-full bg-white border text-zinc-700">BDIX Dhaka • 20ms</span>
-            <span className="px-2.5 py-1 rounded-full bg-[#2563EB] text-white font-semibold">500+ creators</span>
+            <span className="px-2.5 py-1 rounded-full bg-[#0E7C3A] text-white font-semibold">500+ creators</span>
             <span className="hidden sm:inline px-2.5 py-1 rounded-full bg-white border">Watermark-free</span>
           </div>
-          <div className="text-xs text-zinc-600">InVideo $17/mo vs <span className="font-bold text-[#2563EB]">Hostamar ৳0 FREE</span> • Pictory $19 vs ৳0 • Veed $12 vs ৳0</div>
+          <div className="text-xs text-zinc-600">InVideo $17/mo vs <span className="font-bold text-[#0E7C3A]">Hostamar ৳0 FREE</span> • Pictory $19 vs ৳0 • Veed $12 vs ৳0</div>
         </div>
       </section>
 
@@ -108,7 +108,7 @@ export default function VideoGeneratePage() {
           ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
-          <span className="px-2.5 py-1 rounded-full bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">9:16 Reels</span>
+          <span className="px-2.5 py-1 rounded-full bg-[#EFF6FF] text-[#0E7C3A] border border-[#BFDBFE]">9:16 Reels</span>
           <span className="px-2.5 py-1 rounded-full bg-white border">16:9 YouTube</span>
           <span className="px-2.5 py-1 rounded-full bg-white border">1:1 Square</span>
           <span className="px-2.5 py-1 rounded-full bg-white border hidden sm:inline">4K export</span>
@@ -209,7 +209,7 @@ export default function VideoGeneratePage() {
 
       <div className="lg:hidden fixed bottom-0 inset-x-0 p-3 bg-white/95 backdrop-blur border-t border-zinc-200 flex items-center justify-between gap-3">
         <span className="text-sm font-semibold">৳0 FREE — 10 videos/mo</span>
-        <button onClick={start as unknown as () => void} disabled={loading || !promptBn.trim()} className="h-11 px-6 rounded-full bg-[#2563EB] text-white font-semibold disabled:bg-zinc-300">Generate →</button>
+        <button onClick={start as unknown as () => void} disabled={loading || !promptBn.trim()} className="h-11 px-6 rounded-full bg-[#0E7C3A] text-white font-semibold disabled:bg-zinc-300">Generate →</button>
       </div>
     </div>
   )

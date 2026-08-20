@@ -22,7 +22,7 @@ export default function ProfileTab({ profile, setProfile }: Props) {
             type="text"
             value={profile.name}
             onChange={(e) => update('name', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -31,7 +31,7 @@ export default function ProfileTab({ profile, setProfile }: Props) {
             type="email"
             value={profile.email}
             onChange={(e) => update('email', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
         <div>
@@ -40,7 +40,7 @@ export default function ProfileTab({ profile, setProfile }: Props) {
             type="tel"
             value={profile.phone}
             onChange={(e) => update('phone', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]"
           />
         </div>
       </div>
