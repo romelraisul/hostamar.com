@@ -2,43 +2,36 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Check, Sparkles, Zap, MessageSquare, Globe, Code2, Gamepad2, ShieldCheck, X } from 'lucide-react'
-import ROICalculator from '@/components/pricing/ROICalculator'
+import { Check, X, ShieldCheck, Sparkles } from 'lucide-react'
 
-const GREEN = '#0E7C3A'
+// Locked brand
+const PRIMARY = '#2563EB'
+const ACCENT = '#F59E0B'
+const TEXT = '#0F172A'
+const MUTED = '#475569'
 
-// Pricing structured data — real published BDT offers (no fabricated ratings).
+// SEO JSON-LD — real BDT offers only, no fake ratings
 const pricingJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Product',
-  name: 'Hostamar',
-  description: 'AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক সাবস্ক্রিপশনে। bKash, Nagad, Rocket।',
+  name: 'Hostamar AI Marketing + Hosting',
+  description: 'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও + BDIX হোস্টিং — 50+ বাংলা টেমপ্লেট, bKash/Nagad/Rocket।',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
-    { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Business', price: '3500', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Enterprise', price: '6000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
+    { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
+    { '@type': 'Offer', name: 'Pro', price: '3500', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
   ],
-  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '2000', highPrice: '6000', priceCurrency: 'BDT' },
 }
 
-type AnchorRow = { tool: string; cost: string; value: string }
-const ANCHOR: AnchorRow[] = [
-  { tool: 'ExonHost', cost: '৳২,০০০/yr', value: 'শুধু হোস্টিং' },
-  { tool: 'CapCut Pro', cost: '$১০/mo', value: 'শুধু ভিডিও' },
-  { tool: 'ChatGPT Plus', cost: '$২০/mo', value: 'শুধু চ্যাট' },
-  { tool: 'BrowserStack', cost: '$২৯/mo', value: 'শুধু ব্রাউজার' },
-  { tool: 'Replit', cost: '$২০/mo', value: 'শুধু IDE' },
-]
-
 type Plan = {
-  id: string
+  id: 'free' | 'starter' | 'pro'
   name: string
-  tagline: string
-  monthly: number
+  priceMonthly: number // BDT
+  priceEarlyMonthly?: number // Early 1000/mo promo
   badge?: string
+  tagline: string
   cta: string
-  ctaVariant: 'primary' | 'ghost' | 'dark'
   features: string[]
 }
 
@@ -46,101 +39,65 @@ const PLANS: Plan[] = [
   {
     id: 'free',
     name: 'Free',
-    tagline: 'ফ্রি — শুরু করুন',
-    monthly: 0,
+    priceMonthly: 0,
+    tagline: 'ট্রাই করুন — ক্রেডিট কার্ড লাগবে না',
     cta: 'ফ্রি শুরু করুন',
-    ctaVariant: 'ghost',
     features: [
-      'ভিডিও ৩টি (ওয়াটারমার্ক সহ)',
-      'চ্যাট ৫০ মেসেজ',
-      'ব্রাউজার ২০ সামারি',
-      'IDE ১০ ঘণ্টা',
-      'গেমিং ফ্রি প্লে',
+      '৩টি AI ভিডিও / মাস (ওয়াটারমার্ক সহ)',
+      '১GB BDIX হোস্টিং',
+      '৫০+ বাংলা টেমপ্লেট (প্রিভিউ)',
+      'Chat বেসিক',
+      '৭২০p এক্সপোর্ট',
     ],
   },
   {
     id: 'starter',
     name: 'Starter',
-    tagline: 'সলো ক্রিয়েটরদের জন্য',
-    monthly: 2000,
+    priceMonthly: 2000,
+    priceEarlyMonthly: 1000,
     badge: 'Most Popular',
-    cta: '৭ দিন ফ্রি ট্রায়াল',
-    ctaVariant: 'primary',
+    tagline: 'SME দের পছন্দ — ১০০ ভিডিও',
+    cta: 'Starter নিন',
     features: [
-      'ভিডিও ১০টি (ওয়াটারমার্ক ছাড়া)',
-      'হোস্টিং ৫GB SSD',
-      'চ্যাট আনলিমিটেড',
-      'ব্রাউজার আনলিমিটেড',
-      'IDE ১০০ ঘণ্টা',
-      'গেমিং ১০% ডিসকাউন্ট',
+      '১০০ AI ভিডিও / মাস (ওয়াটারমার্ক ছাড়া)',
+      '১০GB NVMe হোস্টিং + ফ্রি .com ডোমেইন',
+      '৫০+ বাংলা টেমপ্লেট (ঈদ, বৈশাখ, 11.11) সব',
+      'bKash / Nagad / Rocket',
+      '১০৮০p, No watermark',
+      'Priority সাপোর্ট',
     ],
   },
   {
-    id: 'business',
-    name: 'Business',
-    tagline: 'এজেন্সি ও টিম',
-    monthly: 3500,
-    cta: '৭ দিন ফ্রি ট্রায়াল',
-    ctaVariant: 'dark',
+    id: 'pro',
+    name: 'Pro',
+    priceMonthly: 3500,
+    priceEarlyMonthly: 1000,
+    tagline: 'এজেন্সি ও টিম — Unlimited',
+    cta: 'Pro নিন',
     features: [
-      'VPS 2CPU 4GB',
-      'ভিডিও ২০টি (৪K)',
-      'কাস্টম টপিকস',
-      'সোশাল শিডিউলার',
-      'চ্যাট API',
-      'IDE ৩০০ ঘণ্টা',
-      'প্রাইভেট টুর্নামেন্ট',
-    ],
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    tagline: 'আনলিমিটেড বিজনেস',
-    monthly: 6000,
-    cta: 'যোগাযোগ করুন',
-    ctaVariant: 'dark',
-    features: [
-      'আনলিমিটেড সবকিছু',
-      'হোয়াইট-লেবেল',
-      'আমরাই পোস্ট করে দেব',
-      'ডেডিকেটেড ম্যানেজার',
+      'Unlimited AI ভিডিও',
+      '২০GB NVMe + ফ্রি SSL',
+      'API এক্সেস + টিম ৫ জন',
+      'সব প্রোডাক্ট আনলিমিটেড',
+      '4K এক্সপোর্ট',
+      'Priority সাপোর্ট',
     ],
   },
 ]
 
-type Row = { label: string; free: string; starter: string; business: string; enterprise: string }
-const COMPARISON: Row[] = [
-  { label: 'ভিডিও', free: '৩টি (ওয়াটারমার্ক)', starter: '১০টি', business: '২০টি (৪K)', enterprise: 'আনলিমিটেড' },
-  { label: 'Hosting SSD', free: '—', starter: '৫ GB', business: 'VPS 2CPU/4GB', enterprise: 'আনলিমিটেড' },
-  { label: 'চ্যাট', free: '৫০ মেসেজ', starter: 'আনলিমিটেড', business: 'API সহ', enterprise: 'আনলিমিটেড + API' },
-  { label: 'ব্রাউজার', free: '২০ সামারি', starter: 'আনলিমিটেড', business: 'আনলিমিটেড', enterprise: 'আনলিমিটেড' },
-  { label: 'IDE', free: '১০ ঘণ্টা', starter: '১০০ ঘণ্টা', business: '৩০০ ঘণ্টা', enterprise: 'আনলিমিটেড' },
-  { label: 'গেমিং', free: 'ফ্রি প্লে', starter: '১০% ডিসকাউন্ট', business: 'প্রাইভেট টুর্নামেন্ট', enterprise: 'কাস্টম প্রাইজ' },
-  { label: 'SSL', free: '—', starter: 'ফ্রি', business: 'ফ্রি', enterprise: 'ফ্রি' },
-  { label: 'ব্যাকআপ', free: '—', starter: 'ডেইলি', business: 'আওয়ারলি', enterprise: 'রিয়েলটাইম' },
-  { label: 'সাপোর্ট', free: 'কমিউনিটি', starter: 'ইমেইল', business: 'প্রায়োরিটি', enterprise: 'ডেডিকেটেড' },
-]
-
-const FAQS = [
-  { q: 'HostSeba / ExonHost থেকে আলাদা কী?', a: 'ওরা শুধু হোস্টিং দেয়। আমরা AI ভিডিও + হোস্টিং + চ্যাট + ব্রাউজার + IDE + গেমিং — ৬ টি প্রোডাক্ট এক সাবস্ক্রিপশনে। একই ৳২,০০০-এ আপনি ৬ টুল পান।' },
-  { q: 'bKash দিয়ে পেমেন্ট কতক্ষণে অ্যাক্টিভ হবে?', a: 'ট্রাঞ্জেকশন আইডি দিলে ৩০ সেকেন্ডের মধ্যে আপনার প্ল্যান অ্যাক্টিভ হয়ে যায়। Nagad ও Rocket-ও সাপোর্ট করি।' },
-  { q: 'ওয়াটারমার্ক কবে থাকে?', a: 'Free প্ল্যানে ছোট ওয়াটারমার্ক থাকে। Starter এবং তার ওপরের যেকোনো প্ল্যানে ওয়াটারমার্ক পুরোপুরি চলে যায়।' },
-  { q: 'যেকোনো সময় Cancel করা যাবে?', a: 'হ্যাঁ। ৭ দিন ফ্রি ট্রায়াল — কোনো ক্রেডিট কার্ড লাগে না। পছন্দ না হলে যেকোনো সময় Cancel করতে পারেন, আর চার্জও হবে না।' },
-  { q: 'ডিস্ক স্পেস কতটুকু?', a: 'Starter-এ ৫GB SSD, Business-এ VPS 2CPU/4GB, Enterprise-এ আনলিমিটেড। ভিডিও, হোস্টিং ও ব্যাকআপ সব একই স্টোরেজে।' },
-  { q: 'গেমিং টুর্নামেন্টের পেআউট কীভাবে?', a: 'Business-এ প্রাইভেট টুর্নামেন্ট খুলতে পারেন, Enterprise-এ কাস্টম প্রাইজ পুল। বিজয়ীদের bKash-এ পেআউট আমরাই হ্যান্ডেল করি।' },
+const COMPARISON = [
+  { label: 'AI মার্কেটিং ভিডিও', hostSeba: '—', hostamar: '✓ ৫০+ বাংলা টেমপ্লেট' },
+  { label: 'হোস্টিং', hostSeba: '১০GB SSD / ১২০GB BW', hostamar: '১০GB NVMe + .com ফ্রি' },
+  { label: 'পেমেন্ট', hostSeba: 'bKash (হোস্টিং)', hostamar: 'bKash / Nagad / Rocket' },
+  { label: 'বাৎসরিক খরচ', hostSeba: '৳২,২০০/yr', hostamar: '৳২,০০০/yr' },
+  { label: 'ভ্যালু', hostSeba: 'No AI', hostamar: 'AI সহ — ৩× ভ্যালু' },
 ]
 
 export default function PricingPage() {
-  const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly')
+  const [early, setEarly] = useState(false)
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null)
 
-  // Real bKash checkout: no mock. POST create-checkout -> 302 to bkashURL.
-  async function startCheckout(plan: string) {
-    if (plan === 'free' || plan === 'enterprise') {
-      // free -> signup; enterprise -> sales contact
-      window.location.href = plan === 'free' ? `/signup?plan=${plan}` : '/contact?plan=enterprise'
-      return
-    }
+  async function startCheckout(plan: 'starter' | 'pro') {
     setCheckoutPlan(plan)
     try {
       const res = await fetch('/api/billing/create-checkout', {
@@ -148,12 +105,14 @@ export default function PricingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       })
-      const data = await res.json()
-      if (!res.ok || !data.bkashURL) {
-        // not signed in or bKash misconfigured -> fall back to signup
+      const data = await res.json().catch(() => null)
+      if (!res.ok || !data?.bkashURL) {
         window.location.href = `/signup?plan=${plan}`
         return
       }
+      // GA4
+      try { (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.('event', 'bkash_click', { plan }) } catch {}
+      try { (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.('event', 'pricing_click', { plan }) } catch {}
       window.location.href = data.bkashURL
     } catch {
       window.location.href = `/signup?plan=${plan}`
@@ -163,298 +122,173 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }}
-      />
-      {/* Top banner */}
-      <div className="w-full bg-[#0E7C3A] text-white text-[13px] md:text-sm">
-        <div className="mx-auto max-w-[1240px] px-4 md:px-6 py-2.5 flex items-center justify-center gap-2 text-center">
-          <span className="bangla font-medium tracking-[-0.01em]">
-            ৭ দিন ফ্রি ট্রায়াল — কোনো ক্রেডিট কার্ড লাগবে না • যেকোনো সময় Cancel
+    <div className="min-h-screen bg-[#FFFFFF] text-[#0F172A]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }} />
+
+      {/* Top — 7 day refund badge */}
+      <div className="w-full bg-[#F8FAFC] border-b border-[#E2E8F0]">
+        <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 py-2 flex flex-wrap items-center justify-center gap-2 text-[12px]">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#E2E8F0] px-2.5 py-1">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#2563EB]" /> ৭ দিন মানি-ব্যাক গ্যারান্টি
           </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] text-white px-2.5 py-1 font-semibold">bKash • Nagad • Rocket</span>
+          <span className="text-[#475569]">ক্রেডিট কার্ড লাগবে না</span>
         </div>
       </div>
 
       {/* Hero */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pt-12 md:pt-20 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium text-zinc-600 mb-5">
-          <Sparkles className="h-3.5 w-3.5 text-[#0E7C3A]" /> Simple Pricing
+      <section className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 pt-8 sm:pt-12 md:pt-16 pb-6 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-1 text-[12px] font-medium text-[#475569]">
+          <Sparkles className="h-3.5 w-3.5 text-[#2563EB]" /> Simple Pricing
         </div>
-        <h1 className="text-[34px] md:text-[52px] font-bold tracking-[-0.03em] leading-[1.05]">
-          সব প্রোডাক্ট, <span style={{ color: GREEN }}>এক দামে</span>
+        <h1 className="mt-4 text-[30px] sm:text-[36px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.05]">
+          AI + হোস্টিং, <span style={{ color: PRIMARY }}>এক দামে</span>
         </h1>
-        <p className="bangla mt-4 text-[15px] md:text-[17px] text-zinc-500 max-w-[640px] mx-auto">
-          ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE আর গেমিং — ৬ টি টুল এক সাবস্ক্রিপশনে।
-          bKash, Nagad, Rocket দিয়ে ৩০ সেকেন্ডে শুরু করুন।
+        <p className="mt-3 text-[14px] sm:text-[16px] text-[#475569] max-w-[640px] mx-auto leading-[1.6]">
+          ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE — সব এক সাবস্ক্রিপশনে। bKash দিয়ে ৩০ সেকেন্ডে শুরু।
         </p>
 
-        {/* Monthly / Yearly toggle */}
-        <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1">
-          <button
-            onClick={() => setCycle('monthly')}
-            className={`rounded-full px-5 py-2 text-[14px] font-medium transition ${
-              cycle === 'monthly' ? 'bg-zinc-900 text-white' : 'text-zinc-600'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setCycle('yearly')}
-            className={`rounded-full px-5 py-2 text-[14px] font-medium transition ${
-              cycle === 'yearly' ? 'bg-zinc-900 text-white' : 'text-zinc-600'
-            }`}
-          >
-            Yearly <span className="ml-1 text-[12px] text-[#0E7C3A] font-semibold">সেভ ২০%</span>
-          </button>
+        {/* Early toggle — ৳1000/mo */}
+        <div className="mt-6 flex flex-col items-center gap-2">
+          <div className="inline-flex items-center gap-1 rounded-full border border-[#E2E8F0] bg-white p-1">
+            <button
+              onClick={() => setEarly(false)}
+              className={`rounded-full px-4 sm:px-5 py-2 text-[13px] sm:text-[14px] font-medium transition ${!early ? 'bg-[#0F172A] text-white' : 'text-[#475569]'}`}
+            >
+              Regular
+            </button>
+            <button
+              onClick={() => setEarly(true)}
+              className={`rounded-full px-4 sm:px-5 py-2 text-[13px] sm:text-[14px] font-medium transition ${early ? 'bg-[#F59E0B] text-white' : 'text-[#475569]'}`}
+            >
+              Early ৳১০০০/mo <span className="ml-1 text-[11px] opacity-90">সেভ ৫০%</span>
+            </button>
+          </div>
+          <p className="text-[11px] text-[#64748B]">Early: প্রথম ১০০ কাস্টমার — {early ? 'প্রযোজ্য' : 'টগল করুন'}</p>
         </div>
       </section>
 
-      {/* Pricing cards */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6">
-        <div className="grid gap-5 lg:grid-cols-4 items-stretch">
+      {/* 3 cards — exactly Free/Starter/Pro, single CTA per card */}
+      <section className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0">
+        <div className="grid gap-4 md:gap-5 md:grid-cols-3 items-stretch">
           {PLANS.map((p) => {
-            const popular = p.id === 'starter'
-            const yearly = cycle === 'yearly' && p.monthly > 0
+            const isPopular = p.id === 'starter'
+            const displayPrice = early && p.priceEarlyMonthly !== undefined ? p.priceEarlyMonthly : p.priceMonthly
             return (
               <div
                 key={p.id}
-                className={`relative flex flex-col rounded-[20px] border bg-white p-6 ${
-                  popular
-                    ? 'border-[#0E7C3A] shadow-[0_20px_60px_-20px_rgba(14,124,58,0.35)] ring-1 ring-[#0E7C3A]/20 lg:-mt-3 lg:pb-10'
-                    : 'border-zinc-200 hover:border-zinc-300 hover:shadow-[0_12px_32px_-16px_rgba(0,0,0,0.12)]'
+                className={`relative flex flex-col rounded-[20px] border bg-white p-5 sm:p-6 ${
+                  isPopular
+                    ? 'border-[#2563EB] shadow-[0_16px_40px_-16px_rgba(37,99,235,0.35)] ring-1 ring-[#2563EB]/15 md:-mt-2 md:pb-8'
+                    : 'border-[#E2E8F0]'
                 }`}
               >
                 {p.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <div className="rounded-full bg-[#0E7C3A] px-3.5 py-1 text-[11px] font-bold tracking-wide text-white shadow">
-                      {p.badge}
-                    </div>
+                    <div className="rounded-full bg-[#2563EB] px-3 py-1 text-[11px] font-bold text-white shadow">{p.badge}</div>
                   </div>
                 )}
-                <div className="mb-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-[20px] font-semibold tracking-tight">{p.name}</h3>
-                      <p className="bangla mt-0.5 text-[13px] text-zinc-500">{p.tagline}</p>
-                    </div>
-                    {p.id === 'free' && (
-                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium">চিরকাল ফ্রি</span>
-                    )}
+                <div>
+                  <h3 className="text-[18px] font-semibold tracking-tight">{p.name}</h3>
+                  <p className="mt-0.5 text-[12px] text-[#64748B]">{p.tagline}</p>
+                  <div className="mt-4 flex items-baseline gap-1">
+                    <span className="text-[32px] font-bold tracking-[-0.03em]">৳{displayPrice.toLocaleString('en-US')}</span>
+                    <span className="text-[13px] text-[#64748B]">/মাস</span>
                   </div>
-                  <div className="mt-5 flex items-baseline gap-1.5">
-                    <span className="text-[34px] font-bold tracking-[-0.03em] leading-none">৳{p.monthly.toLocaleString()}</span>
-                    <span className="text-[13px] text-zinc-500">/month</span>
-                  </div>
-                  {yearly && (
-                    <div className="mt-1.5 flex items-center gap-2 text-[12px]">
-                      <span className="line-through text-zinc-400">৳{p.monthly.toLocaleString()}</span>
-                      <span className="rounded-full bg-[#0E7C3A]/10 px-2 py-0.5 font-medium text-[#0E7C3A]">
-                        ৳{Math.round(p.monthly * 0.8 * 12).toLocaleString()} / year
-                      </span>
+                  {early && p.priceMonthly > 0 && (
+                    <div className="mt-1 text-[12px] text-[#64748B]">
+                      <span className="line-through">৳{p.priceMonthly.toLocaleString('en-US')}</span>
+                      <span className="ml-2 rounded-full bg-[#F59E0B]/15 px-2 py-0.5 font-semibold text-[#92400E]">Early ৳১০০০</span>
                     </div>
                   )}
                 </div>
 
-                <div className="mb-6 space-y-2.5">
+                <ul className="mt-5 space-y-2.5">
                   {p.features.map((f) => (
-                    <div key={f} className="flex items-start gap-2.5 text-[13.5px] leading-6">
-                      <span className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${popular ? 'bg-[#0E7C3A] text-white' : 'bg-zinc-900 text-white'}`}>
+                    <li key={f} className="flex items-start gap-2 text-[13px] leading-6">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-white">
                         <Check className="h-3 w-3" />
                       </span>
-                      <span className="bangla text-zinc-700">{f}</span>
-                    </div>
+                      <span className="text-[#334155]">{f}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
 
-                <div className="mt-auto">
-                  {p.id === 'free' || p.id === 'enterprise' ? (
+                <div className="mt-6">
+                  {p.id === 'free' ? (
                     <Link
-                      href={`/signup?plan=${p.id}`}
-                      className={`flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[14px] font-semibold transition ${
-                        p.ctaVariant === 'primary'
-                          ? 'bg-[#0E7C3A] text-white hover:bg-[#0c6a31] shadow-[0_8px_20px_-10px_rgba(14,124,58,0.6)]'
-                          : p.ctaVariant === 'dark'
-                          ? 'bg-zinc-900 text-white hover:bg-black'
-                          : 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200'
-                      }`}
+                      href="/signup?plan=free"
+                      data-ga="pricing_click"
+                      className="flex h-11 w-full items-center justify-center rounded-full border border-[#E2E8F0] bg-white text-[14px] font-semibold hover:bg-[#F8FAFC]"
                     >
                       {p.cta}
                     </Link>
                   ) : (
                     <button
-                      onClick={() => startCheckout(p.id)}
+                      onClick={() => startCheckout(p.id as 'starter' | 'pro')}
                       disabled={checkoutPlan !== null}
-                      className={`flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[14px] font-semibold transition disabled:opacity-60 ${
-                        p.ctaVariant === 'primary'
-                          ? 'bg-[#0E7C3A] text-white hover:bg-[#0c6a31] shadow-[0_8px_20px_-10px_rgba(14,124,58,0.6)]'
-                          : 'bg-zinc-900 text-white hover:bg-black'
-                      }`}
+                      data-ga="pricing_click"
+                      className="flex h-11 w-full items-center justify-center rounded-full bg-[#2563EB] text-[14px] font-semibold text-white hover:bg-[#1D4ED8] disabled:opacity-60 shadow-[0_8px_20px_-10px_rgba(37,99,235,0.6)]"
                     >
-                      {checkoutPlan === p.id ? 'bKash-এ নিয়ে যাওয়া হচ্ছে…' : `Pay with bKash — ${p.cta}`}
+                      {checkoutPlan === p.id ? 'bKash-এ নিয়ে যাচ্ছি…' : `${p.cta} — bKash`}
                     </button>
                   )}
-                  {popular && (
-                    <p className="bangla mt-3 text-center text-[11px] leading-4 text-zinc-500">
-                      ৭ দিন ফ্রি • Cancel anytime • bKash এ পে করুন
-                    </p>
-                  )}
-                </div>
-
-                {/* Bundle chips */}
-                <div className="mt-5 rounded-2xl bg-[#FCFCF9] border border-zinc-200/80 p-3">
-                  <div className="text-[11px] font-medium tracking-wide text-zinc-500 uppercase">Included in bundle</div>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {[
-                      { l: 'Video', i: Zap },
-                      { l: 'Hosting', i: ShieldCheck },
-                      { l: 'Chat', i: MessageSquare },
-                      { l: 'Browser', i: Globe },
-                      { l: 'IDE', i: Code2 },
-                      { l: 'Gaming', i: Gamepad2 },
-                    ].map(({ l, i: Ic }) => (
-                      <span key={l} className="inline-flex items-center gap-1 rounded-full bg-white border border-zinc-200 px-2.5 py-1 text-[11px] font-medium">
-                        <Ic className="h-3 w-3 text-zinc-500" /> {l}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               </div>
             )
           })}
         </div>
 
-        {/* Bundle objection killer */}
-        <div className="mx-auto mt-6 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 rounded-full bg-white border border-zinc-200 px-4 py-3 text-[13px] text-zinc-600 shadow-sm">
-          <span className="inline-flex items-center gap-1.5 font-medium text-zinc-900">
-            <Zap className="h-4 w-4" /> Video Business কিনলে Hosting Free
-          </span>
-          <span className="hidden md:block h-3 w-px bg-zinc-200" />
-          <span className="bangla">সব প্ল্যানে bKash, Nagad, Rocket • ৭ দিন ফ্রি ট্রায়াল • SSL ফ্রি</span>
-        </div>
+        <p className="mt-4 text-center text-[11px] text-[#64748B]">Annual: ৳২,০০০/yr Starter • ৳৩,৫০০/yr Pro • bKash/Nagad/Rocket • ভ্যাট সহ ইনভয়েস</p>
       </section>
 
-      {/* Competitor anchor — pain of 5 tools (৳8000+/mo) vs ৳3500 all-in */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 py-12 md:py-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="bangla text-[28px] md:text-[36px] font-bold tracking-[-0.02em] leading-tight">
-            ৫টি টুলের বিল ৳৮,০০০+ — নাকি এক সাবস্ক্রিপশন ৳৩,৫০০?
-          </h2>
-          <p className="bangla mt-3 text-zinc-600">
-            আপনি এখনই আলাদা আলাদা টুলে যা দিচ্ছেন, তার সব একসাথে Hostamar Business-এ
-          </p>
-        </div>
-
-        <div className="mt-8 overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-sm">
+      {/* Comparison table — HostSeba vs Hostamar */}
+      <section className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 py-10 md:py-12">
+        <h2 className="text-center text-[20px] sm:text-[24px] font-bold tracking-[-0.02em]">৳২২০০ No AI vs ৳২,০০০ AI সহ</h2>
+        <p className="mt-2 text-center text-[13px] text-[#475569]">HostSeba/ExonHost শুধু হোস্টিং — Hostamar দেয় AI ভিডিও সহ</p>
+        <div className="mt-6 overflow-hidden rounded-[16px] border border-[#E2E8F0] bg-white">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-[13.5px]">
+            <table className="w-full min-w-[520px] text-[13px]">
               <thead>
-                <tr className="border-b border-zinc-200 bg-[#FCFCF9]">
-                  <th className="px-5 py-4 text-left font-semibold text-zinc-500">টুল</th>
-                  <th className="px-5 py-4 text-center font-semibold text-zinc-900">খরচ</th>
-                  <th className="px-5 py-4 text-left font-semibold text-zinc-900">কী পান</th>
+                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                  <th className="px-4 py-3 text-left font-semibold text-[#475569]">ফিচার</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#475569]">HostSeba (৳২২০০/yr)</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#2563EB]">Hostamar (৳২,০০০/yr)</th>
                 </tr>
               </thead>
               <tbody>
-                {ANCHOR.map((r, idx) => (
-                  <tr key={r.tool} className={idx % 2 ? 'bg-[#FCFCF9]/50' : ''}>
-                    <td className="px-5 py-3.5 font-medium text-zinc-900">
-                      <span className="inline-flex items-center gap-2">
-                        <X className="h-3.5 w-3.5 text-red-400" /> {r.tool}
-                      </span>
+                {COMPARISON.map((r, i) => (
+                  <tr key={r.label} className={i % 2 ? 'bg-[#F8FAFC]/60' : 'bg-white'}>
+                    <td className="px-4 py-3 font-medium text-[#0F172A]">{r.label}</td>
+                    <td className="px-4 py-3 text-center text-[#64748B]">
+                      <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-[#94A3B8]" /> {r.hostSeba}</span>
                     </td>
-                    <td className="px-5 py-3.5 text-center text-zinc-600">{r.cost}</td>
-                    <td className="bangla px-5 py-3.5 text-zinc-500">{r.value}</td>
-                  </tr>
-                ))}
-                <tr className="border-t-2 border-zinc-200 bg-red-50/60">
-                  <td className="bangla px-5 py-4 font-bold text-zinc-900">মোট খরচ (৫ টুল)</td>
-                  <td className="px-5 py-4 text-center font-bold text-red-500">৳৮,০০০+/mo</td>
-                  <td className="bangla px-5 py-4 text-zinc-500">আলাদা আলাদা, কেউ কারো সাথে কথা বলে না</td>
-                </tr>
-                <tr className="bg-[#0E7C3A]/8">
-                  <td className="px-5 py-4 font-bold text-[#0E7C3A]">
-                    <span className="inline-flex items-center gap-2">
-                      <Check className="h-4 w-4" /> Hostamar Business
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-center font-bold text-[#0E7C3A]">৳৩,৫০০/mo all-in</td>
-                  <td className="bangla px-5 py-4 font-semibold text-zinc-900">
-                    ৭টি প্রোডাক্ট + SSO + সাপোর্ট + স্ট্যাটাস পেজ
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="bangla border-t border-zinc-200 bg-white px-5 py-4 text-center text-[15px] font-semibold text-[#0E7C3A]">
-            ৳৮,০০০+ → ৳৩,৫০০ = প্রায় ৫৬% সাশ্রয়
-          </div>
-        </div>
-      </section>
-
-      {/* ROI calculator (bn-BD) */}
-      <ROICalculator />
-
-      {/* Plan-tier comparison table */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 py-12 md:py-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="bangla text-[28px] md:text-[36px] font-bold tracking-[-0.02em] leading-tight">
-            সব ফিচার এক নজরে তুলনা করুন
-          </h2>
-          <p className="bangla mt-3 text-zinc-600">
-            একই দামে কেন HostAmar বেস্ট ভ্যালু — ৬ টি প্রোডাক্ট একসাথে
-          </p>
-        </div>
-
-        <div className="mt-8 overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-[13.5px]">
-              <thead>
-                <tr className="border-b border-zinc-200 bg-[#FCFCF9]">
-                  <th className="px-5 py-4 text-left font-semibold text-zinc-500">ফিচার</th>
-                  {['Free', 'Starter', 'Business', 'Enterprise'].map((h) => (
-                    <th key={h} className={`px-5 py-4 text-center font-semibold ${h === 'Starter' ? 'text-[#0E7C3A]' : 'text-zinc-900'}`}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARISON.map((r, idx) => (
-                  <tr key={r.label} className={idx % 2 ? 'bg-[#FCFCF9]/50' : ''}>
-                    <td className="px-5 py-3.5 font-medium text-zinc-900">{r.label}</td>
-                    {[r.free, r.starter, r.business, r.enterprise].map((v, i) => (
-                      <td key={i} className={`px-5 py-3.5 text-center bangla ${i === 1 ? 'font-semibold text-[#0E7C3A]' : 'text-zinc-600'}`}>
-                        {v}
-                      </td>
-                    ))}
+                    <td className="px-4 py-3 text-center font-semibold text-[#0F172A]">
+                      <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-[#2563EB]" /> {r.hostamar}</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <div className="border-t border-[#E2E8F0] bg-[#2563EB]/5 px-4 py-3 text-center text-[13px] font-semibold text-[#0F172A]">
+            একই ৳২,০০০-এ হোস্টিং + ৫০+ বাংলা টেমপ্লেট + bKash — ৩× ভ্যালু
+          </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="mx-auto max-w-[760px] px-4 md:px-6 pb-20">
-        <h2 className="bangla text-center text-[28px] md:text-[34px] font-bold tracking-[-0.02em]">
-          সচরাচর জিজ্ঞাসা
-        </h2>
-        <div className="mt-8 space-y-3">
-          {FAQS.map((f) => (
-            <details key={f.q} className="group rounded-2xl border border-zinc-200 bg-white px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex cursor-pointer items-center justify-between gap-3 text-[15px] font-medium text-zinc-900">
-                <span className="bangla">{f.q}</span>
-                <span className="text-[#0E7C3A] transition group-open:rotate-45">+</span>
-              </summary>
-              <p className="bangla mt-3 text-[14px] leading-6 text-zinc-600">{f.a}</p>
-            </details>
-          ))}
+      {/* Bottom CTA — gradient ALLOWED 1x per page, final CTA only */}
+      <section className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 pb-12">
+        <div className="rounded-[20px] p-[1px]" style={{ background: `linear-gradient(135deg, ${PRIMARY}, ${ACCENT})` }}>
+          <div className="rounded-[19px] bg-white px-6 py-6 sm:py-8 text-center">
+            <h3 className="text-[18px] sm:text-[20px] font-bold">ফ্রিতে শুরু করুন — ৭ দিন মানি-ব্যাক</h3>
+            <p className="mt-1 text-[13px] text-[#475569]">SSL সুরক্ষিত • ভ্যাট সহ ইনভয়েস • যেকোনো সময় Cancel</p>
+            <Link href="/generate" className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[#2563EB] px-6 text-[14px] font-semibold text-white hover:bg-[#1D4ED8]">
+              ফ্রিতে ভিডিও বানান - ৳০
+            </Link>
+          </div>
         </div>
       </section>
-
     </div>
   )
 }

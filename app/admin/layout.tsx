@@ -1,54 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { 
-  LayoutDashboard, 
-  Users, 
-  Video, 
-  Server, 
-  CreditCard, 
-  Settings, 
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import {
+  LayoutDashboard,
+  Users,
+  Coins,
+  Receipt,
+  Cpu,
+  Package,
+  Server,
   LogOut,
   Menu,
   X,
-  BarChart3,
-  ShoppingCart,
-  Gift,
   User,
-  Mail,
 } from 'lucide-react'
 
-interface AdminUser {
-  id: string
-  name: string
-  email: string
-}
-
 const navItems = [
-  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/admin/customers', icon: Users, label: 'Customers' },
-  { href: '/admin/videos', icon: Video, label: 'Videos' },
-  { href: '/admin/services', icon: Server, label: 'Services' },
-  { href: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
-  { href: '/admin/payments', icon: ShoppingCart, label: 'Payments' },
-  { href: '/admin/orders', icon: Gift, label: 'Orders' },
-  { href: '/admin/ecosystem', icon: BarChart3, label: 'Ecosystem' },
-  { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/admin/settings', icon: Settings, label: 'Settings' },
+  { id: 'overview', href: '/admin?tab=overview', icon: LayoutDashboard, label: 'Overview' },
+  { id: 'users', href: '/admin?tab=users', icon: Users, label: 'Users' },
+  { id: 'credits', href: '/admin?tab=credits', icon: Coins, label: 'Credits' },
+  { id: 'transactions', href: '/admin?tab=transactions', icon: Receipt, label: 'Transactions' },
+  { id: 'models', href: '/admin?tab=models', icon: Cpu, label: 'Models' },
+  { id: 'products', href: '/admin?tab=products', icon: Package, label: 'Products' },
+  { id: 'hosting', href: '/admin?tab=hosting', icon: Server, label: 'Hosting' },
+  { id: 'nodes', href: '/admin/nodes', icon: Server, label: 'Nodes' },
 ]
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
   const [userLoading, setUserLoading] = useState(true)
+
+  // Derive active tab from ?tab= query; defaults to overview.
+  // Also supports legacy /admin/users style via pathname fallback.
+  const tabParam = searchParams.get('tab')
+  const pathTab = pathname?.startsWith('/admin/') ? pathname.split('/')[2] : null
+  const activeTab = tabParam || pathTab || 'overview'
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -64,8 +56,8 @@ export default function AdminLayout({
             })
           }
         }
-      } catch (err) {
-        console.error('Failed to fetch user:', err)
+      } catch {
+        // ignore
       } finally {
         setUserLoading(false)
       }
@@ -77,95 +69,113 @@ export default function AdminLayout({
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
       router.push('/login')
-    } catch (error) {
-      console.error('Logout failed:', error)
+    } catch (e) {
+      console.error('Logout failed', e)
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-[#050A06] text-white">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 rounded-lg hover:bg-slate-800"
-        >
-          <Menu className="w-6 h-6" />
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-black border-b border-[#0E7C3A]/30 px-4 py-3 flex items-center justify-between">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg hover:bg-[#0E7C3A]/20 border border-transparent hover:border-[#0E7C3A]/30">
+          <Menu className="w-6 h-6 text-[#10B981]" />
         </button>
-        <span className="font-bold text-xl">Hostamar Admin</span>
+        <span className="font-bold text-lg tracking-widest text-white">
+          HOSTAMAR <span className="text-[#10B981]">ADMIN</span>
+        </span>
         <div className="w-10" />
       </div>
 
-      {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="lg:hidden fixed inset-0 bg-black/70 z-40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <aside className={`...`}>
+      {/* Sidebar - green/black hybrid */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-[280px] bg-black border-r border-[#0E7C3A]/30 flex flex-col transition-transform duration-200 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="px-6 py-5 border-b border-slate-700">
-            <Link href="/admin" className="font-bold text-2xl text-blue-400">
-              Hostamar
+          <div className="px-6 py-6 border-b border-[#0E7C3A]/20">
+            <Link href="/admin?tab=overview" className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center font-black text-white text-sm">
+                H
+              </div>
+              <div>
+                <div className="font-black tracking-widest text-white text-[15px] leading-none">HOSTAMAR</div>
+                <div className="text-[10px] tracking-[0.2em] text-[#10B981] font-semibold -mt-0.5">ADMIN CONSOLE</div>
+              </div>
             </Link>
-            <p className="text-xs text-slate-400 mt-1">Admin Panel</p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span className="text-[10px] tracking-widest text-zinc-500">GREEN / BLACK HYBRID</span>
+            </div>
           </div>
 
-          {/* Close button for mobile */}
-          <button 
-            className="lg:hidden absolute top-3 right-3 p-2"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <X className="w-5 h-5" />
+          <button className="lg:hidden absolute top-4 right-4 p-2 rounded-lg bg-[#0E7C3A]/10 border border-[#0E7C3A]/20" onClick={() => setSidebarOpen(false)}>
+            <X className="w-5 h-5 text-[#10B981]" />
           </button>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 space-y-1">
+          {/* Navigation - 7 tabs */}
+          <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+            <div className="text-[10px] tracking-[0.18em] text-zinc-600 px-3 mb-2 font-semibold">NAVIGATION</div>
             {navItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = activeTab === item.id
               return (
                 <Link
-                  key={item.href}
+                  key={item.id}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`...`}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all border ${
+                    isActive
+                      ? 'bg-[#0E7C3A] text-white border-[#10B981] shadow-[0_0_20px_rgba(16,185,129,0.25)] font-semibold'
+                      : 'text-zinc-400 border-transparent hover:bg-[#0E7C3A]/10 hover:text-white hover:border-[#0E7C3A]/20'
+                  }`}
                 >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : 'text-zinc-500'}`} />
+                  <span>{item.label}</span>
+                  {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />}
                 </Link>
               )
             })}
+
+            <div className="pt-4 mt-4 border-t border-[#0E7C3A]/10">
+              <div className="text-[10px] tracking-[0.18em] text-zinc-600 px-3 mb-2 font-semibold">SYSTEM</div>
+              <div className="px-3 py-2 rounded-xl bg-[#0E7C3A]/10 border border-[#0E7C3A]/20">
+                <div className="text-xs text-zinc-300">6 Products · BDIX</div>
+                <div className="text-[11px] text-zinc-500">99.97% uptime · 18-22ms</div>
+              </div>
+            </div>
           </nav>
 
-          {/* User Section */}
-          <div className="border-t border-slate-700 p-4">
+          {/* User */}
+          <div className="border-t border-[#0E7C3A]/20 p-4 bg-gradient-to-t from-[#0E7C3A]/10 to-transparent">
             {userLoading ? (
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-slate-700 animate-pulse flex items-center justify-center" />
-                <div className="flex-1 min-w-0">
-                  <div className="h-4 bg-slate-700 rounded w-3/4 animate-pulse" />
-                  <div className="h-3 bg-slate-700 rounded w-1/2 animate-pulse mt-1" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-zinc-800 animate-pulse" />
+                <div className="flex-1">
+                  <div className="h-3 bg-zinc-800 rounded w-3/4 animate-pulse" />
+                  <div className="h-2 bg-zinc-800 rounded w-1/2 animate-pulse mt-2" />
                 </div>
               </div>
             ) : (
               <>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center">
                     <User className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{user?.name || 'Admin'}</p>
-                    <p className="text-xs text-slate-400 truncate">{user?.email || 'admin@hostamar.com'}</p>
-                    <p className="text-[10px] text-slate-500 truncate mt-0.5">ID: {user?.id || '—'}</p>
+                    <p className="font-semibold text-sm truncate text-white">{user?.name || 'Admin'}</p>
+                    <p className="text-xs text-zinc-500 truncate">{user?.email || 'admin@hostamar.com'}</p>
+                    <p className="text-[10px] text-zinc-600 truncate mt-0.5 font-mono">ID: {(user?.id || '—').slice(0, 12)}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 text-slate-300 hover:text-red-400 w-full px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+                  className="flex items-center gap-2 text-zinc-400 hover:text-white w-full px-3 py-2 rounded-xl hover:bg-[#0E7C3A]/10 border border-transparent hover:border-[#0E7C3A]/20 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   <span className="text-sm">Logout</span>
@@ -175,6 +185,13 @@ export default function AdminLayout({
           </div>
         </div>
       </aside>
+
+      {/* Main content */}
+      <div className="lg:pl-[280px]">
+        <div className="pt-[56px] lg:pt-0">
+          <div className="min-h-screen bg-[#050A06]">{children}</div>
+        </div>
+      </div>
     </div>
   )
 }

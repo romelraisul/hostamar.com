@@ -24,10 +24,10 @@ export async function POST(request: Request) {
     }
 
     // Get customer to check credits
-    const customer = await prisma.customer.findUnique({
-      where: { id: authUser.id },
-      select: { credits: true, subscription: { select: { videosPerMonth: true, price: true } } }
-    })
+        const customer = await prisma.customer.findUnique({
+          where: { id: authUser.id },
+          select: { credits: true }
+        })
 
     if (!customer) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     // Get active subscription to check limits
     const subscription = await prisma.subscription.findFirst({
-      where: { 
+      where: {
         customerId: authUser.id,
         status: 'active',
       },
@@ -58,16 +58,16 @@ export async function POST(request: Request) {
 
     // Check monthly video limit
     if (videosThisMonth >= videosPerMonth) {
-      return NextResponse.json({ 
-        error: `Monthly video limit reached (${videosPerMonth} videos). Upgrade your plan for more.` 
+      return NextResponse.json({
+        error: `Monthly video limit reached (${videosPerMonth} videos). Upgrade your plan for more.`
       }, { status: 403 })
     }
 
     // Check credits
     const currentCredits = customer.credits || 0
     if (currentCredits < videoCost) {
-      return NextResponse.json({ 
-        error: `Insufficient credits. Need ${videoCost} credits, have ${currentCredits}. Please add credits.` 
+      return NextResponse.json({
+        error: `Insufficient credits. Need ${videoCost} credits, have ${currentCredits}. Please add credits.`
       }, { status: 403 })
     }
 
@@ -75,9 +75,8 @@ export async function POST(request: Request) {
     await prisma.customer.update({
       where: { id: authUser.id },
       data: { credits: { decrement: videoCost } }
-    )
+    })
 
-    // Create video entry
     const video = await prisma.video.create({
       data: {
         customerId: authUser.id,
@@ -115,7 +114,7 @@ export async function POST(request: Request) {
         description: `Created video: ${title} (cost: ${videoCost} credits, remaining: ${currentCredits - videoCost})`,
         metadata: JSON.stringify({ videoId: video.id, cost: videoCost, creditsRemaining: currentCredits - videoCost }),
       }
-    )
+    })
 
     // Create credit transaction record
     await prisma.creditTransaction.create({
@@ -128,8 +127,8 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       video: {
         id: video.id,
         title: video.title,

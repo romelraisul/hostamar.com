@@ -23,14 +23,35 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   const otherProducts = PRODUCTS.filter((p) => p.slug !== product.slug).slice(0, 3)
 
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://hostamar.com' },
+      { '@type': 'ListItem', position: 2, name: 'Products', item: 'https://hostamar.com/products' },
+      { '@type': 'ListItem', position: 3, name: product.nameBn, item: `https://hostamar.com/products/${product.slug}` },
+    ],
+  }
+  const productLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: product.nameBn,
+    alternateName: product.nameEn,
+    description: product.description,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'BDT', url: `https://hostamar.com/products/${product.slug}` },
+    provider: { '@type': 'Organization', name: 'Hostamar', url: 'https://hostamar.com' },
+  }
+
   const statusInfo = {
-    live:   { label: '✅ এখনই ব্যবহার করুন',   cls: 'bg-[#0E7C3A]/10 text-[#0E7C3A] border-[#0E7C3A]/20',   hint: 'কোনো waitlist নেই — সরাসরি ফ্রি ট্রায়াল শুরু করুন।' },
+    live:   { label: '✅ এখনই ব্যবহার করুন',   cls: 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/20',   hint: 'কোনো waitlist নেই — সরাসরি ফ্রি ট্রায়াল শুরু করুন।' },
     beta:   { label: '🧪 বেটা চলছে',              cls: 'bg-amber-100 text-amber-700 border-amber-300',   hint: 'সীমিত ব্যবহারকারীকে অ্যাক্সেস দেওয়া হচ্ছে — ফ্রি ব্যবহার করুন এবং ফিডব্যাক দিন।' },
     planned:{ label: '🔜 শীঘ্রই আসছে',            cls: 'bg-zinc-100 text-zinc-600 border-zinc-300',   hint: 'এই পণ্যটি এখনো ডেভেলপমেন্টে — নিচের লিংকে ইমেইল যোগ করলে লঞ্চের দিন সবার আগে জানবেন।' },
   }[product.status]
 
   return (
-    <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased">
+    <main className="min-h-screen bg-[#FFFFFF] text-zinc-900 antialiased">
       {/* ============ NAV ============ */}
 
       {/* ============ HERO ============ */}
@@ -61,7 +82,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               href={product.ctaHref}
               className={`bangla inline-block px-8 py-4 font-bold rounded-full text-lg transition-all transform hover:scale-105 shadow-xl ${
                 product.status === 'live'
-                  ? 'bg-white text-[#0E7C3A] hover:bg-zinc-100'
+                  ? 'bg-white text-[#2563EB] hover:bg-zinc-100'
                   : product.status === 'beta'
                   ? 'bg-amber-300 text-zinc-900 hover:bg-amber-200'
                   : 'bg-zinc-900 text-white hover:bg-zinc-800'
@@ -87,7 +108,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       </section>
 
       {/* ============ FEATURES ============ */}
-      <section className="bg-[#FCFCF9] py-16">
+      <section className="bg-[#FFFFFF] py-16">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="bangla text-3xl font-bold text-zinc-900 mb-8">যা পাবেন</h2>
           <ul className="space-y-4">
@@ -96,7 +117,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 key={i}
                 className="bangla flex items-start gap-4 bg-white border border-zinc-200 rounded-[20px] p-4 shadow-sm"
               >
-                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#0E7C3A] text-white text-sm font-bold flex items-center justify-center">
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#2563EB] text-white text-sm font-bold flex items-center justify-center">
                   {i + 1}
                 </span>
                 <span className="text-zinc-800 text-lg leading-relaxed">{feature}</span>
@@ -107,17 +128,17 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       </section>
 
       {/* ============ COMBO PITCH ============ */}
-      <section className="bg-[#FCFCF9] py-12 border-t border-zinc-200">
+      <section className="bg-[#FFFFFF] py-12 border-t border-zinc-200">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-[#0E7C3A]/[0.06] border-l-4 border-[#0E7C3A] rounded-r-2xl p-6 mb-8">
-            <div className="bangla text-xs font-semibold text-[#0E7C3A] uppercase tracking-wider mb-1">আমাদের প্রতিযোগিতামূলক সুবিধা</div>
+          <div className="bg-[#2563EB]/5 border-l-4 border-[#2563EB] rounded-r-2xl p-6 mb-8">
+            <div className="bangla text-xs font-semibold text-[#2563EB] uppercase tracking-wider mb-1">আমাদের প্রতিযোগিতামূলক সুবিধা</div>
             <p className="bangla text-lg text-zinc-900 leading-relaxed">{product.competitorGap}</p>
           </div>
         </div>
       </section>
 
       {/* ============ COMING SOON (ROADMAP) ============ */}
-      <section className="bg-[#FCFCF9] py-16">
+      <section className="bg-[#FFFFFF] py-16">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-6">
             <span className="text-3xl">🗓️</span>
@@ -136,15 +157,15 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               return (
                 <li
                   key={i}
-                  className="bangla flex items-start gap-3 bg-white border border-zinc-200 rounded-[20px] p-4 hover:border-[#0E7C3A]/40 transition-colors shadow-sm"
+                  className="bangla flex items-start gap-3 bg-white border border-zinc-200 rounded-[20px] p-4 hover:border-[#2563EB]/40 transition-colors shadow-sm"
                 >
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#0E7C3A]/10 text-[#0E7C3A] flex items-center justify-center text-sm font-bold mt-0.5">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center text-sm font-bold mt-0.5">
                     ✓
                   </span>
                   <div className="flex-1">
                     <div className="text-zinc-900 font-medium">{name}</div>
                     {quarter && (
-                      <div className="text-xs text-[#0E7C3A] font-semibold mt-1">{quarter}</div>
+                      <div className="text-xs text-[#2563EB] font-semibold mt-1">{quarter}</div>
                     )}
                   </div>
                 </li>
@@ -153,13 +174,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           </ul>
           <p className="bangla text-xs text-zinc-500 mt-4">
             পূর্ণ রোডম্যাপ দেখুন:{' '}
-            <Link href="/roadmap" className="text-[#0E7C3A] hover:underline">/roadmap</Link>
+            <Link href="/roadmap" className="text-[#2563EB] hover:underline">/roadmap</Link>
           </p>
         </div>
       </section>
 
       {/* ============ COMBO PITCH ============ */}
-      <section className="bg-[#0E7C3A] text-white py-12">
+      <section className="bg-[#2563EB] text-white py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="bangla text-2xl md:text-3xl font-bold mb-3">
             এই পণ্যটি ছয়টির একটি — আলাদায় কেনা বন্ধ
@@ -169,7 +190,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           </p>
           <Link
             href="/products"
-            className="bangla inline-block px-6 py-3 bg-white text-[#0E7C3A] font-bold rounded-full hover:bg-zinc-100"
+            className="bangla inline-block px-6 py-3 bg-white text-[#2563EB] font-bold rounded-full hover:bg-zinc-100"
           >
             সব পণ্য দেখুন →
           </Link>
@@ -177,7 +198,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       </section>
 
       {/* ============ OTHER PRODUCTS ============ */}
-      <section className="bg-[#FCFCF9] py-16">
+      <section className="bg-[#FFFFFF] py-16">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="bangla text-2xl font-bold text-zinc-900 mb-6">আরও পণ্য</h2>
           <div className="grid sm:grid-cols-3 gap-4">
@@ -185,7 +206,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               <Link
                 key={p.slug}
                 href={`/products/${p.slug}`}
-                className="block bg-white rounded-[20px] border border-zinc-200 hover:shadow-lg hover:border-[#0E7C3A]/40 overflow-hidden transition"
+                className="block bg-white rounded-[20px] border border-zinc-200 hover:shadow-lg hover:border-[#2563EB]/40 overflow-hidden transition"
               >
                 <div className={`bg-gradient-to-br ${p.gradient} p-4 text-white`}>
                   <span className="text-2xl">{p.emoji}</span>

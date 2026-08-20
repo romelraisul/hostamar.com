@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Hostamar Node",
+    "slug": "hostamar-node",
+    "version": "1.0.0",
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "android": {
+      "package": "com.hostamar.node"
+    },
+    "ios": {
+      "bundleIdentifier": "com.hostamar.node"
+    }
+  }
+}

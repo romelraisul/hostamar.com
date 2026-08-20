@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Search, ChevronDown, MessageCircle, Mail, Phone, Clock, HelpCircle } from 'lucide-react'
 import { FAQS, FAQ_CATS, type FaqCat } from '@/lib/faqs'
 
-const GREEN = '#0E7C3A'
+const PRIMARY = '#2563EB'
 const WHATSAPP = 'https://wa.me/8801822417463?text=হ্যাঁ,%20আমি%20সাহায্য%20চাই'
 const EMAIL = 'mailto:support@hostamar.com'
 const CALL = 'tel:+880****7463'
@@ -73,7 +73,7 @@ export default function FaqPage() {
       {/* hero */}
       <section className="mx-auto max-w-[1180px] px-4 md:px-6 pt-12 md:pt-16 pb-6 text-center">
         <h1 className="bangla text-[32px] md:text-[46px] font-bold tracking-[-0.03em] leading-[1.08]">
-          সচরাচর <span style={{ color: GREEN }}>জিজ্ঞাসা</span>
+          সচরাচর <span style={{ color: PRIMARY }}>জিজ্ঞাসা</span>
         </h1>
         <p className="bangla mt-3 text-[15px] md:text-[17px] text-zinc-500 max-w-[620px] mx-auto">
           bKash, ভিডিও, হোস্টিং, চ্যাট — আপনার সব প্রশ্নের উত্তর বাংলায়। ২ ক্লিকে উত্তর পান।
@@ -167,9 +167,9 @@ export default function FaqPage() {
               <div className="rounded-2xl border border-zinc-200 bg-white p-5">
                 <p className="bangla text-[15px] font-bold">জনপ্রিয় নিবন্ধ</p>
                 <ul className="mt-3 space-y-2 text-[14px]">
-                  <li><Link href="/hosting" className="bangla text-zinc-600 hover:text-[#0E7C3A]">হোস্টিং মাইগ্রেশন গাইড</Link></li>
-                  <li><Link href="/browser" className="bangla text-zinc-600 hover:text-[#0E7C3A]">YouTube summary গাইড</Link></li>
-                  <li><Link href="/pricing" className="bangla text-zinc-600 hover:text-[#0E7C3A]">প্ল্যান কীভাবে বাছবেন</Link></li>
+                  <li><Link href="/hosting" className="bangla text-zinc-600 hover:text-[#2563EB]">হোস্টিং মাইগ্রেশন গাইড</Link></li>
+                  <li><Link href="/browser" className="bangla text-zinc-600 hover:text-[#2563EB]">YouTube summary গাইড</Link></li>
+                  <li><Link href="/pricing" className="bangla text-zinc-600 hover:text-[#2563EB]">প্ল্যান কীভাবে বাছবেন</Link></li>
                 </ul>
               </div>
             </div>

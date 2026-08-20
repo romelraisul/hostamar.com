@@ -11,10 +11,10 @@
  *   node scripts/auto-ops.js --send-notifications  # Send pending notifications
  *   node scripts/auto-ops.js --db-optimize         # Database optimization
  */
-
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 const { PrismaClient } = require('@prisma/client');
 const fs = require('fs');
-const path = require('path');
 const { spawn } = require('child_process');
 
 const prisma = new PrismaClient();

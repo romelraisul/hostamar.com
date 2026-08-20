@@ -31,11 +31,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!ollamaResponse.ok) {
-      const detail = await ollamaResponse.text().catch(() => 'Ollama unavailable');
-      return NextResponse.json(
-        { error: 'AI service unavailable', detail },
-        { status: 502 }
-      );
+      // Free fallback: return extractive summary without LLM so Browser still works with 0 Taka
+      const sentences = text.split(/[।.!?]+/).map(s=>s.trim()).filter(Boolean).slice(0, 5);
+      const fallback = sentences.map(s=>`- ${s}`).join('\n') || '- (no extractable sentences)';
+      return NextResponse.json({ summary: fallback, fallback: true, note: 'Ollama unavailable — extractive fallback' });
     }
 
     const data = await ollamaResponse.json();
@@ -43,7 +42,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ summary: summary || 'No summary generated.' });
   } catch (error: any) {
-    console.error('Browser summarize error:', error);
-    return NextResponse.json({ error: 'Internal server error', message: error?.message }, { status: 500 });
+    const raw = (error as any)?.rawText || ''
+    const sentences = (typeof raw === 'string' ? raw : '').split(/[।.!?]+/).map(s=>s.trim()).filter(Boolean).slice(0, 5) as unknown as string[];
+    if (sentences.length) return NextResponse.json({ summary: sentences.map(s=>`- ${s}`).join('\n'), fallback: true });
+    return NextResponse.json({ error: 'Internal server error', message: (error as any)?.message }, { status: 500 });
   }
 }

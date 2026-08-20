@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma'
 
 export async function GET(request: Request) {
   try {
-    const user = await getAuthUser(request)
+    const user = await getAuthUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -49,23 +49,23 @@ export async function GET(request: Request) {
         ])
 
     const formattedVideos = videos.map(v => ({
-      id: v.id,
-      title: v.title,
-      topic: v.topic,
-      status: v.status,
-      customerEmail: v.customer?.email || 'Unknown',
-      customerName: v.customer?.name || 'Unknown',
-      createdAt: v.createdAt.toISOString(),
-      creditsUsed: v.creditTransactions[0] ? Math.abs(v.creditTransactions[0].amount) : 0,
-      creditsRemaining: v.creditTransactions[0] ? v.creditTransactions[0].balanceAfter : null,
-      duration: v.duration,
-      format: v.format,
-      resolution: v.resolution,
-      fileSize: v.fileSize,
-      url: v.url,
-    })
+          id: v.id,
+          title: v.title,
+          topic: v.topic,
+          status: v.status,
+          customerEmail: v.customer?.email || 'Unknown',
+          customerName: v.customer?.name || 'Unknown',
+          createdAt: v.createdAt.toISOString(),
+          creditsUsed: v.creditTransactions[0] ? Math.abs(v.creditTransactions[0].amount) : 0,
+          creditsRemaining: v.creditTransactions[0] ? v.creditTransactions[0].balanceAfter : null,
+          duration: v.duration,
+          format: v.format,
+          resolution: v.resolution,
+          fileSize: v.fileSize,
+          url: v.url,
+        }))
 
-    const formattedQueue = queue.map(q => ({
+        const formattedQueue = queue.map(q => ({
           id: q.id,
           topic: q.topic,
           priority: q.priority,

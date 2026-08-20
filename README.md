@@ -88,3 +88,12 @@ Camofox-based browser automation for research and content gathering:
 - `npm run browser:health` — Check Camofox status
 - `npm run browser:auto` — Run automation scripts
 - `npm run browser:api` — API documentation
+
+
+## Tunnel (Windows)
+```bat
+cloudflared tunnel list
+cloudflared tunnel run hostamar-app
+python C:\hostamar\gateway.py
+```
+Auto-start: Task Scheduler → hostamar-app + gateway.py on boot.
