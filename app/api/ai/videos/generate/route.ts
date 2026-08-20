@@ -6,9 +6,12 @@ import { enqueueVideoGeneration, type VideoGenerationJobData } from '@/lib/queue
 
 export async function POST(req: NextRequest) {
   try {
-    const { templateId, prompt, title, style, duration = 30 } = await req.json().catch(() => ({}))
+    let { templateId, prompt, title, style, duration = 30 } = await req.json().catch(() => ({}))
 
-    if (!templateId || !prompt) {
+    // Accept aliases: topic/title -> prompt
+    if (!prompt) prompt = title || 'Bengali marketing video'
+    if (!templateId) templateId = 'default'
+    if (!prompt) {
       return NextResponse.json({ error: 'Template and prompt required' }, { status: 400 })
     }
 
