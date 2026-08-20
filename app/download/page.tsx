@@ -1,6 +1,6 @@
 import Link from 'next/link'
 export const metadata = { title: 'Download — Hostamar Node 0 Taka Datacenter' }
-const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.14'
+const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.15'
 const ROWS = [
   { os: 'Windows', file: 'Hostamar-Node_x64_en-US.msi', size: '3.3 MB', href: `${GH}/Hostamar-Node_x64_en-US.msi`, alt: 'Hostamar-Node_x64-setup.exe' },
   { os: 'Windows', file: 'Hostamar-Node_x64-setup.exe', size: '2.3 MB', href: `${GH}/Hostamar-Node_x64-setup.exe`, alt: null },
@@ -24,7 +24,7 @@ export default function DownloadPage(){
                 <td className="px-4 py-3 font-medium">{r.os}</td>
                 <td className="px-4 py-3 font-mono text-xs">{r.file}</td>
                 <td className="px-4 py-3 text-zinc-600">{r.size}</td>
-                <td className="px-4 py-3">v0.1.14</td>
+                <td className="px-4 py-3">v0.1.15</td>
                 <td className="px-4 py-3 text-right"><a href={r.href} className="inline-flex rounded-full bg-[#0E7C3A] hover:bg-[#0c6a32] text-white px-4 py-2 text-xs font-bold">Download</a></td>
               </tr>
             ))}

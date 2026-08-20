@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hostamar Node",
     "slug": "hostamar-node",
-    "version": "0.1.14",
+    "version": "0.1.15",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "hostamar",
@@ -31,7 +31,7 @@
       ],
       "foregroundService": {
         "notificationTitle": "Hostamar Node Online 6000",
-        "notificationText": "Phone datacenter \u2014 tunnel + gateway alive"
+        "notificationText": "Phone datacenter — tunnel + gateway alive"
       }
     },
     "ios": {
