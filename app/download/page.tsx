@@ -5,8 +5,8 @@ const ROWS = [
   { os: 'Windows', file: 'Hostamar-Node_x64_en-US.msi', size: '3.3 MB', href: `${GH}/Hostamar-Node_x64_en-US.msi`, alt: 'Hostamar-Node_x64-setup.exe' },
   { os: 'Windows', file: 'Hostamar-Node_x64-setup.exe', size: '2.3 MB', href: `${GH}/Hostamar-Node_x64-setup.exe`, alt: null },
   { os: 'macOS', file: 'Hostamar-Node_aarch64.dmg', size: '3.7 MB', href: `${GH}/Hostamar-Node_aarch64.dmg`, alt: 'Hostamar-Node_x64.dmg' },
-  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', size: 'pending', href: 'https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2', alt: 'Hostamar-Node_1.0.0_amd64.AppImage' },
-  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.AppImage', size: 'pending', href: 'https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2', alt: null },
+  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.deb', size: '5.1 MB', href: `${GH}/Hostamar-Node_1.0.0_amd64.deb`, alt: 'Hostamar-Node_1.0.0_amd64.AppImage' },
+  { os: 'Linux', file: 'Hostamar-Node_1.0.0_amd64.AppImage', size: '87 MB', href: `${GH}/Hostamar-Node_1.0.0_amd64.AppImage`, alt: null },
   { os: 'Android', file: 'Hostamar-Node.apk', size: 'pending', href: 'https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.2', alt: null },
   { os: 'iOS', file: 'TestFlight', size: '—', href: 'https://testflight.apple.com/join/hostamar', alt: null },
 ]
