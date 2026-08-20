@@ -9,18 +9,38 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // HYBRID BRAND — restored 20 Aug 2026: Green PRIMARY (BD trust), Blue secondary
+        // Base #FFFFFF / #F8FAFC, Text #0F172A, Primary #0E7C3A, Secondary #2563EB, Accent #F59E0B
         brand: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#0E7C3A', // PRIMARY GREEN
+          700: '#065f46',
+          800: '#047857',
+          900: '#064e3b',
+          950: '#022c22',
+        },
+        primary: {
+          DEFAULT: '#0E7C3A', // GREEN primary — bKash/BD trust
+          hover: '#0c6a32',
+          light: '#ecfdf5',
+          blue: '#2563EB', // secondary
+          blueHover: '#1D4ED8',
+          blueLight: '#EFF6FF',
+        },
+        secondary: {
+          DEFAULT: '#2563EB',
+          hover: '#1D4ED8',
+          light: '#EFF6FF',
+        },
+        accent: {
+          DEFAULT: '#F59E0B',
+          hover: '#D97706',
+          light: '#FFFBEB',
         },
         surface: {
           light: '#ffffff',
@@ -33,21 +53,19 @@ module.exports = {
           800: '#1e293b',
           900: '#0f172a',
         },
-        // Bangladesh Trust Palette
-        bd: {
-          green: '#006A4E',   // Bangladesh flag green
-          red: '#F42A41',     // Bangladesh flag red
-          emerald: '#10B981', // BD emerald / success
-          zinc: '#18181B',   // dark bg
-          white: '#ffffff',
+        text: {
+          DEFAULT: '#0F172A',
+          muted: '#475569',
+          faint: '#64748B',
         },
-        // 2026 redesign palette (from prototype)
         hostamar: {
-          primary: '#0E7C3A',     // primary green
-          primaryDark: '#0A5A2B', // hover/deep
-          accent: '#E4312B',      // accent red
-          base: '#FCFCF9',        // page base
-          ink: '#18181B',         // zinc-900 text
+          primary: '#0E7C3A',
+          primaryDark: '#0c6a32',
+          secondary: '#2563EB',
+          secondaryDark: '#1D4ED8',
+          accent: '#F59E0B',
+          base: '#FFFFFF',
+          ink: '#0F172A',
         },
       },
       fontFamily: {
@@ -65,8 +83,8 @@ module.exports = {
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         pulseGlow: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(59,130,246,0.3)' },
-          '50%': { boxShadow: '0 0 40px rgba(59,130,246,0.6)' },
+          '0%, 100%': { boxShadow: '0 0 20px rgba(14,124,58,0.25)' },
+          '50%': { boxShadow: '0 0 36px rgba(14,124,58,0.45)' },
         },
         slideIn: {
           '0%': { opacity: '0', transform: 'translateX(-10px)' },

@@ -2615,7 +2615,7 @@ const ur: Record<string, string> = {
   'payment.hostamarBrand': 'Hostamar.com',
 }
 
-const translations: Record<Locale, Record<string, string>> = { en, bn, ur }
+export const translations: Record<Locale, Record<string, string>> = { en, bn, ur }
 
 export function t(key: string, lang: Locale = 'en'): string {
   return translations[lang]?.[key] || translations['en']?.[key] || key

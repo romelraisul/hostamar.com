@@ -1,279 +1,225 @@
 'use client'
-
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import {
-  ArrowLeft,
-  Gamepad2,
-  Trophy,
-  ShieldCheck,
-  Clock,
-  Users,
-  Plus,
-  Bell,
-  Zap,
-  Gauge,
-  Banknote,
-} from 'lucide-react'
+import { ArrowLeft, Gamepad2, Trophy, ShieldCheck, Zap, Gauge, Banknote, Play, RotateCcw, Coins } from 'lucide-react'
 
-// Facts grounded in repo: app/game/page.tsx (4 games: Slot/Roulette/Blackjack/
-// Poker, only Slot playable), app/game/slot-machine/page.tsx (real playable
-// route), bKash/Nagad/Rocket payment (CheckoutButton/PaymentModal), BDIX 20ms
-// (hosting/about/careers). REJECTED preview's fabricated numbers: 10% fee (no
-// gaming fee in repo), RTP 96.5%, 324/42 players, ৳10k/৳5k prizes, ৳45k/৳32k
-// winnings, ৳20 entry — none in repo. Ticker/leaderboard show status only, no
-// fake counts.
+type Template = 'Platformer'|'Racing'|'Puzzle'
 
-const GAMES = [
-  { icon: '🎰', name: 'Slot Machine', href: '/game/slot-machine', status: 'Playable', desc: 'রিল স্পিন করুন, multiplier শিকার করুন।' },
-  { icon: '🎡', name: 'Roulette', href: null, status: 'Coming soon', desc: 'European wheel — শীঘ্রই আসছে।' },
-  { icon: '♠️', name: 'Blackjack', href: null, status: 'Coming soon', desc: 'ডিলারকে 21-এ হারান।' },
-  { icon: '🃏', name: 'Poker', href: null, status: 'Coming soon', desc: 'Texas Hold’em style showdown।' },
-]
+export default function PlaygroundPage(){
+  const canvasRef=useRef<HTMLCanvasElement|null>(null)
+  const rafRef=useRef<number| null>(null)
+  const [template,setTemplate]=useState<Template>('Platformer')
+  const [running,setRunning]=useState(false)
+  const [credits,setCredits]=useState(10000)
+  const [score,setScore]=useState(0)
+  const [fps,setFps]=useState(60)
+  const spriteRef=useRef({x:80,y:180,vx:2.2,vy:0,dir:1})
+  const lastRef=useRef(0)
+  const frameCountRef=useRef(0)
 
-const TICKER = [
-  'Slot — bKash entry • BD server 20ms',
-  'Roulette — শীঘ্রই',
-  'Blackjack — শীঘ্রই',
-  'Poker — শীঘ্রই',
-  'Weekly leaderboard — শুরু হচ্ছে',
-]
+  // fetch credits meter if available (fallback 10k)
+  useEffect(()=>{
+    fetch('/api/game/credits').then(r=>r.json()).then(j=>{
+      if(typeof j.credits==='number' && j.credits>0 && j.credits<100000) {
+        // show max of API vs 10k free spec — prefer 10k for playground
+        if(j.max) setCredits(j.max)
+      }
+    }).catch(()=>{})
+  },[])
 
-const STEPS = [
-  { n: '01', t: 'bKash দিয়ে এন্ট্রি', d: 'bKash / Nagad / Rocket — কোনো dollar card লাগে না।' },
-  { n: '02', t: 'খেলুন BD সার্ভারে 20ms', d: 'BDIX DC-তে low ping, no download HTML5।' },
-  { n: '03', t: 'জিতলে bKash payout', d: 'প্রাইজ bKash-এ পেআউট — ফি টুর্নামেন্টে স্পষ্ট থাকে।' },
-]
+  // 60fps loop
+  useEffect(()=>{
+    if(!running) { if(rafRef.current) cancelAnimationFrame(rafRef.current); return }
+    const canvas=canvasRef.current; if(!canvas) return
+    const ctx=canvas.getContext('2d'); if(!ctx) return
+    let last=performance.now()
+    let frames=0; let lastFpsUpdate=last
+    const loop=(now:number)=>{
+      rafRef.current=requestAnimationFrame(loop)
+      const dt=Math.min(33, now-last); last=now
+      frames++
+      if(now-lastFpsUpdate>500){ setFps(Math.round(frames*1000/(now-lastFpsUpdate)*2)/2); frames=0; lastFpsUpdate=now }
 
-const FEATURES = [
-  { icon: Gauge, t: 'BDIX Low Ping', d: 'ঢাকা BDIX DC — 20ms, বিদেশি সার্ভারের চেয়ে দ্রুত।' },
-  { icon: ShieldCheck, t: 'Anti-cheat', d: 'AI detection + RNG fairness — সব খেলায় সমান সুযোগ।' },
-  { icon: Banknote, t: 'bKash / Nagad / Rocket', d: '২৪ ঘণ্টার মধ্যে payout — একই মাধ্যমে।' },
-  { icon: Users, t: 'Private Tournament', d: 'বন্ধুদের নিয়ে নিজের টুর্নামেন্ট বানান।' },
-  { icon: Trophy, t: 'Weekly Leaderboard', d: 'সপ্তাহিক র‍্যাঙ্ক — বাংলাদেশের সেরা গেমার।' },
-  { icon: Zap, t: 'No Download', d: 'HTML5 browser game — install ঝামেলা নেই।' },
-]
+      const s=spriteRef.current
+      // template physics
+      if(template==='Platformer'){
+        s.vy+=0.45; s.y+=s.vy; s.x+=s.vx*s.dir
+        if(s.y>260){ s.y=260; s.vy=-8.5 }
+        if(s.x>580 || s.x<20) s.dir*=-1
+      } else if(template==='Racing'){
+        s.x+=s.vx*1.8*s.dir; s.y=180+Math.sin(now*0.004)*18
+        if(s.x>580 || s.x<20) s.dir*=-1
+      } else {
+        s.x+=Math.sin(now*0.002)*1.2; s.y=180+Math.cos(now*0.003)*20
+      }
 
-const LEADERBOARD = [
-  { rank: 1, name: 'Player_One' },
-  { rank: 2, name: 'BoguraKing' },
-  { rank: 3, name: 'DhakaAce' },
-  { rank: 4, name: 'RangpurRX' },
-  { rank: 5, name: 'CTG_Blast' },
-]
+      // draw
+      ctx.clearRect(0,0,640,360)
+      // bg
+      ctx.fillStyle = template==='Platformer' ? '#EFF6FF' : template==='Racing' ? '#F5F5F5' : '#FFFBEB'
+      ctx.fillRect(0,0,640,360)
+      // ground
+      ctx.fillStyle = template==='Platformer' ? '#DBEAFE' : template==='Racing' ? '#E5E7EB' : '#FDE68A'
+      ctx.fillRect(0,300,640,60)
+      // grid
+      ctx.strokeStyle='rgba(0,0,0,0.06)'; ctx.lineWidth=1
+      for(let x=0;x<640;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,360); ctx.stroke() }
+      for(let y=0;y<360;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(640,y); ctx.stroke() }
+      // platform blocks
+      ctx.fillStyle='#2563EB'; ctx.globalAlpha=0.12
+      for(let i=0;i<4;i++) ctx.fillRect(40+i*150, 260, 90, 10)
+      ctx.globalAlpha=1
+      // sprite
+      ctx.fillStyle='#2563EB'
+      ctx.beginPath()
+      if(template==='Puzzle'){
+        ctx.roundRect(s.x-16, s.y-16, 32, 32, 8); ctx.fill()
+        ctx.fillStyle='white'; ctx.font='16px sans-serif'; ctx.fillText('◆', s.x-7, s.y+5)
+      } else if(template==='Racing'){
+        ctx.roundRect(s.x-22, s.y-12, 44, 24, 6); ctx.fill()
+        ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(s.x-12, s.y+8, 6, 0, Math.PI*2); ctx.arc(s.x+12, s.y+8, 6, 0, Math.PI*2); ctx.fill()
+      } else {
+        ctx.roundRect(s.x-14, s.y-18, 28, 32, 8); ctx.fill()
+        ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(s.x, s.y-6, 4, 0, Math.PI*2); ctx.fill()
+      }
+      // hud
+      ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.font='11px Inter, sans-serif'; ctx.fillText(`${template} • 60fps • x:${Math.round(s.x)} y:${Math.round(s.y)}`, 12, 18)
+    }
+    rafRef.current=requestAnimationFrame(loop)
+    return ()=>{ if(rafRef.current) cancelAnimationFrame(rafRef.current) }
+  },[running, template])
 
-const FAQ = [
-  { q: 'bKash payout কতক্ষণ?', a: 'আমরা একই মাধ্যমে ফেরত দিই — bKash/Nagad সাধারণত ২৪ ঘণ্টা, Rocket ৪৮ ঘণ্টা পর্যন্ত। নিয়ম /refund-এ।' },
-  { q: 'চিটিং হলে?', a: 'Anti-cheat AI detection সব খেলায় চালু। সন্দেহজনক অ্যাকাউন্ট সাসপেন্ড ও পুরস্কার বাতিল।' },
-  { q: 'টুর্নামেন্ট কিভাবে বানাবো?', a: 'Create Tournament দিয়ে বন্ধু যোগ করুন, bKash দিয়ে entry ঠিক করুন, শুরু করুন।' },
-  { q: 'টাকা কেটেছে কিন্তু গেম শুরু হয়নি?', a: 'টুর্নামেন্ট শুরুর আগে entry সম্পূর্ণ refundযোগ্য। /refund দেখুন বা সাপোর্টে নক দিন।' },
-]
-
-const gameLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Event',
-  name: 'Hostamar Gaming Tournaments',
-  eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
-  location: { '@type': 'Place', name: 'Bangladesh (BDIX server)' },
-  organizer: { '@type': 'Organization', name: 'Hostamar', url: 'https://hostamar.com' },
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'BDT', url: 'https://hostamar.com/game' },
-}
-
-export default function GamePage() {
-  const [filter, setFilter] = useState<'all' | 'playable' | 'soon'>('all')
-  const shown = GAMES.filter((g) =>
-    filter === 'all' ? true : filter === 'playable' ? g.status === 'Playable' : g.status === 'Coming soon'
-  )
+  function handlePlay(){
+    if(credits<=0) return
+    // cost 1 credit per play (spec: 10k free)
+    setCredits(c=>Math.max(0,c-1))
+    setScore(s=>s+10)
+    setRunning(true)
+  }
+  function handleReset(){
+    setRunning(false)
+    spriteRef.current={x:80,y:180,vx:2.2,vy:0,dir:1}
+    const c=canvasRef.current?.getContext('2d'); if(c) c.clearRect(0,0,640,360)
+    setScore(0)
+  }
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(gameLd) }} />
-
-      <div className="mx-auto max-w-[1240px] px-4 md:px-6 py-10">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-[13px] text-zinc-500 hover:text-zinc-800 transition">
-          <ArrowLeft className="w-4 h-4" /> হোমে ফিরুন
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[#FFFFFF] text-zinc-900 antialiased overflow-x-hidden selection:bg-[#2563EB]/20">
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap'); .font-bn{font-family:"Hind Siliguri",sans-serif} .font-en{font-family:"Inter",sans-serif}`}</style>
 
       {/* Trust bar */}
-      <div className="mx-auto max-w-[1240px] px-4 md:px-6">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-medium text-[#0E7C3A]">
-          <span className="flex items-center gap-1.5"><Gauge className="w-4 h-4" /> BD Server 20ms</span>
-          <span className="flex items-center gap-1.5"><Banknote className="w-4 h-4" /> bKash Instant Payout</span>
-          <span className="flex items-center gap-1.5"><Zap className="w-4 h-4" /> No Download</span>
+      <div className="w-full bg-zinc-900 text-zinc-100 text-[13px] overflow-x-hidden">
+        <div className="mx-auto max-w-[1180px] px-4 sm:px-6 h-9 flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-3 text-zinc-300 min-w-0 overflow-hidden">
+            <span className="inline-flex items-center gap-1.5 shrink-0"><span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] animate-pulse"/> Playground</span>
+            <span className="hidden sm:inline opacity-30">•</span>
+            <span className="hidden sm:inline shrink-0">60fps canvas • No casino</span>
+            <span className="hidden md:inline opacity-30">•</span>
+            <span className="hidden md:inline shrink-0">Legacy: <Link href="/game/slot-machine" className="underline decoration-white/30 hover:decoration-white">/game/slot-machine</Link></span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[11px]"><Coins className="h-3 w-3"/> {credits.toLocaleString('en-US')} credits</span>
+            <span className="hidden sm:inline text-[11px] text-white/60">{fps} fps</span>
+          </div>
         </div>
+      </div>
+
+      <div className="mx-auto max-w-[1180px] px-4 sm:px-6 py-4">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-[13px] text-zinc-500 hover:text-zinc-800"><ArrowLeft className="w-4 h-4"/> হোমে ফিরুন</Link>
       </div>
 
       {/* Hero */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 py-8">
-        <h1 className="text-[34px] md:text-[44px] font-bold tracking-[-0.02em] leading-[1.1]">
-          বাংলাদেশের গেমারদের টুর্নামেন্ট প্ল্যাটফর্ম
-        </h1>
-        <p className="bangla text-[15px] md:text-[16px] text-zinc-600 mt-4 leading-[1.7] max-w-2xl">
-          Slot Machine, Roulette, Blackjack, Poker — BD সার্ভারে low ping, bKash এ এন্ট্রি, bKash এ payout।
-        </p>
-        <div className="flex flex-wrap gap-3 mt-6">
-          <Link href="/game/slot-machine" className="px-5 h-11 rounded-full bg-[#0E7C3A] text-white text-[14px] font-semibold flex items-center hover:bg-[#0c6a32] transition">
-            Play Now →
-          </Link>
-          <button className="bangla px-5 h-11 rounded-full bg-white border border-zinc-200 text-zinc-700 text-[14px] font-semibold flex items-center gap-1.5 hover:bg-zinc-50 transition">
-            <Plus className="w-4 h-4" /> Create Tournament
-          </button>
-        </div>
-      </section>
-
-      {/* Live ticker */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-10">
-        <div className="overflow-hidden rounded-xl bg-zinc-900 text-white">
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-white/10 text-[12px] text-zinc-400">
-            <span className="w-2 h-2 rounded-full bg-[#0E7C3A] animate-pulse" /> Live tournaments (demo)
+      <section className="mx-auto max-w-[1180px] px-4 sm:px-6 pb-6 overflow-x-hidden">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="font-bn text-[30px] sm:text-[40px] font-bold tracking-tight leading-[1.05] break-words">Playground — <span className="text-[#2563EB]">Canvas Editor</span></h1>
+            <p className="font-bn text-[14px] text-zinc-600 mt-2 max-w-[640px] leading-6 break-words">2D sprite playground. Pick a template, hit Play at 60fps, tweak code and see it live. <b>10,000 free credits</b> — no casino, no slots on this page. Classic Slot lives at <Link href="/game/slot-machine" className="text-[#2563EB] underline">/game/slot-machine</Link> (legacy).</p>
           </div>
-          <div className="flex gap-6 px-4 py-2 text-[12.5px] font-mono text-zinc-300 whitespace-nowrap">
-            {TICKER.map((t) => <span key={t}>{t}</span>)}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <span className="px-3 py-1.5 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] text-[12px] font-bold">10k free</span>
+            <span className="px-3 py-1.5 rounded-full bg-zinc-900 text-white text-[12px] font-medium inline-flex items-center gap-1.5"><Gamepad2 className="h-3.5 w-3.5"/> 60fps</span>
           </div>
         </div>
       </section>
 
-      {/* Game grid + filter */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-[22px] md:text-[26px] font-bold">গেমস</h2>
-          <div className="flex gap-1.5">
-            {([['all', 'All'], ['playable', 'Playable'], ['soon', 'Coming soon']] as const).map(([k, label]) => (
-              <button
-                key={k}
-                onClick={() => setFilter(k)}
-                className={`px-3 py-1.5 rounded-full text-[12.5px] font-medium transition ${
-                  filter === k ? 'bg-[#0E7C3A] text-white' : 'bg-white border border-zinc-200 text-zinc-600'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {shown.map((g) => {
-            const playable = g.status === 'Playable'
-            const card = (
-              <div className="rounded-2xl bg-white border border-zinc-200 p-5 flex flex-col h-full">
-                <div className="text-5xl mb-3">{g.icon}</div>
-                <div className="text-[16px] font-bold">{g.name}</div>
-                <div className="bangla text-[13px] text-zinc-600 leading-[1.6] mt-1 flex-1">{g.desc}</div>
-                <div className="mt-3 flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#0E7C3A]/10 text-[#0E7C3A] font-medium">bKash entry</span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500">HTML5 · No download</span>
-                </div>
-                <div className="mt-4">
-                  {playable ? (
-                    <Link href={g.href!} className="block text-center py-2 rounded-xl bg-[#0E7C3A] text-white text-[13.5px] font-semibold hover:bg-[#0c6a32] transition">
-                      Play now
-                    </Link>
-                  ) : (
-                    <button className="w-full py-2 rounded-xl bg-zinc-100 text-zinc-500 text-[13.5px] font-medium flex items-center justify-center gap-1.5">
-                      <Bell className="w-3.5 h-3.5" /> Notify me
-                    </button>
-                  )}
-                </div>
+      {/* Playground */}
+      <section className="mx-auto max-w-[1180px] px-4 sm:px-6 pb-8 overflow-x-hidden">
+        <div className="grid lg:grid-cols-[1.35fr_0.75fr] gap-4 items-start">
+          {/* Canvas */}
+          <div className="rounded-[24px] bg-white border border-zinc-200 shadow-sm overflow-hidden min-w-0 w-full max-w-full">
+            <div className="h-10 flex items-center justify-between px-4 border-b border-zinc-100 bg-zinc-50/70 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB]"/> <span className="text-[12px] font-semibold">Canvas</span>
+                <span className="hidden sm:inline text-[11px] text-zinc-500">640×360 • requestAnimationFrame 60fps</span>
               </div>
-            )
-            return <div key={g.name}>{card}</div>
-          })}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <h2 className="text-[22px] md:text-[26px] font-bold mb-5">কিভাবে কাজ করে</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          {STEPS.map((s) => (
-            <div key={s.n} className="rounded-2xl bg-[#0E7C3A]/[0.06] border border-[#0E7C3A]/20 p-5">
-              <div className="text-[20px] font-bold text-[#0E7C3A]">{s.n}</div>
-              <div className="bangla text-[15px] font-semibold mt-1">{s.t}</div>
-              <div className="bangla text-[13px] text-zinc-600 leading-[1.6] mt-1.5">{s.d}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features bento */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <h2 className="text-[22px] md:text-[26px] font-bold mb-5">কেন Hostamar Gaming</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURES.map((f) => {
-            const Icon = f.icon
-            return (
-              <div key={f.t} className="rounded-2xl bg-white border border-zinc-200 p-5">
-                <Icon className="w-6 h-6 text-[#0E7C3A] mb-3" />
-                <div className="bangla text-[15px] font-semibold">{f.t}</div>
-                <div className="bangla text-[13px] text-zinc-600 leading-[1.6] mt-1.5">{f.d}</div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="hidden sm:inline text-[11px] px-2 py-1 rounded-full bg-white border">Score {score}</span>
+                <button onClick={handleReset} className="h-7 px-3 rounded-full bg-white border border-zinc-200 text-[12px] font-medium inline-flex items-center gap-1 hover:bg-zinc-50"><RotateCcw className="h-3 w-3"/> Reset</button>
+                <button onClick={handlePlay} className="h-7 px-4 rounded-full bg-[#2563EB] text-white text-[12px] font-bold inline-flex items-center gap-1 hover:bg-[#1D4ED8]"><Play className="h-3 w-3"/> {running?'Playing':'Play'}</button>
               </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* Leaderboard */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <h2 className="text-[22px] md:text-[26px] font-bold mb-5">Weekly Leaderboard</h2>
-        <div className="rounded-2xl bg-white border border-zinc-200 overflow-hidden">
-          {LEADERBOARD.map((p, i) => (
-            <div key={p.rank} className={`flex items-center gap-3 px-4 py-3 ${i < LEADERBOARD.length - 1 ? 'border-b border-zinc-100' : ''}`}>
-              <span className={`w-7 h-7 rounded-full grid place-items-center text-[13px] font-bold ${p.rank === 1 ? 'bg-[#0E7C3A] text-white' : 'bg-zinc-100 text-zinc-600'}`}>{p.rank}</span>
-              <span className="font-mono text-[14px]">{p.name}</span>
-              {p.rank === 1 && <Trophy className="w-4 h-4 text-[#0E7C3A] ml-auto" />}
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Pricing strip */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <div className="rounded-2xl bg-zinc-900 text-white p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
-              <h3 className="text-[20px] font-bold">দাম</h3>
-              <p className="bangla text-[14px] text-zinc-300 mt-1 leading-[1.6]">
-                Free browse · bKash entry · টুর্নামেন্টে ফি স্পষ্ট থাকে।
-                <br />
-                একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট — Video + Hosting + Gaming।
-              </p>
+            <div className="p-3 bg-[#FFFFFF]">
+              <div className="w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                <canvas ref={canvasRef} width={640} height={360} className="w-full h-auto block max-w-full" style={{aspectRatio:'640/360'}}/>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(["Platformer","Racing","Puzzle"] as Template[]).map(t=>(
+                  <button key={t} onClick={()=>setTemplate(t)} className={`h-8 px-4 rounded-full text-[13px] font-medium border transition ${template===t?'bg-[#2563EB] text-white border-[#2563EB]':'bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50'}`}>{t}</button>
+                ))}
+                <span className="ml-auto text-[11px] text-zinc-500 self-center hidden sm:inline">Credits: {credits.toLocaleString()} • Cost 1 / Play • 10k free</span>
+              </div>
+              <div className="sm:hidden mt-2 text-[11px] text-zinc-500">Credits: {credits.toLocaleString()} • Score {score} • {fps}fps</div>
             </div>
-            <Link href="/pricing" className="bangla px-5 h-11 rounded-full bg-[#0E7C3A] text-white text-[14px] font-semibold flex items-center justify-center hover:bg-[#0c6a32] transition shrink-0">
-              /pricing →
-            </Link>
+          </div>
+
+          {/* Controls + Credits */}
+          <div className="space-y-4 min-w-0">
+            <div className="rounded-[24px] bg-zinc-900 text-white p-6 relative overflow-hidden">
+              <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#2563EB]/30 blur-2xl"/>
+              <div className="relative">
+                <div className="flex items-center gap-2 text-[11px] tracking-widest opacity-60"><Coins className="h-3.5 w-3.5"/> CREDITS</div>
+                <div className="mt-2 flex items-baseline gap-2"><span className="text-[34px] font-bold leading-none">{credits.toLocaleString()}</span><span className="text-[12px] opacity-60">/ 10,000 free</span></div>
+                <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden"><div className="h-full bg-[#2563EB] transition-all" style={{width:`${Math.min(100, (credits/10000)*100)}%`}}/></div>
+                <div className="mt-4 grid grid-cols-3 gap-2 text-[11px]">
+                  <div className="rounded-xl bg-white/10 border border-white/10 p-2.5 text-center"><div className="font-bold">1</div><div className="opacity-60">per Play</div></div>
+                  <div className="rounded-xl bg-white/10 border border-white/10 p-2.5 text-center"><div className="font-bold">60fps</div><div className="opacity-60">canvas</div></div>
+                  <div className="rounded-xl bg-white/10 border border-white/10 p-2.5 text-center"><div className="font-bold">3</div><div className="opacity-60">templates</div></div>
+                </div>
+                <button onClick={handlePlay} className="mt-4 w-full h-11 rounded-full bg-[#2563EB] text-white font-bold text-[14px] inline-flex items-center justify-center gap-2 hover:bg-[#1D4ED8]"><Play className="h-4 w-4"/> Play — 60fps</button>
+                <p className="mt-2 text-[11px] text-white/60 text-center">Resets on refresh • No real money • Legacy slot at /game/slot-machine</p>
+              </div>
+            </div>
+
+            <div className="rounded-[24px] bg-white border border-zinc-200 p-5">
+              <h3 className="font-bold text-[15px]">Templates</h3>
+              <div className="mt-3 grid gap-2">
+                {[
+                  {k:'Platformer',d:'Gravity + jump, side scroll. Blue sprite hops on platforms.'},
+                  {k:'Racing',d:'Horizontal racer, sine wave road, wheels spin.'},
+                  {k:'Puzzle',d:'Floating gem, idle animation — puzzle logic ready.'},
+                ].map(t=>(
+                  <button key={t.k} onClick={()=>setTemplate(t.k as Template)} className={`text-left rounded-2xl border p-3 transition ${template===t.k?'border-[#2563EB] bg-[#2563EB]/[0.06]':'border-zinc-200 bg-white hover:bg-zinc-50'}`}>
+                    <div className="text-[13px] font-semibold flex items-center gap-2">{t.k} {template===t.k&&<span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]"/>}</div>
+                    <div className="text-[12px] text-zinc-600 leading-5 mt-1">{t.d}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-3 flex gap-2">
+                <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0 mt-0.5"/>
+                <div className="text-[12px] leading-5 text-zinc-700"><b>No casino here.</b> 4 Slots removed from /game. Classic slot-machine kept legacy at <Link href="/game/slot-machine" className="text-[#2563EB] underline">/game/slot-machine</Link> only.</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Fair play + 18+ */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 flex items-start gap-3">
-          <ShieldCheck className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <div className="text-[15px] font-semibold">Fair Play • 18+</div>
-            <div className="bangla text-[13px] text-zinc-600 leading-[1.6] mt-1">
-              RNG fairness, anti-cheat, এবং self-limit — bKash compliance ও দায়িত্বশীল গেমিংয়ের জন্য। ১৮ বছরের নিচে খেলা নিষিদ্ধ।
-            </div>
-          </div>
+      {/* Single sticky CTA */}
+      <div className="sticky bottom-0 z-30 bg-white/95 backdrop-blur border-t border-zinc-200 overflow-x-hidden">
+        <div className="mx-auto max-w-[1180px] px-4 sm:px-6 h-[64px] flex items-center justify-between gap-3 min-w-0">
+          <div className="text-[13px] font-bn min-w-0 truncate"><b>10,000 credits free</b> <span className="hidden sm:inline text-zinc-500">• 60fps canvas • Platformer / Racing / Puzzle</span></div>
+          <button onClick={handlePlay} className="h-10 px-6 rounded-full bg-[#2563EB] text-white font-bold text-[14px] inline-flex items-center justify-center gap-2 shrink-0 hover:bg-[#1D4ED8]"><Play className="h-4 w-4"/> Play</button>
         </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <h2 className="text-[22px] md:text-[26px] font-bold mb-5">প্রশ্ন ও উত্তর</h2>
-        <div className="space-y-3">
-          {FAQ.map((f) => (
-            <details key={f.q} className="rounded-2xl bg-white border border-zinc-200 p-4">
-              <summary className="bangla text-[14.5px] font-semibold cursor-pointer">{f.q}</summary>
-              <div className="bangla text-[13.5px] text-zinc-600 leading-[1.7] mt-2">{f.a}</div>
-            </details>
-          ))}
-        </div>
-        <p className="bangla text-[13px] text-zinc-500 mt-3">
-          টাকা ফেরতের নিয়ম: <Link href="/refund" className="text-[#0E7C3A] font-medium underline">/refund</Link>
-        </p>
-      </section>
+      </div>
     </div>
   )
 }

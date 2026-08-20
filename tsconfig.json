@@ -24,9 +24,9 @@
       }
     ],
     "paths": {
-    "@/*": [
-      "./*"
-    ]
+      "@/*": [
+        "./*"
+      ]
     },
     "strictNullChecks": true
   },
@@ -39,6 +39,9 @@
   ],
   "exclude": [
     "node_modules",
-    "camofox"
+    "camofox",
+    "scripts",
+    "apps",
+    "packages"
   ]
 }

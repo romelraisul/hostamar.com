@@ -12,7 +12,7 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-5">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0E7C3A] font-bold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563EB] font-bold text-white">
               H
             </span>
             <span className="text-[18px] font-bold tracking-tight text-[#18181B]">Hostamar</span>
@@ -46,16 +46,11 @@ export default function Navbar() {
                   <a href="/ai-chat" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
                     {isBengali ? 'AI চ্যাট' : 'AI Chat'}
                   </a>
-                  <a href="/browser" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
-                    {isBengali ? 'AI ব্রাউজার' : 'AI Browser'}
-                  </a>
-                  <a href="/game" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
-                    {isBengali ? 'গেম' : 'Gaming'}
-                  </a>
+                  {/* Browser + Game hidden — 70/20/10: keep only Video/Hosting/Tools */}
                   <a href="/dev" className="block rounded-lg px-3 py-2 text-sm hover:bg-zinc-100">
                     {isBengali ? 'Dev IDE' : 'Dev IDE'}
                   </a>
-                  <a href="/roadmap" className="block rounded-lg px-3 py-2 text-sm text-[#0E7C3A] hover:bg-zinc-100">
+                  <a href="/roadmap" className="block rounded-lg px-3 py-2 text-sm text-[#2563EB] hover:bg-zinc-100">
                     {isBengali ? 'রোডম্যাপ →' : 'Roadmap →'}
                   </a>
                 </div>
@@ -73,7 +68,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/signup"
-            className="inline-flex h-9 items-center justify-center rounded-full bg-[#0E7C3A] px-4 text-[14px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(14,124,58,0.5)] transition hover:bg-[#0A5A2B]"
+            className="inline-flex h-9 items-center justify-center rounded-full bg-[#2563EB] px-4 text-[14px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(37,99,235,0.5)] transition hover:bg-[#1D4ED8]"
           >
             {isBengali ? 'ফ্রি শুরু করুন' : 'Start free'}
           </Link>

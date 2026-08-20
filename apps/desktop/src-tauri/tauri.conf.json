@@ -1,0 +1,42 @@
+{
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "Hostamar Node",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "bundle": {
+      "active": true,
+      "targets": [
+        "msi",
+        "nsis",
+        "deb",
+        "appimage",
+        "dmg"
+      ],
+      "identifier": "com.hostamar.node",
+      "icon": [
+        "icons/icon.png"
+      ]
+    },
+    "allowlist": {
+      "all": true
+    },
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    },
+    "windows": [
+      {
+        "title": "Hostamar Node",
+        "width": 900,
+        "height": 600
+      }
+    ]
+  }
+}

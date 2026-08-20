@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  live:   { label: '✅ Live — ব্যবহার করুন',  cls: 'bg-[#0E7C3A]/10 text-[#0E7C3A] border-[#0E7C3A]/20' },
+  live:   { label: '✅ Live — ব্যবহার করুন',  cls: 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/20' },
   beta:   { label: '🧪 Beta — চলছে',        cls: 'bg-amber-100 text-amber-700 border-amber-200' },
   planned:{ label: '🔜 শীঘ্রই আসছে',        cls: 'bg-zinc-100 text-zinc-600 border-zinc-200' },
 }
@@ -20,21 +20,22 @@ export default function ProductsPage() {
   const planned = PRODUCTS.filter(p => p.status === 'planned')
 
   return (
-    <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased">
+    <main className="min-h-screen bg-[#FFFFFF] text-zinc-900 antialiased">
       {/* ============ HERO ============ */}
 
       {/* ============ PRODUCT GRID ============ */}
       <section className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="bangla text-2xl font-bold text-zinc-900 mb-6">সব পণ্য</h2>
 
+        <div className="mb-3 flex items-center gap-2"><span className="px-2.5 py-1 rounded-full bg-[#2563EB] text-white text-xs font-bold">70% LIVE</span><span className="text-sm text-zinc-600">AI Video + Hosting — টাকা বানায়</span></div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {PRODUCTS.map((p) => {
+          {[...PRODUCTS].sort((a,b)=>{ const order: Record<string,number>={ 'ai-video':1,'cloud-hosting':2,'ai-chat':3,'dev-ide':4,'ai-browser':5,'game':6 }; return (order[a.slug]??99)-(order[b.slug]??99)}).map((p) => {
             const badge = STATUS_BADGE[p.status]
             return (
               <Link
                 key={p.slug}
                 href={`/products/${p.slug}`}
-                className="group block bg-white rounded-[24px] border border-zinc-200 hover:border-[#0E7C3A]/40 hover:shadow-[0_12px_32px_-16px_rgba(14,124,58,0.25)] transition-all overflow-hidden shadow-sm"
+                className={`group block bg-white rounded-[24px] border border-zinc-200 hover:border-[#2563EB]/40 hover:shadow-[0_12px_32px_-16px_rgba(37,99,235,0.25)] transition-all overflow-hidden shadow-sm ${p.status==='planned' ? 'opacity-70' : ''}`}
               >
                 {/* Gradient hero */}
                 <div className={`bg-gradient-to-br ${p.gradient} p-6 text-white relative`}>
@@ -55,7 +56,7 @@ export default function ProductsPage() {
                     <span className={`bangla text-xs px-2 py-1 rounded-full border ${badge.cls}`}>
                       {badge.label}
                     </span>
-                    <span className="bangla text-sm font-semibold text-[#0E7C3A] group-hover:translate-x-1 transition-transform">
+                    <span className="bangla text-sm font-semibold text-[#2563EB] group-hover:translate-x-1 transition-transform">
                       বিস্তারিত →
                     </span>
                   </div>
@@ -67,10 +68,10 @@ export default function ProductsPage() {
       </section>
 
       {/* ============ WHY US (per-product competitive edge) ============ */}
-      <section className="bg-[#FCFCF9] py-16 border-t border-zinc-200">
+      <section className="bg-[#FFFFFF] py-16 border-t border-zinc-200">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-10">
-            <div className="inline-block mb-3 px-3 py-1 bg-[#0E7C3A]/10 text-[#0E7C3A] rounded-full text-sm font-semibold">
+            <div className="inline-block mb-3 px-3 py-1 bg-[#2563EB]/10 text-[#2563EB] rounded-full text-sm font-semibold">
               🏆 প্রতিযোগিতামূলক সুবিধা
             </div>
             <h2 className="bangla text-3xl font-bold text-zinc-900">কেন হোস্টামার — গ্লোবাল টুলগুলোর চেয়ে আলাদা</h2>
@@ -80,7 +81,7 @@ export default function ProductsPage() {
             {PRODUCTS.map((p) => (
               <div
                 key={p.slug}
-                className="bg-white border border-zinc-200 rounded-[20px] p-4 hover:border-[#0E7C3A]/40 transition-colors"
+                className="bg-white border border-zinc-200 rounded-[20px] p-4 hover:border-[#2563EB]/40 transition-colors"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">{p.emoji}</span>
@@ -94,7 +95,7 @@ export default function ProductsPage() {
       </section>
 
       {/* ============ COMBINED VALUE PROP ============ */}
-      <section className="bg-[#0E7C3A] text-white py-16">
+      <section className="bg-[#2563EB] text-white py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="bangla text-3xl md:text-4xl font-bold mb-4">
             একটি সাবস্ক্রিপশনে সব ছয়টি
@@ -113,7 +114,7 @@ export default function ProductsPage() {
           </p>
           <Link
             href="/signup?ref=products-bottom"
-            className="bangla inline-block mt-6 px-8 py-4 bg-white text-[#0E7C3A] font-bold rounded-full text-lg hover:bg-zinc-100"
+            className="bangla inline-block mt-6 px-8 py-4 bg-white text-[#2563EB] font-bold rounded-full text-lg hover:bg-zinc-100"
           >
             সব পণ্য একসাথে শুরু করুন →
           </Link>

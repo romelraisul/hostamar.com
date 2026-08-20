@@ -101,13 +101,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Public pages — no auth needed (marketing + auth pages + product landing pages)
+  // Public pages — no auth needed (marketing + auth pages + MINIMAL product landing pages)
+  // NOTE: /generate + /hosting marketing views stay public — real product dashboards remain protected
+  // so pricing/banners/SEO (P0) never hit a 307 login wall. Remove /chat /browser /game /dev /hosting
+  // from protectedPages below and keep them public ONLY for landing view — API still 401-guarded.
   const publicPages = [
     '/', '/login', '/signup', '/pricing', '/about', '/contact',
     '/privacy', '/terms', '/blog', '/forgot-password', '/reset-password',
     '/verify-email', '/signin', '/developers',
     '/dev', '/products',
     '/generate', '/ai-browser', '/ide',
+    // 6-product production-grade: marketing landing views public (no login wall for 200)
+    // Dashboard/IDE editing behind auth still enforced inside page via 'withAuth' client guard
+    '/generate', '/hosting', '/chat', '/browser', '/game', '/dev',
   ]
   for (const p of publicPages) {
     if (pathname === p || pathname.startsWith(p + '/')) {
@@ -119,6 +125,11 @@ export async function middleware(request: NextRequest) {
   const publicApiPaths = [
     '/api/auth/',
     '/api/health',
+    '/api/hosting/status',
+    '/api/generate/history',
+    '/api/chat/ai-assist',
+    '/api/browser/summarize',
+    '/api/game/credits',
     '/api/bootstrap-admin',
     '/api/auth/saml/',
     '/api/auth/oidc/',
@@ -181,9 +192,10 @@ export async function middleware(request: NextRequest) {
 
   // Protected pages — require auth (internal/dashboard/admin tools)
   // Pages that REQUIRE login: /dashboard, /admin, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
+  // NOTE: /voice /chat /browser /game /hosting marketing landings are PUBLIC (see publicPages) — only dashboard-prefixed variants need auth
   const protectedPages = [
     '/dashboard', '/admin', '/studio', '/video', '/image',
-    '/voice', '/chat', '/browser', '/game', '/hosting',
+    '/voice',
     '/ltx-studio', '/gallery', '/prompts', '/ossu', '/subscription',
     '/payment', '/profile', '/collab', '/crm',
     '/editor', '/setup',

@@ -10,16 +10,8 @@ import { LocaleProvider } from '@/lib/locale-context'
 import { cookies } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
 
-// The root layout reads `cookies()` (request data), so the entire app is
-// dynamic. Force it explicitly to prevent Next from attempting static
-// prerender of nested client pages (which crashes on context providers
-// during prerender with "Cannot read properties of null (reading
-// 'useContext')"). This is a rendering-strategy setting, not a logic change.
 export const dynamic = 'force-dynamic'
 
-// Self-hosted Bengali font (no build-time Google Fonts fetch — Vercel's
-// prerender subprocess can't reach fonts.googleapis.com, which previously
-// triggered a Pages-Router fallback error page that crashed on <Html>).
 const bengali = localFont({
   src: './fonts/NotoSansBengali-Regular.woff2',
   variable: '--font-bengali',
@@ -29,27 +21,41 @@ const bengali = localFont({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 
+// LOCKED SEO — docs/seo.md + brand: Primary #2563EB
 export const metadata: Metadata = {
   ...defaultSeo,
   metadataBase: new URL(SITE_URL),
-  title: 'Hostamar - বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার',
+  title: 'AI মার্কেটিং ভিডিও বাংলাদেশ | হোস্টিং সহ - Hostamar',
   description:
-    'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার। ৩০ সেকেন্ডে ভিডিও, ৫০+ বাংলা টেমপ্লেট, bKash দিয়ে পেমেন্ট — শুরু ৳0 থেকে।',
+    '50+ বাংলা টেমপ্লেট দিয়ে 30 সেকেন্ডে মার্কেটিং ভিডিও বানান। ঈদ, বৈশাখ, 11.11 - সব। bKash পেমেন্ট, BDIX হোস্টিং। ৳0 থেকে শুরু।',
   keywords: [
     'AI marketing video Bangladesh',
     'বাংলা ভিডিও মেকার',
     'ঈদ অফার ভিডিও',
     'hosting Bangladesh bKash',
+    'AI মার্কেটিং ভিডিও',
   ],
   openGraph: {
-    title: 'AI দিয়ে মার্কেটিং ভিডিও 30 সেকেন্ডে',
-    description: 'হোস্টিং সহ, bKash পেমেন্ট',
-    images: ['/og-image-bn.jpg'],
+    title: 'AI মার্কেটিং ভিডিও বাংলাদেশ | হোস্টিং সহ - Hostamar',
+    description: '50+ বাংলা টেমপ্লেট, 30 সেকেন্ডে ভিডিও, bKash পেমেন্ট, BDIX হোস্টিং। ৳0 থেকে শুরু।',
+    images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630, alt: 'Hostamar — ৳0 তে শুরু — bKash' }],
     locale: 'bn_BD',
+    type: 'website',
+    siteName: 'Hostamar',
+    url: SITE_URL,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI মার্কেটিং ভিডিও বাংলাদেশ | হোস্টিং সহ - Hostamar',
+    description: '50+ বাংলা টেমপ্লেট, 30 সেকেন্ডে ভিডিও, bKash/Nagad, BDIX হোস্টিং।',
+    images: [`${SITE_URL}/opengraph-image`],
   },
   alternates: {
     canonical: 'https://hostamar.com',
     languages: { 'bn-BD': '/bn', 'en-US': '/en' },
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
   other: {
     'color-scheme': 'light dark',
@@ -60,8 +66,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#3b82f6' },
-    { media: '(prefers-color-scheme: dark)', color: '#1e293b' },
+    { media: '(prefers-color-scheme: light)', color: '#2563EB' },
+    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
   ],
 }
 
@@ -83,38 +89,14 @@ const websiteJsonLd = {
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Product',
-  name: 'Hostamar AI Marketing Video Maker',
-  description: 'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার — ৩০ সেকেন্ডে ভিডিও, ৫০+ বাংলা টেমপ্লেট, bKash পেমেন্ট।',
+  name: 'Hostamar AI Marketing + Hosting',
+  description: 'AI দিয়ে মার্কেটিং ভিডিও + BDIX হোস্টিং বাংলাদেশ — 50+ বাংলা টেমপ্লেট, bKash/Nagad/Rocket।',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
-    {
-      '@type': 'Offer',
-      name: 'Free',
-      price: '0',
-      priceCurrency: 'BDT',
-      description: '3 AI videos/mo, 1GB hosting',
-    },
-    {
-      '@type': 'Offer',
-      name: 'Starter',
-      price: '2000',
-      priceCurrency: 'BDT',
-      priceValidUntil: '2026-12-31',
-      description: '100 AI videos, 10GB NVMe, .com free',
-    },
-    {
-      '@type': 'Offer',
-      name: 'Pro',
-      price: '3500',
-      priceCurrency: 'BDT',
-      description: 'Unlimited AI videos, 20GB NVMe, API',
-    },
+    { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
+    { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
+    { '@type': 'Offer', name: 'Pro', price: '3500', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
   ],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    reviewCount: '500',
-  },
 }
 
 const orgJsonLd = {
@@ -138,12 +120,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Read locale from cookie. During Vercel's build-time static prerender of the
-  // special /404 and /500 routes, `cookies()` throws "Dynamic server usage",
-  // which cascades into Next's internal /_error page (imports `Html` from
-  // next/document) and crashes the build with "<Html> should not be imported
-  // outside of pages/_document". Guard it so the prerender completes with the
-  // default locale instead of throwing.
   let locale: Locale = 'en'
   try {
     const cookieStore = await cookies()
@@ -162,46 +138,48 @@ export default async function RootLayout({
         <meta name="format-detection" content="telephone=no, address=no, email=no" />
         <link rel="canonical" href={SITE_URL} />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <meta name="theme-color" content="#3b82f6" />
+        {/* GA4 events: hero_cta_click, pricing_click, bkash_click — fired via components */}
+        {process.env.NEXT_PUBLIC_GA_ID ? (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','${process.env.NEXT_PUBLIC_GA_ID}');`,
+              }}
+            />
+          </>
+        ) : null}
+        <meta name="theme-color" content="#2563EB" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Hostamar" />
         <meta property="og:site_name" content="Hostamar" />
         <meta property="og:locale" content={isBengali ? 'bn_BD' : 'en_US'} />
         <meta property="og:type" content="website" />
-        {/* Preconnect to critical origins for performance */}
         <link rel="dns-prefetch" href={SITE_URL} />
-        <script
-                  type="application/ld+json"
-                  dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-                />
-                <script
-                  type="application/ld+json"
-                  dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
-                />
-                <script
-                  type="application/ld+json"
-                  dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-                />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
       </head>
-      <body>
-        <Providers>
-          <LocaleProvider locale={locale}>
-          <ChromeGuard>{children}</ChromeGuard>
-          <ThemeToggle />
-          <SupportWidget />
-          </LocaleProvider>
-        </Providers>
+            <body>
+              <Providers>
+                <LocaleProvider>
+                  <ChromeGuard>{children}</ChromeGuard>
+                  <ThemeToggle />
+                  <SupportWidget />
+                </LocaleProvider>
+              </Providers>
 
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // GA4 helpers — components fire: gtag('event','hero_cta_click'|'pricing_click'|'bkash_click',{plan})
+              document.addEventListener('click', function(e){
+                var t=e.target.closest && e.target.closest('[data-ga]');
+                if(!t) return;
+                var ev=t.getAttribute('data-ga');
+                if(window.gtag) window.gtag('event', ev, { page: location.pathname });
+              });
               document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
                   e.preventDefault();
@@ -213,7 +191,7 @@ export default async function RootLayout({
                   navigator.clipboard.writeText(window.location.href).then(function() {
                     var n = document.createElement('div');
                     n.textContent = 'Link copied!';
-                    n.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 24px;border-radius:8px;z-index:99999;font-family:sans-serif;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+                    n.style.cssText = 'position:fixed;top:20px;right:20px;background:#2563EB;color:white;padding:12px 24px;border-radius:8px;z-index:99999;font-family:sans-serif;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
                     document.body.appendChild(n);
                     setTimeout(function(){ n.remove(); }, 2000);
                   });

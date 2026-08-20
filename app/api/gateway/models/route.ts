@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/get-auth-user'
 
+export const dynamic = "force-dynamic";
 // Static fallback catalog mirroring the gateway's default model list. Used when the
 // live gateway is unreachable OR the user has no API key yet, so the Models tab
 // always renders something useful. Keep in sync with gateway.py MODELS.
@@ -32,14 +33,13 @@ export async function GET(req: NextRequest) {
       where: { customerId: user.id, isActive: true },
       orderBy: { createdAt: 'desc' },
     })
-
     let live: any[] | null = null
     if (key) {
       try {
         const res = await fetch(`${GATEWAY_URL}/v1/models`, {
           headers: { Authorization: `Bearer ${key.key}` },
           cache: 'no-store',
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(3000),
         })
         if (res.ok) {
           const data = await res.json()
@@ -52,7 +52,10 @@ export async function GET(req: NextRequest) {
 
     const source = live ? 'live' : 'static'
     const data = live ?? STATIC_MODELS
-    return NextResponse.json({ source, data, gatewayUrl: GATEWAY_URL, hasKey: !!key })
+    return NextResponse.json(
+      { source, data, gatewayUrl: GATEWAY_URL, hasKey: !!key },
+      { headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' } }
+    )
   } catch (error) {
     console.error('Gateway models error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

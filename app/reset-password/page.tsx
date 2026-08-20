@@ -40,14 +40,14 @@ function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="text-center">
-        <div className="w-16 h-16 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-full bg-[#2563EB]/10 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">📧</span>
         </div>
         <h1 className="text-2xl font-bold mb-2">{t('forgotPassword.checkEmail')}</h1>
         <p className="text-zinc-500 mb-6">
           {t('forgotPassword.checkEmailMsg')}
         </p>
-        <Link href="/login" className="text-[#0E7C3A] hover:underline text-sm">
+        <Link href="/login" className="text-[#2563EB] hover:underline text-sm">
           {t('forgotPassword.backToLogin')}
         </Link>
       </div>
@@ -72,7 +72,7 @@ function ForgotPasswordForm() {
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
-          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20 focus:border-[#0E7C3A]"
+          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
           placeholder={t('forgotPassword.emailPlaceholder')}
         />
       </div>
@@ -80,14 +80,14 @@ function ForgotPasswordForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:opacity-50 text-white font-medium py-2.5 rounded-full transition"
+        className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 text-white font-medium py-2.5 rounded-full transition"
       >
         {loading ? t('forgotPassword.sending') : t('forgotPassword.sendReset')}
       </button>
 
       <p className="text-center text-sm text-zinc-500">
         {t('forgotPassword.rememberPassword')}{' '}
-        <Link href="/login" className="text-[#0E7C3A] hover:underline">{t('nav.login')}</Link>
+        <Link href="/login" className="text-[#2563EB] hover:underline">{t('nav.login')}</Link>
       </p>
     </form>
   )
@@ -109,7 +109,7 @@ function ResetPasswordForm() {
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-2">{t('resetPassword.invalidLink')}</h1>
         <p className="text-zinc-500 mb-4">{t('resetPassword.invalidLinkMsg')}</p>
-        <Link href="/forgot-password" className="text-[#0E7C3A] hover:underline">{t('resetPassword.requestNew')}</Link>
+        <Link href="/forgot-password" className="text-[#2563EB] hover:underline">{t('resetPassword.requestNew')}</Link>
       </div>
     )
   }
@@ -117,12 +117,12 @@ function ResetPasswordForm() {
   if (done) {
     return (
       <div className="text-center">
-        <div className="w-16 h-16 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-full bg-[#2563EB]/10 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">✅</span>
         </div>
         <h1 className="text-2xl font-bold mb-2">{t('resetPassword.resetDone')}</h1>
         <p className="text-zinc-500 mb-6">{t('resetPassword.resetDoneMsg')}</p>
-        <Link href="/login" className="text-[#0E7C3A] hover:underline">{t('resetPassword.loginWithNew')}</Link>
+        <Link href="/login" className="text-[#2563EB] hover:underline">{t('resetPassword.loginWithNew')}</Link>
       </div>
     )
   }
@@ -173,7 +173,7 @@ function ResetPasswordForm() {
           onChange={e => setPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20 focus:border-[#0E7C3A]"
+          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
         />
       </div>
 
@@ -185,14 +185,14 @@ function ResetPasswordForm() {
           onChange={e => setConfirm(e.target.value)}
           required
           minLength={6}
-          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20 focus:border-[#0E7C3A]"
+          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:opacity-50 text-white font-medium py-2.5 rounded-full transition"
+        className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 text-white font-medium py-2.5 rounded-full transition"
       >
         {loading ? t('resetPassword.resetting') : t('resetPassword.resetBtn')}
       </button>

@@ -376,6 +376,12 @@ model CreditTransaction {
   description  String?
   balanceAfter Int
   
+  // Relations to Video and VideoQueue
+  videoId      String?
+  video        Video?        @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  videoQueueId String?
+  videoQueue   VideoQueue?   @relation(fields: [videoQueueId], references: [id], onDelete: SetNull)
+  
   createdAt DateTime @default(now())
 
   @@index([customerId, createdAt])

@@ -1,10 +1,12 @@
 'use client'
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { FAQS, FEATURED_FAQS } from '@/lib/faqs';
+import HeroC from '@/components/home/HeroC';
+import DownloadShowcase from '@/components/home/DownloadShowcase';
 
 const GREEN = "#0E7C3A";
-const RED = "#E4312B";
+const RED = "#F59E0B";
 
 // Homepage structured data — Product + real Offers (mirrors app/pricing) + FAQPage.
 // No AggregateRating: we surface the 4.8★ badge as a UI trust mark only, not as
@@ -30,18 +32,11 @@ const homeJsonLd = {
 };
 
 const PRODUCTS = [
-  { href: '/generate', label: 'AI ভিডিও', desc: 'পণ্যের ছবি → ভিডিও', emoji: '🎬' },
-  { href: '/hosting', label: 'হোস্টিং', desc: 'bKash, ঢাকা CDN', emoji: '🌐' },
-  { href: '/chat', label: 'AI চ্যাট', desc: 'বাংলা AI, ভয়েস', emoji: '💬' },
-  { href: '/browser', label: 'ব্রাউজার', desc: 'ক্লাউড ব্রাউজার', emoji: '🧭' },
-  { href: '/ide', label: 'IDE', desc: 'অনলাইন কোড এডিটর', emoji: '⌨️' },
-  { href: '/gaming', label: 'গেমিং', desc: 'ক্লাউড গেম হোস্ট', emoji: '🎮' },
+  { href: '/tools', label: 'Lab tools', desc: 'Browser, Chat, IDE, Gaming', emoji: '🧪' },
 ];
 
 export default function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const [prodOpen, setProdOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -50,170 +45,53 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased selection:bg-[#0E7C3A]/20 overflow-x-hidden">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#0F172A] antialiased selection:bg-[#2563EB]/20 overflow-x-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
       />
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 h-11 rounded-full bg-zinc-900 text-white text-[13px] font-medium flex items-center shadow-xl animate-[in_.2s_ease]">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 h-11 rounded-full bg-[#0F172A] text-white text-[13px] font-medium flex items-center shadow-xl"> 
           {toast}
         </div>
       )}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
         * { font-family: 'Inter', 'Hind Siliguri', system-ui, sans-serif; }
         .bangla { font-family: 'Hind Siliguri', sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* Header */}
-      
+      {/* HERO C — Unified bundle, single CTA, trust bar inside */}
+      <HeroC />
+      <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0"> <DownloadShowcase /> </div>
 
-      <main className="mx-auto max-w-[1120px] px-5 lg:px-0 overflow-hidden">
-        {/* HERO */}
-        <section className="pt-10 md:pt-20 pb-10 grid md:grid-cols-[1.05fr_0.95fr] gap-10 md:gap-14 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium shadow-sm mb-5">
-              <span className="h-2 w-2 rounded-full animate-pulse" style={{background: GREEN}}></span>
-              <span className="bangla">বাংলাদেশি SME দের জন্য তৈরি</span>
-              <span className="text-zinc-300">|</span>
-              <span className="text-zinc-500">Made for Bangladesh</span>
-            </div>
+      <main className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 overflow-hidden">
 
-            <h1 className="bangla text-[36px] md:text-[56px] leading-[1.05] font-bold tracking-[-0.03em]">
-              বাংলাদেশি ব্যবসার জন্য<br/>
-              <span className="relative inline-block">
-                <span className="relative z-10">AI ভিডিও,</span>
-                <span className="absolute bottom-[8px] left-0 right-0 h-[12px] bg-[#0E7C3A]/15 -rotate-[1deg]"></span>
-              </span>
-              <span style={{color: GREEN}}> ৩০ সেকেন্ডে</span> রেডি
-            </h1>
-
-            <p className="bangla mt-5 text-[16px] md:text-[18px] leading-[1.6] text-zinc-600 max-w-[520px]">
-              পণ্যের ছবি দিন, AI বাকিটা সামলাবে — বাংলা ভয়েসওভার, সাবটাইটেল, ব্র্যান্ড লোগো সহ প্রফেশনাল মার্কেটিং ভিডিও। কোনো এডিটিং স্কিল লাগবে না।
-            </p>
-
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/generate" className="h-[48px] px-6 rounded-full text-white font-semibold bangla text-[15px] inline-flex items-center gap-2 shadow-[0_12px_24px_-10px_rgba(14,124,58,0.6)] hover:translate-y-[-1px] transition" style={{background: GREEN}}>
-                <span>▶</span> ফ্রি ভিডিও বানান
-              </Link>
-              <button onClick={()=>{document.getElementById('templates')?.scrollIntoView({behavior:'smooth'})}} className="h-[48px] px-6 rounded-full bg-white border border-zinc-200 font-medium text-[14px] inline-flex items-center gap-2 hover:bg-zinc-50 transition">
-                টেমপ্লেট দেখুন <span>→</span>
-              </button>
-            </div>
-
-            <div className="mt-6 flex items-center gap-4 text-[12px] text-zinc-500">
-              <span className="inline-flex items-center gap-1.5"><span className="text-[14px]">✓</span> ক্রেডিট কার্ড লাগবে না</span>
-              <span className="h-3 w-px bg-zinc-200"></span>
-              <span className="inline-flex items-center gap-1.5"><span className="text-[14px]">✓</span> bKash এ পেমেন্ট</span>
-            </div>
+        {/* 20% Hosting band — real /hosting proof */}
+        <section className="mt-8 rounded-[24px] border border-zinc-200 bg-white overflow-hidden">
+          <div className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3 bg-[#F8FAFC] border-b border-zinc-200">
+            <span className="text-sm font-bold">☁️ BDIX হোস্টিং — 5GB ফ্রি • 20ms Dhaka PoP • 99.9% SLA</span>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-[#2563EB] text-white font-semibold">HostSeba ৳2220/yr No AI vs Hostamar ৳2000/yr AI সহ</span>
           </div>
-
-          {/* Video Preview Mock */}
-          <div className="relative overflow-hidden md:overflow-visible">
-            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0E7C3A]/10 via-transparent to-[#E4312B]/10 blur-2xl rounded-[40px]"></div>
-            
-            <div className="rounded-[28px] bg-white border border-zinc-200 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15),0_1px_0_0_rgba(0,0,0,0.03)] p-2.5">
-              {/* browser chrome */}
-              <div className="flex items-center justify-between px-4 py-2.5">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-[#FF5F56]"></div>
-                  <div className="h-3 w-3 rounded-full bg-[#FFBD2E]"></div>
-                  <div className="h-3 w-3 rounded-full bg-[#27C93F]"></div>
-                </div>
-                <div className="text-[11px] text-zinc-400 font-medium">hostamar.com/editor • Auto-saved</div>
-                <div className="h-6 w-16 rounded-full bg-zinc-100"></div>
-              </div>
-
-              <div className="relative rounded-[20px] overflow-hidden bg-[#0A0A0A] aspect-[16/10] flex items-center justify-center">
-                {/* fake video content */}
-                <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black"></div>
-                <div className="absolute inset-0 opacity-40" style={{backgroundImage: `radial-gradient(circle at 30% 20%, ${GREEN} 0%, transparent 50%), radial-gradient(circle at 80% 80%, ${RED} 0%, transparent 40%)`}}></div>
-                
-                <div className="relative z-10 text-center p-6 w-full">
-                  <div className="mx-auto w-fit rounded-full bg-white/10 backdrop-blur border border-white/20 px-3 py-1 text-[11px] text-white mb-6">ঈদ কালেকশন • 9:16 • 30s</div>
-                  
-                  <div className="flex justify-center">
-                    <button onClick={()=>showToast("ডেমো ভিডিও প্লে হচ্ছে ▶ 1080p")} className="h-[72px] w-[72px] rounded-full bg-white shadow-[0_10px_30px_rgba(0,0,0,0.3)] flex items-center justify-center text-[28px] hover:scale-105 transition">▶</button>
-                  </div>
-
-                  <div className="mt-8 mx-auto max-w-[320px] rounded-xl bg-white/10 backdrop-blur-md border border-white/15 p-3 flex items-center gap-3 text-left">
-                    <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center text-[18px]">👗</div>
-                    <div className="flex-1">
-                      <div className="h-2.5 w-24 bg-white/80 rounded"></div>
-                      <div className="mt-1.5 h-2 w-32 bg-white/30 rounded"></div>
-                    </div>
-                    <div className="h-7 px-2.5 rounded-full bg-white text-zinc-900 text-[11px] font-semibold flex items-center" style={{}}>Buy Now</div>
-                  </div>
-                </div>
-
-                {/* bottom bar */}
-                <div className="absolute bottom-0 left-0 right-0 h-[56px] bg-gradient-to-t from-black/80 to-transparent flex items-end px-4 pb-3 gap-2">
-                  <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full w-[68%] rounded-full" style={{background: GREEN}}></div>
-                  </div>
-                  <div className="text-[11px] text-white/70 font-mono">00:21 / 00:30</div>
-                </div>
-              </div>
-
-              {/* chips */}
-              <div className="flex flex-wrap gap-2 px-2 pt-3 pb-1">
-                {[
-                  {label:"ঈদ অফার", emoji:"🌙", active:true},
-                  {label:"পহেলা বৈশাখ", emoji:"🌸", active:false},
-                  {label:"11.11 Sale", emoji:"🛍️", active:false},
-                  {label:"শীত কালেকশন", emoji:"🧥", active:false},
-                ].map(chip=>(
-                  <button key={chip.label} className={`h-8 px-3.5 rounded-full text-[13px] font-medium bangla inline-flex items-center gap-1.5 border transition ${chip.active ? "text-white border-transparent shadow-sm" : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-white"}`} style={chip.active?{background:GREEN}:{}}>
-                    <span>{chip.emoji}</span> {chip.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* floating badge */}
-            <div className="absolute right-2 md:-right-4 -bottom-4 md:bottom-6 rounded-2xl bg-white border border-zinc-200 shadow-xl px-4 py-3 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center text-[18px]">⚡</div>
-              <div>
-                <div className="text-[13px] font-semibold bangla leading-none">রেন্ডার সম্পন্ন</div>
-                <div className="text-[11px] text-zinc-500 mt-1">২৩ সেকেন্ডে • 1080p</div>
-              </div>
-            </div>
+          <div className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm text-zinc-600">bKash • Nagad • Rocket — অটো পেমেন্ট • LiteSpeed + LSCache + JetBackup</span>
+            <a href="/hosting" data-ga="pricing_click" className="h-9 px-5 rounded-full bg-[#2563EB] text-white text-sm font-semibold inline-flex items-center hover:bg-[#1D4ED8]">হোস্টিং দেখুন →</a>
           </div>
         </section>
 
-        {/* Social Proof */}
-        <section className="rounded-[20px] bg-white border border-zinc-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-0 overflow-hidden">
-          <div className="flex-1 flex items-center justify-between md:justify-start gap-6 px-6 md:px-8 py-5">
-            <div className="flex items-baseline gap-2">
-              <span className="text-[28px] font-bold tracking-tight">500+</span>
-              <span className="text-[13px] text-zinc-500 bangla font-medium">অ্যাকটিভ ক্রিয়েটর</span>
-            </div>
-            <div className="hidden md:block h-8 w-px bg-zinc-100"></div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[28px] font-bold tracking-tight">10k+</span>
-              <span className="text-[13px] text-zinc-500 bangla font-medium">ভিডিও তৈরি</span>
-            </div>
-            <div className="hidden md:block h-8 w-px bg-zinc-100"></div>
-            <div className="flex items-center gap-2">
-              <span className="text-[28px] font-bold tracking-tight">4.8</span>
-              <span className="text-yellow-500">★★★★★</span>
-              <span className="text-[12px] text-zinc-500">(212)</span>
-            </div>
-          </div>
-          <div className="bg-zinc-50 border-t md:border-t-0 md:border-l border-zinc-200 px-6 md:px-8 py-4 flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {[1,2,3].map(i=>(
-                <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-gradient-to-br from-zinc-200 to-zinc-300 flex items-center justify-center text-[12px]">🙂</div>
-              ))}
-            </div>
-            <div className="text-[12px] leading-[1.3]">
-              <div className="font-medium bangla">বিশ্বস্ত ব্র্যান্ডগুলো ব্যবহার করছে</div>
-              <div className="text-zinc-500">Aarong, Sailor, Daraz sellers</div>
-            </div>
-          </div>
+        {/* 10% Tools — Chat + IDE only */}
+        <section className="mt-4 grid sm:grid-cols-2 gap-4">
+          <a href="/chat" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
+            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳1000/mo early bundle</div>
+            <div className="mt-1 font-bold">💬 AI চ্যাট — ৳0 100msg/day</div>
+            <div className="text-sm text-zinc-600 mt-1">বাংলা ভয়েস ইনপুট • Messenger till 11pm • SupportWidget live</div>
+          </a>
+          <a href="/dev" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
+            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳1000/mo early bundle</div>
+            <div className="mt-1 font-bold">🧑‍💻 Dev IDE — ৳0</div>
+            <div className="text-sm text-zinc-600 mt-1">Replit $25 vs Hostamar ৳0 • Live editor • /studio</div>
+          </a>
         </section>
 
         {/* Bento Features */}
@@ -222,7 +100,7 @@ export default function App() {
             <h2 className="bangla text-[28px] md:text-[32px] font-bold leading-[1.15] tracking-[-0.02em]">বাংলাদেশের জন্য<br/>বিশেষভাবে তৈরি ফিচার</h2>
             <div className="flex flex-col items-start gap-3">
               <p className="bangla text-[14px] text-zinc-500 max-w-[320px] leading-[1.6]">Silicon Valley টুল নয় — bKash, বাংলা ভয়েস, লোকাল ফন্ট, সবকিছুই আপনার দোকানের জন্য।</p>
-              <Link href="/features" className="bangla text-[13px] font-semibold text-[#0E7C3A] inline-flex items-center gap-1 hover:gap-2 transition-all">সব ৩০+ ফিচার দেখুন →</Link>
+              <Link href="/features" className="bangla text-[13px] font-semibold text-[#2563EB] inline-flex items-center gap-1 hover:gap-2 transition-all">সব ৩০+ ফিচার দেখুন →</Link>
             </div>
           </div>
 
@@ -248,7 +126,7 @@ export default function App() {
             </div>
 
             {/* bKash */}
-            <div className="md:col-span-5 rounded-[24px] p-6 md:p-7 flex flex-col justify-between text-white relative overflow-hidden shadow-[0_12px_30px_-12px_rgba(14,124,58,0.6)]" style={{background: `linear-gradient(135deg, ${GREEN} 0%, #0A5A2B 100%)`}}>
+            <div className="md:col-span-5 rounded-[24px] p-6 md:p-7 flex flex-col justify-between text-white relative overflow-hidden shadow-[0_12px_30px_-12px_rgba(37,99,235,0.6)]" style={{background: `linear-gradient(135deg, ${GREEN} 0%, #0A5A2B 100%)`}}>
               <div className="absolute -right-10 -top-10 h-[200px] w-[200px] rounded-full bg-white/10 blur-2xl"></div>
               <div>
                 <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center text-[20px]">💳</div>
@@ -362,9 +240,9 @@ export default function App() {
             </div>
 
             {/* Starter Popular */}
-            <div className="rounded-[24px] border-2 p-[1px] shadow-[0_18px_40px_-16px_rgba(14,124,58,0.45)]" style={{background:`linear-gradient(135deg, ${GREEN}, #16A34A)`}}>
+            <div className="rounded-[24px] border-2 p-[1px] shadow-[0_18px_40px_-16px_rgba(37,99,235,0.45)]" style={{background:`linear-gradient(135deg, ${GREEN}, #16A34A)`}}>
               <div className="rounded-[22px] bg-white p-6 md:p-7 relative overflow-hidden">
-                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#0E7C3A]/30 to-transparent"></div>
+                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#2563EB]/30 to-transparent"></div>
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold flex items-center gap-2">Starter <span className="h-5 px-2 rounded-full text-white text-[10px] font-bold flex items-center" style={{background:GREEN}}>POPULAR</span></h3>
                   <span className="text-[11px] font-medium text-zinc-500">SME দের পছন্দ</span>
@@ -378,7 +256,7 @@ export default function App() {
                     <li key={f} className="flex gap-2"><span className="h-5 w-5 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style={{background:GREEN}}>✓</span><span className="bangla">{f}</span></li>
                   ))}
                 </ul>
-                <Link href="/signup?plan=starter" className="mt-7 h-11 w-full rounded-full text-white font-semibold text-[14px] flex items-center justify-center shadow-[0_10px_20px_-10px_rgba(14,124,58,0.7)] hover:brightness-105 transition bangla" style={{background:GREEN}}>Starter নিন →</Link>
+                <Link href="/signup?plan=starter" className="mt-7 h-11 w-full rounded-full text-white font-semibold text-[14px] flex items-center justify-center shadow-[0_10px_20px_-10px_rgba(37,99,235,0.7)] hover:brightness-105 transition bangla" style={{background:GREEN}}>Starter নিন →</Link>
                 <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-zinc-500"><span>পেমেন্ট:</span><span className="font-semibold">bKash</span><span>•</span><span className="font-semibold">Nagad</span><span>•</span><span className="font-semibold">Rocket</span></div>
               </div>
             </div>
@@ -408,7 +286,7 @@ export default function App() {
           <div>
             <h2 className="bangla text-[26px] font-bold leading-tight">সাধারণ প্রশ্ন</h2>
             <p className="bangla mt-2 text-[13px] text-zinc-500 leading-[1.6]">SME ওনারদের সবচেয়ে বেশি জিজ্ঞাসিত প্রশ্ন। আরও জানতে সাপোর্টে নক দিন।</p>
-            <Link href="/faq" className="bangla mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#0E7C3A] hover:gap-2 transition-all">সব ২৫টি প্রশ্ন দেখুন →</Link>
+            <Link href="/faq" className="bangla mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#2563EB] hover:gap-2 transition-all">সব ২৫টি প্রশ্ন দেখুন →</Link>
             <div className="mt-5 hidden md:flex items-center gap-2 text-[13px]">
               <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center">💬</div>
               <div><div className="font-medium bangla">লাইভ চ্যাট সাপোর্ট</div><div className="text-[12px] text-zinc-500">সকাল ৯টা - রাত ১০টা</div></div>

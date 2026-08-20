@@ -1,16 +1,7 @@
 import { ImageResponse } from 'next/og'
 
-// NOTE: runtime intentionally NOT 'edge'. next/og's ImageResponse under the
-// edge runtime pulls in `Html` from next/document during Vercel's build-time
-// prerender of /404 and /500, crashing with "<Html> should not be imported
-// outside of pages/_document". Node.js runtime renders the OG image fine and
-// avoids that internal prerender crash.
-export const alt = 'Hostamar - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE'
-export const size = {
-  width: 1200,
-  height: 630,
-}
-
+export const alt = 'Hostamar — AI দিয়ে মার্কেটিং ভিডিও ৩০ সেকেন্ডে — ৳0 তে শুরু'
+export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
@@ -22,97 +13,73 @@ export default async function Image() {
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
-          position: 'relative',
-          overflow: 'hidden',
+          justifyContent: 'space-between',
+          background: '#FFFFFF',
+          padding: 32,
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: '-50%',
-            left: '-50%',
-            width: '200%',
-            height: '200%',
-            background:
-              'radial-gradient(circle at 30% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%)',
-          }}
-        />
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 72,
-              fontWeight: 800,
-              background: 'linear-gradient(90deg, #3b82f6, #a855f7, #ec4899)',
-              backgroundClip: 'text',
-              color: 'transparent',
-              letterSpacing: '-0.02em',
-              marginBottom: 16,
-            }}
-          >
-            Hostamar
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              style={{
+                height: 44,
+                width: 44,
+                borderRadius: 12,
+                background: '#2563EB',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 800,
+                fontSize: 18,
+              }}
+            >
+              H
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: -0.5 }}>Hostamar</div>
+              <div style={{ fontSize: 11, color: '#64748B' }}>AI Marketing + Hosting — Bangladesh</div>
+            </div>
           </div>
-          <div
-            style={{
-              fontSize: 28,
-              color: '#94a3b8',
-              fontWeight: 400,
-              textAlign: 'center',
-              maxWidth: 700,
-              lineHeight: 1.4,
-            }}
-          >
-            Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 999, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: '#0F172A' }}>
+              bKash
+            </div>
+            <div style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 999, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: '#0F172A' }}>
+              Nagad
+            </div>
+            <div style={{ background: 'white', border: '1px solid #E2E8F0', borderRadius: 999, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: '#0F172A' }}>
+              Rocket
+            </div>
           </div>
-          <div
-            style={{
-              marginTop: 32,
-              display: 'flex',
-              gap: 16,
-              fontSize: 16,
-              color: '#64748b',
-            }}
-          >
-            <span style={{
-              padding: '8px 16px',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
-              borderRadius: 20,
-              color: '#60a5fa',
-            }}>Cloud Hosting</span>
-            <span style={{
-              padding: '8px 16px',
-              border: '1px solid rgba(168, 85, 247, 0.3)',
-              borderRadius: 20,
-              color: '#a78bfa',
-            }}>AI Videos</span>
-            <span style={{
-              padding: '8px 16px',
-              border: '1px solid rgba(236, 72, 153, 0.3)',
-              borderRadius: 20,
-              color: '#f472b6',
-            }}>Gaming</span>
-            <span style={{
-              padding: '8px 16px',
-              border: '1px solid rgba(34, 197, 94, 0.3)',
-              borderRadius: 20,
-              color: '#4ade80',
-            }}>AI Browser</span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ fontSize: 52, fontWeight: 800, color: '#0F172A', letterSpacing: -1.2 }}>AI দিয়ে ভিডিও</div>
+            <div style={{ fontSize: 52, fontWeight: 800, color: '#2563EB', letterSpacing: -1.2 }}>৩০ সেকেন্ডে</div>
+          </div>
+          <div style={{ fontSize: 18, color: '#475569', display: 'flex' }}>৫০+ বাংলা টেমপ্লেট — ঈদ, পহেলা বৈশাখ, 11.11 • হোস্টিং সহ • bKash এ পেমেন্ট</div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ borderRadius: 999, background: '#2563EB', color: 'white', padding: '10px 18px', fontSize: 14, fontWeight: 700, display: 'flex' }}>
+              ৳0 তে শুরু
+            </div>
+            <div style={{ fontSize: 12, color: '#475569', display: 'flex' }}>৭ দিন মানি-ব্যাক • hostamar.com/generate</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 999, padding: '4px 10px', fontSize: 11, color: '#334155', display: 'flex' }}>
+              BDIX ঢাকা CDN
+            </div>
+            <div style={{ background: '#FFFBEB', border: '1px solid #FED7AA', borderRadius: 999, padding: '4px 10px', fontSize: 11, color: '#92400E', display: 'flex' }}>
+              ৫০০+ creators
+            </div>
           </div>
         </div>
       </div>
     ),
-    {
-      ...size,
-    }
+    { ...size },
   )
 }
