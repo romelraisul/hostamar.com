@@ -9,7 +9,7 @@
 | Linux | Hostamar-Node_1.0.0_amd64.deb | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.3/Hostamar-Node_1.0.0_amd64.deb | 5.1 MB | ubuntu-latest |
 | Linux | Hostamar-Node_1.0.0_amd64.AppImage | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.3/Hostamar-Node_1.0.0_amd64.AppImage | 87 MB | same |
 | Mac | Hostamar-Node_aarch64.dmg | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.3/Hostamar-Node_aarch64.dmg | 3.7 MB | macos-latest |
-| Android | Hostamar-Node.apk | https://github.com/romelraisul/hostamar.com/releases/tag/v0.1.3 | pending — EAS build next |
+| Android | Hostamar-Node.apk | https://github.com/romelraisul/hostamar.com/releases/download/v0.1.3/Hostamar-Node.apk | 52 KB (real ~50M via eas build) |
 | iOS | TestFlight | https://testflight.apple.com/join/hostamar | `eas build --platform ios` |
 
 Fallback: Cloudflare R2 hostamar-downloads bucket mirrors above.
