@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
 const SYMBOLS = ['🍒', '🍋', '🍇', '🔔', '⭐', '💎']
@@ -8,7 +9,6 @@ const MIN_BET = 1
 const MAX_BET = 100
 const DEFAULT_CREDITS = 1000
 const DEFAULT_BALANCE = 1000
-const HEADER_KEYS = ['x-user-id', 'authorization', 'cookie'] as const
 
 function seededRng(seed: number) {
   return function () {
@@ -39,22 +39,6 @@ function evaluateWin(reels: string[], bet: number): { won: boolean; multiplier: 
   return { won: false, multiplier: 0, amount: 0, message: 'No luck this time. Try again!' }
 }
 
-function extractCustomerId(req: NextRequest): string | null {
-  for (const key of HEADER_KEYS) {
-    const raw = req.headers.get(key)
-    if (!raw) continue
-    if (key === 'authorization' && raw.startsWith('Bearer ')) return raw.slice(7).trim() || null
-    if (key === 'cookie') {
-      const match = raw.match(/(?:^|;\s*)customerId=([^;\s]*)/)
-      if (match?.[1]) return decodeURIComponent(match[1])
-      continue
-    }
-    const trimmed = raw.trim()
-    if (trimmed) return trimmed
-  }
-  return null
-}
-
 export async function GET() {
   const credits = DEFAULT_CREDITS
   const balance = DEFAULT_BALANCE
@@ -63,6 +47,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const authUser = await getAuthUser(req)
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const customerId = authUser.id
     const body = await req.json().catch(() => ({}))
     const bet = typeof body.bet === 'number' ? body.bet : 10
     const seed = typeof body.seed === 'number' ? body.seed : Date.now()
@@ -71,7 +60,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE, error: `Bet must be between ${MIN_BET} and ${MAX_BET}` }, { status: 400 })
     }
 
-    const customerId = extractCustomerId(req) || '00000000-0000-0000-0000-000000000001'
     let credits = DEFAULT_CREDITS
     let balance = DEFAULT_BALANCE
     let mode = 'demo'
@@ -104,7 +92,6 @@ export async function POST(req: NextRequest) {
         update: { credits, balance, mode: 'pinned' },
         create: { customerId, credits: DEFAULT_CREDITS, balance: DEFAULT_BALANCE, mode: 'fresh' },
       }).catch(() => {})
-
       await prisma.gameSpin.create({
         data: {
           balanceId,

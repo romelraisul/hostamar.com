@@ -1,0 +1,9 @@
+{
+  "3": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"}},
+  "6": {"class_type": "CLIPTextEncode", "inputs": {"text": "Bangladeshi business marketing video, vibrant Eid festival, shop owner smiling, product showcase, 4k, highly detailed", "clip": "3"}},
+  "7": {"class_type": "CLIPTextEncode", "inputs": {"text": "blurry, watermark, low quality", "clip": "3"}},
+  "10": {"class_type": "EmptyLatentImage", "inputs": {"width": 1024, "height": 576, "batch_size": 1}},
+  "30": {"class_type": "KSampler", "inputs": {"seed": 0, "steps": 4, "cfg": 2, "sampler_name": "euler", "scheduler": "normal", "denoise": 1, "model": "3", "positive": "6", "negative": "7", "latent_image": "10"}},
+  "40": {"class_type": "VAEDecode", "inputs": {"samples": "30", "vae": "3"}},
+  "50": {"class_type": "SaveImage", "inputs": {"images": "40", "filename_prefix": "hostamar_6y7"}}
+}

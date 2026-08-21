@@ -2,21 +2,20 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
+import { getAuthUser } from '@/lib/auth'
 
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID!
 const TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET!
 const REDIRECT_URI = `${process.env.NEXTAUTH_URL}/api/auth/twitter/callback`
 
-export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
+export async function GET(req: NextRequest) {
+  const authUser = await getAuthUser(req)
+  if (!authUser) {
     return NextResponse.redirect(new URL('/login', process.env.NEXTAUTH_URL))
   }
 
-  const { searchParams } = new URL(request.url)
+  const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
   const state = searchParams.get('state') // this is the code_verifier
   const error = searchParams.get('error')
@@ -28,7 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Retrieve and clear the code verifier from cookie
-  const cookie = request.cookies.get('twitter_code_verifier')
+  const cookie = req.cookies.get('twitter_code_verifier')
   const codeVerifier = cookie?.value
 
   if (!codeVerifier || codeVerifier !== state) {
@@ -75,7 +74,7 @@ export async function GET(request: NextRequest) {
 
     // Store in database
     await prisma.customer.update({
-      where: { email: session.user.email },
+      where: { email: authUser.email },
       data: {
         twitterAccessToken: access_token,
         twitterAccessTokenExpiry: new Date(Date.now() + expires_in * 1000),

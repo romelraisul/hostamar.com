@@ -1,22 +1,22 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-;
-
 export async function GET(req: NextRequest) {
-  const { searchParams } = req.nextUrl;
-  const userId = searchParams.get("userId");
-  const courseId = searchParams.get("courseId");
-
-  if (!userId) {
-    return NextResponse.json({ error: "User ID required" }, { status: 400 });
+  const authUser = await getAuthUser(req)
+  if (!authUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const userId = authUser.id
+  const { searchParams } = req.nextUrl;
+  const courseId = searchParams.get("courseId");
 
   try {
     const progress = await prisma.userProgress.findMany({
       where: {
+        userId,
         ...(courseId && { courseId }),
       },
       select: {
@@ -36,7 +36,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { userId, courseId, lessonId, completed, quizScore } = await req.json();
+  const authUser = await getAuthUser(req)
+  if (!authUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const userId = authUser.id
+  const { courseId, lessonId, completed, quizScore } = await req.json();
+
+  if (!courseId || !lessonId) {
+    return NextResponse.json({ error: 'courseId and lessonId required' }, { status: 400 })
+  }
 
   try {
     const progress = await prisma.userProgress.upsert({

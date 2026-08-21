@@ -1,9 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
+import { getAuthUser } from '@/lib/auth'
 
 // SMS API integration (using local SMS gateway for Bangladesh)
 async function sendSMS(phone: string, message: string): Promise<boolean> {
@@ -77,14 +76,14 @@ async function sendWhatsApp(phone: string, message: string): Promise<boolean> {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req)
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { to, message, channels, orderId } = await request.json()
+    const { to, message, channels, orderId } = await req.json()
 
     if (!to || !message || !channels) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -102,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     // Log notification
     const user = await prisma.customer.findUnique({
-      where: { email: session.user.email }
+      where: { email: authUser.email }
     })
 
     if (user) {

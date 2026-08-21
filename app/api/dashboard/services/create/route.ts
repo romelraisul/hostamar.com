@@ -1,27 +1,26 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getAuthUser } from '@/lib/auth'
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const authUser = await getAuthUser(req)
     
-    if (!session?.user?.email) {
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const customer = await prisma.customer.findUnique({
-      where: { email: session.user.email },
+      where: { email: authUser.email },
     })
 
     if (!customer) {
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
     }
 
-    const body = await request.json()
+    const body = await req.json()
     const { type, name, specs, price, billingCycle = 'monthly' } = body
 
     if (!type || !name || !price) {

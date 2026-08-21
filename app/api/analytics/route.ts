@@ -1,23 +1,18 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
-import { getAuthUser } from '@/lib/get-auth-user'
+import { getAuthUser } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   try {
-    // Prefer custom JWT (auth_token cookie via getAuthUser), fallback to NextAuth
+    // Custom JWT (auth_token cookie / Bearer / middleware headers)
     let email: string | null = null
     let customerId: string | null = null
     const jwtUser = await getAuthUser(req).catch(() => null)
     if (jwtUser?.email) {
       email = jwtUser.email
       customerId = jwtUser.id
-    } else {
-      const session = await getServerSession(authOptions)
-      if (session?.user?.email) email = session.user.email
     }
     if (!email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

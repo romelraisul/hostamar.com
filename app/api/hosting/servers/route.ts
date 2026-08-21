@@ -2,12 +2,24 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
 
-const DOCKER_SOCK = '/var/run/docker.sock';
+/**
+ * /api/hosting/servers — admin-only Docker container management.
+ *
+ * Talks to the Docker Engine API on the host (DOCKER_HOST env, defaults to the
+ * local unix socket proxy). On Vercel there is no Docker socket, so the route
+ * reports HOSTING_NOT_CONFIGURED instead of fabricating servers. No mock data.
+ */
+
 const NETWORK = 'hostamar-network';
 const IP_POOL_START = 200;
 const IP_POOL_END = 250;
 const SUBNET = '172.19.0';
+
+// Docker Engine API base. Set DOCKER_HOST to e.g. http://your-docker-host:2375
+// to manage containers from the deployed app. Empty = not configured.
+const DOCKER_BASE = (process.env.DOCKER_HOST || '').replace(/\/$/, '');
 
 interface HostingServer {
   id: string;
@@ -26,47 +38,24 @@ interface HostingServer {
   createdAt: string;
 }
 
-function mockServers(): HostingServer[] {
-  return [
+function notConfiguredResponse() {
+  return NextResponse.json(
     {
-      id: 'srv-1001',
-      name: 'web-prod-01',
-      image: 'nginx:alpine',
-      status: 'running',
-      ip: '172.19.0.201',
-      domain: 'app.hostamar.com',
-      ssl: true,
-      uptime: '14d 6h 32m',
-      cpu: '2 vCPU',
-      ram: '4 GB',
-      storage: '40 GB SSD',
-      os: 'Alpine Linux 3.19',
-      ports: ['80', '443'],
-      createdAt: '2024-12-10T08:00:00Z',
+      servers: [],
+      configured: false,
+      error: 'HOSTING_NOT_CONFIGURED',
+      message: 'Set DOCKER_HOST (Docker Engine API) to manage hosting containers. No Docker socket is available in this environment.',
     },
-    {
-      id: 'srv-1002',
-      name: 'api-staging',
-      image: 'node:20-slim',
-      status: 'stopped',
-      ip: '172.19.0.202',
-      ssl: false,
-      uptime: '-',
-      cpu: '1 vCPU',
-      ram: '2 GB',
-      storage: '20 GB SSD',
-      os: 'Debian 12',
-      ports: ['3000'],
-      createdAt: '2025-01-05T14:20:00Z',
-    },
-  ];
+    { status: 200 }
+  );
 }
 
 async function dockerCall(path: string, method = 'GET', body?: any): Promise<any> {
+  if (!DOCKER_BASE) throw new Error('DOCKER_HOST not configured');
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
   try {
-    const res = await fetch(`http://localhost${path}`, {
+    const res = await fetch(`${DOCKER_BASE}${path}`, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined,
@@ -129,7 +118,6 @@ function allocateIp(used: string[]): string {
 }
 
 function randomPort(): number {
-  // avoid well-known ports for simplicity
   return Math.floor(Math.random() * (8999 - 3000 + 1)) + 3000;
 }
 
@@ -181,50 +169,52 @@ async function createDockerServer(server: Omit<HostingServer, 'id' | 'status' | 
       })(),
       PortBindings: portBinds,
       NetworkMode: NETWORK,
-  },
-  NetworkingConfig: {
-    EndpointsConfig: {
-      [NETWORK]: { IPAMConfig: { IPv4Address: ip } },
     },
-  },
-};
+    NetworkingConfig: {
+      EndpointsConfig: {
+        [NETWORK]: { IPAMConfig: { IPv4Address: ip } },
+      },
+    },
+  };
 
-try {
+  // Real creation — if it fails, report the failure (never fake success).
   await dockerCall('/containers/create', 'POST', body);
   await dockerCall(`/containers/${containerName}/start`, 'POST');
-} catch (e) {
-  console.error('Docker create error', e);
-  // On failure, we continue with mock IP + status to keep page usable
+
+  return {
+    id,
+    name: server.name,
+    image: server.image,
+    status: 'running',
+    ip,
+    domain: server.domain,
+    ssl: server.ssl,
+    uptime: '0m',
+    cpu: server.cpu,
+    ram: server.ram,
+    storage: server.storage,
+    os: server.os,
+    ports,
+    createdAt: new Date().toISOString(),
+  };
 }
 
-return {
-  id,
-  name: server.name,
-  image: server.image,
-  status: 'running',
-  ip,
-  domain: server.domain,
-  ssl: server.ssl,
-  uptime: '0m',
-  cpu: server.cpu,
-  ram: server.ram,
-  storage: server.storage,
-  os: server.os,
-  ports,
-  createdAt: new Date().toISOString(),
-};
-}
+export async function GET(req: NextRequest) {
+  try {
+    await requireAdmin(req);
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || 'Unauthorized' }, { status: e?.cause?.status || 401 });
+  }
 
-export async function GET() {
+  if (!DOCKER_BASE) {
+    return notConfiguredResponse();
+  }
+
   try {
     const containers = await getContainers();
-    const networks = await getNetworks();
-    const usedIps = getUsedIps(containers, networks);
 
-    // Try to read persisted state from a hidden in-memory store in this process only.
-    // For a more persistent state, a DB table would be used; here we return Docker + mock mix.
     const realContainers = containers
-      .filter((c) => c.Names && c.Names.some((n: string) => n.startsWith('/hostamar-srv-')))
+      .filter((c) => c.Names && c.Names.some((n: string) => n.startsWith('/hostamar-')))
       .map((c) => {
         const ip = c.NetworkSettings?.Networks?.[NETWORK]?.IPAddress || 'hostamar-network';
         return {
@@ -245,15 +235,26 @@ export async function GET() {
         } as HostingServer;
       });
 
-    const servers = [...mockServers(), ...realContainers];
-
-    return NextResponse.json(servers);
+    return NextResponse.json({ servers: realContainers, configured: true });
   } catch (e) {
-    return NextResponse.json(mockServers());
+    return NextResponse.json({ servers: [], configured: false, error: 'Docker unreachable' });
   }
 }
 
 export async function POST(request: NextRequest) {
+  try {
+    await requireAdmin(request);
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || 'Unauthorized' }, { status: e?.cause?.status || 401 });
+  }
+
+  if (!DOCKER_BASE) {
+    return NextResponse.json(
+      { error: 'HOSTING_NOT_CONFIGURED', message: 'Set DOCKER_HOST to enable container creation.' },
+      { status: 503 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { name, image, cpu, ram, storage, os, ports, domain, ssl } = body || {};
@@ -262,18 +263,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'name and image are required' }, { status: 400 });
     }
 
-    const dockerComposePath = process.cwd() + '/docker-compose.yml';
-    let dynamicCompose = '';
-
-    try {
-      const fs = await import('fs');
-      if (fs.existsSync(dockerComposePath)) {
-        dynamicCompose = fs.readFileSync(dockerComposePath, 'utf-8');
-      }
-    } catch {}
-
-    // If the requested image is already referenced in docker-compose, we can rely on Docker
-    // to pull or use it. Otherwise, Docker will attempt to pull it automatically.
     const server = await createDockerServer({
       name,
       image,
