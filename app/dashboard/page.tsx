@@ -18,7 +18,7 @@ interface DashboardStats {
   storage: { used: number; total: number }
 }
 interface RecentVideo { id: string; title: string; status: string; createdAt: string }
-interface ApiData { totalVideos?: number; creditsRemaining?: number; stats: DashboardStats; recentVideos: RecentVideo[] }
+interface ApiData { totalVideos?: number; creditsRemaining?: number; creditsBalance?: number; stats: DashboardStats; recentVideos: RecentVideo[] }
 
 const PRODUCT_ICON: Record<string, typeof Video> = {
   'ai-video': Video, 'cloud-hosting': Server, 'ai-chat': MessageCircle,
@@ -130,15 +130,12 @@ export default function DashboardPage() {
 
   const stats = data?.stats ?? null
   const recentVideos = data?.recentVideos ?? []
-  const creditsRemaining = data?.creditsRemaining
+  const creditsBalance = data?.creditsBalance
   const plan = stats?.subscription?.plan ?? 'Free'
   const shownCredits = (() => {
-    if (creditsRemaining == null) return 6000
-    const p = (plan || '').toLowerCase()
-    if (creditsRemaining === -1 || creditsRemaining > 5000 || p === 'business' || p === 'enterprise') return 6000
-    const quota: Record<string, number> = { free: 5, starter: 30 }
-    const q = quota[p] ?? 10
-    return Math.max(0, Math.round((creditsRemaining / q) * 6000))
+    // Real credit balance from Customer.credits (6000 free pool at signup)
+    if (creditsBalance != null) return Math.max(0, Math.min(creditsBalance, 6000))
+    return 6000
   })()
   const used = 6000 - shownCredits
   const storageUsed = stats?.storage?.used ?? 0

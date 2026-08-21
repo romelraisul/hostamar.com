@@ -51,6 +51,7 @@ const DASH_ROUTES: Record<string, string> = {
 
 interface DashStats {
   creditsRemaining?: number
+  creditsBalance?: number
   totalVideos?: number
   stats?: {
     videos: { total: number; thisMonth: number }
@@ -60,17 +61,11 @@ interface DashStats {
   recentVideos?: { id: string; title: string; status: string; createdAt: string }[]
 }
 
-// 6000 = canonical credit pool (Business). Free/Starter map proportionally so bar is meaningful on all plans.
-function creditsToPool(remaining: number | undefined, plan: string | null | undefined): { shown: number; pct: number } {
-  if (remaining === undefined || remaining === null) return { shown: 6000, pct: 100 }
-  const p = (plan || '').toLowerCase()
-  if (p === 'business' || p === 'enterprise' || remaining === -1 || remaining > 5000) return { shown: 6000, pct: 100 }
-  // map quota → 6000. Free quota 5, Starter 10/30 -> scale remaining proportionally
-  const quotaMap: Record<string, number> = { free: 5, starter: 30, business: 30, enterprise: 60 }
-  const quota = quotaMap[p] ?? 10
-  const shown = Math.max(0, Math.round((remaining / quota) * 6000))
+// 6000 = canonical free credit pool granted at signup (Customer.credits).
+function creditsToPool(balance: number | undefined, _plan: string | null | undefined): { shown: number; pct: number } {
+  if (balance === undefined || balance === null) return { shown: 6000, pct: 100 }
+  const shown = Math.max(0, Math.min(balance, 6000))
   const pct = Math.max(2, Math.min(100, Math.round((shown / 6000) * 100)))
-  if (p === 'free' && remaining <= 5) return { shown: Math.min(shown, 6000), pct }
   return { shown, pct }
 }
 
@@ -115,8 +110,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [])
 
   const plan = stats?.stats?.subscription?.plan ?? null
-  const creditsRemaining = stats?.creditsRemaining
-  const { shown: shownCredits, pct: creditPct } = creditsToPool(creditsRemaining, plan)
+  const creditsBalance = stats?.creditsBalance
+  const { shown: shownCredits, pct: creditPct } = creditsToPool(creditsBalance, plan)
   const storageUsed = stats?.stats?.storage?.used ?? 0
   const storageTotal = stats?.stats?.storage?.total ?? 5
   const storagePct = Math.min(100, Math.round((storageUsed / Math.max(1, storageTotal)) * 100))

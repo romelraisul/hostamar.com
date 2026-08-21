@@ -61,6 +61,8 @@ export async function GET(req: NextRequest) {
       totalVideos,
       totalPreviews,
       creditsRemaining,
+      // Real credit balance from Customer.credits (canonical for the 6000-pool meter)
+      creditsBalance: customer.credits ?? 0,
       // Legacy format for backward compatibility
       stats: {
         videos: {
