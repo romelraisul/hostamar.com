@@ -96,6 +96,7 @@ export async function GET(req: NextRequest) {
           password: `sso_${Date.now()}_${Math.random().toString(36).slice(2)}`,
           role: "customer",
           emailVerified: new Date(),
+          credits: 6000, // free credit pool granted at signup
         },
       });
     }
