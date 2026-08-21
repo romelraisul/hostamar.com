@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-const RELEASE = 'v0.1.17'
-const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.17'
+const RELEASE = 'v0.1.18'
+const GH = 'https://github.com/romelraisul/hostamar.com/releases/download/v0.1.18'
 const LINKS = [
   { os: 'Windows', file: 'Hostamar-Node_x64_en-US.msi', label: 'Download for Windows', icon: '🪟', href: `${GH}/Hostamar-Node_x64_en-US.msi`, secondary: `${GH}/Hostamar-Node_x64-setup.exe` },
   { os: 'macOS', file: 'Hostamar-Node_aarch64.dmg', label: 'Download for Mac', icon: '🍎', href: `${GH}/Hostamar-Node_aarch64.dmg`, secondary: null },

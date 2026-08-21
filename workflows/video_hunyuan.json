@@ -5,7 +5,11 @@
       "model": "split_files\\diffusion_models\\hunyuan_video_720_fp8_e4m3fn.safetensors",
       "base_precision": "bf16",
       "quantization": "fp8_e4m3fn_fast",
-      "load_device": "offload_device"
+      "load_device": "offload_device",
+      "block_swap_args": [
+        "40",
+        0
+      ]
     }
   },
   "7": {
@@ -44,10 +48,10 @@
         "30",
         0
       ],
-      "width": 512,
-      "height": 320,
-      "num_frames": 17,
-      "steps": 8,
+      "width": 848,
+      "height": 480,
+      "num_frames": 49,
+      "steps": 10,
       "embedded_guidance_scale": 6.0,
       "flow_shift": 9.0,
       "seed": 42,
@@ -67,9 +71,9 @@
         0
       ],
       "enable_vae_tiling": true,
-      "temporal_tiling_sample_size": 64,
-      "spatial_tile_sample_min_size": 256,
-      "auto_tile_size": true
+      "temporal_tiling_sample_size": 16,
+      "spatial_tile_sample_min_size": 128,
+      "auto_tile_size": false
     }
   },
   "34": {
@@ -79,7 +83,7 @@
         "5",
         0
       ],
-      "frame_rate": 16,
+      "frame_rate": 24,
       "loop_count": 0,
       "filename_prefix": "hostamar_cmtmt2jteyldrvv",
       "format": "video/h264-mp4",
@@ -88,6 +92,15 @@
       "save_metadata": true,
       "pingpong": false,
       "save_output": true
+    }
+  },
+  "40": {
+    "class_type": "HyVideoBlockSwap",
+    "inputs": {
+      "double_blocks_to_swap": 20,
+      "single_blocks_to_swap": 20,
+      "offload_txt_in": true,
+      "offload_img_in": true
     }
   }
 }
