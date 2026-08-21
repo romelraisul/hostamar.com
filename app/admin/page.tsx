@@ -30,6 +30,14 @@ async function jfetch(url: string) {
   return r.json()
 }
 
+// Live polling hook — re-runs `load` every intervalMs while the tab is visible.
+function useLivePoll(load: () => void, intervalMs: number) {
+  useEffect(() => {
+    const t = setInterval(() => { if (!document.hidden) load() }, intervalMs)
+    return () => clearInterval(t)
+  }, [load, intervalMs])
+}
+
 // ── Overview ─────────────────────────────────────────────────────────
 function OverviewTab() {
   const [stats, setStats] = useState<any>(null)
@@ -37,22 +45,20 @@ function OverviewTab() {
   const [err, setErr] = useState('')
   const [recentOrders, setRecentOrders] = useState<any[]>([])
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const [s, o] = await Promise.all([
-          jfetch('/api/admin/stats'),
-          jfetch('/api/admin/orders?limit=6').catch(()=>({orders:[]})),
-        ])
-        if (cancelled) return
-        setStats(s.success ? s.data : s)
-        setRecentOrders(o.orders || o.data || [])
-      } catch (e: any) { if (!cancelled) setErr(e.message) }
-      finally { if (!cancelled) setLoading(false) }
-    })()
-    return () => { cancelled = true }
+  const load = useCallback(async () => {
+    try {
+      const [s, o] = await Promise.all([
+        jfetch('/api/admin/stats'),
+        jfetch('/api/admin/orders?limit=6').catch(()=>({orders:[]})),
+      ])
+      setStats(s.success ? s.data : s)
+      setRecentOrders(o.orders || o.data || [])
+      setErr('')
+    } catch (e: any) { setErr(e.message) }
+    finally { setLoading(false) }
   }, [])
+  useEffect(() => { load() }, [load])
+  useLivePoll(load, 30000)
 
   if (loading) return <div className="p-10 text-center text-zinc-500">Loading overview…</div>
   if (err) return <div className="p-6 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{err}</div>
@@ -151,6 +157,7 @@ function UsersTab() {
     finally { setLoading(false) }
   }, [page])
   useEffect(()=>{ load() }, [load])
+  useLivePoll(load, 60000)
 
   const filtered = q ? rows.filter((r:any)=> `${r.name} ${r.email} ${r.phone||''}`.toLowerCase().includes(q.toLowerCase())) : rows
 
@@ -210,6 +217,7 @@ function CreditsTab() {
     finally { setLoading(false) }
   }, [])
   useEffect(()=>{ load() }, [load])
+  useLivePoll(load, 60000)
 
   const save = async (id: string) => {
     const n = Number(draft)
@@ -289,6 +297,7 @@ function TransactionsTab() {
     finally { setLoading(false) }
   }, [status])
   useEffect(()=>{ load() }, [load])
+  useLivePoll(load, 30000)
 
   const approve = async (id: string) => {
     if (!confirm('Approve this transaction? This will activate subscription + add credits.')) return
@@ -350,26 +359,89 @@ function ModelsTab() {
   const [hasKey, setHasKey] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState('')
+  const [ai, setAi] = useState<any>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true); setErr('')
     try {
       const j = await jfetch('/api/gateway/models')
       setModels(j.data || []); setSource(j.source || 'static'); setGatewayUrl(j.gatewayUrl || ''); setHasKey(!!j.hasKey)
+      setLastUpdated(new Date())
     } catch (e: any) { setErr(e.message) }
     finally { setLoading(false) }
   }, [])
-  useEffect(()=>{ load() }, [load])
+  const loadAi = useCallback(async () => {
+    try { setAi(await jfetch('/api/admin/ai-status')) } catch { /* non-fatal */ }
+  }, [])
+  useEffect(()=>{ load(); loadAi() }, [load, loadAi])
+  // Live polling: models every 10s, AI infra every 15s (paused when tab hidden)
+  useEffect(() => {
+    const t1 = setInterval(() => { if (!document.hidden) load() }, 10000)
+    const t2 = setInterval(() => { if (!document.hidden) loadAi() }, 15000)
+    return () => { clearInterval(t1); clearInterval(t2) }
+  }, [load, loadAi])
+
+  const providers = ai?.providers || {}
+  const chainOrder = ['kilocode','nvidia','tokenrouter','opencode']
+  const providerMeta: Record<string,{label:string; model:string; color:string}> = {
+    kilocode: { label: 'KiloCode', model: 'kilo-auto/free', color: '#10B981' },
+    nvidia: { label: 'NVIDIA', model: 'meta/llama-3.1-8b-instruct', color: '#76B900' },
+    tokenrouter: { label: 'TokenRouter', model: 'qwen/qwen3.8-max-free', color: '#38BDF8' },
+    opencode: { label: 'OpenCode Zen', model: 'hy3-free', color: '#A78BFA' },
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div><h2 className="text-lg font-bold text-white">Models</h2><p className="text-xs text-zinc-500">GET /api/gateway/models · {gatewayUrl ? <code className="font-mono text-zinc-400">{gatewayUrl}</code> : 'gateway'}</p></div>
+        <div><h2 className="text-lg font-bold text-white">Models</h2><p className="text-xs text-zinc-500">GET /api/gateway/models · {gatewayUrl ? <code className="font-mono text-zinc-400">{gatewayUrl}</code> : 'gateway'}{lastUpdated && <span className="ml-2 text-zinc-600">· updated {lastUpdated.toLocaleTimeString()}</span>}</p></div>
         <div className="flex items-center gap-2">
           {source && <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${source==='live' ? 'bg-[#0E7C3A]/20 text-[#10B981] border-[#10B981]/30' : 'bg-amber-500/10 text-amber-300 border-amber-500/30'}`}>{source==='live' ? '● live' : '● offline (cached catalog)'}</span>}
-          <button onClick={load} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
+          <button onClick={()=>{load(); loadAi()}} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
         </div>
       </div>
+
+      {/* Infra strip: gateway + comfyui live status */}
+      {ai && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className={`rounded-xl border p-3 flex items-center gap-3 ${ai.gateway?.up ? 'bg-[#0E7C3A]/10 border-[#10B981]/30' : 'bg-red-500/10 border-red-500/30'}`}>
+            <span className={`w-2.5 h-2.5 rounded-full ${ai.gateway?.up ? 'bg-[#10B981] animate-pulse' : 'bg-red-500'}`}/>
+            <div><div className="text-xs font-semibold text-white">AI Gateway {ai.gateway?.up ? 'online' : 'offline'}</div><div className="text-[10px] text-zinc-500 font-mono">{ai.gateway?.url} · {ai.gateway?.latencyMs}ms</div></div>
+          </div>
+          <div className={`rounded-xl border p-3 flex items-center gap-3 ${ai.comfyui?.up ? 'bg-[#0E7C3A]/10 border-[#10B981]/30' : 'bg-red-500/10 border-red-500/30'}`}>
+            <span className={`w-2.5 h-2.5 rounded-full ${ai.comfyui?.up ? 'bg-[#10B981] animate-pulse' : 'bg-red-500'}`}/>
+            <div><div className="text-xs font-semibold text-white">ComfyUI {ai.comfyui?.up ? 'online' : 'offline'}</div><div className="text-[10px] text-zinc-500 font-mono">{ai.comfyui?.gpu ? `${ai.comfyui.gpu.vramFreeMB}/${ai.comfyui.gpu.vramTotalMB} MB VRAM free` : ai.comfyui?.url}</div></div>
+          </div>
+        </div>
+      )}
+
+      {/* 24/7 Cloud Fallback Chain */}
+      <div className="rounded-2xl bg-black border border-[#0E7C3A]/20 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div><div className="text-sm font-bold text-white">24/7 Cloud Fallback Chain</div><div className="text-[11px] text-zinc-500">Vercel-side · works with PC off · order: KiloCode → NVIDIA → TokenRouter → OpenCode</div></div>
+          <span className="text-[10px] text-zinc-600 font-mono">catalog cache 60s</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          {chainOrder.map((name, i) => {
+            const p = providers[name] || {}
+            const meta = providerMeta[name]
+            const configured = (ai?.chain || []).find((c:any)=>c.provider===name)?.configured
+            return (
+              <div key={name} className={`rounded-xl border p-3 ${p.up ? 'border-[#10B981]/30 bg-[#0E7C3A]/5' : 'border-zinc-800 bg-zinc-900/30'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2"><span className="text-[10px] font-mono text-zinc-600">#{i+1}</span><span className="text-xs font-bold text-white">{meta.label}</span></div>
+                  <span className={`w-2 h-2 rounded-full ${p.up ? 'bg-[#10B981] animate-pulse' : configured ? 'bg-red-500' : 'bg-zinc-700'}`}/>
+                </div>
+                <div className="text-[10px] font-mono text-zinc-500 mt-1.5">{meta.model}</div>
+                <div className="text-[10px] text-zinc-600 mt-1">
+                  {p.up ? <>{p.free} free / {p.total} models · {p.latencyMs}ms</> : configured ? (p.error || 'down') : 'no key'}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
       {hasKey===false && <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">No active API key — gateway returns cached catalog. Create a key at <Link href="/dashboard/keys" className="underline">/dashboard/keys</Link>.</div>}
       {err && <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-300">{err}</div>}
       {loading ? <div className="p-10 text-center text-zinc-500">Loading models…</div> : (
@@ -443,6 +515,7 @@ function HostingTab() {
     finally { setLoading(false) }
   }, [])
   useEffect(()=>{ load() }, [load])
+  useLivePoll(load, 30000)
 
   const createServer = async () => {
     if (!form.name || !form.image) return alert('Name and image required')

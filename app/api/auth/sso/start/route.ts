@@ -1,17 +1,25 @@
 import { NextRequest } from "next/server";
 
+export const dynamic = "force-dynamic";
+
+/**
+ * OAuth start — defaults to Google OAuth2.
+ * SSO_* env vars override for other providers; GOOGLE_CLIENT_ID is the
+ * default client id. Redirects to the provider's consent screen.
+ */
 export async function GET(req: NextRequest) {
   const mode = req.nextUrl.searchParams.get("mode") || "login";
 
-  const authorizeUrl = process.env.SSO_AUTHORIZE_URL;
-  const clientId = process.env.SSO_CLIENT_ID;
+  const authorizeUrl =
+    process.env.SSO_AUTHORIZE_URL || "https://accounts.google.com/o/oauth2/v2/auth";
+  const clientId = process.env.SSO_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
   const appUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-  if (!authorizeUrl || !clientId) {
+  if (!clientId) {
     return new Response(
       JSON.stringify({
-        error: "SSO not configured",
-        missing: ["SSO_AUTHORIZE_URL", "SSO_CLIENT_ID"].filter((k) => !process.env[k]),
+        error: "Google sign-in not configured",
+        missing: ["GOOGLE_CLIENT_ID"],
       }),
       { status: 501, headers: { "content-type": "application/json" } }
     );
@@ -26,6 +34,11 @@ export async function GET(req: NextRequest) {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", process.env.SSO_SCOPE || "openid email profile");
   url.searchParams.set("state", state);
+  // Google-specific: prompt for account chooser every time
+  if (authorizeUrl.includes("accounts.google.com")) {
+    url.searchParams.set("prompt", "select_account");
+    url.searchParams.set("access_type", "online");
+  }
 
   return Response.redirect(url.toString(), 302);
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
@@ -35,6 +35,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
   const [userLoading, setUserLoading] = useState(true)
+  const [live, setLive] = useState<'checking' | 'online' | 'offline'>('checking')
+  const [lastCheck, setLastCheck] = useState<Date | null>(null)
+  const [clock, setClock] = useState('')
+
+  // Global LIVE monitor: probe /api/health every 10s; 1s clock for "updated Xs ago".
+  useEffect(() => {
+    let cancelled = false
+    const check = async () => {
+      try {
+        const res = await fetch('/api/health', { cache: 'no-store' })
+        if (!cancelled) { setLive(res.ok ? 'online' : 'offline'); setLastCheck(new Date()) }
+      } catch {
+        if (!cancelled) { setLive('offline'); setLastCheck(new Date()) }
+      }
+    }
+    check()
+    const t1 = setInterval(() => { if (!document.hidden) check() }, 10000)
+    const t2 = setInterval(() => {
+      setClock(lastCheckRef.current ? `${Math.max(0, Math.round((Date.now() - lastCheckRef.current.getTime()) / 1000))}s ago` : '')
+    }, 1000)
+    return () => { cancelled = true; clearInterval(t1); clearInterval(t2) }
+  }, [])
+  const lastCheckRef = useRef<Date | null>(null)
+  useEffect(() => { lastCheckRef.current = lastCheck }, [lastCheck])
 
   // Derive active tab from ?tab= query; defaults to overview.
   // Also supports legacy /admin/users style via pathname fallback.
@@ -189,6 +213,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main content */}
       <div className="lg:pl-[280px]">
         <div className="pt-[56px] lg:pt-0">
+          {/* Global LIVE status bar */}
+          <div className={`sticky top-0 lg:top-0 z-30 flex items-center justify-between px-4 py-2 border-b backdrop-blur ${live === 'offline' ? 'bg-red-950/80 border-red-500/40' : 'bg-black/80 border-[#0E7C3A]/20'}`}>
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${live === 'online' ? 'bg-[#10B981] animate-pulse' : live === 'offline' ? 'bg-red-500' : 'bg-zinc-600 animate-pulse'}`} />
+              <span className={`text-[11px] font-bold tracking-widest ${live === 'online' ? 'text-[#10B981]' : live === 'offline' ? 'text-red-400' : 'text-zinc-500'}`}>
+                {live === 'online' ? 'LIVE' : live === 'offline' ? 'OFFLINE' : 'CHECKING'}
+              </span>
+              <span className="text-[10px] text-zinc-600 font-mono hidden sm:inline">hostamar.com · auto-refresh on</span>
+            </div>
+            <span className="text-[10px] text-zinc-500 font-mono">{clock ? `updated ${clock}` : '…'}</span>
+          </div>
           <div className="min-h-screen bg-[#050A06]">{children}</div>
         </div>
       </div>

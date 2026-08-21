@@ -1,32 +1,41 @@
 "use client";
 import Link from "next/link";
 
+/**
+ * Google sign-in button (replaces the old "Hostamar SSO" button).
+ *
+ * Flow: /api/auth/sso/start -> Google OAuth consent -> /api/auth/sso/callback
+ * The start/callback routes default to Google's OAuth2 endpoints and read
+ * GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (SSO_* vars still override).
+ */
 export function SSOButton({ mode = "login" }: { mode?: "login" | "signup" }) {
-  const enabled = process.env.NEXT_PUBLIC_SSO_ENABLED === "true";
   const href = `/api/auth/sso/start?mode=${mode}`;
-
-  if (!enabled) {
-    return (
-      <button
-        disabled
-        title="SSO not configured yet - set SSO_* env vars"
-        className="w-full h-10 rounded-lg border border-dashed border-zinc-300 text-zinc-400 text-sm cursor-not-allowed"
-      >
-        Continue with Hostamar SSO — coming soon
-      </button>
-    );
-  }
 
   return (
     <Link
       href={href}
-      className="w-full h-10 rounded-lg border border-zinc-300 hover:bg-zinc-50 font-medium flex items-center justify-center gap-2"
+      className="w-full h-10 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 hover:shadow-sm font-medium text-zinc-700 flex items-center justify-center gap-2.5 transition"
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+      {/* Official Google "G" logo */}
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+        <path
+          fill="#EA4335"
+          d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+        />
+        <path
+          fill="#4285F4"
+          d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+        />
+        <path
+          fill="#FBBC05"
+          d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+        />
+        <path
+          fill="#34A853"
+          d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+        />
       </svg>
-      Continue with Hostamar SSO
+      Continue with Google
     </Link>
   );
 }
