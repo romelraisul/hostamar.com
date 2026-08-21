@@ -100,17 +100,21 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    await prisma.creditTransaction.create({
-      data: {
-        customerId: authUser.id,
-        amount: -VIDEO_COST,
-        type: 'video_generation',
-        description: `Video generation: ${videoTitle}`,
-        balanceAfter: currentCredits - VIDEO_COST,
-        videoId: video.id,
-        videoQueueId: queueRow.id,
-      },
-    })
+    // Audit ledger — non-fatal. Some environments have CreditTransaction
+    // schema drift (missing columns); never block video creation on it.
+    await prisma.creditTransaction
+      .create({
+        data: {
+          customerId: authUser.id,
+          amount: -VIDEO_COST,
+          type: 'video_generation',
+          description: `Video generation: ${videoTitle}`,
+          balanceAfter: currentCredits - VIDEO_COST,
+          videoId: video.id,
+          videoQueueId: queueRow.id,
+        },
+      })
+      .catch((e) => console.warn('[video/generate] credit ledger skipped:', e?.message?.slice(0, 120)))
 
     await prisma.activityLog
       .create({
