@@ -1,10 +1,95 @@
 {
-  "1": {"class_type": "HyVideoModelLoader", "inputs": {"model": "hunyuan-video-t2v-720p-Q4_K_S.gguf"}},
-  "7": {"class_type": "HyVideoVAELoader", "inputs": {}},
-  "16": {"class_type": "DownloadAndLoadHyVideoTextEncoder", "inputs": {}},
-  "30": {"class_type": "HyVideoTextEncode", "inputs": {"prompt": "Bangladeshi Eid marketing video, shop owner smiling, vibrant colors, 6y7 y78", "clip_l": "", "text_encoders": ["16", 0]}},
-  "3": {"class_type": "HyVideoSampler", "inputs": {"model": ["1", 0], "hyvid_embeds": ["30", 0], "samples": ["10", 0]}},
-  "10": {"class_type": "HyVideoEmptyLatent", "inputs": {"width": 832, "height": 480, "length": 49, "batch_size": 1}},
-  "5": {"class_type": "HyVideoDecode", "inputs": {"vae": ["7", 0], "samples": ["3", 0]}},
-  "34": {"class_type": "VHS_VideoCombine", "inputs": {"images": ["5", 0], "frame_rate": 24, "loop_count": 0, "filename_prefix": "hostamar", "format": "video/h264-mp4", "pix_fmt": "yuv420p", "save_output": true}}
+  "1": {
+    "class_type": "HyVideoModelLoader",
+    "inputs": {
+      "model": "hunyuan-video-t2v-720p-Q4_K_S.gguf",
+      "base_precision": "bf16",
+      "quantization": "disabled",
+      "load_device": "main_device"
+    }
+  },
+  "7": {
+    "class_type": "HyVideoVAELoader",
+    "inputs": {
+      "model_name": "hunyuan_video_vae_bf16.safetensors"
+    }
+  },
+  "16": {
+    "class_type": "DownloadAndLoadHyVideoTextEncoder",
+    "inputs": {
+      "llm_model": "Kijai/llava-llama-3-8b-text-encoder-tokenizer",
+      "clip_model": "disabled",
+      "precision": "bf16"
+    }
+  },
+  "30": {
+    "class_type": "HyVideoTextEncode",
+    "inputs": {
+      "prompt": "Bangladeshi Eid marketing video, shop owner smiling, vibrant 6y7 y78",
+      "text_encoders": [
+        "16",
+        0
+      ]
+    }
+  },
+  "3": {
+    "class_type": "HyVideoSampler",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "hyvid_embeds": [
+        "30",
+        0
+      ],
+      "width": 512,
+      "height": 320,
+      "num_frames": 17,
+      "steps": 12,
+      "embedded_guidance_scale": 6.0,
+      "flow_shift": 9.0,
+      "seed": 42,
+      "force_offload": true
+    }
+  },
+  "5": {
+    "class_type": "HyVideoDecode",
+    "inputs": {
+      "vae": [
+        "7",
+        0
+      ],
+      "samples": [
+        "3",
+        0
+      ],
+      "enable_vae_tiling": true,
+      "temporal_tiling_sample_size": 64,
+      "spatial_tile_sample_min_size": 256,
+      "auto_tile_size": true
+    }
+  },
+  "34": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "5",
+        0
+      ],
+      "fps": 16
+    }
+  },
+  "35": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "34",
+        0
+      ],
+      "filename_prefix": "hostamar",
+      "format": "mp4",
+      "codec": "h264"
+    }
+  }
 }
