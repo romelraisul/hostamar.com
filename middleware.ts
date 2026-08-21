@@ -125,6 +125,8 @@ export async function middleware(request: NextRequest) {
   const publicApiPaths = [
     '/api/auth/',
     '/api/health',
+    '/api/products',
+    '/api/pricing',
     '/api/hosting/status',
     '/api/generate/history',
     '/api/chat/ai-assist',

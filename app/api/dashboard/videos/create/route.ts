@@ -117,15 +117,18 @@ export async function POST(request: NextRequest) {
     })
 
     // Create credit transaction record
-    await prisma.creditTransaction.create({
-      data: {
-        customerId: authUser.id,
-        amount: -videoCost,
-        type: 'video_generation',
-        description: `Video generation: ${title}`,
-        balanceAfter: currentCredits - videoCost,
-      }
-    })
+    // Audit ledger — non-fatal (CreditTransaction schema drift in some envs)
+    await prisma.creditTransaction
+      .create({
+        data: {
+          customerId: authUser.id,
+          amount: -videoCost,
+          type: 'video_generation',
+          description: `Video generation: ${title}`,
+          balanceAfter: currentCredits - videoCost,
+        }
+      })
+      .catch((e) => console.warn('[videos/create] credit ledger skipped:', e?.message?.slice(0, 120)))
 
     return NextResponse.json({
       success: true,
