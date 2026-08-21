@@ -122,10 +122,11 @@ export async function GET(req: NextRequest) {
     for (const k of Object.keys(cache)) delete cache[k]
   }
 
-  // All probes in parallel.
+  // All probes in parallel. Tunnel endpoints (ai/comfy.hostamar.com) can take
+  // 2-4s from Vercel, so give them generous timeouts to avoid false "offline".
   const [gateway, comfy, kilocode, nvidia, tokenrouter, opencode] = await Promise.all([
-    probeUrl(`${GATEWAY_URL}/health`, 2500),
-    probeUrl(`${COMFY_URL}/system_stats`, 3500),
+    probeUrl(`${GATEWAY_URL}/health`, 6000),
+    probeUrl(`${COMFY_URL}/system_stats`, 7000),
     probeProvider('kilocode'),
     probeProvider('nvidia'),
     probeProvider('tokenrouter'),
