@@ -1,18 +1,23 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
-
-const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID!
+import { getAuthUser } from '@/lib/auth'
+const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || ''
 const REDIRECT_URI = `${process.env.NEXTAUTH_URL}/api/auth/twitter/callback`
 
 // Twitter OAuth 2.0 PKCE flow — redirect user to Twitter to authorize
-export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
+export async function GET(req: NextRequest) {
+  const authUser = await getAuthUser(req)
+  if (!authUser) {
     return NextResponse.redirect(new URL('/login?callbackUrl=/dashboard/settings', process.env.NEXTAUTH_URL))
+  }
+
+  if (!TWITTER_CLIENT_ID) {
+    return NextResponse.json(
+      { error: 'CONFIG_MISSING', message: 'TWITTER_CLIENT_ID is not configured. Add Twitter API credentials to enable Twitter connect.' },
+      { status: 503 }
+    )
   }
 
   const codeVerifier = crypto.randomBytes(48).toString('base64url')

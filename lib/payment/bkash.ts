@@ -149,3 +149,64 @@ export function validatePaymentId(paymentID: string): boolean {
 export function makeOrderId(): string {
   return crypto.randomBytes(8).toString('hex')
 }
+
+// ============================================================================
+// Additional helpers used by /api/payments/* and /api/payment/* routes.
+// Built on the same real tokenized-checkout internals above.
+// ============================================================================
+
+/** Are bKash credentials configured? Callers must 503 (never mock) if false. */
+export function bkashConfig() {
+  const env = ENV()
+  const configured = !!(env.appKey && env.appSecret && env.username && env.password)
+  const isProduction = env.baseUrl.includes('pay.bka.sh')
+  return { ...env, configured, isProduction }
+}
+
+export interface CreateCheckoutResult {
+  ok: boolean
+  paymentId?: string
+  bkashUrl?: string
+  error?: string
+}
+
+/** Thin wrapper over createPayment for routes that don't have org context. */
+export async function createCheckout(input: {
+  amount: number
+  orderId: string
+  intent?: string
+  callbackUrl?: string
+}): Promise<CreateCheckoutResult> {
+  try {
+    const res = await createPayment({
+      amount: input.amount,
+      orderId: input.orderId,
+      orgId: 'hostamar',
+      customerId: 'checkout',
+    })
+    return { ok: true, paymentId: res.paymentID, bkashUrl: res.bkashURL }
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'bKash create failed' }
+  }
+}
+
+/** Query a payment's real status from bKash by paymentID. */
+export async function queryPayment(paymentID: string): Promise<{ ok: boolean; status?: string; trxId?: string; error?: string }> {
+  try {
+    const env = ENV()
+    const idToken = await getToken()
+    const res = await fetch(`${env.baseUrl}/tokenized/checkout/payment/status`, {
+      method: 'POST',
+      headers: authHeaders(idToken, env.appKey),
+      body: JSON.stringify({ paymentID }),
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) {
+      return { ok: false, error: `bKash status query failed: ${res.status}` }
+    }
+    const json = (await res.json()) as { transactionStatus?: string; trxID?: string }
+    return { ok: true, status: json.transactionStatus, trxId: json.trxID }
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'bKash status query failed' }
+  }
+}

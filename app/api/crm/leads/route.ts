@@ -1,19 +1,18 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth-config';
 import { prisma } from '@/lib/prisma';
+import { getAuthUser } from '@/lib/auth'
 
 // GET all leads with filters
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req);
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const source = searchParams.get('source');
     const page = parseInt(searchParams.get('page') || '1');
@@ -55,9 +54,9 @@ export async function GET(request: NextRequest) {
 }
 
 // CREATE a new lead
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await req.json();
     const { name, email, phone, company, source, status, tags, notes } = body;
 
     if (!name) {
@@ -85,14 +84,14 @@ export async function POST(request: NextRequest) {
 }
 
 // BULK create leads
-export async function PUT(request: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req);
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
     const { leads } = body;
 
     if (!Array.isArray(leads) || leads.length === 0) {
@@ -129,14 +128,14 @@ export async function PUT(request: NextRequest) {
 }
 
 // DELETE a lead
-export async function DELETE(request: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req);
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 
     if (!id) {

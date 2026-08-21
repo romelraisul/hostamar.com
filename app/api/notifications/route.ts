@@ -1,19 +1,18 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
+import { getAuthUser } from '@/lib/auth'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req)
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const user = await prisma.customer.findUnique({
-      where: { email: session.user.email }
+      where: { email: authUser.email }
     })
 
     if (!user) {
@@ -39,16 +38,16 @@ export async function GET() {
   }
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req)
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { notificationId, markAll } = await request.json()
+    const { notificationId, markAll } = await req.json()
     const user = await prisma.customer.findUnique({
-      where: { email: session.user.email }
+      where: { email: authUser.email }
     })
 
     if (!user) {

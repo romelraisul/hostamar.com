@@ -8,40 +8,8 @@ import {
   getPaymentByTranId,
 } from '@/lib/provisioning';
 import { ensureSchema } from '@/lib/ensure-schema';
-
-declare global {
-  var __paymentTransactions: Map<string, {
-    trxId: string;
-    plan: string;
-    method: string;
-    phone?: string;
-    walletAddress?: string;
-    amount: number;
-    status: 'pending' | 'completed' | 'failed';
-    createdAt: number;
-  }>;
-}
-
-if (!global.__paymentTransactions) {
-  global.__paymentTransactions = new Map();
-}
-const transactions = global.__paymentTransactions;
-
-async function verifyBkashPayment(paymentId: string) {
-  return { status: 'completed', trxId: paymentId };
-}
-
-async function verifyNagadPayment(orderId: string) {
-  return { status: 'completed', trxId: orderId };
-}
-
-async function verifyRocketPayment(orderId: string) {
-  return { status: 'completed', trxId: orderId };
-}
-
-async function verifyUSDTPayment(orderId: string) {
-  return { status: 'completed', trxId: orderId };
-}
+import { prisma } from '@/lib/prisma';
+import { bkashConfig, queryPayment } from '@/lib/payment/bkash';
 
 // Real SSLCommerz IPN validation — only used when SSLCZ_STORE_ID is set.
 async function verifySslcz(valId: string): Promise<boolean> {
@@ -67,9 +35,9 @@ export async function POST(request: NextRequest) {
 
     // ----------------------------------------------------------------------
     // (B) Agent->Provision bridge entry point.
-    // Accepts { tran_id, status: 'VALID'|'mock_valid', customer_email, plan }.
-    // mock_valid skips the external gateway call (no creds yet); the real
-    // SSLCommerz validation is gated behind SSLCZ_STORE_ID and runs when set.
+    // Accepts { tran_id, status: 'VALID', customer_email, plan, val_id? }.
+    // Only 'VALID' (real gateway confirmation) provisions. When SSLCommerz
+    // credentials are present the val_id is validated against their API.
     // ----------------------------------------------------------------------
     if (body && body.tran_id && body.status) {
       // (B) ensure ledger table exists (self-healing) before any DB write.
@@ -81,7 +49,7 @@ export async function POST(request: NextRequest) {
 
       const { tran_id, status, customer_email, plan } = body as {
         tran_id: string;
-        status: 'VALID' | 'mock_valid';
+        status: string;
         customer_email?: string;
         plan?: string;
       };
@@ -94,14 +62,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'invalid or missing plan' }, { status: 400 });
       }
 
-      const allowMock = process.env.ALLOW_MOCK_PROVISION === 'true'
-      const isPaid =
-        status === 'VALID' || (status === 'mock_valid' && allowMock)
+      const isPaid = status === 'VALID'
       if (!isPaid) {
-        const reason =
-          status === 'mock_valid' && !allowMock
-            ? 'mock provisioning disabled in this environment'
-            : 'not paid'
         await upsertPayment({
           tranId: tran_id,
           customerEmail: email,
@@ -109,13 +71,13 @@ export async function POST(request: NextRequest) {
           status: 'failed',
         }).catch(() => undefined)
         return NextResponse.json(
-          { verified: false, provisioned: false, reason },
+          { verified: false, provisioned: false, reason: 'not paid' },
           { status: 200 },
         )
       }
 
-      // Real SSLCommerz validation (enabled when creds are present).
-      if (status === 'VALID' && process.env.SSLCZ_STORE_ID) {
+      // Real SSLCommerz validation (required when creds are present).
+      if (process.env.SSLCZ_STORE_ID) {
         const valId = body.val_id;
         if (valId) {
           const ok = await verifySslcz(valId);
@@ -132,7 +94,7 @@ export async function POST(request: NextRequest) {
         customerEmail: email,
         plan: plan as 'free' | 'starter' | 'business',
         status: 'paid',
-        gateway: status === 'VALID' ? 'sslcommerz' : 'mock',
+        gateway: 'sslcommerz',
         rawPayload: body,
       });
 
@@ -185,6 +147,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // ----------------------------------------------------------------------
+    // (A) Payment status lookup by trxId — DB-backed (Payment table).
+    // For bKash payments with a provider paymentID, queries the real bKash
+    // API for the transaction status.
+    // ----------------------------------------------------------------------
     const { trxId } = body as { trxId: string };
 
     if (!trxId) {
@@ -194,82 +161,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const transaction = transactions.get(trxId);
+    const payment = await prisma.payment.findFirst({
+      where: {
+        OR: [
+          { transactionId: trxId },
+          { providerPaymentId: trxId },
+          { invoiceNumber: trxId },
+        ],
+      },
+      include: { customer: { select: { email: true } } },
+    });
 
-    if (!transaction) {
+    if (!payment) {
       return NextResponse.json(
         { error: 'Transaction not found', trxId },
         { status: 404 }
       );
     }
 
-    if (transaction.status === 'completed') {
-      return NextResponse.json({
-        success: true,
-        trxId: transaction.trxId,
-        status: 'completed',
-        plan: transaction.plan,
-        amount: transaction.amount,
-        method: transaction.method,
-        phone: transaction.phone,
-        walletAddress: transaction.walletAddress,
-        completedAt: new Date(transaction.createdAt).toISOString(),
-      });
+    // If still pending and it's a bKash payment, ask the real gateway.
+    if (payment.status === 'pending' && payment.method === 'bkash' && payment.providerPaymentId) {
+      const cfg = bkashConfig();
+      if (cfg.configured) {
+        const q = await queryPayment(payment.providerPaymentId);
+        if (q.ok && q.status) {
+          const newStatus =
+            q.status === 'Completed' ? 'completed'
+            : q.status === 'Initiated' ? 'pending'
+            : 'failed';
+          if (newStatus !== payment.status) {
+            await prisma.payment.update({
+              where: { id: payment.id },
+              data: {
+                status: newStatus,
+                ...(q.trxId ? { transactionId: q.trxId } : {}),
+              },
+            });
+            payment.status = newStatus;
+            if (q.trxId) payment.transactionId = q.trxId;
+          }
+        }
+      }
     }
 
-    if (transaction.status === 'failed') {
-      return NextResponse.json({
-        success: false,
-        trxId: transaction.trxId,
-        status: 'failed',
-        plan: transaction.plan,
-        amount: transaction.amount,
-        method: transaction.method,
-        message: 'Payment failed or was cancelled',
-      });
-    }
-
-    let verificationResult;
-    if (transaction.method === 'bkash') {
-      verificationResult = await verifyBkashPayment(trxId);
-    } else if (transaction.method === 'nagad') {
-      verificationResult = await verifyNagadPayment(trxId);
-    } else if (transaction.method === 'rocket') {
-      verificationResult = await verifyRocketPayment(trxId);
-    } else {
-      verificationResult = await verifyUSDTPayment(trxId);
-    }
-
-    if (verificationResult.status === 'completed') {
-      transaction.status = 'completed';
-      transactions.set(trxId, transaction);
-
-      return NextResponse.json({
-        success: true,
-        trxId: transaction.trxId,
-        status: 'completed',
-        plan: transaction.plan,
-        amount: transaction.amount,
-        method: transaction.method,
-        phone: transaction.phone,
-        walletAddress: transaction.walletAddress,
-        completedAt: verificationResult.completedAt || new Date().toISOString(),
-        message: 'Payment verified successfully! Your plan is now active.',
-      });
-    } else {
-      transaction.status = 'failed';
-      transactions.set(trxId, transaction);
-
-      return NextResponse.json({
-        success: false,
-        trxId: transaction.trxId,
-        status: 'pending',
-        plan: transaction.plan,
-        amount: transaction.amount,
-        method: transaction.method,
-        message: 'Payment is still pending. Please complete the payment and try again.',
-      });
-    }
+    return NextResponse.json({
+      success: payment.status === 'completed',
+      trxId: payment.transactionId || trxId,
+      status: payment.status,
+      plan: payment.planName,
+      amount: payment.amount,
+      method: payment.method,
+      createdAt: payment.createdAt.toISOString(),
+      message:
+        payment.status === 'completed'
+          ? 'Payment verified successfully! Your plan is now active.'
+          : payment.status === 'pending'
+            ? 'Payment is still pending. Please complete the payment and try again.'
+            : 'Payment failed or was cancelled.',
+    });
   } catch (error) {
     console.error('Payment verification error:', error);
     return NextResponse.json(
@@ -291,9 +240,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const transaction = transactions.get(trxId);
+    const payment = await prisma.payment.findFirst({
+      where: {
+        OR: [
+          { transactionId: trxId },
+          { providerPaymentId: trxId },
+          { invoiceNumber: trxId },
+        ],
+      },
+    });
 
-    if (!transaction) {
+    if (!payment) {
       return NextResponse.json(
         { error: 'Transaction not found', trxId },
         { status: 404 }
@@ -302,14 +259,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      trxId: transaction.trxId,
-      status: transaction.status,
-      plan: transaction.plan,
-      amount: transaction.amount,
-      method: transaction.method,
-      phone: transaction.phone,
-      walletAddress: transaction.walletAddress,
-      createdAt: new Date(transaction.createdAt).toISOString(),
+      trxId: payment.transactionId || trxId,
+      status: payment.status,
+      plan: payment.planName,
+      amount: payment.amount,
+      method: payment.method,
+      createdAt: payment.createdAt.toISOString(),
     });
   } catch (error) {
     console.error('Payment status check error:', error);

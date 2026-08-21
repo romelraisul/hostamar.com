@@ -6,9 +6,9 @@
 // a single room, and return only { rtc_url, token, expires_in }.
 // ============================================================================
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
+import { getAuthUser } from '@/lib/auth'
 import { hasAccess } from '@/lib/subscription'
+import { prisma } from '@/lib/prisma'
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
@@ -33,14 +33,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'voice not configured' }, { status: 503 })
   }
 
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
+  const authUser = await getAuthUser(req)
+  if (!authUser?.email) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
   // Reuse the shared subscription gate — Voice is Chat's voice mode, so it
-  // follows the ai-chat product access rule.
-  const sub = (session as any).subscription
+  // follows the ai-chat product access rule. Read the real subscription row.
+  const sub = await prisma.subscription.findFirst({
+    where: { customerId: authUser.id, status: 'active' },
+    select: { plan: true, status: true },
+  })
   if (sub && !hasAccess(sub, 'ai-chat')) {
     return NextResponse.json({ error: 'no voice access' }, { status: 403 })
   }
@@ -58,8 +61,8 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     return toErrorResponse(e)
   }
-  const room = String(body.room || `voice-${session.user.email}`).slice(0, 64)
-  const identity = `user-${session.user.email}`.slice(0, 64)
+  const room = String(body.room || `voice-${authUser.email}`).slice(0, 64)
+  const identity = `user-${authUser.email}`.slice(0, 64)
 
   const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
     identity,

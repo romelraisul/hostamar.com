@@ -6,12 +6,11 @@
 // AFTER the client allowlist; this is the second, authoritative boundary.
 // ============================================================================
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
 import { evaluateToolCall, isDestructive, TOOL_ALLOWLIST } from '@/lib/voice/toolPolicy'
+import { getAuthUser } from '@/lib/auth'
 
 export const runtime = 'nodejs'
 
@@ -67,8 +66,8 @@ export async function POST(req: NextRequest) {
   const t0 = Date.now()
   const traceId = `tool_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 
-  const session = await getServerSession(authOptions)
-  if (!session?.user) {
+  const authUser = await getAuthUser(req)
+  if (!authUser) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 

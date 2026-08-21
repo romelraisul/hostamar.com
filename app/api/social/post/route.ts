@@ -1,10 +1,9 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
+import { getAuthUser } from '@/lib/auth'
 
 // ─── OAuth 1.0a Twitter signing ─────────────────────────────────────────────
 function oauth1Sign(
@@ -158,21 +157,21 @@ async function postToLinkedIn(message: string) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req)
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { message, platforms, videoId, videoTitle } = await request.json()
+    const { message, platforms, videoId, videoTitle } = await req.json()
 
     if (!message || !platforms || !Array.isArray(platforms)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const user = await prisma.customer.findUnique({
-      where: { email: session.user.email }
+      where: { email: authUser.email }
     })
 
     if (!user) {
@@ -190,7 +189,7 @@ export async function POST(request: NextRequest) {
           const twitterMsg = videoTitle
             ? `${videoTitle} — ${message}`.substring(0, 280)
             : message.substring(0, 280)
-          results.twitter = await postToTwitter(twitterMsg, session.user.email)
+          results.twitter = await postToTwitter(twitterMsg, authUser.email)
         }
         if (platforms.includes('linkedin')) {
           results.linkedin = await postToLinkedIn(message)
@@ -219,17 +218,17 @@ export async function POST(request: NextRequest) {
 }
 
 // Get social accounts status
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    const authUser = await getAuthUser(req)
+    if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const fbConnected = !!process.env.FB_PAGE_ID && !!process.env.FB_ACCESS_TOKEN
     const linkedinConnected = !!process.env.LINKEDIN_ACCESS_TOKEN && !!process.env.LINKEDIN_PERSON_ID
     const customer = await prisma.customer.findUnique({
-      where: { email: session.user.email },
+      where: { email: authUser.email },
       select: { twitterUsername: true, twitterAccessToken: true, twitterAccessTokenExpiry: true },
     })
     const twitterConnected = !!(

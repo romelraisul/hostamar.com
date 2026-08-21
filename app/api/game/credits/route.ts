@@ -1,106 +1,144 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * Public Game Credits + Generate stub
- *  GET  /api/game/credits  -> { credits: 50, max: 10000, brand, ... }
- *  POST /api/game/credits  -> same as GET (alias)
- *  POST /api/game/generate -> stub { jobId, status: queued, cost: 5, credits, ... }
- * Brand #2563EB — free-only, no DB, in-memory mock.
+ * Game Credits — DB-backed via the GameBalance model (no in-memory state).
+ *  GET  /api/game/credits  -> authenticated user's persisted balance
+ *  POST /api/game/credits  -> claim daily grant / generate (mutates DB)
+ *
+ * Brand #2563EB. Balances persist per-customer in Prisma GameBalance.
+ * Unauthenticated callers get a read-only demo balance (not persisted);
+ * any mutation requires login.
  */
 
-const DEFAULT_CREDITS = 50;
+const DEFAULT_CREDITS = 1000; // matches GameBalance.credits default
 const MAX_CREDITS = 10000;
+const DAILY_GRANT = 50;
 const GENERATE_COST = 5;
+const BRAND = "#2563EB";
 
-// in-memory balance (per-process; real app would use DB/Redis)
-let memCredits = DEFAULT_CREDITS;
-
-function creditsPayload(credits = memCredits) {
+function payload(credits: number, persisted: boolean) {
   return {
     credits,
     balance: credits,
     max: MAX_CREDITS,
     maxCredits: MAX_CREDITS,
-    brand: "#2563EB",
+    brand: BRAND,
     currency: "credits",
+    persisted,
     free: {
-      dailyGrant: 50,
+      dailyGrant: DAILY_GRANT,
       maxCap: MAX_CREDITS,
-      note: "Free 50 credits/day, cap 10000. Stored in localStorage + server mock.",
+      note: persisted
+        ? "Balance stored in your account (GameBalance)."
+        : "Log in to save your balance across sessions.",
     },
-    localStorageKey: "hostamar_game_credits",
     checkedAt: new Date().toISOString(),
   };
 }
 
-export async function GET() {
-  return NextResponse.json(creditsPayload(), {
-    headers: {
-      "Cache-Control": "no-store",
-      "Access-Control-Allow-Origin": "*",
-    },
+async function getOrCreateBalance(customerId: string) {
+  const existing = await prisma.gameBalance.findUnique({ where: { customerId } });
+  if (existing) return existing;
+  return prisma.gameBalance.create({
+    data: { customerId, credits: DEFAULT_CREDITS, balance: DEFAULT_CREDITS, mode: "free" },
   });
 }
 
-// Alias: some clients POST to /credits to "claim" daily grant
+export async function GET(req: NextRequest) {
+  const authUser = await getAuthUser(req);
+  if (!authUser) {
+    // Public demo balance — read-only, not persisted.
+    return NextResponse.json(payload(DEFAULT_CREDITS, false), {
+      headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+  try {
+    const bal = await getOrCreateBalance(authUser.id);
+    return NextResponse.json(payload(bal.credits, true), {
+      headers: { "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*" },
+    });
+  } catch (e: any) {
+    console.error("[game/credits] GET error:", e?.message || e);
+    return NextResponse.json({ error: "Failed to load game balance" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
-  // If caller hits /api/game/credits with POST and no generate intent, treat as balance check.
-  // Detect generate intent: body has { prompt } or caller actually meant /api/game/generate
+  const authUser = await getAuthUser(req);
+  if (!authUser) {
+    return NextResponse.json(
+      { error: "Login required to save or spend game credits", brand: BRAND },
+      { status: 401 }
+    );
+  }
+
   let body: Record<string, unknown> = {};
   try {
     const text = await req.text();
     if (text) body = JSON.parse(text) as Record<string, unknown>;
   } catch {
-    // ignore
+    // ignore malformed body
   }
 
-  // If body looks like a generate request but was sent to wrong path, handle gracefully
-  if (typeof body.prompt === "string" && body.prompt.trim()) {
-    return handleGenerate(body, req);
-  }
+  try {
+    const bal = await getOrCreateBalance(authUser.id);
 
-  // Optional: ?grant=1 to simulate daily grant (cap at MAX)
-  const url = new URL(req.url);
-  if (url.searchParams.get("grant") === "1" || body.grant === 1 || body.grant === "1") {
-    memCredits = Math.min(MAX_CREDITS, memCredits + 50);
-  }
+    // Generate intent: { prompt } -> spend GENERATE_COST, return a job handle.
+    if (typeof body.prompt === "string" && body.prompt.trim()) {
+      const prompt = body.prompt.trim();
+      if (bal.credits < GENERATE_COST) {
+        return NextResponse.json(
+          { error: "Insufficient credits", credits: bal.credits, max: MAX_CREDITS, brand: BRAND },
+          { status: 402 }
+        );
+      }
+      const updated = await prisma.gameBalance.update({
+        where: { customerId: authUser.id },
+        data: { credits: { decrement: GENERATE_COST }, balance: { decrement: GENERATE_COST } },
+      });
+      const jobId = `game_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+      return NextResponse.json(
+        {
+          success: true,
+          jobId,
+          status: "queued",
+          prompt,
+          cost: GENERATE_COST,
+          credits: updated.credits,
+          max: MAX_CREDITS,
+          brand: BRAND,
+        },
+        { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" } }
+      );
+    }
 
-  return NextResponse.json(creditsPayload(), {
-    headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" },
-  });
-}
+    // Daily grant: ?grant=1 or body.grant
+    const url = new URL(req.url);
+    const wantsGrant =
+      url.searchParams.get("grant") === "1" || body.grant === 1 || body.grant === "1";
+    if (wantsGrant) {
+      const updated = await prisma.gameBalance.update({
+        where: { customerId: authUser.id },
+        data: { credits: Math.min(MAX_CREDITS, bal.credits + DAILY_GRANT) },
+      });
+      return NextResponse.json(payload(updated.credits, true), {
+        headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" },
+      });
+    }
 
-function handleGenerate(body: Record<string, unknown>, _req: NextRequest) {
-  const prompt = String(body.prompt || "").trim();
-  if (!prompt) {
-    return NextResponse.json({ error: "prompt is required", brand: "#2563EB" }, { status: 400 });
+    // Default: return current persisted balance.
+    return NextResponse.json(payload(bal.credits, true), {
+      headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" },
+    });
+  } catch (e: any) {
+    console.error("[game/credits] POST error:", e?.message || e);
+    return NextResponse.json({ error: "Failed to update game balance" }, { status: 500 });
   }
-  if (memCredits < GENERATE_COST) {
-    return NextResponse.json(
-      { error: "Insufficient credits", credits: memCredits, max: MAX_CREDITS, brand: "#2563EB" },
-      { status: 402 }
-    );
-  }
-  memCredits = Math.max(0, memCredits - GENERATE_COST);
-  const jobId = `game_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-  return NextResponse.json(
-    {
-      success: true,
-      jobId,
-      status: "queued",
-      prompt,
-      cost: GENERATE_COST,
-      credits: memCredits,
-      max: MAX_CREDITS,
-      brand: "#2563EB",
-      message: "Game generate queued (stub). Wire to real generator when ready.",
-      localStorageKey: "hostamar_game_credits",
-    },
-    { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" } }
-  );
 }
 
 export async function OPTIONS() {

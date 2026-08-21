@@ -3,15 +3,24 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
+import { getAuthUser } from '@/lib/auth';
+import { bkashConfig, createCheckout } from '@/lib/payment/bkash';
 
 // ============================================================================
-// Payment Integration - bKash, Nagad, Rocket & USDT (BEP20) - SIMULATED
-// ============================================================================
-// Real integrations require merchant accounts:
-// - bKash: https://developer.bkash.com
-// - Nagad: https://www.nagad.com.bd/merchant
-// - Rocket: https://www.rocket.com.bd (BL/NBL API)
-// - USDT BEP20: TRC-20 wallet + manual confirmation
+// POST /api/payment/create
+// Creates a payment order for a plan.
+//
+// Two real modes:
+//  1. bKash tokenized checkout — when BKASH_* credentials are configured,
+//     returns a real hosted bKash payment URL (lib/payment/bkash.ts).
+//  2. Manual send-money — customer sends money to the merchant number
+//     (bKash/Nagad/Rocket personal numbers) or USDT wallet, then submits the
+//     TrxID via /api/payment/bkash-verify for admin review. This is a real
+//     payment method, not a mock: money actually moves, admin verifies the
+//     TrxID against the merchant statement before approving.
+//
+// All orders are persisted to the Payment table (DB-backed, no in-memory
+// store). No fake checkout URLs are ever returned.
 // ============================================================================
 
 const PLANS = {
@@ -23,90 +32,18 @@ const PLANS = {
 type PlanKey = keyof typeof PLANS;
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';
 
-// In-memory transaction store
-const transactions = new Map<string, {
-  trxId: string;
-  plan: PlanKey;
-  method: PaymentMethod;
-  phone?: string;
-  walletAddress?: string;
-  amount: number;
-  status: 'pending' | 'completed' | 'failed';
-  createdAt: number;
-}>();
-
 function generateTrxId(): string {
   return `HOST${Date.now()}${randomBytes(4).toString('hex').toUpperCase()}`;
 }
 
-// Personal receiver numbers (SEND MONEY ONLY — no business/merchant account yet).
-// Configurable via .env; defaults are the owner's personal numbers.
-const BKASH_NUMBER = process.env.BKASH_NUMBER || '01822417463';
-const NAGAD_NUMBER = process.env.NAGAD_NUMBER || '01711317101';
-const ROCKET_NUMBER = process.env.ROCKET_NUMBER || '01822417463';
+// Merchant receiver numbers (manual send-money mode). Configurable via env.
+const BKASH_NUMBER = process.env.BKASH_NUMBER || '';
+const NAGAD_NUMBER = process.env.NAGAD_NUMBER || '';
+const ROCKET_NUMBER = process.env.ROCKET_NUMBER || '';
+const USDT_WALLET = process.env.USDT_WALLET_ADDRESS || '';
 
-// USDT wallet address for receiving payments
-const USDT_WALLET = process.env.USDT_WALLET_ADDRESS || '0x16Bfd806297feaC12FC4b8A6c95079E8aADeC858';
-
-// Payment creation helpers
-async function createBkashPayment(amount: number, trxId: string, phone: string) {
-  return {
-    paymentID: `bkash_${trxId}`,
-    bkashURL: `https://payment.bkash.com/checkout?paymentID=${trxId}`,
-    amount: amount.toString(),
-    status: 'pending',
-  };
-}
-
-async function createNagadPayment(amount: number, trxId: string, phone: string) {
-  return {
-    orderId: `nagad_${trxId}`,
-    nagadURL: `https://payment.nagad.com.bd/checkout?orderId=${trxId}`,
-    amount: amount.toString(),
-    status: 'pending',
-  };
-}
-
-async function createRocketPayment(amount: number, trxId: string, phone: string) {
-  return {
-    orderId: `rocket_${trxId}`,
-    phone: phone,
-    amount: amount.toString(),
-    status: 'pending',
-  };
-}
-
-async function createUSDTPayment(amount: number, trxId: string, walletAddress: string) {
-  const amountUSDT = (amount * 0.0025).toFixed(2); // BDT to USDT approximate rate
-  return {
-    orderId: `usdt_${trxId}`,
-    walletAddress: USDT_WALLET,
-    amountUSDT,
-    amountBDT: amount.toString(),
-    status: 'pending',
-    note: `Send exactly ${amountUSDT} USDT to ${USDT_WALLET} and include "${trxId}" in memo`,
-  };
-}
-
-// Verification helpers (simulated)
-async function verifyBkashPayment(paymentId: string) {
-  return { status: 'completed', trxId: paymentId };
-}
-
-async function verifyNagadPayment(orderId: string) {
-  return { status: 'completed', trxId: orderId };
-}
-
-async function verifyRocketPayment(orderId: string) {
-  return { status: 'completed', trxId: orderId };
-}
-
-async function verifyUSDTPayment(orderId: string) {
-  return { status: 'completed', trxId: orderId };
-}
-
-// Instruction generators
-function generateInstructions(method: PaymentMethod, plan: { name: string; amount: number }, trxId: string, phone?: string, walletAddress?: string): string[] {
+// Instruction generators for the manual send-money mode
+function generateInstructions(method: PaymentMethod, plan: { name: string; amount: number }, trxId: string, phone?: string): string[] {
   switch (method) {
     case 'bkash':
       return [
@@ -116,7 +53,7 @@ function generateInstructions(method: PaymentMethod, plan: { name: string; amoun
         `Amount: ৳${plan.amount.toLocaleString()} লিখুন`,
         `Reference: ${trxId} (অবশ্যই লিখুন)`,
         'আপনার bKash PIN দিয়ে নিশ্চিত করুন',
-        'পেমেন্ট সম্পন্ন হলে "Verify" বাটনে ক্লিক করুন',
+        'পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
       ];
     case 'nagad':
       return [
@@ -126,22 +63,22 @@ function generateInstructions(method: PaymentMethod, plan: { name: string; amoun
         `Amount: ৳${plan.amount.toLocaleString()} লিখুন`,
         `Reference: ${trxId} (অবশ্যই লিখুন)`,
         'আপনার Nagad PIN দিয়ে নিশ্চিত করুন',
-        'পেমেন্ট সম্পন্ন হলে "Verify" বাটনে ক্লিক করুন',
+        'পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
       ];
     case 'rocket':
       return [
         `৳${plan.amount.toLocaleString()} প্রদানের জন্য Rocket অ্যাপ বা SMS ব্যবহার করুন`,
-        `Rocket Number: ${ROCKET_NUMBER} (Hostamar) পরে পাঠান`,
+        `Rocket Number: ${ROCKET_NUMBER} (Hostamar)`,
         `Amount: ৳${plan.amount.toLocaleString()}`,
         `Message/Memo এ লিখুন: ${trxId}`,
-        'পেমেন্ট সম্পন্ন হলে "Verify" বাটনে ক্লিক করুন',
+        'পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
       ];
     case 'usdt':
       return [
         `USDT (BEP20) ওয়ালেট থেকে ${(plan.amount * 0.0025).toFixed(2)} USDT পাঠান`,
-        `পাঠানো ঠিকানা: ${USDT_WALLET}`,
+        `পাঠানোর ঠিকানা: ${USDT_WALLET}`,
         `Memo/Note এ লিখুন: ${trxId}`,
-        'পেমেন্ট সম্পন্ন হলে "Verify" বাটনে ক্লিক করুন',
+        'পেমেন্ট সম্পন্ন হলে TxHash জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
       ];
     default:
       return ['Invalid payment method'];
@@ -150,6 +87,11 @@ function generateInstructions(method: PaymentMethod, plan: { name: string; amoun
 
 export async function POST(request: NextRequest) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { plan, method, phone, walletAddress } = body as {
       plan: string;
@@ -181,10 +123,10 @@ export async function POST(request: NextRequest) {
 
     const planKey = plan as PlanKey;
     const planInfo = PLANS[planKey];
-    const trxId = generateTrxId();
+    const m = method as PaymentMethod;
 
     // Validate phone for mobile methods
-    if (['bkash', 'nagad', 'rocket'].includes(method)) {
+    if (['bkash', 'nagad', 'rocket'].includes(m)) {
       if (!phone) {
         return NextResponse.json(
           { error: 'Phone number required for this payment method' },
@@ -201,7 +143,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate wallet address for USDT
-    if (method === 'usdt') {
+    if (m === 'usdt') {
       if (!walletAddress || !walletAddress.startsWith('0x') || walletAddress.length < 40) {
         return NextResponse.json(
           { error: 'Valid wallet address required for USDT payment' },
@@ -210,52 +152,82 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    let paymentResult;
-    const m = method as PaymentMethod;
-
-    if (m === 'bkash') {
-      paymentResult = await createBkashPayment(planInfo.amount, trxId, phone!);
-    } else if (m === 'nagad') {
-      paymentResult = await createNagadPayment(planInfo.amount, trxId, phone!);
-    } else if (m === 'rocket') {
-      paymentResult = await createRocketPayment(planInfo.amount, trxId, phone!);
-    } else {
-      paymentResult = await createUSDTPayment(planInfo.amount, trxId, walletAddress!);
-    }
-
-    transactions.set(trxId, {
-      trxId,
-      plan: planKey,
-      method: m,
-      phone,
-      walletAddress,
-      amount: planInfo.amount,
-      status: 'pending',
-      createdAt: Date.now(),
-    });
-
-    const instructions = generateInstructions(m, planInfo, trxId, phone, walletAddress);
-
-    // Persist an order row so the webhook + invoice can reference it by transactionId.
-    // Merchant creds are optional: without them the flow stays manual (live fallback).
-    try {
-      await prisma.payment.upsert({
-        where: { transactionId: trxId },
-        update: { amount: planInfo.amount, method: m, planName: planInfo.name, status: 'pending' },
-        create: {
-          customerId: 'pending', // attached to the real customer when they submit/verify
-          method: m,
+    // Mode 1: real bKash tokenized checkout when configured
+    if (m === 'bkash' && bkashConfig().configured) {
+      const trxId = generateTrxId();
+      const callbackUrl = `${process.env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`;
+      const result = await createCheckout({
+        amount: planInfo.amount,
+        orderId: trxId,
+        intent: 'sale',
+        callbackUrl,
+      });
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error || 'bKash create failed' }, { status: 502 });
+      }
+      await prisma.payment.create({
+        data: {
+          customerId: authUser.id,
+          method: 'bkash',
           amount: planInfo.amount,
           currency: 'BDT',
           status: 'pending',
-          transactionId: trxId,
+          transactionId: result.paymentId || trxId,
+          providerPaymentId: result.paymentId || null,
+          invoiceNumber: trxId,
           planName: planInfo.name,
           billingPeriod: 'yearly',
         },
-      })
-    } catch (e) {
-      console.warn('[Payment:Create] order row upsert failed (non-fatal):', (e as any)?.message)
+      });
+      return NextResponse.json({
+        success: true,
+        trxId,
+        plan: planInfo.name,
+        amount: planInfo.amount,
+        currency: planInfo.currency,
+        method: m,
+        mode: 'bkash_checkout',
+        paymentUrl: result.bkashUrl,
+        status: 'pending',
+      });
     }
+
+    // Mode 2: manual send-money (bKash/Nagad/Rocket without API creds, or USDT)
+    const trxId = generateTrxId();
+
+    // Manual mode requires a configured receiver number/wallet
+    const receiver =
+      m === 'bkash' ? BKASH_NUMBER :
+      m === 'nagad' ? NAGAD_NUMBER :
+      m === 'rocket' ? ROCKET_NUMBER :
+      USDT_WALLET;
+    if (!receiver) {
+      return NextResponse.json(
+        {
+          error: 'PAYMENT_NOT_CONFIGURED',
+          message: `No ${m} receiver configured. Set the merchant number/wallet in env to enable manual ${m} payments, or configure bKash API credentials for online checkout.`,
+        },
+        { status: 503 }
+      );
+    }
+
+    // Persist the order (DB-backed, tied to the authenticated customer)
+    await prisma.payment.create({
+      data: {
+        customerId: authUser.id,
+        method: m,
+        amount: planInfo.amount,
+        currency: m === 'usdt' ? 'USDT' : 'BDT',
+        status: 'pending',
+        transactionId: trxId,
+        invoiceNumber: trxId,
+        planName: planInfo.name,
+        billingPeriod: 'yearly',
+        walletAddress: m === 'usdt' ? walletAddress : undefined,
+      },
+    });
+
+    const instructions = generateInstructions(m, planInfo, trxId, phone);
 
     return NextResponse.json({
       success: true,
@@ -266,7 +238,8 @@ export async function POST(request: NextRequest) {
       method: m,
       phone,
       walletAddress,
-      paymentUrl: (paymentResult as any).bkashURL || (paymentResult as any).nagadURL || null,
+      mode: 'manual',
+      paymentUrl: null, // manual mode: no hosted checkout URL
       instructions,
       status: 'pending',
     });
