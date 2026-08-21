@@ -26,8 +26,8 @@ const PRODUCT_ICON: Record<string, typeof Video> = {
 }
 const DASH_ROUTES: Record<string, string> = {
   'ai-video': '/dashboard/videos', 'cloud-hosting': '/dashboard/hosting',
-  'ai-chat': '/dashboard/chat', 'ai-browser': '/dashboard/browser',
-  'dev-ide': '/dashboard/ide', game: '/dashboard/game',
+  'ai-chat': '/chat', 'ai-browser': '/browser',
+  'dev-ide': '/ide', game: '/game',
 }
 const COST_HINT: Record<string, string> = {
   'ai-video': '100cr', 'cloud-hosting': '0cr', 'ai-chat': '1cr/msg',
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                   <div className="mt-3 rounded-xl bg-white border p-3 text-xs text-[#64748B]">Tawk.to FREE fallback + Hostamar AI assist • Messenger till 11pm</div>
                 </div>
                 <div className="flex gap-2"><input placeholder="মেসেজ লিখুন..." className="flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:border-[#0E7C3A]" /><button className="px-5 py-3 rounded-xl bg-[#0E7C3A] text-white font-bold">Send</button></div>
-                <Link href="/dashboard/chat" className="flex items-center justify-center gap-2 rounded-full border font-semibold py-2.5">Open Chat →</Link>
+                <Link href="/chat" className="flex items-center justify-center gap-2 rounded-full border font-semibold py-2.5">Open Chat →</Link>
               </div>
             )}
             {activeProduct === 'ai-browser' && (
@@ -324,7 +324,7 @@ export default function DashboardPage() {
                   <div>console.log(&quot;Hello Hostamar&quot;)</div>
                   <div className="mt-3 flex gap-2"><button className="px-3 py-1.5 rounded-lg bg-[#0E7C3A] text-white">Run -10cr ▶</button><span className="text-zinc-500">terminal: ready</span></div>
                 </div>
-                <Link href="/dashboard/ide" className="flex items-center justify-center gap-2 rounded-full bg-[#0F172A] text-white font-bold py-3"><Code2 className="w-4 h-4" /> Open IDE →</Link>
+                <Link href="/ide" className="flex items-center justify-center gap-2 rounded-full bg-[#0F172A] text-white font-bold py-3"><Code2 className="w-4 h-4" /> Open IDE →</Link>
               </div>
             )}
             {activeProduct === 'game' && (

@@ -43,10 +43,10 @@ const PRODUCT_ICON: Record<string, typeof Video> = {
 const DASH_ROUTES: Record<string, string> = {
   'ai-video': '/dashboard/videos',
   'cloud-hosting': '/dashboard/hosting',
-  'ai-chat': '/dashboard/chat',
-  'ai-browser': '/dashboard/browser',
-  'dev-ide': '/dashboard/ide',
-  'game': '/dashboard/game',
+  'ai-chat': '/chat',
+  'ai-browser': '/browser',
+  'dev-ide': '/ide',
+  'game': '/game',
 }
 
 interface DashStats {
