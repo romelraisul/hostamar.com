@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 import { bkashConfig, createCheckout } from '@/lib/payment/bkash'
-import { v4 as uuidv4 } from 'uuid'
+import crypto from 'crypto'
 
 // ============================================================================
 // POST /api/payments/bkash/create
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
 
     const planKey = (planName || 'starter').toLowerCase()
-    const invoice = `HOSTAMAR-${Date.now()}-${uuidv4().slice(0, 8).toUpperCase()}`
+    const invoice = `HOSTAMAR-${Date.now()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`
     const callbackUrl = `${process.env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`
 
     const result = await createCheckout({
