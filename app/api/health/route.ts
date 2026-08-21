@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getFallbackStatus } from '@/lib/kilocode-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,6 +24,7 @@ export async function GET() {
       databaseUrlSet: Boolean(process.env.DATABASE_URL),
       apiBackend: process.env.NEXT_PUBLIC_API_URL || 'not set',
     },
+    aiFallback: getFallbackStatus(),
     version: '1.0.0',
   }
 

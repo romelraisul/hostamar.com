@@ -87,7 +87,9 @@ async function chatCompletionWithProvider(
   timeoutMs: number,
   providerLabel: string,
 ): Promise<ChatResult> {
-  const url = base.replace(/\/$/, '') + '/v1/chat/completions'
+  // Bases may or may not already end with /v1 (KiloCode: .../gateway, TokenRouter/NVIDIA: .../v1)
+  const normBase = base.replace(/\/+$/, '')
+  const url = normBase.endsWith('/v1') ? normBase + '/chat/completions' : normBase + '/v1/chat/completions'
   const body = {
     model,
     messages: params.messages,
