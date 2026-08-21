@@ -43,8 +43,8 @@ export async function POST(req: NextRequest) {
         customerId = id
         created = true
         await prisma.$executeRaw`
-          INSERT INTO "Customer" (id, email, name, password, "role", "emailVerified", "createdAt", "updatedAt")
-          VALUES (${id}, ${email}, ${name}, ${hashed}, 'admin', NOW(), NOW());
+          INSERT INTO "Customer" (id, email, name, password, "role", "credits", "emailVerified", "createdAt", "updatedAt")
+          VALUES (${id}, ${email}, ${name}, ${hashed}, 'admin', 6000, NOW(), NOW());
         `
       }
     } catch (rawError) {

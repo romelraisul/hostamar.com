@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         email,
         password: hashedPassword,
         name,
+        credits: 6000, // free credit pool granted at signup
         business: businessName ? {
           create: {
             name: businessName,
