@@ -1,123 +1,260 @@
-"""Open-source video ingestion: NASA (public domain), Prelinger (public domain), Blender (CC-BY)."""
-import json, re, sys, urllib.request, urllib.parse
+"""Open-source video ingestion for Hostamar TV — BUSINESS/FASHION/ECOMMERCE focus.
 
-UA = {"User-Agent": "HostamarTV/1.0 (educational Bangla dubbing; contact: romel@hostamar.com)"}
+Hostamar is an AI marketing-video maker for Bangladeshi SMEs (Aarong/Sailor/
+Daraz sellers), so TV content follows: SME marketing, e-commerce, fashion
+business, product photography, retail, sales — NOT NASA space content.
+
+Sources (all legal to rebroadcast with a Bangla dub):
+  - PRELINGER via archive.org advancedsearch (public domain) — business,
+    advertising, retail, fashion educational films. No API key needed.
+  - IA-EDU via archive.org (public domain/CC) — broader educational films.
+  - PEXELS videos API (CC0-like Pexels license) — needs PEXELS_API_KEY.
+  - PIXABAY videos API (Pixabay Content License) — needs PIXABAY_API_KEY.
+
+Queries rotate deterministically by day-of-year + hour so every run tries
+fresh search terms.
+"""
+import json, os, re, sys, time, urllib.request, urllib.parse
+
+UA = {"User-Agent": "HostamarTV/2.0 (Bangla business education channel; contact: romel@hostamar.com)"}
 MAX_BYTES = 220 * 1024 * 1024  # skip sources over 220MB
 
-BLENDER = [
-    {"id": "bbb", "source": "BLENDER", "external_id": "BigBuckBunny_124", "title": "Big Buck Bunny", "license": "CC-BY 3.0", "licenseUrl": "https://creativecommons.org/licenses/by/3.0/"},
-    {"id": "sintel", "source": "BLENDER", "external_id": "Sintel", "title": "Sintel", "license": "CC-BY 3.0", "licenseUrl": "https://creativecommons.org/licenses/by/3.0/"},
-    {"id": "ed", "source": "BLENDER", "external_id": "ElephantsDream", "title": "Elephants Dream", "license": "CC-BY 2.5", "licenseUrl": "https://creativecommons.org/licenses/by/2.5/"},
-    {"id": "tos", "source": "BLENDER", "external_id": "TearsOfSteel", "title": "Tears of Steel", "license": "CC-BY 3.0", "licenseUrl": "https://creativecommons.org/licenses/by/3.0/"},
+# Hostamar-service keywords (SME marketing / ecommerce / fashion / product)
+BUSINESS_QUERIES = [
+    "small business", "marketing", "advertising", "retail store",
+    "fashion", "shopping", "sales", "customer service",
+    "product demonstration", "commerce trade",
 ]
 
-NASA_QUERIES = ["earth from space", "mars rover", "james webb telescope", "moon artemis", "sun solar flare"]
-PRELINGER_QUERIES = ["farming", "health education", "science classroom", "bangladesh", "rice agriculture"]
+PEXELS_QUERIES = [
+    "small business marketing", "ecommerce product", "fashion model",
+    "product photography", "clothing store", "boutique shop",
+    "online shopping delivery", "tailor sewing",
+]
+
+PIXABAY_QUERIES = [
+    "business", "marketing", "fashion", "shopping",
+    "office work", "sewing tailoring",
+]
+
 
 def get_json(url, timeout=30):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode("utf-8", "replace"))
 
-def search_nasa(query):
-    q = urllib.parse.quote(query)
-    data = get_json(f"https://images-api.nasa.gov/search?q={q}&media_type=video&year_start=2018")
-    out = []
-    for item in data.get("collection", {}).get("items", [])[:10]:
-        d = (item.get("data") or [{}])[0]
-        nid = d.get("nasa_id")
-        if not nid:
-            continue
-        try:
-            assets = get_json(f"https://images-api.nasa.gov/asset/{urllib.parse.quote(nid)}")
-            items = assets.get("collection", {}).get("items", [])
-            cands = [i for i in items if i.get("href", "").lower().endswith(".mp4")]
-            if not cands:
-                continue
-            # prefer medium/mobile versions over orig
-            def rank(u):
-                ul = u.lower()
-                return (0 if "mobile" in ul or "medium" in ul else 1, ul)
-            url = sorted(cands, key=lambda i: rank(i["href"]))[0]["href"]
-            out.append({"id": f"nasa-{nid}", "source": "NASA", "external_id": nid,
-                        "title": d.get("title", nid)[:120], "description": (d.get("description") or "")[:800],
-                        "download_url": url, "license": "Public Domain (NASA)",
-                        "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/"})
-        except Exception:
-            continue
-    return out
 
-def search_prelinger(query):
-    q = urllib.parse.quote(f"collection:(prelinger) AND title:({query})")
-    data = get_json(f"https://archive.org/advancedsearch.php?q={q}&fl%5B%5D=identifier&fl%5B%5D=title&rows=8&page=1&output=json")
+def _rotation(seq, salt=""):
+    """Deterministic rotation by day+hour so each run tries fresh queries."""
+    lt = time.localtime()
+    idx = (lt.tm_yday * 4 + lt.tm_hour // 2 + len(salt)) % len(seq)
+    return seq[idx]
+
+
+def _ia_file_url(ident, name):
+    return f"https://archive.org/download/{ident}/{urllib.parse.quote(name)}"
+
+
+def _ia_pick_mp4(meta):
+    """Pick smallest playable mp4 under MAX_BYTES from archive.org metadata."""
+    files = [f for f in meta.get("files", [])
+             if str(f.get("name", "")).lower().endswith((".mp4", ".ogv"))]
+    if not files:
+        return None
+    def size(f):
+        try: return int(f.get("size", 0) or 0)
+        except Exception: return 0
+    files.sort(key=size)
+    f = files[0]
+    if size(f) > MAX_BYTES or size(f) == 0:
+        return None
+    return f
+
+
+# ------------------------------------------------------------- archive.org --
+
+def search_prelinger(query=None, rows=10):
+    """Public-domain business/advertising/retail films (Prelinger Archives)."""
+    q = query or _rotation(BUSINESS_QUERIES, "prelinger")
+    adv = (f"collection:(prelinger) AND (title:({q}) OR description:({q}))")
+    url = ("https://archive.org/advancedsearch.php?q=" + urllib.parse.quote(adv) +
+           "&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=year"
+           f"&rows={rows}&page=1&output=json&sort%5B%5D=downloads+desc")
     out = []
-    for doc in data.get("response", {}).get("docs", []):
+    for doc in get_json(url).get("response", {}).get("docs", []):
         ident = doc.get("identifier")
         if not ident:
             continue
         try:
             meta = get_json(f"https://archive.org/metadata/{ident}")
-            files = [f for f in meta.get("files", []) if f.get("name", "").lower().endswith(".mp4")]
-            if not files:
+            f = _ia_pick_mp4(meta)
+            if not f:
                 continue
-            def size(f):
-                try: return int(f.get("size", 0) or 0)
-                except: return 0
-            small = sorted(files, key=size)[0]
-            if size(small) > MAX_BYTES:
-                continue
-            url = f"https://archive.org/download/{ident}/{urllib.parse.quote(small[name])}"
-            out.append({"id": f"prelinger-{ident}", "source": "PRELINGER", "external_id": ident,
-                        "title": (doc.get("title") or ident)[:120], "description": "",
-                        "download_url": url, "license": "Public Domain (Prelinger Archives)",
-                        "licenseUrl": "https://archive.org/details/prelinger"})
+            year = doc.get("year") or ""
+            title = str(doc.get("title") or ident)[:120]
+            out.append({
+                "id": f"prelinger-{ident}", "source": "PRELINGER", "external_id": ident,
+                "title": title, "description": "",
+                "download_url": _ia_file_url(ident, f["name"]),
+                "license": "Public Domain (Prelinger Archives)",
+                "licenseUrl": "https://archive.org/details/prelinger",
+            })
         except Exception:
             continue
     return out
 
-def blender_list():
+
+def search_ia_educational(query=None, rows=8):
+    """CC-licensed educational business films on archive.org (subject-driven)."""
+    q = query or _rotation(BUSINESS_QUERIES, "iaedu")
+    adv = ('mediatype:(movies) AND licenseurl:*creativecommons* AND '
+           f'(subject:({q}) OR title:({q}))')
+    url = ("https://archive.org/advancedsearch.php?q=" + urllib.parse.quote(adv) +
+           "&fl%5B%5D=identifier&fl%5B%5D=title"
+           f"&rows={rows}&page=1&output=json&sort%5B%5D=downloads+desc")
     out = []
-    for b in BLENDER:
+    try:
+        docs = get_json(url).get("response", {}).get("docs", [])
+    except Exception:
+        return out
+    for doc in docs:
+        ident = doc.get("identifier")
+        if not ident:
+            continue
         try:
-            meta = get_json(f"https://archive.org/metadata/{b[external_id]}")
-            files = [f for f in meta.get("files", []) if f.get("name", "").lower().endswith(".mp4")]
-            if not files:
+            meta = get_json(f"https://archive.org/metadata/{ident}")
+            f = _ia_pick_mp4(meta)
+            if not f:
                 continue
-            def size(f):
-                try: return int(f.get("size", 0) or 0)
-                except: return 0
-            small = sorted(files, key=size)[0]
-            if size(small) > MAX_BYTES:
-                continue
-            out.append({**b, "id": f"blender-{b[id]}",
-                        "description": "Blender Foundation open movie",
-                        "download_url": f"https://archive.org/download/{b[external_id]}/{urllib.parse.quote(small[name])}"})
+            md = meta.get("metadata", {}) or {}
+            license_url = md.get("licenseurl") or ""
+            if isinstance(license_url, list):
+                license_url = license_url[0] if license_url else ""
+            # skip long podcasts/streams — keep it TV-sized (handled again later)
+            out.append({
+                "id": f"iaedu-{ident}", "source": "IA-EDU", "external_id": ident,
+                "title": str(doc.get("title") or ident)[:120], "description": "",
+                "download_url": _ia_file_url(ident, f["name"]),
+                "license": ("Creative Commons (Internet Archive)" if license_url.startswith("http")
+                            else "See item page (Internet Archive)"),
+                "licenseUrl": license_url or f"https://archive.org/details/{ident}",
+            })
         except Exception:
             continue
     return out
 
-def fetch_candidates(per_source=4):
-    """Rotate queries deterministically by day so each run tries fresh content."""
-    day = __import__("time").tm_yday if hasattr(__import__("time"), "tm_yday") else 0
-    import time as _t
-    doy = _t.localtime().tm_yday
+
+# ----------------------------------------------------------------- pexels ---
+
+def search_pexels(query=None, per_page=15):
+    key = os.environ.get("PEXELS_API_KEY", "")
+    if not key:
+        print("pexels: no PEXELS_API_KEY set, skipping", file=sys.stderr)
+        return []
+    q = query or _rotation(PEXELS_QUERIES, "pexels")
+    url = (f"https://api.pexels.com/videos/search?query={urllib.parse.quote(q)}"
+           f"&per_page={per_page}&orientation=landscape&size=medium")
+    req = urllib.request.Request(url, headers={**UA, "Authorization": key})
+    try:
+        data = json.loads(urllib.request.urlopen(req, timeout=30).read().decode())
+    except Exception as e:
+        print(f"pexels search failed: {e}", file=sys.stderr)
+        return []
+    out = []
+    for v in data.get("videos", []):
+        vid = v.get("id")
+        dur = v.get("duration") or 0
+        # pick an SD-ish file ~720p for bandwidth
+        files = [f for f in v.get("video_files", []) if f.get("width") and 960 <= f["width"] <= 1920]
+        files.sort(key=lambda f: abs((f.get("width") or 0) - 1280))
+        if not vid or not files:
+            continue
+        out.append({
+            "id": f"pexels-{vid}", "source": "PEXELS", "external_id": str(vid),
+            "title": (q.title() + " — stock footage #" + str(vid))[:120],
+            "description": (v.get("url") or ""),
+            "download_url": files[0]["link"],
+            "license": "Pexels License (free to use)",
+            "licenseUrl": "https://www.pexels.com/license/",
+        })
+    return out
+
+
+# ---------------------------------------------------------------- pixabay ---
+
+def search_pixabay(query=None, per_page=20):
+    key = os.environ.get("PIXABAY_API_KEY", "")
+    if not key:
+        print("pixabay: no PIXABAY_API_KEY set, skipping", file=sys.stderr)
+        return []
+    q = query or _rotation(PIXABAY_QUERIES, "pixabay")
+    url = (f"https://pixabay.com/api/videos/?key={key}&q={urllib.parse.quote(q)}"
+           f"&per_page={per_page}")
+    try:
+        data = get_json(url)
+    except Exception as e:
+        print(f"pixabay search failed: {e}", file=sys.stderr)
+        return []
+    out = []
+    for v in data.get("hits", []):
+        vid = v.get("id")
+        vids = v.get("videos", {})
+        # pick SD 960 (or smallest >=960w) for bandwidth
+        cand = [("large", vids.get("large")), ("medium", vids.get("medium")), ("small", vids.get("small"))]
+        cand = [(n, f) for n, f in cand if f and int(f.get("width", 0) or 0) >= 960] or \
+               [(n, f) for n, f in cand if f]
+        if not vid or not cand:
+            continue
+        out.append({
+            "id": f"pixabay-{vid}", "source": "PIXABAY", "external_id": str(vid),
+            "title": (v.get("user") and (str(v.get("user")).title() + " — stock footage #" + str(vid)) or f"Stock footage #{vid}")[:120],
+            "description": "",
+            "download_url": cand[0][1]["url"],
+            "duration": int(v.get("duration", 0) or 0),
+            "license": "Pixabay Content License",
+            "licenseUrl": "https://pixabay.com/service/license-summary/",
+        })
+    return out
+
+
+# ------------------------------------------------------------------ fetch ---
+
+def fetch_candidates(per_source=6, sources=None):
+    """Rotate business queries deterministically; aggregate all sources."""
+    want = {s.upper() for s in (sources or [])} if sources else None
     cand = []
-    cand += blender_list()
-    try: cand += search_nasa(NASA_QUERIES[doy % len(NASA_QUERIES)])[:per_source]
-    except Exception as e: print(f"nasa search failed: {e}", file=sys.stderr)
-    try: cand += search_prelinger(PRELINGER_QUERIES[doy % len(PRELINGER_QUERIES)])[:per_source]
-    except Exception as e: print(f"prelinger search failed: {e}", file=sys.stderr)
-    return cand
+
+    def wanted(name):
+        return want is None or name in want
+
+    if wanted("PRELINGER"):
+        try: cand += search_prelinger(rows=per_source + 4)[:per_source]
+        except Exception as e: print(f"prelinger failed: {e}", file=sys.stderr)
+    if wanted("IA-EDU"):
+        try: cand += search_ia_educational(rows=per_source + 3)[:per_source - 2]
+        except Exception as e: print(f"ia-edu failed: {e}", file=sys.stderr)
+    if wanted("PEXELS"):
+        cand += search_pexels(per_page=per_source + 6)[:per_source]
+    if wanted("PIXABAY"):
+        cand += search_pixabay(per_page=per_source + 8)[:per_source]
+    # dedupe by id
+    seen, out = set(), []
+    for c in cand:
+        if c["id"] in seen:
+            continue
+        seen.add(c["id"])
+        out.append(c)
+    return out
+
 
 def quote_download(url):
-    import urllib.parse
-    return urllib.parse.quote(url, safe=":/?&=%~+#[]")
+    return urllib.parse.quote(url, safe=":/?&=%~+#[]@")
 
 
 def download(item, dest_path):
     req = urllib.request.Request(quote_download(item["download_url"]), headers=UA)
-    with urllib.request.urlopen(req, timeout=120) as r, open(dest_path, "wb") as f:
-        total = 0
+    total = 0
+    with urllib.request.urlopen(req, timeout=180) as r, open(dest_path, "wb") as f:
         while True:
             chunk = r.read(1024 * 512)
             if not chunk:
@@ -125,10 +262,11 @@ def download(item, dest_path):
             total += len(chunk)
             if total > MAX_BYTES:
                 f.close()
-                import os; os.remove(dest_path)
+                os.remove(dest_path)
                 raise RuntimeError("too large")
             f.write(chunk)
     return total
+
 
 if __name__ == "__main__":
     print(json.dumps(fetch_candidates(), ensure_ascii=False, indent=1)[:3000])

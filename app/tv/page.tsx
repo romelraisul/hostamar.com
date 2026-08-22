@@ -169,6 +169,10 @@ export default function TvPage() {
               <span className="w-2 h-2 bg-white rounded-full" /> LIVE
             </div>
           )}
+          {/* Channel watermark — top RIGHT corner */}
+          <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1 text-xs font-bold tracking-wider z-10 pointer-events-none">
+            HOSTAMAR.COM/TV
+          </div>
         </div>
 
         {!isLive && playlist.length > 0 && (
