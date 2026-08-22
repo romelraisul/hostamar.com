@@ -115,43 +115,103 @@ export interface StreamStatus {
   liveSince: string | null
   channelName: string
   playlistLength: number
+  tvPlaylistCount: number
+  videoCount: number
   destinations: { platform: string; label: string | null; isActive: boolean; lastError: string | null }[]
   autoGenerateEnabled: boolean
+  hlsUrl: string | null
+  rtmpUrl: string
+  mode: 'local_pc'
+  tunnelConfigured: boolean
+  hlsReachable: boolean
+  agentLastSeen: string | null
 }
 
 /** Aggregate live status for the dashboard + /tv. */
 export async function getStreamStatus(): Promise<StreamStatus> {
   await ensureSchema()
+  const { getTvConfig } = await import('@/lib/tv/config')
+  const { testHlsUrl } = await import('@/lib/tunnel/cloudflare')
+  const tvConfig = await getTvConfig()
+  let hlsReachable = false
+  if (tvConfig.hlsUrl) {
+    try {
+      const r = await testHlsUrl(tvConfig.hlsUrl)
+      hlsReachable = r.reachable
+    } catch {}
+  }
+  // Agent last seen: latest TvCommand executedAt or latest TvLog
+  let agentLastSeen: string | null = null
+  try {
+    const lastCmd = await (prisma as any).tvCommand?.findFirst?.({ orderBy: { createdAt: 'desc' } })
+    if (lastCmd?.executedAt) agentLastSeen = lastCmd.executedAt.toISOString()
+    else if (lastCmd?.createdAt) agentLastSeen = lastCmd.createdAt.toISOString()
+  } catch {}
+  // isLive = hlsReachable if hlsUrl present, otherwise fall back to DB TvChannel.isLive
   const channel = await prisma.tvChannel.findFirst({ orderBy: { createdAt: 'asc' } })
   if (!channel) {
     return {
-      isLive: false,
+      isLive: hlsReachable,
       liveSince: null,
-      channelName: env.TV_CHANNEL_NAME || 'Hostamar TV',
+      channelName: tvConfig.channelName,
       playlistLength: 0,
+      tvPlaylistCount: 0,
+      videoCount: 0,
       destinations: [],
-      autoGenerateEnabled: env.TV_AUTO_GENERATE_ENABLED === 'true',
+      autoGenerateEnabled: tvConfig.autoGenerate,
+      hlsUrl: tvConfig.hlsUrl,
+      rtmpUrl: tvConfig.rtmpUrl,
+      mode: 'local_pc',
+      tunnelConfigured: tvConfig.tunnelConfigured,
+      hlsReachable,
+      agentLastSeen,
     }
   }
 
-  const [playlistLength, destinations] = await Promise.all([
-    prisma.tvPlaylistItem.count({ where: { channelId: channel.id } }),
-    prisma.tvStreamDestination.findMany({ where: { channelId: channel.id } }),
-  ])
+  const destinations = await prisma.tvStreamDestination.findMany({ where: { channelId: channel.id } })
+
+  // Prefer HLS probe when hlsUrl exists; otherwise use DB flag (manual start)
+  const isLive = tvConfig.hlsUrl ? hlsReachable : channel.isLive
+
+  // Playlist count aligned with /api/tv/playlist: TvPlaylistItem if non-empty,
+  // else fall back to the Video table (same fallback the playlist API uses).
+  let tvPlaylistCount = 0
+  let videoCount = 0
+  try {
+    tvPlaylistCount = await prisma.tvPlaylistItem.count({ where: { channelId: channel.id } })
+    if (tvPlaylistCount === 0) {
+      videoCount = await (prisma as any).video?.count?.() || 0
+    }
+  } catch {}
+  const playlistLength = tvPlaylistCount > 0 ? tvPlaylistCount : videoCount
 
   return {
-    isLive: channel.isLive,
+    isLive,
     liveSince: channel.liveSince?.toISOString() || null,
     channelName: channel.name,
     playlistLength,
+    tvPlaylistCount,
+    videoCount,
     destinations: destinations.map((d) => ({
       platform: d.platform,
       label: d.label,
       isActive: d.isActive,
       lastError: d.lastError,
     })),
-    autoGenerateEnabled: env.TV_AUTO_GENERATE_ENABLED === 'true',
+    autoGenerateEnabled: tvConfig.autoGenerate,
+    hlsUrl: tvConfig.hlsUrl,
+    rtmpUrl: tvConfig.rtmpUrl,
+    mode: 'local_pc',
+    tunnelConfigured: tvConfig.tunnelConfigured,
+    hlsReachable,
+    agentLastSeen,
   }
+}
+
+/** Guard: Vercel can never run ffmpeg long-lived. */
+export function canRunFfmpeg(): { ok: boolean; reason?: string } {
+  if (process.env.VERCEL) return { ok: false, reason: 'Must run on local PC (Vercel is serverless)' }
+  return { ok: true }
 }
 
 /** Mark channel live/off in the DB. */

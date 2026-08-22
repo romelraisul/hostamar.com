@@ -114,6 +114,7 @@ export async function middleware(request: NextRequest) {
     // 6-product production-grade: marketing landing views public (no login wall for 200)
     // Dashboard/IDE editing behind auth still enforced inside page via 'withAuth' client guard
     '/generate', '/hosting', '/chat', '/browser', '/game', '/dev',
+    '/tv',
   ]
   for (const p of publicPages) {
     if (pathname === p || pathname.startsWith(p + '/')) {
@@ -130,7 +131,9 @@ export async function middleware(request: NextRequest) {
     '/api/payments/sms-webhook',
     '/api/tv/status',
     '/api/tv/playlist',
+    '/api/tv/hls-url',
     '/api/tv/generate-loop',
+    '/api/tv/agent/',
     '/api/hosting/status',
     '/api/generate/history',
     '/api/chat/ai-assist',

@@ -2,12 +2,14 @@
 # Hostamar 24/7 AI TV Station
 # nginx-rtmp ingest + FFmpeg multi-destination auto-streamer
 #
-# Usage:
-#   docker compose -f docker/tv-station/docker-compose.yml up -d
+# Usage on Windows PC (RTX 5060):
+#   cd docker/tv-station
+#   docker compose up -d
+#   # Then run agent: cd scripts/tv-agent && npm install && npm start
+#   # Or manual: ffmpeg -re -stream_loop -1 -f concat -safe 0 -i ./videos/playlist.txt -c:v libx264 -preset veryfast -b:v 2500k -c:a aac -f flv rtmp://localhost:1935/live/tv
 #
-# The streamer polls https://hostamar.com/api/tv/status + /api/tv/playlist.
-# When the channel is marked live (via /api/tv/stream/start), it builds an
-# ffmpeg command that loops the playlist to every active RTMP destination.
+# HLS playback: http://localhost:8080/hls/live/tv/index.m3u8 (VLC)
+# Public HLS via Cloudflare Tunnel: set TV_HLS_URL to https://<tunnel>.cfargotunnel.com/hls/live/tv/index.m3u8
 # ═══════════════════════════════════════════════════════════════
 
 services:
@@ -16,10 +18,13 @@ services:
     container_name: hostamar-tv-rtmp
     restart: unless-stopped
     ports:
-      - "1935:1935"   # RTMP ingest: rtmp://localhost:1935/live/<key>
-      - "8088:80"     # HLS playback: http://localhost:8088/live/<key>.m3u8
+      - "1935:1935"   # RTMP ingest: rtmp://localhost:1935/live/tv
+      - "8080:8080"   # HLS playback: http://localhost:8080/hls/live/tv/index.m3u8
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./videos:/videos:ro
+      - hls-data:/tmp/hls
+      - dash-data:/tmp/dash
     networks:
       - tv
 
@@ -31,18 +36,20 @@ services:
       - rtmp
     environment:
       - HOSTAMAR_API=${HOSTAMAR_API:-https://hostamar.com}
-      - CRON_SECRET=${CRON_SECRET:-}
-      - POLL_SECONDS=${POLL_SECONDS:-30}
-      - LOCAL_RTMP=rtmp://rtmp:1935/live
+      - TV_AGENT_SECRET=${TV_AGENT_SECRET:-}
+      - POLL_SECONDS=${POLL_SECONDS:-10}
+      - LOCAL_RTMP=rtmp://rtmp:1935/live/tv
     volumes:
       - ./streamer.sh:/streamer.sh:ro
-      - tv-media:/tv
+      - ./videos:/videos:ro
+      - hls-data:/tmp/hls
     entrypoint: ["/bin/sh", "/streamer.sh"]
     networks:
       - tv
 
 volumes:
-  tv-media:
+  hls-data:
+  dash-data:
 
 networks:
   tv:
