@@ -58,11 +58,8 @@ export default function TvPage() {
     if (!video) return;
     if (!isLive || !hlsUrl) return;
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = hlsUrl;
-      video.play().catch(() => {});
-      return;
-    }
+    // Prefer hls.js (MSE): Chromium canPlayType() false-positives on HLS MIME
+    // and then fails with MEDIA_ERR_SRC_NOT_SUPPORTED. Native HLS only as fallback.
     if (Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
       const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
@@ -76,6 +73,9 @@ export default function TvPage() {
       });
       hlsRef.current = hls;
       return () => hls.destroy();
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = hlsUrl;
+      video.play().catch(() => {});
     } else {
       setError('HLS not supported in this browser');
     }
