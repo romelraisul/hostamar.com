@@ -24,6 +24,7 @@ export default function TvPage() {
   const [status, setStatus] = useState<TvStatus | null>(null);
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
   const [hlsUrl, setHlsUrl] = useState<string | null>(null);
+  const [variant, setVariant] = useState<'h264' | 'vp9'>('h264');
   const [fallbackIndex, setFallbackIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,54 +60,33 @@ export default function TvPage() {
 
   const isLive = status?.isLive && hlsUrl && status?.hlsReachable !== false;
 
-  // HLS player when live
+  // HLS player when live. H.264 variant first; on decode failure some builds
+  // claim support but can't decode (error 4) — switch to VP9 variant, which
+  // remounts the <video> element (key=variant) so MSE state is clean.
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     if (!isLive || !hlsUrl) return;
 
     const VP9_URL = "https://vp9.hostamar.com/master.m3u8";
-    const startVp9 = () => {
-      if (hlsRef.current) hlsRef.current.destroy();
-      // Reset the poisoned video element (error 4 sticks until load())
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-      const h = new Hls({ enableWorker: true, lowLatencyMode: false });
-      h.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) setError(`HLS error: ${d.type} ${d.details}`); });
-      h.loadSource(VP9_URL);
-      h.attachMedia(video);
-      h.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-      hlsRef.current = h;
-    };
+    const source = variant === "vp9" ? VP9_URL : hlsUrl;
+    const goVp9 = () => setVariant((v) => (v === "h264" ? "vp9" : v));
 
-    // Prefer hls.js (MSE): Chromium canPlayType() false-positives on HLS MIME
-    // and then fails with MEDIA_ERR_SRC_NOT_SUPPORTED. Native HLS only as fallback.
     if (Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
       const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
-      let vp9Tried = false;
-      hls.loadSource(hlsUrl);
+      hls.loadSource(source);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (!data.fatal) return;
-        // Some builds claim H.264 MSE support but cannot decode it (error 4).
-        // Fall back to the VP9/Opus variant once, then surface errors.
-        if (!vp9Tried) {
-          vp9Tried = true;
-          startVp9();
-          return;
-        }
+        if (variant === "h264") { goVp9(); return; }
         setError(`HLS error: ${data.type} ${data.details}`);
         hls.destroy();
       });
-      const onMediaErr = () => {
-        if (!vp9Tried) { vp9Tried = true; startVp9(); }
-      };
+      const onMediaErr = () => { if (variant === "h264") goVp9(); };
       video.addEventListener("error", onMediaErr);
-      // Watchdog: some builds set video.error without dispatching usable events
       const watchdog = setInterval(() => {
-        if (video.error && !vp9Tried) { vp9Tried = true; startVp9(); }
+        if (variant === "h264" && video.error) goVp9();
       }, 2000);
       hlsRef.current = hls;
       return () => {
@@ -115,12 +95,12 @@ export default function TvPage() {
         hls.destroy();
       };
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = hlsUrl;
+      video.src = source;
       video.play().catch(() => {});
     } else {
       setError("HLS not supported in this browser");
     }
-  }, [isLive, hlsUrl]);
+  }, [isLive, hlsUrl, variant]);
 
   // Fallback: sequential playlist when not live
   const handleEnded = () => {
@@ -160,9 +140,12 @@ export default function TvPage() {
 
         {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
 
-        {/* Player */}
+        {/* Player — key=variant forces a FRESH video element for the VP9
+             fallback (an element that errored with MEDIA_ERR_SRC_NOT_SUPPORTED
+             stays poisoned even after load()) */}
         <div className="rounded-2xl border border-zinc-800 bg-black aspect-video overflow-hidden mb-4 relative">
           <video
+            key={variant}
             ref={videoRef}
             controls
             autoPlay
