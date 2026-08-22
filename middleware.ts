@@ -128,6 +128,8 @@ export async function middleware(request: NextRequest) {
     '/api/products',
     '/api/pricing',
     '/api/payments/sms-webhook',
+    '/api/tv/status',
+    '/api/tv/playlist',
     '/api/hosting/status',
     '/api/generate/history',
     '/api/chat/ai-assist',
