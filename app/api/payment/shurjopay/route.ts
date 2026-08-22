@@ -15,6 +15,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { handlePaymentWebhook, isShurjoPayConfigured } from '@/lib/payment'
+import { env } from '@/lib/env'
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,7 +64,7 @@ export async function GET() {
     service: 'shurjopay',
     configured,
     mode: configured ? 'automated' : 'fallback (manual bKash)',
-    sandbox: process.env.SHURJOPAY_SANDBOX !== 'false',
+    sandbox: env.SHURJOPAY_SANDBOX !== 'false',
     docs: 'POST with shurjoPay webhook payload to process payments',
   })
-}
+}

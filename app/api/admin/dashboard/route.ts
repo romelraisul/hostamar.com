@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const dbConfigured = !!process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
+    const dbConfigured = !!env.DATABASE_URL && !env.DATABASE_URL.includes('localhost')
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 

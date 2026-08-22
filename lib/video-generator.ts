@@ -10,20 +10,21 @@ import ffmpeg from 'fluent-ffmpeg';
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { env } from '@/lib/env'
 
 // Initialize OpenAI (GitHub Models or Azure)
 const openai = new OpenAI({
-  apiKey: process.env.GITHUB_TOKEN,
+  apiKey: env.GITHUB_TOKEN,
   baseURL: 'https://models.inference.ai.azure.com',
 });
 
 // Initialize MinIO/S3 Client
 const s3Client = new S3Client({
-  endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
+  endpoint: env.MINIO_ENDPOINT || 'http://localhost:9000',
   region: 'us-east-1',
   credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY || '',
-    secretAccessKey: process.env.MINIO_SECRET_KEY || '',
+    accessKeyId: env.MINIO_ACCESS_KEY || '',
+    secretAccessKey: env.MINIO_SECRET_KEY || '',
   },
   forcePathStyle: true,
 });
@@ -98,7 +99,7 @@ Format as JSON:
  */
 export async function generateVoiceOver(text: string, outputPath: string): Promise<string> {
   // Option 1: Google TTS (free, basic)
-  if (process.env.USE_GOOGLE_TTS === 'true') {
+  if (env.USE_GOOGLE_TTS === 'true') {
     const { TextToSpeechClient } = await import('@google-cloud/text-to-speech');
     const client = new TextToSpeechClient();
 
@@ -113,10 +114,10 @@ export async function generateVoiceOver(text: string, outputPath: string): Promi
   }
 
   // Option 2: ElevenLabs (premium)
-  if (process.env.ELEVENLABS_API_KEY) {
+  if (env.ELEVENLABS_API_KEY) {
     const { ElevenLabsClient } = await import('elevenlabs');
     const client = new ElevenLabsClient({
-      apiKey: process.env.ELEVENLABS_API_KEY,
+      apiKey: env.ELEVENLABS_API_KEY,
     });
 
     const audio = await client.generate({
@@ -220,7 +221,7 @@ export async function uploadVideo(filePath: string, customerId: string): Promise
   );
 
   // Return public URL
-  const publicUrl = `${process.env.MINIO_ENDPOINT}/hostamar-videos/${fileName}`;
+  const publicUrl = `${env.MINIO_ENDPOINT}/hostamar-videos/${fileName}`;
   return publicUrl;
 }
 

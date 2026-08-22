@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma'
 import { registerJacksonConnection, SAML_PRODUCT, spEntityIdForTenant, spAcsUrlForTenant } from '@/lib/sso/saml'
 import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
     await registerJacksonConnection({
       tenant: slug,
       rawMetadata,
-      defaultRedirectUrl: `${process.env.NEXTAUTH_URL || 'https://hostamar.com'}/api/auth/saml/callback`,
+      defaultRedirectUrl: `${env.NEXTAUTH_URL || 'https://hostamar.com'}/api/auth/saml/callback`,
     })
   } catch (e: any) {
     // Jackson registration failure must not leave a dangling "active" flag.

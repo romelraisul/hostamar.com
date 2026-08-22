@@ -4,8 +4,9 @@ import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import type { NextRequest } from 'next/server'
+import { env } from '@/lib/env'
 
-const JWT_SECRET=process.env.JWT_SECRET || 'hostamar-jwt-secret-change-in-production'
+const JWT_SECRET=env.JWT_SECRET || 'hostamar-jwt-secret-change-in-production'
 
 export async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword)

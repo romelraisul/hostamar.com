@@ -1,15 +1,16 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
-const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6:latest'
-const FALLBACK_API_URL = process.env.FALLBACK_API_URL || ''
-const FALLBACK_API_KEY = process.env.FALLBACK_API_KEY || ''
-const FALLBACK_MODEL = process.env.FALLBACK_MODEL || OLLAMA_MODEL
-const OMNIROUTE_URL = process.env.OMNIROUTE_URL || ''
-const OMNIROUTE_KEY = process.env.OMNIROUTE_KEY || ''
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
+const OLLAMA_HOST = env.OLLAMA_HOST || 'http://localhost:11434'
+const OLLAMA_MODEL = env.OLLAMA_MODEL || 'qwen3.6:latest'
+const FALLBACK_API_URL = env.FALLBACK_API_URL || ''
+const FALLBACK_API_KEY = env.FALLBACK_API_KEY || ''
+const FALLBACK_MODEL = env.FALLBACK_MODEL || OLLAMA_MODEL
+const OMNIROUTE_URL = env.OMNIROUTE_URL || ''
+const OMNIROUTE_KEY = env.OMNIROUTE_KEY || ''
+const GEMINI_API_KEY = env.GEMINI_API_KEY || env.GOOGLE_API_KEY || ''
 
 const MODELS_AVAILABLE = ['qwen3.6:latest', 'hermes3:latest', 'granite4.1:8b']
 

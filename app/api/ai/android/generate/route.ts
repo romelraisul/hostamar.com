@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
 export async function POST(req: NextRequest){
   try{
     const { prompt } = await req.json()
     const p = String(prompt||'').slice(0,2000) || 'Create notes app'
     // Call existing AI chat to generate Expo code
-    const base = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    const base = env.NEXTAUTH_URL || 'http://localhost:3000'
     let code = ''
     try{
       const r = await fetch(base+'/api/ai/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages:[{role:'user', content: `Generate a complete Expo 51 React Native App.tsx for: ${p}. Use green #0E7C3A, credit meter, no expo-router. Return ONLY code.` }], model:'general' }) })

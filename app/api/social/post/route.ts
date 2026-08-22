@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { getAuthUser } from '@/lib/auth'
+import { env } from '@/lib/env'
 
 // ─── OAuth 1.0a Twitter signing ─────────────────────────────────────────────
 function oauth1Sign(
@@ -37,8 +38,8 @@ function oauth1Sign(
 // Facebook Graph API Auto-Post
 async function postToFacebook(message: string, imageUrl?: string) {
   try {
-    const pageId = process.env.FB_PAGE_ID
-    const accessToken = process.env.FB_ACCESS_TOKEN
+    const pageId = env.FB_PAGE_ID
+    const accessToken = env.FB_ACCESS_TOKEN
 
     if (!pageId || !accessToken) {
       console.warn('Facebook credentials not configured')
@@ -83,8 +84,8 @@ async function postToTwitter(message: string, customerEmail: string) {
       return { success: false, error: 'Twitter not connected or token expired. Please reconnect in Settings.' }
     }
 
-    const ck = process.env.TWITTER_CLIENT_ID
-    const cks = process.env.TWITTER_CLIENT_SECRET
+    const ck = env.TWITTER_CLIENT_ID
+    const cks = env.TWITTER_CLIENT_SECRET
     if (!ck || !cks) {
       return { success: false, error: 'Twitter app not configured' }
     }
@@ -121,8 +122,8 @@ async function postToTwitter(message: string, customerEmail: string) {
 // LinkedIn Auto-Post
 async function postToLinkedIn(message: string) {
   try {
-    const token = process.env.LINKEDIN_ACCESS_TOKEN
-    const personId = process.env.LINKEDIN_PERSON_ID
+    const token = env.LINKEDIN_ACCESS_TOKEN
+    const personId = env.LINKEDIN_PERSON_ID
 
     if (!token || !personId) {
       console.warn('LinkedIn credentials not configured')
@@ -225,8 +226,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const fbConnected = !!process.env.FB_PAGE_ID && !!process.env.FB_ACCESS_TOKEN
-    const linkedinConnected = !!process.env.LINKEDIN_ACCESS_TOKEN && !!process.env.LINKEDIN_PERSON_ID
+    const fbConnected = !!env.FB_PAGE_ID && !!env.FB_ACCESS_TOKEN
+    const linkedinConnected = !!env.LINKEDIN_ACCESS_TOKEN && !!env.LINKEDIN_PERSON_ID
     const customer = await prisma.customer.findUnique({
       where: { email: authUser.email },
       select: { twitterUsername: true, twitterAccessToken: true, twitterAccessTokenExpiry: true },
@@ -240,9 +241,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        facebook: { connected: fbConnected, page: process.env.FB_PAGE_NAME || null },
+        facebook: { connected: fbConnected, page: env.FB_PAGE_NAME || null },
         twitter: { connected: twitterConnected, handle: customer?.twitterUsername || null },
-        linkedin: { connected: linkedinConnected, profile: process.env.LINKEDIN_PROFILE || null }
+        linkedin: { connected: linkedinConnected, profile: env.LINKEDIN_PROFILE || null }
       }
     })
   } catch (error) {

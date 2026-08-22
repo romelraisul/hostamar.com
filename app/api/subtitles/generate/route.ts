@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || 'http://localhost:11435'
-const OLLAMA_MODEL = process.env.OLLAMA_SUBTITLE_MODEL || 'hermes3:latest'
+const OLLAMA_BASE = env.OLLAMA_BASE_URL || 'http://localhost:11435'
+const OLLAMA_MODEL = env.OLLAMA_SUBTITLE_MODEL || 'hermes3:latest'
 
 interface SubtitleSegment {
   start: number
@@ -250,4 +251,4 @@ export async function GET(req: NextRequest) {
     console.error('Subtitle fetch error:', error)
     return NextResponse.json({ error: 'Failed to fetch subtitles' }, { status: 500 })
   }
-}
+}

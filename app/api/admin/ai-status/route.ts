@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { getFallbackStatus } from '@/lib/kilocode-client'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -24,29 +25,29 @@ function requireAdmin(req: NextRequest): { id: string; role?: string } | null {
   return payload
 }
 
-const GATEWAY_URL = (process.env.AI_GATEWAY_URL || 'https://ai.hostamar.com').replace(/\/+$/, '')
-const COMFY_URL = (process.env.COMFYUI_PUBLIC_URL || 'https://comfy.hostamar.com').replace(/\/+$/, '')
+const GATEWAY_URL = (env.AI_GATEWAY_URL || 'https://ai.hostamar.com').replace(/\/+$/, '')
+const COMFY_URL = (env.COMFYUI_PUBLIC_URL || 'https://comfy.hostamar.com').replace(/\/+$/, '')
 
 const PROVIDER_PROBES: Record<string, { base: string; envKey: string; modelsPath: string; freeFilter?: (id: string) => boolean }> = {
   kilocode: {
-    base: process.env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway',
+    base: env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway',
     envKey: 'KILOCODE_API_KEY',
     modelsPath: '/v1/models',
     freeFilter: (id) => id.endsWith(':free') || id.includes('/free'),
   },
   nvidia: {
-    base: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
+    base: env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
     envKey: 'NVIDIA_API_KEY',
     modelsPath: '/models',
   },
   tokenrouter: {
-    base: process.env.TOKENROUTER_BASE_URL || 'https://api.tokenrouter.com/v1',
+    base: env.TOKENROUTER_BASE_URL || 'https://api.tokenrouter.com/v1',
     envKey: 'TOKENROUTER_API_KEY',
     modelsPath: '/models',
     freeFilter: (id) => id.includes('free'),
   },
   opencode: {
-    base: process.env.OPENCODE_ZEN_BASE_URL || 'https://opencode.ai/zen/v1',
+    base: env.OPENCODE_ZEN_BASE_URL || 'https://opencode.ai/zen/v1',
     envKey: 'OPENCODE_ZEN_API_KEY',
     modelsPath: '/models',
     freeFilter: (id) => id.endsWith('-free'),

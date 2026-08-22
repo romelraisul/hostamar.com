@@ -26,6 +26,7 @@ import {
 } from '@/lib/harness/AutoApprovalRules'
 import { FoundryMemoryProvider, extractFacts } from '@/lib/memory/FoundryMemoryProvider'
 import { sendApprovalRequest, maskSecrets } from '@/lib/harness/telegram-approvals'
+import { env } from '@/lib/env'
 
 export type HarnessMode = 'plan' | 'execute'
 
@@ -388,7 +389,7 @@ export class HarnessAgent {
         .map((s) => s.trim())
         .filter(Boolean)
       let chunks = 0
-      const collection = process.env.QDRANT_RAG_COLLECTION || 'hostamar-knowledge'
+      const collection = env.QDRANT_RAG_COLLECTION || 'hostamar-knowledge'
       await this.qdrantEnsureCollection(collection).catch(() => undefined)
       for (const rel of fileList) {
         const fileRef = rel.replace(/^\/app\/working\//, '')
@@ -607,7 +608,7 @@ export class HarnessAgent {
   // Qdrant helpers — real REST calls mirroring app/api/support-chat.
   // ------------------------------------------------------------------
   private qdrantUrl(): string {
-    return (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
+    return (env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
   }
 
   private async qdrantEnsureCollection(collection: string): Promise<void> {
@@ -642,7 +643,7 @@ export class HarnessAgent {
     collection?: string,
   ): Promise<string[]> {
     const url = this.qdrantUrl()
-    const col = collection || process.env.QDRANT_COLLECTION || 'hostamar_kb'
+    const col = collection || env.QDRANT_COLLECTION || 'hostamar_kb'
     const vec = await ollamaEmbed(query)
     const res = await fetch(`${url}/collections/${col}/points/search`, {
       method: 'POST',

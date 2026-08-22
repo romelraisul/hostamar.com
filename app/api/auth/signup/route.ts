@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { NextRequest } from 'next/server'
 import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 import { sendWelcomeEmail } from '@/lib/email'
+import { env } from '@/lib/env'
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
     // Track referral if ref code provided
     if (refCode) {
       try {
-        await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/referral`, {
+        await fetch(`${env.NEXTAUTH_URL || 'http://localhost:3000'}/api/referral`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refCode, newUserId: customer.id })

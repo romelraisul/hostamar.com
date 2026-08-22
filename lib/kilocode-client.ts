@@ -7,11 +7,12 @@
  * This is separate from lib/kilo-client.ts which handles analytics tRPC
  * (Token A, kilo.ai, different base URL and auth scheme).
  */
+import { env } from '@/lib/env'
 
 const DEFAULT_BASE = 'https://api.kilo.ai/api/gateway'
-const TOKENROUTER_BASE = process.env.TOKENROUTER_BASE_URL || 'https://api.tokenrouter.com/v1'
-const NVIDIA_BASE = process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1'
-const OPENCODE_BASE = process.env.OPENCODE_ZEN_BASE_URL || 'https://opencode.ai/zen/v1'
+const TOKENROUTER_BASE = env.TOKENROUTER_BASE_URL || 'https://api.tokenrouter.com/v1'
+const NVIDIA_BASE = env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1'
+const OPENCODE_BASE = env.OPENCODE_ZEN_BASE_URL || 'https://opencode.ai/zen/v1'
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
@@ -55,26 +56,26 @@ export type ChatResult =
   | { ok: false; status: number; error: string; retryable: boolean }
 
 function getBase(): string {
-  return process.env.KILOCODE_BASE_URL || DEFAULT_BASE
+  return env.KILOCODE_BASE_URL || DEFAULT_BASE
 }
 
 function getToken(): string | null {
-  const t = process.env.KILOCODE_API_KEY
+  const t = env.KILOCODE_API_KEY
   return t && t.trim().length > 0 ? t.trim() : null
 }
 
 function getTokenRouterToken(): string | null {
-  const t = process.env.TOKENROUTER_API_KEY
+  const t = env.TOKENROUTER_API_KEY
   return t && t.trim().length > 0 ? t.trim() : null
 }
 
 function getNvidiaToken(): string | null {
-  const t = process.env.NVIDIA_API_KEY
+  const t = env.NVIDIA_API_KEY
   return t && t.trim().length > 0 ? t.trim() : null
 }
 
 function getOpenCodeToken(): string | null {
-  const t = process.env.OPENCODE_ZEN_API_KEY
+  const t = env.OPENCODE_ZEN_API_KEY
   return t && t.trim().length > 0 ? t.trim() : null
 }
 

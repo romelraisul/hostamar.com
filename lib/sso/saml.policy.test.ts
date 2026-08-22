@@ -5,6 +5,7 @@
 // ============================================================================
 import assert from 'node:assert/strict'
 import { mapProfile, isSsoEnforcedSession, jitProvision, DEFAULT_ATTRIBUTE_MAP } from './policy'
+import { env } from '@/lib/env'
 
 let passed = 0
 function ok(name: string) {
@@ -47,7 +48,7 @@ function ok(name: string) {
 }
 
 // --- DB-backed: JIT provisioning (only runs if DATABASE_URL provided) --------
-const DATABASE_URL = process.env.DATABASE_URL
+const DATABASE_URL = env.DATABASE_URL
 ;(async () => {
 if (DATABASE_URL) {
   const { prisma } = await import('@/lib/prisma')

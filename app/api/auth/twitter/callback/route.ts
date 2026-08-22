@@ -4,15 +4,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { env } from '@/lib/env'
 
-const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID!
-const TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET!
-const REDIRECT_URI = `${process.env.NEXTAUTH_URL}/api/auth/twitter/callback`
+const TWITTER_CLIENT_ID = env.TWITTER_CLIENT_ID!
+const TWITTER_CLIENT_SECRET = env.TWITTER_CLIENT_SECRET!
+const REDIRECT_URI = `${env.NEXTAUTH_URL}/api/auth/twitter/callback`
 
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req)
   if (!authUser) {
-    return NextResponse.redirect(new URL('/login', process.env.NEXTAUTH_URL))
+    return NextResponse.redirect(new URL('/login', env.NEXTAUTH_URL))
   }
 
   const { searchParams } = new URL(req.url)
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   if (error || !code || !state) {
     return NextResponse.redirect(
-      new URL(`/dashboard/settings?twitter_error=${error || 'auth_failed'}`, process.env.NEXTAUTH_URL)
+      new URL(`/dashboard/settings?twitter_error=${error || 'auth_failed'}`, env.NEXTAUTH_URL)
     )
   }
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
 
   if (!codeVerifier || codeVerifier !== state) {
     return NextResponse.redirect(
-      new URL('/dashboard/settings?twitter_error=invalid_verifier', process.env.NEXTAUTH_URL)
+      new URL('/dashboard/settings?twitter_error=invalid_verifier', env.NEXTAUTH_URL)
     )
   }
 
@@ -56,7 +57,7 @@ export async function GET(req: NextRequest) {
       const err = await tokenRes.text()
       console.error('Twitter token exchange failed:', err)
       return NextResponse.redirect(
-        new URL('/dashboard/settings?twitter_error=token_exchange_failed', process.env.NEXTAUTH_URL)
+        new URL('/dashboard/settings?twitter_error=token_exchange_failed', env.NEXTAUTH_URL)
       )
     }
 
@@ -84,14 +85,14 @@ export async function GET(req: NextRequest) {
     })
 
     const response = NextResponse.redirect(
-      new URL('/dashboard/settings?twitter_connected=1', process.env.NEXTAUTH_URL)
+      new URL('/dashboard/settings?twitter_connected=1', env.NEXTAUTH_URL)
     )
     response.cookies.delete('twitter_code_verifier')
     return response
   } catch (err) {
     console.error('Twitter OAuth error:', err)
     return NextResponse.redirect(
-      new URL('/dashboard/settings?twitter_error=server_error', process.env.NEXTAUTH_URL)
+      new URL('/dashboard/settings?twitter_error=server_error', env.NEXTAUTH_URL)
     )
   }
 }

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
 /**
  * POST /api/auth/reset-password  { token, password }
@@ -11,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * wins over a vercel.json rewrite, so we forward to the backend and return its
  * response. The backend holds the VerificationToken + Customer records.
  */
-const BACKEND = process.env.NEXT_PUBLIC_API_URL
+const BACKEND = env.NEXT_PUBLIC_API_URL
 
 export async function POST(req: NextRequest) {
   if (BACKEND) {
@@ -48,4 +49,4 @@ export async function GET(req: NextRequest) {
     }
   }
   return NextResponse.json({ valid: false, error: 'Reset unavailable' }, { status: 503 })
-}
+}

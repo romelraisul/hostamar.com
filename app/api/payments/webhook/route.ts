@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateInvoice } from '@/lib/invoice'
+import { env } from '@/lib/env'
 
 // ============================================================================
 // POST /api/payments/webhook
@@ -14,21 +15,21 @@ import { generateInvoice } from '@/lib/invoice'
 // --- Config (lazy import to avoid edge-runtime issues) ---
 function getBkashConfig() {
   return {
-    appKey:     process.env.BKASH_APP_KEY     || '',
-    appSecret:  process.env.BKASH_APP_SECRET  || '',
-    username:   process.env.BKASH_USERNAME    || '',
-    password:   process.env.BKASH_PASSWORD    || '',
-    verifyUrl:  process.env.BKASH_VERIFY_URL   || 'https://partner.bka.sh/v1.2.0-beta/payment/verify',
-    isConfigured: !!(process.env.BKASH_APP_KEY && process.env.BKASH_APP_SECRET && process.env.BKASH_USERNAME),
+    appKey:     env.BKASH_APP_KEY     || '',
+    appSecret:  env.BKASH_APP_SECRET  || '',
+    username:   env.BKASH_USERNAME    || '',
+    password:   env.BKASH_PASSWORD    || '',
+    verifyUrl:  env.BKASH_VERIFY_URL   || 'https://partner.bka.sh/v1.2.0-beta/payment/verify',
+    isConfigured: !!(env.BKASH_APP_KEY && env.BKASH_APP_SECRET && env.BKASH_USERNAME),
   }
 }
 
 function getNagadConfig() {
   return {
-    merchantId:     process.env.NAGAD_MERCHANT_ID  || '',
-    merchantKey:   process.env.NAGAD_MERCHANT_KEY || '',
-    verifyUrl:     process.env.NAGAD_VERIFY_URL   || 'https://api.nagad.com/merchant/verify',
-    isConfigured:  !!(process.env.NAGAD_MERCHANT_ID && process.env.NAGAD_MERCHANT_KEY),
+    merchantId:     env.NAGAD_MERCHANT_ID  || '',
+    merchantKey:   env.NAGAD_MERCHANT_KEY || '',
+    verifyUrl:     env.NAGAD_VERIFY_URL   || 'https://api.nagad.com/merchant/verify',
+    isConfigured:  !!(env.NAGAD_MERCHANT_ID && env.NAGAD_MERCHANT_KEY),
   }
 }
 

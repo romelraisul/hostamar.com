@@ -4,8 +4,9 @@
 // callback and calls the approve/deny API. All secrets are read from env and
 // never logged.
 // ============================================================================
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
-const CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || ''
+import { env } from '@/lib/env'
+const BOT_TOKEN = env.TELEGRAM_BOT_TOKEN || ''
+const CHAT_ID = env.TELEGRAM_ADMIN_CHAT_ID || ''
 
 export function telegramConfigured(): boolean {
   return Boolean(BOT_TOKEN && CHAT_ID)

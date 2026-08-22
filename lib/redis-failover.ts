@@ -12,6 +12,7 @@
  * swap the connection on failure.
  */
 import Redis from 'ioredis'
+import { env } from '@/lib/env'
 
 // Inline logger to avoid pulling in server-side modules from redis-bridge/
 const TAG = '[redis-failover]'
@@ -21,10 +22,10 @@ const log = {
   error: (msg: string, meta?: unknown) => console.error(`${TAG} ${msg}`, meta ? JSON.stringify(meta) : ''),
 }
 
-const PRIMARY_URL = process.env.REDIS_URL || ''          // wss://... or rediss://...
-const FALLBACK_URL = process.env.REDIS_FALLBACK_URL || '' // rediss://default:***@...upstash.io
-const HEARTBEAT_MS = parseInt(process.env.REDIS_HEARTBEAT_MS || '10000', 10)
-const MAX_FAILS = parseInt(process.env.REDIS_MAX_FAILS || '3', 10)
+const PRIMARY_URL = env.REDIS_URL || ''          // wss://... or rediss://...
+const FALLBACK_URL = env.REDIS_FALLBACK_URL || '' // rediss://default:***@...upstash.io
+const HEARTBEAT_MS = parseInt(env.REDIS_HEARTBEAT_MS || '10000', 10)
+const MAX_FAILS = parseInt(env.REDIS_MAX_FAILS || '3', 10)
 
 let primary: Redis | null = null
 let fallback: Redis | null = null

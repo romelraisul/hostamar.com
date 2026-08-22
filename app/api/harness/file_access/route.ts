@@ -6,11 +6,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardInternal } from '@/lib/harness/guard'
 import { FileSystemAgentFileStore } from '@/lib/harness/FileSystemAgentFileStore'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const store = new FileSystemAgentFileStore(process.env.HARNESS_FILE_ROOT || undefined)
+const store = new FileSystemAgentFileStore(env.HARNESS_FILE_ROOT || undefined)
 
 export async function POST(req: NextRequest) {
   const denied = guardInternal(req)

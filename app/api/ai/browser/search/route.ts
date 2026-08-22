@@ -1,8 +1,9 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
-const SEARXNG_BASE = process.env.SEARXNG_BASE_URL || 'http://localhost:5013'
+const SEARXNG_BASE = env.SEARXNG_BASE_URL || 'http://localhost:5013'
 const SEARXNG_PATH = '/search'
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -65,13 +66,13 @@ async function summarizeWithOllama(
 
   try {
     const ollamaHost =
-      process.env.OLLAMA_HOST || process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
+      env.OLLAMA_HOST || env.OLLAMA_BASE_URL || 'http://localhost:11434'
     const url = `${ollamaHost.replace(/\/+$/, '')}/api/generate`
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || 'qwen3.6:27b',
+        model: env.OLLAMA_MODEL || 'qwen3.6:27b',
         prompt,
         stream: false,
         options: { num_predict: 260, temperature: 0.3 },
@@ -114,7 +115,7 @@ async function runQuery(request: NextRequest) {
   const results = await searchSearXNG(query)
   const summary = await summarizeWithOllama(query, results)
   const payload =
-    process.env.OLLAMA_MODEL || process.env.OLLAMA_HOST
+    env.OLLAMA_MODEL || env.OLLAMA_HOST
       ? { summary }
       : { summary: null }
 

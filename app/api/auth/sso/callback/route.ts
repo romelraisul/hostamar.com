@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { env } from '@/lib/env'
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ function htmlRedirect(url: string, cookie?: { name: string; value: string }) {
 }
 
 export async function GET(req: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hostamar.com";
+  const baseUrl = env.NEXT_PUBLIC_SITE_URL || "https://hostamar.com";
   try {
     const code = req.nextUrl.searchParams.get("code");
     const error = req.nextUrl.searchParams.get("error");
@@ -33,10 +34,10 @@ export async function GET(req: NextRequest) {
     if (!code) return new Response("Missing code", { status: 400 });
 
     // Resolve OAuth config: prefer SSO_* (production), fallback to GOOGLE_* (compat)
-    const tokenUrl = process.env.SSO_TOKEN_URL || "https://oauth2.googleapis.com/token";
-    const userInfoUrl = process.env.SSO_USERINFO_URL || "https://www.googleapis.com/oauth2/v3/userinfo";
-    const clientId = process.env.SSO_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.SSO_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+    const tokenUrl = env.SSO_TOKEN_URL || "https://oauth2.googleapis.com/token";
+    const userInfoUrl = env.SSO_USERINFO_URL || "https://www.googleapis.com/oauth2/v3/userinfo";
+    const clientId = env.SSO_CLIENT_ID || env.GOOGLE_CLIENT_ID;
+    const clientSecret = env.SSO_CLIENT_SECRET || env.GOOGLE_CLIENT_SECRET;
     const redirectUri = `${baseUrl}/api/auth/sso/callback`;
 
     if (!clientId || !clientSecret) {

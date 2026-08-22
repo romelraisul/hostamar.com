@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@/lib/env'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const target = new URL(url);
 
-    const canvasServer = `${process.env.CAMOFOX_HOST || 'http://localhost:4000'}/api/canvas`;
+    const canvasServer = `${env.CAMOFOX_HOST || 'http://localhost:4000'}/api/canvas`;
     const canvasRes = await fetch(canvasServer, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const screenshotServer = `${process.env.CAMOFOX_HOST || 'http://localhost:4000'}/api/screenshot`;
+    const screenshotServer = `${env.CAMOFOX_HOST || 'http://localhost:4000'}/api/screenshot`;
     const screenshotRes = await fetch(screenshotServer, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

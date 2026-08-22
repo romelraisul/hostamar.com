@@ -3,15 +3,16 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { env } from '@/lib/env'
 
 // SMS API integration (using local SMS gateway for Bangladesh)
 async function sendSMS(phone: string, message: string): Promise<boolean> {
   try {
     // Hostamar SMS Gateway API configuration
     const smsConfig = {
-      apiUrl: process.env.SMS_API_URL || 'https://api.hostamar.com/sms/send',
-      apiKey: process.env.SMS_API_KEY,
-      senderId: process.env.SMS_SENDER_ID || 'HOSTAMAR'
+      apiUrl: env.SMS_API_URL || 'https://api.hostamar.com/sms/send',
+      apiKey: env.SMS_API_KEY,
+      senderId: env.SMS_SENDER_ID || 'HOSTAMAR'
     }
 
     if (!smsConfig.apiKey) {
@@ -44,9 +45,9 @@ async function sendSMS(phone: string, message: string): Promise<boolean> {
 async function sendWhatsApp(phone: string, message: string): Promise<boolean> {
   try {
     const waConfig = {
-      apiUrl: process.env.WHATSAPP_API_URL || 'https://graph.facebook.com/v18.0',
-      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID,
-      accessToken: process.env.WHATSAPP_ACCESS_TOKEN
+      apiUrl: env.WHATSAPP_API_URL || 'https://graph.facebook.com/v18.0',
+      phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID,
+      accessToken: env.WHATSAPP_ACCESS_TOKEN
     }
 
     if (!waConfig.accessToken || !waConfig.phoneNumberId) {

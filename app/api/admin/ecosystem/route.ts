@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
 function envOn(name: string) {
   const value = (process.env[name] || '').trim()
@@ -62,7 +63,7 @@ async function failoverState() {
       failover: crontab,
       cron: crontab,
       bidirectionalSync: envOn('NEON_BIDIRECTIONAL_SYNC'),
-      neonConnected: envOn('DATABASE_URL') && ((process.env.DATABASE_URL || '').includes('neon')),
+      neonConnected: envOn('DATABASE_URL') && ((env.DATABASE_URL || '').includes('neon')),
     },
   })
 }
@@ -91,7 +92,7 @@ function readState(statePath: string) {
 
 async function pingOllama() {
   try {
-    const ollamaRes = await fetch(`${process.env.OLLAMA_HOST || 'http://localhost:11434'}/api/tags`, {
+    const ollamaRes = await fetch(`${env.OLLAMA_HOST || 'http://localhost:11434'}/api/tags`, {
       signal: AbortSignal.timeout(2000),
     })
     return ollamaRes.ok

@@ -3,12 +3,13 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/auth'
+import { env } from '@/lib/env'
 
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin(req)
 
-    const dbConfigured = !!process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
+    const dbConfigured = !!env.DATABASE_URL && !env.DATABASE_URL.includes('localhost')
     const fallback: any[] = []
 
     const subscriptions = dbConfigured
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
     await requireAdmin(req)
     const body = await req.json()
 
-    const dbConfigured = !!process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
+    const dbConfigured = !!env.DATABASE_URL && !env.DATABASE_URL.includes('localhost')
     if (!dbConfigured) {
       return NextResponse.json({ success: false, error: 'Database not configured' }, { status: 503 })
     }

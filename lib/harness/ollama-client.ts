@@ -2,9 +2,10 @@
 // Ollama client — wraps the self-hosted Ollama chat API on the tunnel.
 // Used by HarnessAgent and ResearchAgent. Degrades gracefully on failure.
 // ============================================================================
-const GEN_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:latest'
-const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text'
-const OLLAMA_URL = (process.env.OLLAMA_PUBLIC_URL || 'http://localhost:11434').replace(/\/$/, '')
+import { env } from '@/lib/env'
+const GEN_MODEL = env.OLLAMA_MODEL || 'llama3.2:latest'
+const EMBED_MODEL = env.OLLAMA_EMBED_MODEL || 'nomic-embed-text'
+const OLLAMA_URL = (env.OLLAMA_PUBLIC_URL || 'http://localhost:11434').replace(/\/$/, '')
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'

@@ -13,6 +13,7 @@
 // ============================================================================
 import { PrismaClient } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 // One statement per entry — never concatenate.
 const STATEMENTS: string[] = [
@@ -53,7 +54,7 @@ export function ensureSchema(): Promise<void> {
       } catch (pooledErr) {
         // Pooled/transaction-mode connection may reject DDL — retry on the
         // direct (non-pooled) endpoint with the same credentials.
-        const pooled = process.env.DATABASE_URL || ''
+        const pooled = env.DATABASE_URL || ''
         if (pooled.includes('-pooler')) {
           const direct = pooled.replace('-pooler', '')
           const directClient = new PrismaClient({

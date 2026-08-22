@@ -16,6 +16,7 @@
 import type { NextResponse } from 'next/server'
 import type { Customer } from '@prisma/client'
 import { signToken } from '@/lib/auth'
+import { env } from '@/lib/env'
 
 const MAX_AGE = 60 * 60 * 24 * 7 // 7 days, matches lib/auth.ts
 
@@ -39,7 +40,7 @@ export function setSsoSessionCookie(res: NextResponse, customer: Customer, ssoEn
   const token = signSsoToken(customer, ssoEnforcedTenant)
   res.cookies.set('auth_token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'lax', // IdP cross-site redirect — 'strict' would drop the cookie
     maxAge: MAX_AGE,
     path: '/',

@@ -2,15 +2,16 @@
  * Video Generation Service - Auto-detects API availability
  * Falls back to demo mode when no API keys are configured
  */
+import { env } from '@/lib/env'
 
 // Try real video generator, fallback to demo
 let videoGenerator: typeof import('./video-generator.demo');
 
 async function getGenerator() {
   // Check if real API keys are available
-  const hasGithubToken = !!process.env.GITHUB_TOKEN;
-  const hasElevenLabs = !!process.env.ELEVENLABS_API_KEY;
-  const hasOpenAI = !!process.env.OPENAI_API_KEY;
+  const hasGithubToken = !!env.GITHUB_TOKEN;
+  const hasElevenLabs = !!env.ELEVENLABS_API_KEY;
+  const hasOpenAI = !!env.OPENAI_API_KEY;
 
   if (hasGithubToken || hasOpenAI) {
     try {

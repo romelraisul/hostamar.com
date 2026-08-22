@@ -16,15 +16,16 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { PutObjectCommandInput } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import path from 'path';
+import { env } from '@/lib/env'
 
 // --- Configuration ---
 
-const R2_ENDPOINT = process.env.R2_ENDPOINT || '';
-const R2_ACCESS_KEY = process.env.R2_ACCESS_KEY || '';
-const R2_SECRET_KEY = process.env.R2_SECRET_KEY || '';
-const R2_BUCKET = process.env.R2_BUCKET || 'hostamar-videos';
-const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || '';
-const R2_REGION = process.env.R2_REGION || 'auto';
+const R2_ENDPOINT = env.R2_ENDPOINT || '';
+const R2_ACCESS_KEY = env.R2_ACCESS_KEY || '';
+const R2_SECRET_KEY = env.R2_SECRET_KEY || '';
+const R2_BUCKET = env.R2_BUCKET || 'hostamar-videos';
+const R2_PUBLIC_URL = env.R2_PUBLIC_URL || '';
+const R2_REGION = env.R2_REGION || 'auto';
 
 // --- Client ---
 

@@ -16,6 +16,7 @@ import { z } from 'zod'
 import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { createIncident, appendTimeline } from '@/lib/support/incident'
 import { notify } from '@/lib/support/telegram'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
 
   // Non-destructive approve (or destructive with applyNow): attempt the fix.
   let fixResult = 'logged (no auto-exec in this environment)'
-  if (process.env.DOCKER_HOST || process.env.RUNNING_IN_DOCKER) {
+  if (env.DOCKER_HOST || env.RUNNING_IN_DOCKER) {
     const { exec } = await import('node:child_process')
     const { promisify } = await import('node:util')
     const execAsync = promisify(exec)

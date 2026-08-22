@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 import { bkashConfig, createCheckout } from '@/lib/payment/bkash'
+import { env } from '@/lib/env'
 
 // Edge-safe unique id (no Node 'crypto' import — works on Edge + Node runtimes)
 function uid(): string {
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     const planKey = (planName || 'starter').toLowerCase()
     const invoice = `HOSTAMAR-${Date.now()}-${uid()}`
-    const callbackUrl = `${process.env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`
+    const callbackUrl = `${env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`
 
     const result = await createCheckout({
       amount: Number(amount),

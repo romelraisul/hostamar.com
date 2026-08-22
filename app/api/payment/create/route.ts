@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/auth';
 import { bkashConfig, createCheckout } from '@/lib/payment/bkash';
+import { env } from '@/lib/env'
 
 // ============================================================================
 // POST /api/payment/create
@@ -38,10 +39,10 @@ function generateTrxId(): string {
 }
 
 // Merchant receiver numbers (manual send-money mode). Configurable via env.
-const BKASH_NUMBER = process.env.BKASH_NUMBER || '';
-const NAGAD_NUMBER = process.env.NAGAD_NUMBER || '';
-const ROCKET_NUMBER = process.env.ROCKET_NUMBER || '';
-const USDT_WALLET = process.env.USDT_WALLET_ADDRESS || '';
+const BKASH_NUMBER = env.BKASH_NUMBER || '';
+const NAGAD_NUMBER = env.NAGAD_NUMBER || '';
+const ROCKET_NUMBER = env.ROCKET_NUMBER || '';
+const USDT_WALLET = env.USDT_WALLET_ADDRESS || '';
 
 // Instruction generators for the manual send-money mode
 function generateInstructions(method: PaymentMethod, plan: { name: string; amount: number }, trxId: string, phone?: string): string[] {
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
     // Mode 1: real bKash tokenized checkout when configured
     if (m === 'bkash' && bkashConfig().configured) {
       const trxId = generateTrxId();
-      const callbackUrl = `${process.env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`;
+      const callbackUrl = `${env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`;
       const result = await createCheckout({
         amount: planInfo.amount,
         orderId: trxId,

@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from "next/server";
+import { env } from '@/lib/env'
 
 // Discord webhook notifications for OSSU community
 export async function POST(req: NextRequest) {
   const { type, message, userId } = await req.json();
 
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+  const webhookUrl = env.DISCORD_WEBHOOK_URL;
   
   if (!webhookUrl) {
     return NextResponse.json({ success: true, message: "Webhook not configured" });

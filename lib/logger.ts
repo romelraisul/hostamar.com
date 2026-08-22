@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { env } from '@/lib/env'
 
 const LOG_DIR = path.join(process.cwd(), 'logs');
 const MAX_LOG_SIZE = 10 * 1024 * 1024; // 10MB
@@ -54,7 +55,7 @@ export const logger = {
       ...(data && { data }),
     };
     writeLog(entry);
-    if (process.env.NODE_ENV !== 'production') {
+    if (env.NODE_ENV !== 'production') {
       console.log(`[INFO] ${message}`, data || '');
     }
   },

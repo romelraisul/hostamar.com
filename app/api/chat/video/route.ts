@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic'
 import { NextRequest } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || 'http://localhost:11435'
-const OLLAMA_MODEL = process.env.OLLAMA_CHAT_MODEL || 'hermes3:latest'
+const OLLAMA_BASE = env.OLLAMA_BASE_URL || 'http://localhost:11435'
+const OLLAMA_MODEL = env.OLLAMA_CHAT_MODEL || 'hermes3:latest'
 
 export async function POST(req: NextRequest) {
   try {
@@ -133,4 +134,4 @@ Keep responses concise and practical. Use Bengali when the user writes in Bengal
     console.error('Chat API error:', error)
     return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 })
   }
-}
+}

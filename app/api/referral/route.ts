@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { env } from '@/lib/env'
 
 function getTokenFromRequest(request: Request): string | null {
   const authHeader = request.headers.get('Authorization');
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
       .filter(t => completedCount >= t.threshold)
       .reduce((sum, t) => sum + t.bonus, 0);
 
-    const appUrl = process.env.NEXTAUTH_URL || 'https://hostamar.com';
+    const appUrl = env.NEXTAUTH_URL || 'https://hostamar.com';
     const referralLink = `${appUrl}/signup?ref=${customer.referralCode}`;
 
     return NextResponse.json({

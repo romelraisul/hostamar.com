@@ -9,11 +9,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { prisma } from './prisma';
+import { env } from '@/lib/env'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || 'http://localhost:11435';
-const OLLAMA_MODEL = process.env.OLLAMA_VIDEO_MODEL || 'hermes3:latest';
+const OLLAMA_BASE = env.OLLAMA_BASE_URL || 'http://localhost:11435';
+const OLLAMA_MODEL = env.OLLAMA_VIDEO_MODEL || 'hermes3:latest';
 const VIDEOS_DIR = path.resolve(process.cwd(), 'public/videos');
 const FPS = 30;
 
@@ -214,7 +215,7 @@ async function getServeUrl(): Promise<string> {
  * Checks common locations and env var.
  */
 async function findChromeExecutable(): Promise<string | undefined> {
-  const envPath = process.env.CHROME_EXECUTABLE || process.env.PUPPETEER_EXECUTABLE_PATH;
+  const envPath = env.CHROME_EXECUTABLE || env.PUPPETEER_EXECUTABLE_PATH;
   if (envPath) {
     try {
       await fs.access(envPath);

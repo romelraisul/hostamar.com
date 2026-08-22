@@ -2,9 +2,10 @@
 // Provides identify, track, and pageView helpers for PostHog
 
 import posthog from 'posthog-js';
+import { env } from '@/lib/env'
 
-const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
+const POSTHOG_KEY = env.NEXT_PUBLIC_POSTHOG_KEY;
+const POSTHOG_HOST = env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
 
 let initialized = false;
 

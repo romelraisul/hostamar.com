@@ -3,12 +3,13 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from './prisma'
+import { env } from '@/lib/env'
 
 export const authOptions: NextAuthOptions = {
   // Adapter is used for password-reset flow (VerificationToken) only.
   // Session strategy stays JWT to preserve existing sessions.
   adapter: PrismaAdapter(prisma),
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: env.NEXTAUTH_SECRET,
   
   session: {
     strategy: 'jwt',
@@ -22,7 +23,7 @@ export const authOptions: NextAuthOptions = {
       options: {
         httpOnly: true,
         sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
+        secure: env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 24 * 7,
         path: '/',
       },
@@ -32,7 +33,7 @@ export const authOptions: NextAuthOptions = {
       options: {
         httpOnly: true,
         sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
+        secure: env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 24 * 7,
         path: '/',
       },
@@ -42,7 +43,7 @@ export const authOptions: NextAuthOptions = {
       options: {
         httpOnly: false,
         sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
+        secure: env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 24 * 7,
         path: '/',
       },

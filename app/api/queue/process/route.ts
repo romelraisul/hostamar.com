@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 // The queue process route is designed to work on Vercel by setting DB state only.
 // Actual video rendering runs on the local Windows machine via the cron worker.
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const { secret } = await req.json().catch(() => ({ secret: '' }))
     
-    const queueSecret = process.env.QUEUE_SECRET || '***REDACTED***'
+    const queueSecret = env.QUEUE_SECRET || '***REDACTED***'
     if (secret !== queueSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -49,4 +50,4 @@ export async function POST(req: NextRequest) {
     console.error('Queue worker error:', error?.message || error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
-}
+}

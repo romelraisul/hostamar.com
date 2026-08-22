@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 // ============================================================================
 // POST /api/webhooks
@@ -21,9 +22,9 @@ import { prisma } from '@/lib/prisma'
 // ============================================================================
 
 const RECEIVER = {
-  bkash: process.env.BKASH_NUMBER || '01822417463',
-  rocket: process.env.ROCKET_NUMBER || '01822417463',
-  nagad: process.env.NAGAD_NUMBER || '01711317101',
+  bkash: env.BKASH_NUMBER || '01822417463',
+  rocket: env.ROCKET_NUMBER || '01822417463',
+  nagad: env.NAGAD_NUMBER || '01711317101',
 } as const
 
 type Method = keyof typeof RECEIVER
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
     // ── Owner confirmation mode (optional) ──────────────────────────────────
     // If PAYMENT_CONFIRM_SECRET is set and the caller supplies it, flip the
     // matching pending payment to completed and activate the subscription.
-    if (secret && process.env.PAYMENT_CONFIRM_SECRET && secret === process.env.PAYMENT_CONFIRM_SECRET) {
+    if (secret && env.PAYMENT_CONFIRM_SECRET && secret === env.PAYMENT_CONFIRM_SECRET) {
       if (!transactionId) {
         return NextResponse.json({ error: 'transactionId required to confirm' }, { status: 400 })
       }

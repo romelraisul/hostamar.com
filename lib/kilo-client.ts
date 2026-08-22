@@ -4,7 +4,7 @@
  * Wraps kilo.ai's tRPC usage-analytics surface that we verified:
  *   - https://kilo.ai/api/trpc/usageAnalytics.{getSummary,getTimeseries,getBreakdown,getTable}
  *
- * Auth is via process.env.KILO_API_TOKEN — must NEVER be exposed to the
+ * Auth is via env.KILO_API_TOKEN — must NEVER be exposed to the
  * client. All callers of this module must be server-only (no "use client"
  * imports).
  *
@@ -13,6 +13,7 @@
  * configured" and surface a 503 to the admin, NOT 500 — that way the
  * admin UI degrade-gracefully until a token is provisioned.
  */
+import { env } from '@/lib/env'
 type KiloAnalyticsInput = Record<string, unknown>
 
 type KiloFetchResult<T> =
@@ -22,11 +23,11 @@ type KiloFetchResult<T> =
 const DEFAULT_BASE = 'https://kilo.ai'
 
 function getBase(): string {
-  return process.env.KILO_API_BASE || DEFAULT_BASE
+  return env.KILO_API_BASE || DEFAULT_BASE
 }
 
 function getToken(): string | null {
-  const t = process.env.KILO_API_TOKEN
+  const t = env.KILO_API_TOKEN
   return t && t.trim().length > 0 ? t.trim() : null
 }
 

@@ -3,17 +3,18 @@ import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
 import fs from 'node:fs'
 import path from 'node:path'
+import { env } from '@/lib/env'
 
-const SMTP_HOST = process.env.SMTP_HOST
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587')
-const SMTP_USER = process.env.SMTP_USER
-const SMTP_PASS = process.env.SMTP_PASS
-const SMTP_FROM = process.env.SMTP_FROM || 'noreply@hostamar.com'
-const BREVO_SMTP_KEY = process.env.BREVO_SMTP_KEY
-const BREVO_SMTP_HOST = process.env.BREVO_SMTP_HOST
-const BREVO_SMTP_PORT = parseInt(process.env.BREVO_SMTP_PORT || '587')
-const BREVO_API_KEY = process.env.BREVO_API_KEY
-const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+const SMTP_HOST = env.SMTP_HOST
+const SMTP_PORT = parseInt(env.SMTP_PORT || '587')
+const SMTP_USER = env.SMTP_USER
+const SMTP_PASS = env.SMTP_PASS
+const SMTP_FROM = env.SMTP_FROM || 'noreply@hostamar.com'
+const BREVO_SMTP_KEY = env.BREVO_SMTP_KEY
+const BREVO_SMTP_HOST = env.BREVO_SMTP_HOST
+const BREVO_SMTP_PORT = parseInt(env.BREVO_SMTP_PORT || '587')
+const BREVO_API_KEY = env.BREVO_API_KEY
+const APP_URL = env.NEXTAUTH_URL || 'http://localhost:3000'
 
 let transporter: nodemailer.Transporter | null = null
 

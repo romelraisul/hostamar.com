@@ -20,9 +20,10 @@ import { ollamaGenerate } from '@/lib/harness/ollama-client'
 import { measureMRR, type MrRMetrics } from './tools/measureMRR'
 import fs from 'fs'
 import path from 'path'
+import { env } from '@/lib/env'
 
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || ''
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
+const TELEGRAM_CHAT_ID = env.TELEGRAM_ADMIN_CHAT_ID || ''
+const TELEGRAM_BOT_TOKEN = env.TELEGRAM_BOT_TOKEN || ''
 
 export type GoalActionType = 'create_task' | 'run_task' | 'update_prompt' | 'ship_fix'
 

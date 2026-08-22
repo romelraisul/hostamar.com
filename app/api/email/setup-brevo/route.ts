@@ -3,6 +3,7 @@
 // Visit /api/email/setup-brevo in a browser to run this once — then delete the route.
 
 import { NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -15,7 +16,7 @@ export async function GET() {
     const ip = ipJson.ip || 'unknown'
 
     // 2. Add the IP to Brevo's allowlist via the Brevo API.
-    const apiKey = process.env.BREVO_API_KEY || ''
+    const apiKey = env.BREVO_API_KEY || ''
     const headers: Record<string, string> = { 'Content-Type': 'application/json', 'api-key': apiKey }
 
     let addOk = false
@@ -107,7 +108,7 @@ export async function GET() {
       form: { ok: formOk, body: formText.slice(0, 200) },
       emailResult,
       apiKeyPresent: !!apiKey,
-      nodeEnv: process.env.NODE_ENV,
+      nodeEnv: env.NODE_ENV,
       note: 'addOk or bearerOk=true means IP added to Brevo whitelist. emailResult.ok=true means live send successful.',
     })
   } catch (err) {

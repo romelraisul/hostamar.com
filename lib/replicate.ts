@@ -5,11 +5,12 @@
  * Supports image generation via flux-schnell and other models.
  */
 import { randomUUID } from 'crypto';
+import { env } from '@/lib/env'
 
 const REPLICATE_API_BASE = 'https://api.replicate.com/v1';
 
 function getApiKey(): string {
-  const key = process.env.REPLICATE_API_KEY;
+  const key = env.REPLICATE_API_KEY;
   if (!key) {
     throw new Error('REPLICATE_API_KEY environment variable is not set');
   }
@@ -140,7 +141,7 @@ export async function generateImages(
     body: JSON.stringify({
       model,
       input,
-      webhook: process.env.REPLICATE_WEBHOOK_URL || null,
+      webhook: env.REPLICATE_WEBHOOK_URL || null,
       webhook_events_filter: ['completed'],
     }),
   });

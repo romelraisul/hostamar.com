@@ -6,12 +6,13 @@
 // ============================================================================
 
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 // --- Configuration ---
-const SHURJOPAY_MERCHANT_ID  = process.env.SHURJOPAY_MERCHANT_ID || ''
-const SHURJOPAY_API_KEY      = process.env.SHURJOPAY_API_KEY || ''
-const SHURJOPAY_API_SECRET   = process.env.SHURJOPAY_API_SECRET || ''
-const SHURJOPAY_SANDBOX      = process.env.SHURJOPAY_SANDBOX !== 'false' // default sandbox
+const SHURJOPAY_MERCHANT_ID  = env.SHURJOPAY_MERCHANT_ID || ''
+const SHURJOPAY_API_KEY      = env.SHURJOPAY_API_KEY || ''
+const SHURJOPAY_API_SECRET   = env.SHURJOPAY_API_SECRET || ''
+const SHURJOPAY_SANDBOX      = env.SHURJOPAY_SANDBOX !== 'false' // default sandbox
 
 const SHURJOPAY_BASE = SHURJOPAY_SANDBOX
   ? 'https://sandbox.shurjopay.com'

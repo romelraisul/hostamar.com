@@ -11,17 +11,18 @@
 // so a partially-configured deploy still works.
 // ============================================================================
 import { maskSecrets } from '@/lib/harness/telegram-approvals'
+import { env } from '@/lib/env'
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
-const ADMIN_CHAT = process.env.TELEGRAM_ADMIN_CHAT_ID || ''
+const BOT_TOKEN = env.TELEGRAM_BOT_TOKEN || ''
+const ADMIN_CHAT = env.TELEGRAM_ADMIN_CHAT_ID || ''
 
 type Channel = 'support' | 'ops' | 'incident'
 
 function chatIdFor(channel: Channel): string {
   const envMap: Record<Channel, string | undefined> = {
-    support: process.env.TELEGRAM_SUPPORT_CHAT_ID,
-    ops: process.env.TELEGRAM_OPS_CHAT_ID,
-    incident: process.env.TELEGRAM_INCIDENT_CHAT_ID,
+    support: env.TELEGRAM_SUPPORT_CHAT_ID,
+    ops: env.TELEGRAM_OPS_CHAT_ID,
+    incident: env.TELEGRAM_INCIDENT_CHAT_ID,
   }
   return envMap[channel] || ADMIN_CHAT
 }

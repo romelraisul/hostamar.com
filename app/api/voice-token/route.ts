@@ -13,6 +13,7 @@ import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
 import { AccessToken } from 'livekit-server-sdk'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 
@@ -21,10 +22,10 @@ const voiceTokenSchema = z.object({
   room: z.string().max(64).regex(/^[a-zA-Z0-9 _@.-]+$/).optional(),
 })
 
-const LIVEKIT_URL_PUBLIC = process.env.LIVEKIT_URL || 'wss://voice.hostamar.com'
-const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || ''
-const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || ''
-const TOKEN_TTL_SECONDS = Number(process.env.VOICE_TOKEN_TTL_SECONDS || 3600)
+const LIVEKIT_URL_PUBLIC = env.LIVEKIT_URL || 'wss://voice.hostamar.com'
+const LIVEKIT_API_KEY = env.LIVEKIT_API_KEY || ''
+const LIVEKIT_API_SECRET = env.LIVEKIT_API_SECRET || ''
+const TOKEN_TTL_SECONDS = Number(env.VOICE_TOKEN_TTL_SECONDS || 3600)
 
 export async function POST(req: NextRequest) {
   const t0 = Date.now()

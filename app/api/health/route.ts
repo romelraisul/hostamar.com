@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getFallbackStatus } from '@/lib/kilocode-client'
+import { env } from '@/lib/env'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,10 +20,10 @@ export async function GET() {
       note: 'DB is owned by the dedicated backend (api.hostamar.com). See that endpoint for DB health.',
     },
     environment: {
-      nodeEnv: process.env.NODE_ENV,
-      nextAuthUrl: process.env.NEXTAUTH_URL || 'not set',
-      databaseUrlSet: Boolean(process.env.DATABASE_URL),
-      apiBackend: process.env.NEXT_PUBLIC_API_URL || 'not set',
+      nodeEnv: env.NODE_ENV,
+      nextAuthUrl: env.NEXTAUTH_URL || 'not set',
+      databaseUrlSet: Boolean(env.DATABASE_URL),
+      apiBackend: env.NEXT_PUBLIC_API_URL || 'not set',
     },
     aiFallback: getFallbackStatus(),
     version: '1.0.0',
