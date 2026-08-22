@@ -44,8 +44,10 @@ let ok = 0, fail = 0
 for (const [key, value] of entries) {
   if (DRY) { console.log(`  would set ${key}`); ok++; continue }
   try {
-    // Remove existing (ignore error if absent), then add fresh
-    try { execSync(`vercel env rm ${key} production --yes`, { stdio: 'pipe' }) } catch {}
+    // Remove existing from every target (ignore error if absent), then add fresh
+    for (const t of targets) {
+      try { execSync(`vercel env rm ${key} ${t} --yes`, { stdio: 'pipe' }) } catch {}
+    }
     const cmd = `printf %s ${JSON.stringify(value)} | vercel env add ${key} ${targets.join(' ')}`
     execSync(cmd, { stdio: 'pipe', shell: '/bin/bash' })
     ok++
