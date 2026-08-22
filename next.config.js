@@ -102,6 +102,10 @@ const nextConfig = {
         destination: '/api/payment/:path*'
       },
       {
+        source: '/api/payments/:path*',
+        destination: '/api/payments/:path*'
+      },
+      {
         source: '/api/auth/:path*',
         destination: '/api/auth/:path*'
       },
