@@ -21,6 +21,9 @@ type NowPlaying = {
   hlsUrl?: string | null
   title?: string | null
   channelName?: string
+  gender?: string | null
+  voiceUsed?: string | null
+  credit?: number | null
 }
 
 const VP9_URL = 'https://vp9.hostamar.com/master.m3u8'
@@ -87,6 +90,12 @@ export default function TvHero() {
   }, [isLive, variant, np?.hlsUrl])
 
   const title = np?.title || FALLBACK_TITLE
+  const credit = np?.credit ?? 6000
+  const isFemale = np?.gender === 'female'
+  const genderIcon = isFemale ? '👩' : '👨'
+  const voiceName = np?.voiceUsed
+    ? (np.voiceUsed.includes('Nabanita') ? 'Nabanita' : np.voiceUsed.includes('Pradeep') ? 'Pradeep' : np.voiceUsed)
+    : ''
 
   return (
     <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black">
@@ -101,26 +110,38 @@ export default function TvHero() {
         poster="/og-image.png"
       />
 
+      {/* Channel watermark — top RIGHT corner */}
+      <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1 text-xs font-bold tracking-wider z-10 pointer-events-none">
+        HOSTAMAR.COM/TV
+      </div>
+
       {/* LIVE badge */}
       {isLive ? (
-        <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse">
+        <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse z-10">
           <span className="w-2 h-2 bg-white rounded-full" /> LIVE
         </div>
       ) : (
-        <div className="absolute top-2 left-2 bg-zinc-700 text-white text-xs px-2 py-1 rounded-full font-bold">OFFLINE</div>
+        <div className="absolute top-2 left-2 bg-zinc-700 text-white text-xs px-2 py-1 rounded-full font-bold z-10">OFFLINE</div>
       )}
 
-      {/* Watch Live */}
+      {/* Watch Live — below watermark so both fit in the top-right stack */}
       <Link
         href="/tv"
-        className="absolute top-2 right-2 bg-white/90 hover:bg-white text-[#0E7C3A] text-xs px-2.5 py-1 rounded-full font-bold shadow"
+        className="absolute top-11 right-3 bg-white/90 hover:bg-white text-[#0E7C3A] text-xs px-2.5 py-1 rounded-full font-bold shadow z-10"
       >
         LIVE দেখুন →
       </Link>
 
+      {/* Gender + voice indicator — bottom right, above the title bar */}
+      {(isFemale || voiceName) && (
+        <div className="absolute bottom-9 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded z-10">
+          {genderIcon} {voiceName}
+        </div>
+      )}
+
       {/* Now playing bar */}
-      <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded truncate">
-        🎬 {title} • credit 6000 • 70% HERO ▶{unsupported ? ' • browser HLS unsupported' : ''}
+      <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded truncate z-10">
+        🎬 [TV] {title} • credit {credit} • 70% HERO ▶{unsupported ? ' • browser HLS unsupported' : ''}
       </div>
     </div>
   )
