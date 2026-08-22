@@ -21,6 +21,8 @@ coverage/
 # Backup env files
 .env.local_backup
 .env.vercel
+.env.vercel.backup
+.env.backup.json
 .env.vercel-prod
 .env.production.local
 

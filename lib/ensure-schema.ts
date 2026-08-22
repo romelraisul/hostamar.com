@@ -169,6 +169,37 @@ const STATEMENTS: string[] = [
   CONSTRAINT "TvSchedule_pkey" PRIMARY KEY ("id")
 )`,
   `CREATE INDEX IF NOT EXISTS "TvSchedule_channelId_idx" ON "TvSchedule"("channelId")`,
+  // ── TV Agent + Admin Control (Phase 5) ─────────────────────────
+  `CREATE TABLE IF NOT EXISTS "TvSettings" (
+  "id" TEXT NOT NULL,
+  "channelName" TEXT NOT NULL DEFAULT 'Hostamar TV',
+  "hlsUrl" TEXT,
+  "rtmpUrl" TEXT DEFAULT 'rtmp://localhost:1935/live/tv',
+  "tunnelAutoUrl" TEXT,
+  "autoGenerate" BOOLEAN NOT NULL DEFAULT true,
+  "rssFeeds" TEXT[] DEFAULT ARRAY[]::TEXT[],
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "TvSettings_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE TABLE IF NOT EXISTS "TvCommand" (
+  "id" TEXT NOT NULL,
+  "action" TEXT NOT NULL,
+  "payload" JSONB,
+  "status" TEXT NOT NULL DEFAULT 'PENDING',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "executedAt" TIMESTAMP(3),
+  CONSTRAINT "TvCommand_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "TvCommand_status_createdAt_idx" ON "TvCommand"("status", "createdAt")`,
+  `CREATE TABLE IF NOT EXISTS "TvLog" (
+  "id" TEXT NOT NULL,
+  "level" TEXT NOT NULL,
+  "message" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "TvLog_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "TvLog_createdAt_idx" ON "TvLog"("createdAt")`,
 ]
 
 let ensured: Promise<void> | null = null

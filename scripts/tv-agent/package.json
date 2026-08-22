@@ -1,0 +1,10 @@
+{
+  "name": "hostamar-tv-agent",
+  "version": "1.0.0",
+  "description": "Hostamar TV Agent — polls admin commands and drives local FFmpeg",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {}
+}

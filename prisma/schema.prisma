@@ -1159,3 +1159,35 @@ model TvSchedule {
 
   @@index([channelId])
 }
+
+model TvSettings {
+  id             String   @id @default("default")
+  channelName    String   @default("Hostamar TV")
+  hlsUrl         String?
+  rtmpUrl        String?  @default("rtmp://localhost:1935/live/tv")
+  tunnelAutoUrl  String?
+  autoGenerate   Boolean  @default(true)
+  rssFeeds       String[] @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TvCommand {
+  id         String    @id @default(cuid())
+  action     String    // START_WEBSITE | START_ALL | STOP | RELOAD_PLAYLIST | GENERATE_VIDEO
+  payload    Json?
+  status     String    @default("PENDING") // PENDING | RUNNING | DONE | FAILED
+  createdAt  DateTime  @default(now())
+  executedAt DateTime?
+
+  @@index([status, createdAt])
+}
+
+model TvLog {
+  id        String   @id @default(cuid())
+  level     String   // info | warn | error
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

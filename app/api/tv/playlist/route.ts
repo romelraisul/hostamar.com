@@ -14,11 +14,27 @@ export async function GET(req: NextRequest) {
   try {
     await ensureSchema()
     const channel = await getOrCreateDefaultChannel()
-    const items = await prisma.tvPlaylistItem.findMany({
+    let items = await prisma.tvPlaylistItem.findMany({
       where: { channelId: channel.id },
       orderBy: { position: 'asc' },
       take: 100,
     })
+    // Fallback: if playlist empty, serve recent videos from Video table so /tv never blank
+    if (items.length === 0) {
+      try {
+        const videos = await (prisma as any).video?.findMany?.({ orderBy: { createdAt: 'desc' }, take: 12 }) || []
+        items = videos.map((v: any, idx: number) => ({
+          id: v.id,
+          channelId: channel.id,
+          videoId: v.id,
+          title: v.title || v.prompt?.slice(0, 60) || `Video ${idx + 1}`,
+          url: v.url || v.videoUrl || '',
+          source: 'generated',
+          position: idx,
+          createdAt: v.createdAt,
+        }))
+      } catch {}
+    }
     return NextResponse.json({
       ok: true,
       channelId: channel.id,
