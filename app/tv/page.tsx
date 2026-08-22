@@ -65,26 +65,52 @@ export default function TvPage() {
     if (!video) return;
     if (!isLive || !hlsUrl) return;
 
+    const VP9_URL = "https://vp9.hostamar.com/master.m3u8";
+    const startVp9 = () => {
+      if (hlsRef.current) hlsRef.current.destroy();
+      const h = new Hls({ enableWorker: true, lowLatencyMode: false });
+      h.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) setError(`HLS error: ${d.type} ${d.details}`); });
+      h.loadSource(VP9_URL);
+      h.attachMedia(video);
+      h.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+      hlsRef.current = h;
+    };
+
     // Prefer hls.js (MSE): Chromium canPlayType() false-positives on HLS MIME
     // and then fails with MEDIA_ERR_SRC_NOT_SUPPORTED. Native HLS only as fallback.
     if (Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
       const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+      let vp9Tried = false;
       hls.loadSource(hlsUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (data.fatal) {
-          setError(`HLS error: ${data.type} ${data.details}`);
-          hls.destroy();
+        if (!data.fatal) return;
+        // Some builds claim H.264 MSE support but cannot decode it (error 4).
+        // Fall back to the VP9/Opus variant once, then surface errors.
+        if (!vp9Tried) {
+          vp9Tried = true;
+          startVp9();
+          return;
         }
+        setError(`HLS error: ${data.type} ${data.details}`);
+        hls.destroy();
       });
+      const onMediaErr = () => {
+        video.removeEventListener("error", onMediaErr);
+        if (!vp9Tried) { vp9Tried = true; startVp9(); }
+      };
+      video.addEventListener("error", onMediaErr);
       hlsRef.current = hls;
-      return () => hls.destroy();
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      return () => {
+        video.removeEventListener("error", onMediaErr);
+        hls.destroy();
+      };
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = hlsUrl;
       video.play().catch(() => {});
     } else {
-      setError('HLS not supported in this browser');
+      setError("HLS not supported in this browser");
     }
   }, [isLive, hlsUrl]);
 
