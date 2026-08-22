@@ -134,9 +134,37 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
   }
 
   // Enrich titles/gender/voice from the dub pipeline's metadata.
-  const meta = await loadMetaByPath(rota.map((r) => r.url).filter((u) => u.startsWith('/')))
+  // Match by basename too: normalized/ and opensource/ copies of the same dub
+  // share a filename but live in different directories.
+  const localPaths = rota.map((r) => r.url).filter((u) => u.startsWith('/'))
+  let meta = await loadMetaByPath(localPaths)
+  try {
+    if (localPaths.length) {
+      const basenames = localPaths.map((u) => u.split('/').pop() as string)
+      const extra = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT "banglaPath", "titleBn", "title", "gender", "voiceUsed"
+         FROM "OpenSourceVideo"
+         WHERE ${basenames.map((_, i) => `"banglaPath" LIKE $${i + 1}`).join(' OR ')}`,
+        ...basenames.map((b) => `%/${b}`),
+      )
+      for (const r of extra || []) {
+        if (r?.banglaPath && !meta.has(r.banglaPath)) {
+          meta.set(r.banglaPath, {
+            titleBn: r.titleBn || r.title || null,
+            gender: r.gender ?? null,
+            voiceUsed: r.voiceUsed ?? null,
+            title: r.title ?? null,
+          })
+        }
+      }
+    }
+  } catch {
+    // basename enrichment is best-effort only
+  }
   for (const r of rota) {
-    const m = meta.get(r.url)
+    const m =
+      meta.get(r.url) ||
+      [...meta.entries()].find(([p]) => p.split('/').pop() === r.url.split('/').pop())?.[1]
     if (m) {
       r.titleBn = m.titleBn
       r.gender = m.gender
