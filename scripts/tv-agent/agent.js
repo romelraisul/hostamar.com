@@ -166,6 +166,24 @@ async function handleCommand(cmd) {
           await ack(cmd.id, 'FAILED', e.message);
         }
         break;
+      case 'OPENSOURCE_PIPELINE': {
+        const jobFile = `/tmp/osp_${cmd.payload?.openSourceVideoId || 'x'}.json`;
+        require('fs').writeFileSync(jobFile, JSON.stringify({ secret: AGENT_SECRET, ...cmd.payload }));
+        const out = require('fs').openSync(`/tmp/osp_${cmd.payload?.openSourceVideoId || 'x'}.log`, 'a');
+        require('child_process').spawn('/usr/bin/python3',
+          ['/home/romel/hostamar-build/scripts/bangla-dub/process_one.py', jobFile],
+          { detached: true, stdio: ['ignore', out, out] }).unref();
+        await ack(cmd.id, 'DONE', 'Bangla pipeline started on PC');
+        break;
+      }
+      case 'AUTO_INGEST': {
+        const out = require('fs').openSync('/tmp/bangla-auto.log', 'a');
+        require('child_process').spawn('/usr/bin/python3',
+          ['/home/romel/hostamar-build/scripts/bangla-dub/auto.py', String(cmd.payload?.count || 2)],
+          { detached: true, stdio: ['ignore', out, out] }).unref();
+        await ack(cmd.id, 'DONE', 'Auto ingest started');
+        break;
+      }
       default:
         await ack(cmd.id, 'FAILED', `Unknown action ${cmd.action}`);
     }

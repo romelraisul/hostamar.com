@@ -120,6 +120,26 @@ const STATEMENTS: string[] = [
   `CREATE INDEX IF NOT EXISTS "TeamInvite_organizationId_idx" ON "TeamInvite"("organizationId")`,
   `CREATE INDEX IF NOT EXISTS "TeamInvite_email_idx" ON "TeamInvite"("email")`,
   // ── 24/7 AI TV Station (Phase 4) ────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS "OpenSourceVideo" (
+    "id" TEXT NOT NULL,
+    "source" TEXT NOT NULL,
+    "externalId" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "originalUrl" TEXT,
+    "license" TEXT,
+    "licenseUrl" TEXT,
+    "duration" INTEGER,
+    "status" TEXT NOT NULL DEFAULT 'NEW',
+    "error" TEXT,
+    "localPath" TEXT,
+    "banglaPath" TEXT,
+    "titleBn" TEXT,
+    "addedToTv" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "OpenSourceVideo_pkey" PRIMARY KEY ("id")
+  )`,
+  `CREATE INDEX IF NOT EXISTS "OpenSourceVideo_source_externalId_idx" ON "OpenSourceVideo"("source", "externalId")`,
+  `CREATE INDEX IF NOT EXISTS "OpenSourceVideo_status_idx" ON "OpenSourceVideo"("status")`,
   `CREATE TABLE IF NOT EXISTS "TvChannel" (
   "id" TEXT NOT NULL,
   "name" TEXT NOT NULL,
