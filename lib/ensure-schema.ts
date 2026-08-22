@@ -140,6 +140,9 @@ const STATEMENTS: string[] = [
   )`,
   `CREATE INDEX IF NOT EXISTS "OpenSourceVideo_source_externalId_idx" ON "OpenSourceVideo"("source", "externalId")`,
   `CREATE INDEX IF NOT EXISTS "OpenSourceVideo_status_idx" ON "OpenSourceVideo"("status")`,
+  // ── Ever-fresh TV: gender-aware dub metadata (additive, idempotent) ──
+  `ALTER TABLE "OpenSourceVideo" ADD COLUMN IF NOT EXISTS "gender" TEXT`,
+  `ALTER TABLE "OpenSourceVideo" ADD COLUMN IF NOT EXISTS "voiceUsed" TEXT`,
   `CREATE TABLE IF NOT EXISTS "TvChannel" (
   "id" TEXT NOT NULL,
   "name" TEXT NOT NULL,
