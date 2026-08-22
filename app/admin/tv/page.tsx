@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Tv, Radio, Play, Square, RefreshCw, Zap, ListVideo, Globe, Settings, Terminal, Plus, Trash2, Eye, EyeOff, CheckCircle2, AlertTriangle } from 'lucide-react';
 import Hls from 'hls.js';
 
-type Tab = 'live' | 'playlist' | 'destinations' | 'settings' | 'logs';
+type Tab = 'live' | 'playlist' | 'opensource' | 'destinations' | 'settings' | 'logs';
 
 export default function AdminTvPage() {
   const [tab, setTab] = useState<Tab>('live');
@@ -25,6 +25,44 @@ export default function AdminTvPage() {
   const [showKey, setShowKey] = useState<Record<string, boolean>>({});
   const [newVideoUrl, setNewVideoUrl] = useState('');
   const [newVideoTitle, setNewVideoTitle] = useState('');
+
+  // Open Source + Bangla dub
+  const [osQ, setOsQ] = useState('earth science');
+  const [osSource, setOsSource] = useState('NASA');
+  const [osResults, setOsResults] = useState<any[]>([]);
+  const [osItems, setOsItems] = useState<any[]>([]);
+  const [osSearching, setOsSearching] = useState(false);
+
+  const loadOs = async () => {
+    try {
+      const r = await fetch('/api/admin/tv/opensource?list=1').then((r) => r.json()).catch(() => null);
+      if (r?.items) setOsItems(r.items);
+    } catch {}
+  };
+
+  const osSearch = async () => {
+    setOsSearching(true); setErr(null);
+    try {
+      const r = await fetch(`/api/admin/tv/opensource?q=${encodeURIComponent(osQ)}&source=${osSource}`);
+      const data = await r.json();
+      if (r.ok) setOsResults(data.results || []);
+      else setErr(data.message || data.error);
+    } catch (e: any) { setErr(e.message); }
+    setOsSearching(false);
+  };
+
+  const queueDub = async (c: any) => {
+    setErr(null); setMsg(null);
+    try {
+      const res = await fetch('/api/admin/tv/opensource', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(c),
+      });
+      const data = await res.json();
+      if (res.ok) { setMsg(`Queued Bangla dub: ${c.title} (agent will process)`); loadOs(); }
+      else setErr(data.message || data.error);
+    } catch (e: any) { setErr(e.message); }
+  };
 
   const loadAll = async () => {
     try {
@@ -52,17 +90,16 @@ export default function AdminTvPage() {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    if (tab === 'opensource') { loadOs(); osSearch(); }
+  }, [tab]);
+
   // HLS preview in admin
   useEffect(() => {
     const video = videoRef.current;
     const hlsUrl = status?.hlsUrl;
     const isLive = status?.isLive;
     if (!video || !isLive || !hlsUrl) return;
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = hlsUrl;
-      video.play().catch(() => {});
-      return;
-    }
     if (Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
       const hls = new Hls();
@@ -70,6 +107,10 @@ export default function AdminTvPage() {
       hls.attachMedia(video);
       hlsRef.current = hls;
       return () => hls.destroy();
+    }
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = hlsUrl;
+      video.play().catch(() => {});
     }
   }, [status?.isLive, status?.hlsUrl]);
 
@@ -160,6 +201,7 @@ export default function AdminTvPage() {
           {[
             { id: 'live', label: 'Live Control', icon: Radio },
             { id: 'playlist', label: 'Playlist', icon: ListVideo },
+            { id: 'opensource', label: 'Open Source + Bangla', icon: Zap },
             { id: 'destinations', label: 'Destinations', icon: Globe },
             { id: 'settings', label: 'Settings + Tunnel', icon: Settings },
             { id: 'logs', label: 'Logs & Agent', icon: Terminal },
@@ -229,7 +271,60 @@ export default function AdminTvPage() {
           </div>
         )}
 
-        {/* TAB 3 DESTINATIONS */}
+        {/* TAB 3 OPEN SOURCE + BANGLA */}
+        {tab === 'opensource' && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 flex flex-wrap gap-2 items-center">
+              <select value={osSource} onChange={(e) => setOsSource(e.target.value)} className="px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-sm">
+                <option value="NASA">NASA (public domain)</option>
+                <option value="PRELINGER">Prelinger (public domain)</option>
+                <option value="BLENDER">Blender (CC-BY)</option>
+                <option value="ALL">All sources</option>
+              </select>
+              <input value={osQ} onChange={(e) => setOsQ(e.target.value)} placeholder="Search: earth, farming, moon…" className="flex-1 min-w-[200px] px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-sm" />
+              <button onClick={osSearch} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm">{osSearching ? 'Searching…' : 'Search'}</button>
+              <button onClick={() => { loadOs(); setMsg('Queue refreshed'); }} className="px-4 py-2 rounded-lg bg-zinc-800 text-white text-sm">Refresh Queue</button>
+              <button onClick={() => sendCommand('AUTO_INGEST')} className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm">Auto-Fetch 2 Now</button>
+            </div>
+
+            {osResults.length > 0 && (
+              <div className="rounded-xl border border-zinc-800 overflow-hidden">
+                <div className="px-4 py-2 bg-zinc-900 text-xs text-zinc-500">Search results — click Queue Bangla Dub to send to your PC agent</div>
+                {osResults.map((c: any) => (
+                  <div key={c.id} className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800/50 hover:bg-zinc-900/50">
+                    {c.thumbnail ? <img src={c.thumbnail} alt="" className="w-16 h-9 object-cover rounded" /> : <div className="w-16 h-9 bg-zinc-800 rounded" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm truncate">{c.title}</div>
+                      <div className="text-xs text-zinc-500">{c.source} · <span className={(c.license || "").includes("Public") ? "text-emerald-400" : "text-blue-400"}>{c.license}</span></div>
+                    </div>
+                    <button onClick={() => queueDub(c)} className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs whitespace-nowrap">Queue Bangla Dub</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="rounded-xl border border-zinc-800 overflow-hidden">
+              <div className="px-4 py-2 bg-zinc-900 text-xs text-zinc-500">Bangla dub queue (live status from your PC)</div>
+              {osItems.length === 0 ? <div className="p-8 text-center text-zinc-600">Queue empty — search above or click Auto-Fetch. The scheduler also adds 2 videos every 6h automatically.</div> : osItems.map((it: any) => (
+                <div key={it.id} className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800/50">
+                  <span className="text-xs font-bold text-white w-20">{it.source}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm truncate">{it.titleBn || it.title} {it.titleBn && <span className="text-emerald-400 text-xs">(বাংলা)</span>}</div>
+                    <div className="text-xs text-zinc-600 font-mono truncate">{it.banglaPath || it.originalUrl || ''}</div>
+                  </div>
+                  <span className={'text-xs px-2 py-1 rounded-full whitespace-nowrap ' + (
+                    it.status === 'DUBBED' || it.status === 'ON_TV' ? 'bg-emerald-500/20 text-emerald-300' :
+                    it.status === 'FAILED' ? 'bg-red-500/20 text-red-300' :
+                    it.status === 'QUEUED' ? 'bg-zinc-700 text-zinc-300' :
+                    'bg-amber-500/20 text-amber-300')}>{it.status}{it.addedToTv ? ' · on TV' : ''}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-zinc-600">Pipeline: download → Whisper EN → Bangla translate → edge-tts (bn-BD voice, intro "আসসালামু আলাইকুম…") → normalize 720p/25fps → TV playlist → stream reload. Runs on your PC; report status lands here.</p>
+          </div>
+        )}
+
+        {/* TAB 4 DESTINATIONS */}
         {tab === 'destinations' && (
           <div className="space-y-4">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-3">

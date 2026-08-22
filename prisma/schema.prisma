@@ -1115,6 +1115,29 @@ model TvChannel {
   schedules     TvSchedule[]
 }
 
+
+/// Open-source video queued for Bangla dubbing (NASA / Prelinger / Blender)
+model OpenSourceVideo {
+  id          String   @id @default(cuid())
+  source      String   // NASA | PRELINGER | BLENDER
+  externalId  String
+  title       String
+  originalUrl String?
+  license     String?
+  licenseUrl  String?
+  duration    Int?
+  status      String   @default("NEW") // NEW|QUEUED|DOWNLOADED|DUBBING|DUBBED|ON_TV|FAILED
+  error       String?
+  localPath   String?
+  banglaPath  String?
+  titleBn     String?
+  addedToTv   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([source, externalId])
+  @@index([status])
+}
+
 model TvPlaylistItem {
   id        String   @id @default(cuid())
   channelId String
