@@ -3,9 +3,10 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://hostamar-ollama:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_PREVIEW_MODEL || 'hermes3:latest'
+const OLLAMA_BASE = env.OLLAMA_BASE_URL || env.OLLAMA_HOST || 'http://hostamar-ollama:11434'
+const OLLAMA_MODEL = env.OLLAMA_PREVIEW_MODEL || 'hermes3:latest'
 
 export async function POST(req: NextRequest) {
   try {
@@ -162,4 +163,4 @@ export async function GET(req: NextRequest) {
     console.error('Preview fetch error:', error?.message || error)
     return NextResponse.json({ error: 'Failed to fetch previews' }, { status: 500 })
   }
-}
+}

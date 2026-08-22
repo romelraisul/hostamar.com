@@ -3,14 +3,15 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { getAuthUser } from '@/lib/auth'
-const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || ''
-const REDIRECT_URI = `${process.env.NEXTAUTH_URL}/api/auth/twitter/callback`
+import { env } from '@/lib/env'
+const TWITTER_CLIENT_ID = env.TWITTER_CLIENT_ID || ''
+const REDIRECT_URI = `${env.NEXTAUTH_URL}/api/auth/twitter/callback`
 
 // Twitter OAuth 2.0 PKCE flow — redirect user to Twitter to authorize
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req)
   if (!authUser) {
-    return NextResponse.redirect(new URL('/login?callbackUrl=/dashboard/settings', process.env.NEXTAUTH_URL))
+    return NextResponse.redirect(new URL('/login?callbackUrl=/dashboard/settings', env.NEXTAUTH_URL))
   }
 
   if (!TWITTER_CLIENT_ID) {
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   response.cookies.set('twitter_code_verifier', codeVerifier, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 300,
     path: '/',

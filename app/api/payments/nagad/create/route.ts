@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { env } from '@/lib/env'
 
 // Edge-safe unique id (no Node 'crypto' import — works on Edge + Node runtimes)
 function uid(): string {
@@ -22,9 +23,9 @@ function uid(): string {
 //   NAGAD_API_BASE       – API base URL (provided by Nagad)
 // ============================================================================
 
-const NAGAD_API_BASE = process.env.NAGAD_API_BASE || ''
-const NAGAD_MERCHANT_ID = process.env.NAGAD_MERCHANT_ID || ''
-const NAGAD_MERCHANT_KEY = process.env.NAGAD_MERCHANT_KEY || ''
+const NAGAD_API_BASE = env.NAGAD_API_BASE || ''
+const NAGAD_MERCHANT_ID = env.NAGAD_MERCHANT_ID || ''
+const NAGAD_MERCHANT_KEY = env.NAGAD_MERCHANT_KEY || ''
 const NAGAD_IS_CONFIGURED = !!(NAGAD_API_BASE && NAGAD_MERCHANT_ID && NAGAD_MERCHANT_KEY)
 
 // Credits granted per plan on successful payment
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     const planKey = (planName || 'starter').toLowerCase()
     const invoice = `HOSTAMAR-${Date.now()}-${uid()}`
-    const returnUrl = `${process.env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`
+    const returnUrl = `${env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`
 
     // Real Nagad merchant API call
     let paymentUrl: string | undefined

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { sendWelcomeEmail } from '@/lib/email'
+import { env } from '@/lib/env'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
       message: result?.fallback
         ? 'SMTP not configured, email logged to console'
         : 'Test email sent successfully',
-      devHint: process.env.NODE_ENV !== 'production' && !result?.success
+      devHint: env.NODE_ENV !== 'production' && !result?.success
         ? 'Brevo is blocking IP. Whitelist your IP at https://app.brevo.com/security/authorised_ips'
         : undefined,
     })
@@ -35,4 +36,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+}

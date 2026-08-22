@@ -3,8 +3,9 @@
  * Works without any external API keys
  * Returns pre-made templates and mock results
  */
+import { env } from '@/lib/env'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
+const SITE_URL = env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 const SITE_DOMAIN = SITE_URL.replace(/^https?:\/\//, '');
 
 const DEMO_SCRIPTS = [

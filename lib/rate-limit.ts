@@ -7,6 +7,7 @@
  * Free-tier friendly: no Redis/Upstash required.
  */
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 export interface RateLimitConfig {
   /** friendly bucket id — e.g. "auth.signup", "auth.login" */
@@ -98,10 +99,10 @@ const DEFAULT_LIMITS = {
 } as const satisfies Record<string, RateLimitConfig>
 
 export const RATE_LIMITS = (() => {
-  const signupLimit = Number(process.env.SIGNUP_RATE_LIMIT)
-  const signupWindow = Number(process.env.SIGNUP_RATE_LIMIT_WINDOW_MS)
-  const loginLimit = Number(process.env.LOGIN_RATE_LIMIT)
-  const loginWindow = Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS)
+  const signupLimit = Number(env.SIGNUP_RATE_LIMIT)
+  const signupWindow = Number(env.SIGNUP_RATE_LIMIT_WINDOW_MS)
+  const loginLimit = Number(env.LOGIN_RATE_LIMIT)
+  const loginWindow = Number(env.LOGIN_RATE_LIMIT_WINDOW_MS)
 
   return {
     signup: {

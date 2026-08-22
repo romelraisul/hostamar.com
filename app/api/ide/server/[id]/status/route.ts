@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
+import { env } from '@/lib/env'
 
 /**
  * GET /api/ide/server/[id]/status — workspace readiness check.
@@ -10,7 +11,7 @@ import { getAuthUser } from '@/lib/auth';
  */
 
 const IDE_PROVIDER_CONFIGURED = !!(
-  process.env.IDE_DOCKER_HOST || process.env.IDE_PROVIDER_URL
+  env.IDE_DOCKER_HOST || env.IDE_PROVIDER_URL
 );
 
 export async function GET(
@@ -35,7 +36,7 @@ export async function GET(
   }
 
   try {
-    const providerUrl = process.env.IDE_PROVIDER_URL || process.env.IDE_DOCKER_HOST;
+    const providerUrl = env.IDE_PROVIDER_URL || env.IDE_DOCKER_HOST;
     const res = await fetch(`${providerUrl}/servers/${encodeURIComponent(id)}/status`);
     if (!res.ok) {
       return NextResponse.json({ success: true, serverId: id, status: 'unknown', ready: false });

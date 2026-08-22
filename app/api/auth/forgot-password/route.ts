@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
 /**
  * POST /api/auth/forgot-password
@@ -13,7 +14,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * Falls back to a safe no-op response if the backend URL isn't configured
  * (e.g. local dev with a local DB).
  */
-const BACKEND = process.env.NEXT_PUBLIC_API_URL
+const BACKEND = env.NEXT_PUBLIC_API_URL
 
 export async function POST(req: NextRequest) {
   if (BACKEND) {

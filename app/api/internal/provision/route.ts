@@ -15,12 +15,13 @@ import {
   type PlanKey,
 } from '@/lib/provisioning'
 import { ensureSchema } from '@/lib/ensure-schema'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function checkAuth(request: NextRequest): boolean {
-  const key = process.env.INTERNAL_API_KEY
+  const key = env.INTERNAL_API_KEY
   if (!key) return false // misconfigured server refuses internal calls
   return request.headers.get('x-internal-api-key') === key
 }

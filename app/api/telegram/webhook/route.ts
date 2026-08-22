@@ -5,12 +5,13 @@
 // middleware whitelist alongside /api/internal/provision.
 import { NextRequest, NextResponse } from 'next/server'
 import { answerCallback } from '@/lib/harness/telegram-approvals'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const BASE = process.env.APP_BASE_URL || 'http://localhost:3000'
-const KEY = process.env.INTERNAL_API_KEY || ''
+const BASE = env.APP_BASE_URL || 'http://localhost:3000'
+const KEY = env.INTERNAL_API_KEY || ''
 
 export async function POST(req: NextRequest) {
   const update = await req.json().catch(() => ({}))

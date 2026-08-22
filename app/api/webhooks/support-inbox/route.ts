@@ -7,6 +7,7 @@ import { validateBody, deepSanitize } from '@/lib/api/validator'
 import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { inngest } from '@/inngest/client'
 import { z } from 'zod'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
   // poller must send it as `Authorization: Bearer <secret>` or
   // `x-webhook-secret: <secret>`). If the env var is unset we allow (dev),
   // but in prod the deploy step sets it so this rejects anonymous posts.
-  const secret = process.env.GMAIL_WEBHOOK_SECRET
+  const secret = env.GMAIL_WEBHOOK_SECRET
   if (secret) {
     const headerSecret =
       req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||

@@ -135,3 +135,7 @@ comfyui/custom_nodes/ComfyUI-VideoHelperSuite
 apps/mobile/.expo/
 apps/mobile/android/
 apps/mobile/package-lock.json
+
+# Archived legacy env files (contain secrets, never commit)
+legacy-env-archive/
+.env.local

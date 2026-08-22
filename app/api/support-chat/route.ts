@@ -6,6 +6,7 @@ import {
   isValidPlan,
 } from '@/lib/provisioning'
 import { ensureSchema } from '@/lib/ensure-schema'
+import { env } from '@/lib/env'
 
 // ============================================================================
 // Live support chat — RAG-backed by Hostamar's SELF-HOSTED stack:
@@ -18,11 +19,11 @@ import { ensureSchema } from '@/lib/ensure-schema'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const GEN_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:latest'
-const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text'
-const OLLAMA_URL = (process.env.OLLAMA_PUBLIC_URL || 'http://localhost:11434').replace(/\/$/, '')
-const QDRANT_URL = (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
-const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || 'hostamar_kb'
+const GEN_MODEL = env.OLLAMA_MODEL || 'llama3.2:latest'
+const EMBED_MODEL = env.OLLAMA_EMBED_MODEL || 'nomic-embed-text'
+const OLLAMA_URL = (env.OLLAMA_PUBLIC_URL || 'http://localhost:11434').replace(/\/$/, '')
+const QDRANT_URL = (env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
+const QDRANT_COLLECTION = env.QDRANT_COLLECTION || 'hostamar_kb'
 
 async function embed(text: string): Promise<number[]> {
   const res = await fetch(`${OLLAMA_URL}/api/embed`, {
@@ -99,12 +100,12 @@ async function runProvisionTools(
   if (ledger.status === 'paid' && wantsProvision(message)) {
     try {
       const res = await fetch(
-        `${process.env.APP_BASE_URL || 'http://localhost:3000'}/api/internal/provision`,
+        `${env.APP_BASE_URL || 'http://localhost:3000'}/api/internal/provision`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-internal-api-key': process.env.INTERNAL_API_KEY || '',
+            'x-internal-api-key': env.INTERNAL_API_KEY || '',
           },
           body: JSON.stringify({
             email: ledger.customerEmail,
@@ -229,7 +230,7 @@ export async function POST(request: NextRequest) {
     } catch {
       clearTimeout(timeout)
       // Fallback: Google Gemini (free tier, always available on Vercel)
-      const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
+      const GEMINI_KEY = env.GEMINI_API_KEY || env.GOOGLE_API_KEY || ''
       if (GEMINI_KEY) {
         try {
           const geminiResp = await fetch(

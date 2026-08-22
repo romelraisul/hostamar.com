@@ -8,8 +8,9 @@
 //   are auto-extracted from conversation and recalled on new sessions.
 // ============================================================================
 import { ollamaEmbed } from '@/lib/harness/ollama-client'
+import { env } from '@/lib/env'
 
-const QDRANT_URL = (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
+const QDRANT_URL = (env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
 const COLLECTION = 'hostamar_memory'
 const VECTOR_SIZE = 768 // nomic-embed-text dimension
 

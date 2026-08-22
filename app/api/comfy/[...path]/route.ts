@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 const COMFY_URLS = [
-  process.env.COMFY_URL || 'http://127.0.0.1:8188',
+  env.COMFY_URL || 'http://127.0.0.1:8188',
   'http://host.docker.internal:8188',
   'http://172.17.112.1:8188',
 ]

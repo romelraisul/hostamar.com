@@ -7,6 +7,7 @@ import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 import { validateBody, toErrorResponse, zEmail } from '@/lib/api/validator'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+import { env } from '@/lib/env'
 
 const loginSchema = z.object({
   email: zEmail,
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     response.cookies.set('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',

@@ -11,12 +11,13 @@
 import { Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq';
 import Redis from 'ioredis';
 import { startRedisFailover, getActiveRedis, onFailoverEvent } from './redis-failover';
+import { env } from '@/lib/env'
 
 // --- Redis Connection ---
 
 // Failover-aware URL selector. At boot, picks PRIMARY if reachable, else FALLBACK.
 // Hot-swapping is provided via onFailover callback (BullMQ retries with attempts:3).
-let selectedUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+let selectedUrl = env.REDIS_URL || 'redis://localhost:6379';
 
 function createRedisConnection(): Redis {
   const connection = new Redis(selectedUrl, {
@@ -56,7 +57,7 @@ export async function initRedis(): Promise<void> {
       ? `${active.options.host}:${(active.options as any).port}`
       : selectedUrl
     // If failover kicked in to a different URL, switch to that one
-    const fbUrl = process.env.REDIS_FALLBACK_URL || ''
+    const fbUrl = env.REDIS_FALLBACK_URL || ''
     const activeOptions = active.options as any
     if (activeOptions.url && activeOptions.url !== selectedUrl) {
       selectedUrl = activeOptions.url

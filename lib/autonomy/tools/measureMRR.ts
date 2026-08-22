@@ -9,6 +9,7 @@
 import { prisma } from '@/lib/prisma'
 import fs from 'fs'
 import path from 'path'
+import { env } from '@/lib/env'
 
 export interface MrRMetrics {
   mrr: number
@@ -22,8 +23,8 @@ export interface MrRMetrics {
   asOf: string
 }
 
-const QDRANT_URL = (process.env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
-const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || 'hostamar_kb'
+const QDRANT_URL = (env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
+const QDRANT_COLLECTION = env.QDRANT_COLLECTION || 'hostamar_kb'
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
 

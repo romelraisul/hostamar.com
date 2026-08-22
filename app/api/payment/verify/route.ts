@@ -11,12 +11,13 @@ import {
 import { ensureSchema } from '@/lib/ensure-schema';
 import { prisma } from '@/lib/prisma';
 import { bkashConfig, queryPayment } from '@/lib/payment/bkash';
+import { env } from '@/lib/env'
 
 // Real SSLCommerz IPN validation — only used when SSLCZ_STORE_ID is set.
 async function verifySslcz(valId: string): Promise<boolean> {
   try {
-    const storeId = process.env.SSLCZ_STORE_ID;
-    const storePass = process.env.SSLCZ_STORE_PASS;
+    const storeId = env.SSLCZ_STORE_ID;
+    const storePass = env.SSLCZ_STORE_PASS;
     if (!storeId || !storePass) return false;
     const url = `https://securepay.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${encodeURIComponent(
       valId,
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Real SSLCommerz validation (required when creds are present).
-      if (process.env.SSLCZ_STORE_ID) {
+      if (env.SSLCZ_STORE_ID) {
         const valId = body.val_id;
         if (valId) {
           const ok = await verifySslcz(valId);
@@ -114,8 +115,8 @@ export async function POST(request: NextRequest) {
       // from the app container to the public tunnel. APP_BASE_URL (public
       // domain) is only a fallback.
       const internalBase =
-        process.env.INTERNAL_BASE_URL ||
-        process.env.APP_BASE_URL ||
+        env.INTERNAL_BASE_URL ||
+        env.APP_BASE_URL ||
         'http://localhost:3000'
       let provisionRes: Response
       try {
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-internal-api-key': process.env.INTERNAL_API_KEY || '',
+            'x-internal-api-key': env.INTERNAL_API_KEY || '',
           },
           body: JSON.stringify({ email, plan, tran_id }),
         })

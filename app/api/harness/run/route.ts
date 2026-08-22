@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { guardInternal } from '@/lib/harness/guard'
 import { HarnessAgent } from '@/lib/harness/HarnessAgent'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   if (!prompt) return NextResponse.json({ error: 'prompt required' }, { status: 400 })
 
   try {
-    const agent = new HarnessAgent({ fileRoot: process.env.HARNESS_FILE_ROOT || undefined })
+    const agent = new HarnessAgent({ fileRoot: env.HARNESS_FILE_ROOT || undefined })
     const result = await agent.run({
       prompt,
       mode,

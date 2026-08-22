@@ -17,6 +17,7 @@
 // ============================================================================
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { env } from '@/lib/env'
 
 export type CheckStatus = 'green' | 'yellow' | 'red'
 export type ServiceName = 'app' | 'postgres' | 'redis' | 'livekit' | 'coturn' | 'voice' | 'nginx' | 'saml'
@@ -50,7 +51,7 @@ async function checkApp(): Promise<CheckResult> {
   try {
     // Internal health: hit the app's own /api/health. In a self-hosted deploy
     // the app is reachable on localhost:3000.
-    const base = process.env.APP_INTERNAL_URL || 'http://localhost:3000'
+    const base = env.APP_INTERNAL_URL || 'http://localhost:3000'
     const res = await withTimeout(fetch(`${base}/api/health`, { cache: 'no-store' }))
     const latencyMs = Date.now() - start
     const ok = res.status === 200
@@ -113,7 +114,7 @@ async function checkRedis(): Promise<CheckResult> {
     )
     // Optional: if a real Redis client is configured, probe it directly.
     let redisDetail: string | undefined
-    const redisUrl = process.env.REDIS_URL
+    const redisUrl = env.REDIS_URL
     if (redisUrl) {
       try {
         const { getActiveRedis } = await import('@/lib/redis-failover').catch(() => ({ getActiveRedis: null }))
@@ -151,7 +152,7 @@ async function checkRedis(): Promise<CheckResult> {
 }
 
 async function checkLivekit(): Promise<CheckResult> {
-  const url = process.env.LIVEKIT_URL
+  const url = env.LIVEKIT_URL
   if (!url) {
     return {
       service: 'livekit',
@@ -198,13 +199,13 @@ async function checkVoiceTurn(): Promise<CheckResult> {
   const start = Date.now()
   try {
     // 1) LiveKit signaling.
-    const lkUrl = process.env.LIVEKIT_URL || 'http://localhost:7880'
+    const lkUrl = env.LIVEKIT_URL || 'http://localhost:7880'
     const lkRes = await withTimeout(fetch(lkUrl, { method: 'GET' }))
     const lkOk = lkRes.status < 500
     if (!lkOk) throw new Error(`livekit signaling down (status ${lkRes.status})`)
 
     // 2) Coturn: TURN secret must be present, and the relay port reachable.
-    const turnSecret = process.env.TURN_STATIC_AUTH_SECRET
+    const turnSecret = env.TURN_STATIC_AUTH_SECRET
     if (!turnSecret) {
       // No static secret set — TURN creds missing → WebRTC will fail on NAT.
       throw new Error('TURN_STATIC_AUTH_SECRET not set — TURN credentials unavailable')

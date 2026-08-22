@@ -4,10 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
+import { env } from '@/lib/env'
 
-const SSL_STORE_ID = process.env.SSL_STORE_ID || ''
-const SSL_STORE_PASS = process.env.SSL_STORE_PASS || ''
-const SSL_BASE = process.env.SSL_SANDBOX === 'true'
+const SSL_STORE_ID = env.SSL_STORE_ID || ''
+const SSL_STORE_PASS = env.SSL_STORE_PASS || ''
+const SSL_BASE = env.SSL_SANDBOX === 'true'
   ? 'https://sandbox.sslcommerz.com'
   : 'https://secure.sslcommerz.com'
 
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
     })
 
     const tranId = `HOSTAMAR-${transaction.id}-${Date.now()}`
-    const appUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    const appUrl = env.NEXTAUTH_URL || 'http://localhost:3000'
 
     // SSLCOMMERZ session initialization
     const formData = new URLSearchParams()
@@ -103,5 +104,5 @@ export async function POST(req: NextRequest) {
 }
 
 function SSL_SANDBOX_CHECK() {
-  return process.env.SSL_SANDBOX === 'true' && (!SSL_STORE_ID || SSL_STORE_ID === 'test')
-}
+  return env.SSL_SANDBOX === 'true' && (!SSL_STORE_ID || SSL_STORE_ID === 'test')
+}

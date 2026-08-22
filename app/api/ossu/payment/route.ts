@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { bkashConfig, createCheckout } from '@/lib/payment/bkash';
+import { env } from '@/lib/env'
 
 // bKash payment for OSSU Academy premium — real gateway, never a fake URL.
 export async function POST(req: NextRequest) {
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   const invoice = `OSSU-${courseId}-${Date.now()}`;
-  const callbackUrl = `${process.env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`;
+  const callbackUrl = `${env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`;
 
   const result = await createCheckout({
     amount: Number(amount),

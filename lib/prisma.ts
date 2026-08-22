@@ -2,6 +2,7 @@
 // node:dns.lookup before any neon-style TCP socket is created.
 import './dns-bootstrap'
 import { PrismaClient } from '@prisma/client'
+import { env } from '@/lib/env'
 
 // Prisma Client with Neon serverless connection pooling
 // Neon uses PgBouncer which requires:
@@ -15,12 +16,12 @@ const globalForPrisma = globalThis as unknown as {
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+    log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   })
 }
 
 export const prisma = globalForPrisma.prisma ?? prismaClientSingleton()
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export default prisma

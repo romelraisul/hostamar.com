@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@/lib/env'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,11 +16,11 @@ export async function POST(request: NextRequest) {
 
     const prompt = `Summarize the following web page content into 5-8 concise bullet points. Preserve key facts, numbers, and action items. If content is sponsored or marketing-heavy, distinguish that.\n\nURL: ${url || 'unknown'}\n\nCONTENT:\n${text.slice(0, 14000)}`;
 
-    const ollamaResponse = await fetch(`${process.env.OLLAMA_HOST || 'http://localhost:11434'}/v1/chat/completions`, {
+    const ollamaResponse = await fetch(`${env.OLLAMA_HOST || 'http://localhost:11434'}/v1/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || 'qwen3.6:latest',
+        model: env.OLLAMA_MODEL || 'qwen3.6:latest',
         messages: [
           { role: 'system', content: 'You are a concise summarizer. Be factual and structured.' },
           { role: 'user', content: prompt },

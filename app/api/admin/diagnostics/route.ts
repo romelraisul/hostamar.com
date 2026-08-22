@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { runAllChecks } from '@/lib/support/checks'
+import { env } from '@/lib/env'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -28,8 +29,8 @@ export async function GET(req: NextRequest) {
   const checks = await runAllChecks().catch(() => [])
 
   // LiveKit: optional (separate VPS). Report configured-or-not + a probe.
-  const livekit = process.env.LIVEKIT_URL
-    ? { configured: true, url: process.env.LIVEKIT_URL }
+  const livekit = env.LIVEKIT_URL
+    ? { configured: true, url: env.LIVEKIT_URL }
     : { configured: false, note: 'LiveKit runs on a separate VPS; set LIVEKIT_URL to probe.' }
 
   // DB latency: time a trivial query.
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Redis: report configured or not.
-  const redis = { ok: Boolean(process.env.REDIS_URL), url: process.env.REDIS_URL ?? null }
+  const redis = { ok: Boolean(env.REDIS_URL), url: env.REDIS_URL ?? null }
 
   // Goal loop: last tick + iteration count from AutonomousTask runs.
   const goalLoop = await prisma.taskRunLog

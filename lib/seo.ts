@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
+import { env } from '@/lib/env'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com'
+const SITE_URL = env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com'
 const SITE_NAME = 'Hostamar'
 
 type SeoOptions = {
@@ -80,7 +81,7 @@ export function generateSeoMetadata({
           },
         },
     verification: {
-      google: process.env.GOOGLE_SITE_VERIFICATION,
+      google: env.GOOGLE_SITE_VERIFICATION,
     },
   }
 

@@ -11,6 +11,7 @@
 //      (registered via apiController.createSAMLConnection({ tenant, product, rawMetadata }))
 // ============================================================================
 import controllers from '@boxyhq/saml-jackson'
+import { env } from '@/lib/env'
 
 // Jackson is a singleton — initialise once per process.
 let jacksonPromise: Promise<Awaited<ReturnType<typeof controllers>>> | null = null
@@ -26,14 +27,14 @@ export interface JacksonControllers {
 export async function getJackson(): Promise<JacksonControllers> {
   if (!jacksonPromise) {
     jacksonPromise = controllers({
-      externalUrl: process.env.NEXTAUTH_URL || 'https://hostamar.com',
-      samlAudience: process.env.NEXTAUTH_URL || 'https://hostamar.com',
+      externalUrl: env.NEXTAUTH_URL || 'https://hostamar.com',
+      samlAudience: env.NEXTAUTH_URL || 'https://hostamar.com',
       samlPath: '/api/auth/saml',
       // Jackson uses its own Postgres tables (_jackson_*) — separate from our app schema.
       db: {
         engine: 'sql',
         type: 'postgres',
-        url: process.env.DATABASE_URL!,
+        url: env.DATABASE_URL!,
         ttl: 300,
         cleanupLimit: 1000,
       },
@@ -74,11 +75,11 @@ export async function getSpMetadataXml(tenant: string): Promise<string> {
 }
 
 export function spEntityIdForTenant(tenant: string): string {
-  const base = process.env.NEXTAUTH_URL || 'https://hostamar.com'
+  const base = env.NEXTAUTH_URL || 'https://hostamar.com'
   return `${base}/api/auth/saml/metadata?tenant=${encodeURIComponent(tenant)}`
 }
 
 export function spAcsUrlForTenant(tenant: string): string {
-  const base = process.env.NEXTAUTH_URL || 'https://hostamar.com'
+  const base = env.NEXTAUTH_URL || 'https://hostamar.com'
   return `${base}/api/auth/saml/acs?tenant=${encodeURIComponent(tenant)}`
 }

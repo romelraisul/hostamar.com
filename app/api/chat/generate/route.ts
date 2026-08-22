@@ -3,8 +3,9 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
+const OLLAMA_BASE = env.OLLAMA_BASE_URL || env.OLLAMA_HOST || 'http://localhost:11435'
 const DEFAULT_MODEL = 'qwen3.6:latest'
 
 type ChatRole = 'user' | 'assistant'

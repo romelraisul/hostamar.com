@@ -3,8 +3,9 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import jwt from 'jsonwebtoken'
+import { env } from '@/lib/env'
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'hostamar-jwt-secret-change-in-production'
+const JWT_SECRET = env.NEXTAUTH_SECRET || 'hostamar-jwt-secret-change-in-production'
 
 async function getCurrentUser(req: NextRequest) {
   const authHeader = req.headers.get('authorization')

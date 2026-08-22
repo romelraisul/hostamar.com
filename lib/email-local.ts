@@ -3,6 +3,7 @@
  * Stores emails in database instead of sending via SMTP
  * No external email service needed
  */
+import { env } from '@/lib/env'
 
 interface EmailPayload {
   to: string;
@@ -11,8 +12,8 @@ interface EmailPayload {
   from?: string;
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
-const SMTP_FROM = process.env.SMTP_FROM || 'noreply@hostamar.com';
+const SITE_URL = env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
+const SMTP_FROM = env.SMTP_FROM || 'noreply@hostamar.com';
 
 // In-memory store (falls back to console log)
 const emailLog: (EmailPayload & { id: string })[] = [];

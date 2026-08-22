@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
+import { env } from '@/lib/env'
 
 // ============================================================================
 // GET /api/metrics
@@ -112,8 +113,8 @@ async function getDbMetrics(): Promise<string> {
 export async function GET(req: NextRequest) {
   // Optional: basic auth for metrics endpoint
   const auth = req.headers.get('authorization')
-  if (process.env.METRICS_BASIC_AUTH) {
-    const [user, pass] = (process.env.METRICS_BASIC_AUTH || '').split(':')
+  if (env.METRICS_BASIC_AUTH) {
+    const [user, pass] = (env.METRICS_BASIC_AUTH || '').split(':')
     const provided = auth?.replace('Basic ', '')
     if (!provided || Buffer.from(`${user}:${pass}`, 'utf8').toString('base64') !== provided) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

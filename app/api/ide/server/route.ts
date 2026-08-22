@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
+import { env } from '@/lib/env'
 
 /**
  * /api/ide/server — browser coding workspace provisioning.
@@ -14,7 +15,7 @@ import { getAuthUser } from '@/lib/auth';
  */
 
 const IDE_PROVIDER_CONFIGURED = !!(
-  process.env.IDE_DOCKER_HOST || process.env.IDE_PROVIDER_URL
+  env.IDE_DOCKER_HOST || env.IDE_PROVIDER_URL
 );
 
 export async function POST(req: NextRequest) {
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const image = (body as any).image || 'openvscode/openvscode-server';
   try {
-    const providerUrl = process.env.IDE_PROVIDER_URL || process.env.IDE_DOCKER_HOST;
+    const providerUrl = env.IDE_PROVIDER_URL || env.IDE_DOCKER_HOST;
     const res = await fetch(`${providerUrl}/servers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const providerUrl = process.env.IDE_PROVIDER_URL || process.env.IDE_DOCKER_HOST;
+    const providerUrl = env.IDE_PROVIDER_URL || env.IDE_DOCKER_HOST;
     const res = await fetch(`${providerUrl}/servers?ownerId=${encodeURIComponent(authUser.id)}`);
     if (!res.ok) {
       return NextResponse.json({ success: true, status: 'beta', servers: [] });

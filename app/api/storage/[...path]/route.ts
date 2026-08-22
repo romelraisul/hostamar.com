@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { env } from '@/lib/env'
 
 // Proxy storage requests to MinIO with correct bucket path
 export async function GET(
@@ -11,8 +12,8 @@ export async function GET(
   const path = pathSegments.join('/')
   
   // MinIO endpoint
-  const minioEndpoint = process.env.R2_ENDPOINT || 'http://hostamar-minio:9000'
-  const bucket = process.env.R2_BUCKET || 'hostamar-videos'
+  const minioEndpoint = env.R2_ENDPOINT || 'http://hostamar-minio:9000'
+  const bucket = env.R2_BUCKET || 'hostamar-videos'
   
   // Construct MinIO URL with bucket as first path segment
   const minioUrl = `${minioEndpoint}/${bucket}/${path}`

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { env } from '@/lib/env'
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -75,8 +76,8 @@ async function trySupportChat(message: string, req: NextRequest): Promise<string
   // Try internal proxy to /api/support-chat. If it fails, return null -> canned fallback.
   const origin =
     req.nextUrl.origin ||
-    process.env.APP_BASE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
+    env.APP_BASE_URL ||
+    env.NEXT_PUBLIC_APP_URL ||
     "http://localhost:3000";
   const url = `${origin.replace(/\/$/, "")}/api/support-chat`;
   try {

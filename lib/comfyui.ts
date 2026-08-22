@@ -2,8 +2,9 @@
  * ComfyUI Client - Local image generation via Docker Model Runner
  * Uses the existing hostamar-comfyui container (port 8188)
  */
+import { env } from '@/lib/env'
 
-const COMFYUI_BASE = process.env.COMFYUI_URL || 'http://hostamar-comfyui:8188';
+const COMFYUI_BASE = env.COMFYUI_URL || 'http://hostamar-comfyui:8188';
 
 interface ComfyUIOutput {
   images?: Array<{ filename: string; type: string }>;

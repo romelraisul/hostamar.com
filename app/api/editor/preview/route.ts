@@ -2,8 +2,9 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
+import { env } from '@/lib/env'
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || 'http://localhost:11435'
+const OLLAMA_BASE = env.OLLAMA_BASE_URL || 'http://localhost:11435'
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,7 +40,7 @@ Respond in JSON format:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: process.env.OLLAMA_EDITOR_MODEL || 'hermes3:latest',
+        model: env.OLLAMA_EDITOR_MODEL || 'hermes3:latest',
         messages: [
           { role: 'system', content: 'You are a creative video editor AI assistant. Respond ONLY with valid JSON, no markdown.' },
           { role: 'user', content: prompt },
@@ -90,4 +91,4 @@ Respond in JSON format:
       { status: 200 }
     )
   }
-}
+}

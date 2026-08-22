@@ -2,9 +2,10 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { chat as kilocodeChat, chatWithFallback } from '@/lib/kilocode-client'
+import { env } from '@/lib/env'
 
-const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6:latest'
+const OLLAMA_HOST = env.OLLAMA_HOST || 'http://localhost:11434'
+const OLLAMA_MODEL = env.OLLAMA_MODEL || 'qwen3.6:latest'
 
 async function callOllama(messages: any[], model: string) {
   const response = await fetch(`${OLLAMA_HOST}/v1/chat/completions`, {

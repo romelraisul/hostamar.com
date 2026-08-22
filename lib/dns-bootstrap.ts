@@ -7,8 +7,9 @@
 // Honor DNS_FORCE_IPV4=0 to disable. Safe to import at module top; idempotent.
 
 import * as dns from 'node:dns'
+import { env } from '@/lib/env'
 
-const FORCE: boolean = (process.env.DNS_FORCE_IPV4 ?? '1') !== '0'
+const FORCE: boolean = (env.DNS_FORCE_IPV4 ?? '1') !== '0'
 let installed = false
 
 // Internal helpers — keep loose typing to compile under strict TS.

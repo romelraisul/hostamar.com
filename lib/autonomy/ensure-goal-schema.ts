@@ -7,6 +7,7 @@
 // ============================================================================
 import { PrismaClient } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 const STATEMENTS: string[] = [
   `CREATE TABLE IF NOT EXISTS "Goal" (
@@ -41,7 +42,7 @@ export function ensureGoalSchema(): Promise<void> {
       try {
         await tryCreate(prisma)
       } catch (pooledErr) {
-        const pooled = process.env.DATABASE_URL || ''
+        const pooled = env.DATABASE_URL || ''
         if (pooled.includes('-pooler')) {
           const direct = pooled.replace('-pooler', '')
           const directClient = new PrismaClient({

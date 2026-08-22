@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAuthUser } from '@/lib/get-auth-user'
+import { env } from '@/lib/env'
 
 export const dynamic = "force-dynamic";
 // Static fallback catalog mirroring the gateway's default model list. Used when the
@@ -18,7 +19,7 @@ const STATIC_MODELS = [
 
 // Gateway base URL. ai.hostamar.com is the public tunnel entry (Cloudflare -> local
 // gateway). For local dev, point this at http://127.0.0.1:11442.
-const GATEWAY_URL = (process.env.AI_GATEWAY_URL || 'https://ai.hostamar.com').replace(/\/+$/, '')
+const GATEWAY_URL = (env.AI_GATEWAY_URL || 'https://ai.hostamar.com').replace(/\/+$/, '')
 
 // GET /api/gateway/models — list Hostamar AI models from the gateway.
 export async function GET(req: NextRequest) {
