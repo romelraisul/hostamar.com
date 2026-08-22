@@ -117,10 +117,11 @@ const nextConfig = {
         source: '/api/dashboard/:path*',
         destination: '/api/dashboard/:path*'
       },
-      {
-        source: '/api/:path*',
-        destination: 'https://api.hostamar.com/api/:path*'
-      },
+      // NOTE: the old catch-all `/api/:path* -> https://api.hostamar.com/api/:path*`
+      // was REMOVED. api.hostamar.com (computer tunnel) is down and every /api/*
+      // prefix the frontend calls has a local route in this repo. Proxying unknown
+      // paths to a dead backend produced 502s (e.g. /api/payments/bkash/create).
+      // Unmatched /api paths now return a clean 404 instead.
     ]
   },
   webpack: (config) => {
