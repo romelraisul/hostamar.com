@@ -30,9 +30,27 @@ type PendingTxn = {
   approvePath: string
 }
 
+type PersonalVerification = {
+  id: string
+  customerId: string
+  customerEmail: string | null
+  customerName: string | null
+  method: string
+  amount: number
+  senderNumber: string
+  trxId: string
+  plan: string | null
+  credits: number
+  status: string
+  smsMatched: boolean
+  createdAt: string
+  expiresAt: string
+}
+
 export default function AdminPaymentsClient() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [pendingTxns, setPendingTxns] = useState<PendingTxn[]>([])
+  const [verifications, setVerifications] = useState<PersonalVerification[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [approvingId, setApprovingId] = useState<string | null>(null)
@@ -40,7 +58,7 @@ export default function AdminPaymentsClient() {
 
   useEffect(() => {
     const init = async () => {
-      await Promise.all([fetchPayments(), fetchPendingTxns()])
+      await Promise.all([fetchPayments(), fetchPendingTxns(), fetchVerifications()])
       setLoading(false)
     }
     init()
@@ -67,6 +85,46 @@ export default function AdminPaymentsClient() {
       setPendingTxns(data.transactions || [])
     } catch {
       // optional panel — don't block page
+    }
+  }
+
+  const fetchVerifications = async () => {
+    try {
+      const res = await fetch('/api/admin/payments/verifications?status=PENDING&take=100', {
+        credentials: 'include',
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      setVerifications(data.verifications || [])
+    } catch {
+      // optional panel — don't block page
+    }
+  }
+
+  const reviewVerification = async (v: PersonalVerification, action: 'approve' | 'reject') => {
+    setApprovingId(v.id)
+    setApproveResult(null)
+    try {
+      const res = await fetch(`/api/admin/payments/verifications/${encodeURIComponent(v.id)}/${action}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        setApproveResult({
+          ok: true,
+          message: `${action === 'approve' ? '✅' : '🚫'} ${action === 'approve' ? 'Approved' : 'Rejected'} ${v.trxId} (${v.method} ৳${v.amount}) → ${v.customerEmail || v.customerId}`,
+        })
+        await fetchVerifications()
+      } else {
+        setApproveResult({ ok: false, message: `❌ ${data.error || data.message || res.statusText}` })
+      }
+    } catch (err: any) {
+      setApproveResult({ ok: false, message: `❌ ${err?.message || 'request failed'}` })
+    } finally {
+      setApprovingId(null)
     }
   }
 
@@ -222,6 +280,76 @@ export default function AdminPaymentsClient() {
                         }
                       >
                         {approvingId === t.id ? 'Approving…' : 'Approve & Activate'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Personal Send-Money verification queue (Phase 2) */}
+      {verifications.length > 0 && (
+        <div className="bg-white/5 border border-emerald-500/20 rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">Personal Send-Money — Pending TrxID</h3>
+            <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">
+              {verifications.length} pending
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Customer</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Method</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Amount</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">TrxID</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Sender</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">SMS</th>
+                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Plan</th>
+                  <th className="text-right px-6 py-3 text-xs text-slate-400 font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {verifications.map((v) => (
+                  <tr key={v.id} className="border-b border-white/5 hover:bg-white/5 transition">
+                    <td className="px-6 py-4 text-sm text-white">{v.customerEmail || v.customerId}</td>
+                    <td className="px-6 py-4 text-sm text-white">{v.method}</td>
+                    <td className="px-6 py-4 text-sm text-white">৳{v.amount}</td>
+                    <td className="px-6 py-4 text-sm font-mono text-emerald-300">{v.trxId}</td>
+                    <td className="px-6 py-4 text-sm text-slate-300">{v.senderNumber}</td>
+                    <td className="px-6 py-4 text-sm">
+                      {v.smsMatched ? (
+                        <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">matched</span>
+                      ) : (
+                        <span className="text-xs px-2 py-1 rounded-full bg-slate-500/20 text-slate-400">no SMS</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-300">{v.plan || '—'}{v.credits ? ` (+${v.credits}cr)` : ''}</td>
+                    <td className="px-6 py-4 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => reviewVerification(v, 'approve')}
+                        disabled={approvingId === v.id}
+                        className={
+                          'px-3 py-1.5 rounded-md text-xs font-medium transition mr-2 ' +
+                          (approvingId === v.id
+                            ? 'bg-slate-700 text-slate-400 cursor-wait'
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white')
+                        }
+                      >
+                        {approvingId === v.id ? '…' : 'Approve'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => reviewVerification(v, 'reject')}
+                        disabled={approvingId === v.id}
+                        className="px-3 py-1.5 rounded-md text-xs font-medium transition bg-red-600/80 hover:bg-red-500 text-white"
+                      >
+                        Reject
                       </button>
                     </td>
                   </tr>

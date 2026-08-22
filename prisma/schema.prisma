@@ -78,6 +78,7 @@ model Customer {
   transactions      Transaction[]
   creditTransactions CreditTransaction[]
   orders            Order[]
+  paymentVerifications PaymentVerification[]
   notifications     Notification[]
   leads             Lead[]
   referralsMade     Referral[]     @relation("ReferrerReferrals")
@@ -986,4 +987,49 @@ model ApiRequestLog {
   createdAt   DateTime @default(now())
 
   @@index([apiKeyId, createdAt])
+}
+
+// ════════════════════════════════════════════════════════════════
+// Personal Send-Money payments (P2P — no merchant account needed)
+// ════════════════════════════════════════════════════════════════
+
+model PaymentVerification {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  method       String   // BKASH | NAGAD | ROCKET
+  amount       Float    // BDT the user claims to have sent
+  senderNumber String   // number money was sent FROM
+  trxId        String   @unique
+  plan         String?  // plan being purchased (free|starter|pro)
+  credits      Int      @default(0) // credits to grant on verify
+
+  status       String   @default("PENDING") // PENDING | VERIFIED | REJECTED | EXPIRED
+  smsMatched   Boolean  @default(false)      // auto-matched an incoming SMS
+  reviewedBy   String?  // admin email who approved/rejected
+  reviewNote   String?
+
+  createdAt    DateTime @default(now())
+  verifiedAt   DateTime?
+  expiresAt    DateTime // PENDING submissions expire after 15 min without SMS match
+
+  @@index([customerId])
+  @@index([status])
+  @@index([trxId])
+}
+
+model SmsLog {
+  id           String   @id @default(cuid())
+  rawSms       String   // full SMS text from the Android sync app
+  provider     String?  // BKASH | NAGAD | ROCKET (parsed)
+  parsedAmount Float?
+  parsedTrxId  String?
+  senderNumber String?  // number the money came FROM
+  balance      Float?   // balance mentioned in SMS, if any
+  matched      Boolean  @default(false) // matched to a PaymentVerification
+  receivedAt   DateTime @default(now())
+
+  @@index([parsedTrxId])
+  @@index([receivedAt])
 }

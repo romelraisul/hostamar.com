@@ -36,6 +36,42 @@ const STATEMENTS: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS "ProvisioningLedger_tranId_key" ON "ProvisioningLedger"("tranId")`,
   `CREATE INDEX IF NOT EXISTS "ProvisioningLedger_customerEmail_idx" ON "ProvisioningLedger"("customerEmail")`,
   `CREATE INDEX IF NOT EXISTS "ProvisioningLedger_status_idx" ON "ProvisioningLedger"("status")`,
+  // ── Personal Send-Money payments (Phase 2) ──────────────────────
+  `CREATE TABLE IF NOT EXISTS "PaymentVerification" (
+  "id" TEXT NOT NULL,
+  "customerId" TEXT NOT NULL,
+  "method" TEXT NOT NULL,
+  "amount" DOUBLE PRECISION NOT NULL,
+  "senderNumber" TEXT NOT NULL,
+  "trxId" TEXT NOT NULL,
+  "plan" TEXT,
+  "credits" INTEGER NOT NULL DEFAULT 0,
+  "status" TEXT NOT NULL DEFAULT 'PENDING',
+  "smsMatched" BOOLEAN NOT NULL DEFAULT false,
+  "reviewedBy" TEXT,
+  "reviewNote" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "verifiedAt" TIMESTAMP(3),
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "PaymentVerification_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "PaymentVerification_trxId_key" ON "PaymentVerification"("trxId")`,
+  `CREATE INDEX IF NOT EXISTS "PaymentVerification_customerId_idx" ON "PaymentVerification"("customerId")`,
+  `CREATE INDEX IF NOT EXISTS "PaymentVerification_status_idx" ON "PaymentVerification"("status")`,
+  `CREATE TABLE IF NOT EXISTS "SmsLog" (
+  "id" TEXT NOT NULL,
+  "rawSms" TEXT NOT NULL,
+  "provider" TEXT,
+  "parsedAmount" DOUBLE PRECISION,
+  "parsedTrxId" TEXT,
+  "senderNumber" TEXT,
+  "balance" DOUBLE PRECISION,
+  "matched" BOOLEAN NOT NULL DEFAULT false,
+  "receivedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "SmsLog_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "SmsLog_parsedTrxId_idx" ON "SmsLog"("parsedTrxId")`,
+  `CREATE INDEX IF NOT EXISTS "SmsLog_receivedAt_idx" ON "SmsLog"("receivedAt")`,
 ]
 
 let ensured: Promise<void> | null = null
