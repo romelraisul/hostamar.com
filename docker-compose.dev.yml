@@ -1,0 +1,26 @@
+# docker-compose.dev.yml — Ollama dev backend (serves OpenAI HTTP on :11434)
+# This file is ALSO valid for podman-compose (same schema). Dual runtime:
+# if Docker's ext4.vhdx corrupts on unclean WSL shutdown, `podman-compose`
+# brings up the SAME service on :11434 from Podman's separate store
+# (C:\Users\User\.local\share\containers), so your local models stay up.
+services:
+  ollama-dev:
+    image: ollama/ollama
+    container_name: ollama-dev
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    command: serve
+    restart: unless-stopped
+    # GPU passthrough if the host has one (optional; CPU works too)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  ollama:

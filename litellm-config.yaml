@@ -1,0 +1,52 @@
+# LiteLLM router config — CORRECTED for Docker Model Runner (local) + Kilocode hy3 (cloud fallback)
+# Local backend = Docker Model Runner, served by Docker Desktop on Windows host.
+# From inside the LiteLLM container, reach it via host.docker.internal:12434.
+# Endpoint path: /engines/llama.cpp/v1  (OpenAI-compatible)
+# API key for Docker Model Runner is the literal string "docker".
+
+model_list:
+  # --- Local fast model (fits 8GB VRAM) ---
+  - model_name: hostamar-fast
+    litellm_params:
+      model: openai/gemma4:E2B
+      api_base: http://host.docker.internal:12434/engines/llama.cpp/v1
+      api_key: docker
+
+  # --- Local code model (fits 8GB VRAM, tight headroom) ---
+  - model_name: hostamar-code
+    litellm_params:
+      model: openai/gemma4:12B
+      api_base: http://host.docker.internal:12434/engines/llama.cpp/v1
+      api_key: docker
+
+  # --- Cloud fallback (Kilocode hy3-free). Only used if local models fail. ---
+  - model_name: hostamar-cloud
+    litellm_params:
+      model: openai/hy3-free
+      api_base: https://api.kilocode.ai/v1
+      api_key: os.environ/KILOCODE_API_KEY
+
+  # --- Combined router entrypoint your project calls ---
+  # model="hostamar-own" -> LiteLLM picks from model_group, falls back to cloud.
+  - model_name: hostamar-own
+    litellm_params:
+      model: openai/hostamar-own
+      model_group: [hostamar-fast, hostamar-code]
+
+# Top-level fallback: if a request to hostamar-own fails on BOTH local models,
+# LiteLLM routes to hostamar-cloud. This is what keeps you off the 429 wall
+# when local is busy — but it WILL still hit hy3's rate limit if you lean on it.
+fallbacks:
+  - hostamar-own: [hostamar-cloud]
+
+litellm_settings:
+  # Drop a slow/dead local model out of rotation instead of hanging.
+  num_retries: 2
+  request_timeout: 60
+  # When a model errors repeatedly, circuit-break it.
+  router_settings:
+    routing_strategy: least-busy
+    enable_pre_call_checks: true
+    # 27B/35B cannot load on an 8GB RTX 5060 — left out of routing on purpose.
+    # To add later on a bigger GPU, uncomment and pull qwen3.6:27B:
+    # model_group: [hostamar-fast, hostamar-code, hostamar-reasoning]

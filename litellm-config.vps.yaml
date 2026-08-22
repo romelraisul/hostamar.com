@@ -1,0 +1,64 @@
+# ===================================================================
+# CORRECTED LiteLLM config — VPS-27B variant
+# Local GPU (RTX 5060, 8GB VRAM):  gemma4:E2B + gemma4:12B only
+# VPS (27B reasoning):             qwen3.6:27B served via Cloudflare Tunnel
+# Cloud fallback:                  kilocode hy3-free (only if both fail)
+#
+# LiteLLM real syntax:
+#   top-level `router_settings` holds routing_strategy,
+#   `fallbacks` is valid ONLY at top level (NOT under litellm_params),
+#   `model_group_alias` sits under `litellm_settings`.
+# ===================================================================
+
+model_list:
+  # --- Local fast (fits 8GB VRAM, ~3.9GB weights) ---
+  - model_name: hostamar-fast
+    litellm_params:
+      model: openai/gemma4:E2B
+      api_base: http://host.docker.internal:12434/engines/llama.cpp/v1
+      api_key: docker
+
+  # --- Local code (fits 8GB VRAM tight, ~7GB weights) ---
+  - model_name: hostamar-code
+    litellm_params:
+      model: openai/gemma4:12B
+      api_base: http://host.docker.internal:12434/engines/llama.cpp/v1
+      api_key: docker
+
+  # --- VPS 27B reasoning (Cloudflare Tunnel — not your local VRAM) ---
+  # Served by the VPS at https://qwen.hostamar.com (tunnel 19c220ee).
+  - model_name: hostamar-reasoning
+    litellm_params:
+      model: openai/qwen3.6:27B
+      api_base: https://qwen.hostamar.com/engines/llama.cpp/v1   # GPU VPS (Docker Model Runner)
+      # IF VPS has no GPU, use Ollama instead (see MODEL-ROUTER-VPS.md):
+      # api_base: https://qwen.hostamar.com/v1
+      api_key: docker            # tunnel is authed by Cloudflare; key still required by client
+      # Timeout — 27B over a tunnel is slow; don't kill it at 60s.
+      request_timeout: 180
+
+  # --- Cloud fallback (last resort — will hit 429 when rate-limited) ---
+  - model_name: hostamar-cloud
+    litellm_params:
+      model: openai/hy3-free
+      api_base: https://api.kilocode.ai/v1
+      api_key: os.environ/KILOCODE_API_KEY
+
+litellm_settings:
+  # Let callers ask for "hostamar-own" and route to the reasoning model by
+  # default; LiteLLM spreads across the local+VPS+cloud groups via fallbacks.
+  model_group_alias:
+    hostamar-own: hostamar-reasoning   # default: complex -> 27B on VPS
+
+router_settings:
+  routing_strategy: usage-based-routing-v2   # picks least-loaded healthy model
+  num_retries: 2
+  request_timeout: 120
+  enable_pre_call_checks: true               # skip a model with no free VRAM
+
+# Fallbacks (top-level). Cloud goes LAST so you avoid 429s when possible.
+fallbacks:
+  - hostamar-reasoning: [hostamar-code, hostamar-cloud]
+  - hostamar-code:      [hostamar-fast, hostamar-cloud]
+  - hostamar-fast:      [hostamar-cloud]
+  - hostamar-own:       [hostamar-code, hostamar-cloud]

@@ -1,0 +1,25 @@
+# =====================================================================
+# PATCH for ~/.cloudflared/config.yml on the cloudflared-running box.
+# Adds qwen.hostamar.com -> VPS backend WITHOUT recreating the tunnel.
+# Your tunnel ID 19c220ee-37ae-4fad-9c99-495f0e154b12 stays intact.
+#
+# Per your infra rule: creds survive `wsl --shutdown`; never re-login.
+# Apply by appending the qwen.hostamar.com ingress entry ABOVE the
+# `service: http_status:404` catch-all, then `cloudflared tunnel run`.
+# =====================================================================
+
+# INSERT these lines just before the `- service: http_status:404` line:
+
+ingress:
+  # ... your existing hostamar.com, api.hostamar.com entries stay ...
+
+  # --- NEW: 27B reasoning model endpoint ---
+  # GPU VPS (Docker Model Runner serves /engines/llama.cpp/v1):
+  - hostname: qwen.hostamar.com
+    service: http://localhost:12434
+
+  # CPU VPS uses Ollama (serves /v1 directly, different path):
+  # - hostname: qwen.hostamar.com
+  #   service: http://localhost:11434
+
+  - service: http_status:404

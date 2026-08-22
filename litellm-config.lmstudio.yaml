@@ -1,0 +1,60 @@
+# litellm-config.lmstudio.yaml
+#
+# READY-TO-USE config for the moment you (Option B) start LMStudio on the
+# Windows host with gemma4-E2B + gemma4-12B + qwen3.6-27B loaded, and turn
+# on its OpenAI-compatible server on :1234. From inside the router container
+# the endpoint is http://host.docker.internal:1234/v1.
+#
+# Do not run this router until LMStudio is actually serving /v1/models at
+# http://localhost:1234 from Windows. Verify first:
+#     curl http://localhost:1234/v1/models
+# Then set LMSTUDIO_MODEL_4B / LMSTUDIO_MODEL_12B / LMSTUDIO_MODEL_27B env
+# to the exact model ids LMStudio returns (it uses names like
+# "gemma-4b-it-GGUF" - DO NOT assume "gemma4:E2B" works).
+
+model_list:
+  - model_name: gema4-4b
+    litellm_params:
+      model: openai/${LMSTUDIO_MODEL_4B:-gemma4-E2B}
+      api_base: http://host.docker.internal:1234/v1
+      api_key: lm-studio
+      request_timeout: 15
+
+  - model_name: gema4-12b
+    litellm_params:
+      model: openai/${LMSTUDIO_MODEL_12B:-gemma4-12B}
+      api_base: http://host.docker.internal:1234/v1
+      api_key: lm-studio
+      request_timeout: 20
+
+  - model_name: qwen3-27b-prod
+    litellm_params:
+      model: openai/${LMSTUDIO_MODEL_27B:-qwen3.6-27B}
+      api_base: http://host.docker.internal:1234/v1
+      api_key: lm-studio
+      request_timeout: 120
+
+  - model_name: nvidia-glm-guarded
+    litellm_params:
+      model: openai/z-ai/glm-5.2
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_API_KEY
+      request_timeout: 5
+
+  - model_name: hostamar-own
+    litellm_params:
+      model: openai/${LMSTUDIO_MODEL_12B:-gemma4-12B}
+      api_base: http://host.docker.internal:1234/v1
+      api_key: lm-studio
+
+litellm_settings:
+  pre_call_checks: token_guard_fast.token_guard_instance
+  success_callback: [token_guard_fast.token_guard_instance]
+
+router_settings:
+  routing_strategy: latency-based-routing
+  num_retries: 0                       # instant failover, no 8.5s wait
+
+fallbacks:
+  - nvidia-glm-guarded: [gema4-12b, gema4-4b]
+  - hostamar-own:       [gema4-12b, gema4-4b, qwen3-27b-prod]

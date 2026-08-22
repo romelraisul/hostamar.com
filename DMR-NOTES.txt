@@ -1,0 +1,27 @@
+# DMR / Ollama ground truth on this machine
+#
+# Docker Model Runner (DMR) weights downloaded here:
+#   gemma4:E2B  (4.65B, 4.17GB)
+#   gemma4:12B  (11.91B, 7.54GB)
+# These are INERT: DMR's OpenAI gateway is not compiled in to this
+# WSL-Linux docker build (`docker model gateway` -> "gateway is not
+# available in this build; rebuild with make build-cli"). Docker
+# Desktop's AI-toggle auto-serving is not active (active context is
+# WSL-engine, not Desktop npipe). So `docker model run -d <tag>` loads
+# into VRAM but no HTTP listener exists.
+#
+# Ollama :11434 IS serving OpenAI HTTP on this box. Real served models:
+#   gemma2:9b     (5.4GB)   - code-tier substitute
+#   gemma3:latest (3.3GB)   - fast 4B
+#   phi3 / mistral / llama3 also present.
+#
+# Gemma 4 weights are NOT in the Ollama registry (`model 'gemma4'
+# not found`). Any litellm config pointing at localhost:11434 with
+# `model: openai/gemma4:E2B` will 404 at runtime. Use
+# `ollama/gemma2:9b` or `ollama/gemma3:latest` instead. If you really
+# need Gemma 4 weights served locally, build a Modelfile that imports
+# the GGUF blobs from DMR's store at .../Docker/model-runner/...
+#
+# qwen3.6:27B (17.3GB) does NOT fit 8GB RTK 5060 VRAM. VPS route
+# (qwen.hostamar.com) is unauthenticated today; deploy the VPS-side
+# docker-compose.vps-27b.yml + cloudflared ingress BEFORE relying on it.

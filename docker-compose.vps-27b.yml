@@ -1,0 +1,64 @@
+# =====================================================================
+# VPS 27B stack — runs on your Windows VPS (NOT your local WSL box).
+# Serves qwen3.6:27B (17.3GB GGUF) behind Cloudflare Tunnel -> qwen.hostamar.com
+#
+# Pick ONE backend by setting MODEL_BACKEND:
+#   gpu  = VPS has an NVIDIA GPU -> Docker Model Runner (VRAM, fast)
+#   cpu  = CPU-only VPS -> Ollama (loads GGUF into system RAM, slower)
+#
+# >>> Set MODEL_BACKEND=gpu OR cpu in .env on the VPS before `up`. <<<
+# =====================================================================
+services:
+  # --- GPU backend: Docker Model Runner (built into Docker Desktop) ---
+  # No container needed — `docker model run` is a host-level command:
+  #   docker model pull qwen3.6:27B
+  #   docker model run qwen3.6:27B --port 12434 --gpu all
+  # For compose orchestration we use this thin watchdog that keeps it running.
+
+  model-runner-watchdog:
+    image: docker:cli          # uses the host's docker.sock
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock"]
+    entrypoint:
+      - sh
+      - -c
+      - |
+        docker model pull qwen3.6:27B || true
+        exec docker model run qwen3.6:27B --port 12434
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles: ["gpu"]
+
+  # --- CPU backend: Ollama (loads GGUF into system RAM) ---
+  # Needs ~20GB system RAM free. Set MODEL_BACKEND=cpu.
+  ollama:
+    image: ollama/ollama
+    ports: ["127.0.0.1:12434:11434"]   # LOCAL ONLY — never expose directly
+    volumes: ["ollama-models:/root/.ollama"]
+    restart: unless-stopped
+    profiles: ["cpu"]
+    # Pull the model on first boot:
+    # docker exec ollama ollama pull qwen3.6:27B   (if mirrored to ollama)
+    # OR use a quantized GGUF via Modelfile if Docker-Hub names differ.
+
+  # --- Cloudflare Tunnel → qwen.hostamar.com ---
+  # REUSES your existing tunnel 19c220ee (creds already on the VPS at
+  # ~/.cloudflared/ — DO NOT re-login). The ingress entry for qwen must be
+  # added to the tunnel's config.yml on the cloudflared side (see below).
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run 19c220ee-37ae-4fad-9c99-495f0e154b12
+    volumes:
+      - "${HOME}/.cloudflared:/home/cloudflared/.cloudflared:ro"
+    depends_on: [model-runner-watchdog]
+    restart: unless-stopped
+    profiles: ["gpu"]
+  # For CPU mode, change depends_on to [ollama] in a compose override.
+
+volumes:
+  ollama-models:

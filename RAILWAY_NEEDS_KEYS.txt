@@ -1,0 +1,26 @@
+RAILWAY_NEEDS_KEYS.txt
+======================
+
+brave-api has NOT been deployed to Railway because no KILOCODE key is set.
+
+Honest status (ground-verified 2026-07-18):
+  - railway.toml, Procfile, requirements.txt are ALL in ./brave-api/.
+  - Every /chat request brave-api makes to hy3-free 401s without
+    KILOCODE_API_KEY_1 (and _2 for rotation). The local fallback to
+    hostamar-own via Ollama keeps the LOCAL container useful, so
+    brave-api runs locally TODAY - but cannot do remote Railway
+    deployment yet.
+
+To deploy to Railway once keys are obtained:
+  1. Log into Railway:   https://railway.app/new
+  2. Connect this repo (or `railway link` if CLI installed).
+  3. Set vars:
+       KILOCODE_API_KEY_1 = <key A>
+       KILOCODE_API_KEY_2 = <key B>        (rotation pool)
+       CORS_ORIGINS       = https://www.hostamar.com,http://localhost:3000
+       ROUTER_URL         = http://host.docker.internal:4000/v1
+       MODEL              = hostamar-own
+  4. `railway up` - the Procfile (web: uvicorn app:app ...) is auto-detected.
+
+After you set keys in your shell, you can delete this file; it is regenerated
+by permanent.sh if the keys are still blank on next boot.

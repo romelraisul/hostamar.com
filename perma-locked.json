@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "created": "2026-07-17",
+  "purpose": "Registry of permanently-locked local models. Verifier in permanent.sh checks each entry every boot; mismatches are logged + alerted.",
+  "lock_root": "/mnt/c/Users/User/hostamar-build",
+  "verify_command": "curl -s http://localhost:11434/api/tags | jq -r '.models[].name'",
+  "models": [
+    {
+      "role": "fast_draft_2b",
+      "alias": "gema4:2b",
+      "base_tag": "gemma3:1b",
+      "size_gb_estimate": 0.8,
+      "purpose": "fast draft / cheap routing winner",
+      "check": "ollama list | grep -q '^gema4:2b$'"
+    },
+    {
+      "role": "balanced_4b",
+      "alias": "gema4:4b",
+      "base_tag": "gemma3:4b",
+      "size_gb_estimate": 3.3,
+      "purpose": "balanced router pick when 2b insufficient",
+      "check": "ollama list | grep -q '^gema4:4b$'"
+    },
+    {
+      "role": "main_12b_code",
+      "alias": "gema4:12b",
+      "base_tag": "gemma3:12b",
+      "size_gb_estimate": 8.1,
+      "purpose": "primary 12b local for chat/completion",
+      "check": "ollama list | grep -q '^gema4:12b$'"
+    },
+    {
+      "role": "code_specialized_alias",
+      "alias": "gemma4-12b-code:latest",
+      "base_tag": "gemma3:12b",
+      "size_gb_estimate": 8.1,
+      "purpose": "explicit code alias of gema4:12b (ollama auto-tags :latest)",
+      "check": "ollama list | grep -q '^gemma4-12b-code'"
+    },
+    {
+      "role": "code_compact",
+      "alias": "gema4-code:12b",
+      "base_tag": "codegemma:7b",
+      "size_gb_estimate": 5.0,
+      "purpose": "CodeGemma compact code model",
+      "check": "ollama list | grep -q '^gema4-code:12b$'"
+    },
+    {
+      "role": "qwen_coder_alias",
+      "alias": "qwen3.6:latest",
+      "base_tag": "qwen2.5-coder:14b",
+      "size_gb_estimate": 9.0,
+      "purpose": "qwen3.6 alias (real base = qwen2.5-coder:14b, code-specialised; ollama auto-tags :latest)",
+      "check": "ollama list | grep -q '^qwen3.6'"
+    },
+    {
+      "role": "qwen_27b_alias",
+      "alias": "qwen3.6:27b",
+      "base_tag": "qwen2.5-coder:14b",
+      "size_gb_estimate": 9.0,
+      "purpose": "qwen3.6:27b alias (same base; 8GB-VRAM tight for true 27B)",
+      "check": "ollama list | grep -q '^qwen3.6:27b$'"
+    }
+  ],
+  "services": [
+    {
+      "name": "litellm-play",
+      "type": "docker_container",
+      "image": "ghcr.io/berriai/litellm:main-latest",
+      "port": 4000,
+      "config_mount": "/mnt/c/Users/User/hostamar-build/litellm-config.final.yaml:/tmp/cfg.yaml:ro",
+      "guard_mount": "/mnt/c/Users/User/hostamar-build/token_guard_per_sec.py:/tmp/token_guard_per_sec.py:ro",
+      "guard_wire": "litellm_settings.callbacks: [token_guard_per_sec.guard]",
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:4000/v1/models | grep -q 200"
+    },
+    {
+      "name": "hostamar-video",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.video.yml",
+      "port": 3002,
+      "check": "docker ps --format '{{.Names}}' | grep -q '^hostamar-video$'"
+    },
+    {
+      "name": "hostamar-browser-api",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.brave.yml",
+      "port": 3003,
+      "check": "docker ps --format '{{.Names}}' | grep -q '^hostamar-browser-api$'"
+    },
+    {
+      "name": "hostamar-openclaw",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.openclaw.yml",
+      "port": 3001,
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/ | grep -q 200"
+    },
+    {
+      "name": "hostamar-comfyui-lowvram",
+      "type": "docker_container",
+      "image": "hostamar-comfyui-lowvram:local",
+      "port": 8188,
+      "notes": "daily-driver ComfyUI lowvram (manually launched with --gpus all). LTX-Video lives inside as a workflow, not a separate container. docker-compose.full.yml deliberately omits a duplicate comfyui service and points ltx-video at this via host.docker.internal:8188.",
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:8188/ | grep -qE '200|404'"
+    },
+    {
+      "name": "hostamar-ltx-video",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.full.yml",
+      "port": 8189,
+      "notes": "MVP FastAPI shim that proxies /generate to the running lowvram ComfyUI LTX workflow via host.docker.internal:8188",
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:8189/health | grep -qE '200|404|000'"
+    },
+    {
+      "name": "hostamar-chatterbox",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.full.yml",
+      "port": 8190,
+      "notes": "resemble-ai/chatterbox TTS shim; build needs torch wheels (~700MB), may fail on free-tier",
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:8190/health | grep -qE '200|404|000'"
+    },
+    {
+      "name": "hostamar-ace-step",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.full.yml",
+      "port": 8191,
+      "notes": "ace-step/ACE-Step-1.5 (only repo with upstream Dockerfile); slim fastapi shim, may drift on free-tier build",
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:8191/health | grep -qE '200|404|000'"
+    },
+    {
+      "name": "hostamar-infinitetalk",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.full.yml",
+      "port": 8192,
+      "notes": "MeiGen-AI/InfiniteTalk talking-head lip-sync; heavy build; DRIFT expected on free-tier",
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:8192/health | grep -qE '200|404|000'"
+    },
+    {
+      "name": "hostamar-opencut",
+      "type": "docker_container",
+      "compose": "/mnt/c/Users/User/hostamar-build/docker-compose.full.yml",
+      "port": 8193,
+      "notes": "OpenCut-app/OpenCut timeline editor API head; UI build optional",
+      "check": "curl -s -o /dev/null -w '%{http_code}' http://localhost:8193/health | grep -qE '200|404|000'"
+    }
+  ],
+  "history": [
+    {
+      "ts": "2026-07-17",
+      "event": "initial lock",
+      "by": "Hermes",
+      "models_locked": ["gema4:2b", "gema4:4b", "gema4:12b", "gemma4-12b-code", "gema4-code:12b", "qwen3.6", "qwen3.6:27b"]
+    },
+    {
+      "ts": "2026-07-18",
+      "event": "add 6 full-pipeline services (comfyui/ltx/chatterbox/ace-step/infinitetalk/opencut) + verify alias names fixed to match ollama :latest tags",
+      "by": "Hermes",
+      "services_added": ["hostamar-comfyui-lowvram", "hostamar-ltx-video", "hostamar-chatterbox", "hostamar-ace-step", "hostamar-infinitetalk", "hostamar-opencut"]
+    }
+  ]
+}

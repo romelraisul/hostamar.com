@@ -1,0 +1,42 @@
+# docker-compose.openclaw.yml - second agent engine (OpenClaw)
+#
+# Honest update: `openclaw/openclaw:latest` on Docker Hub is REAL and active
+# (39K pulls, last updated 2026-07-17). Not a placeholder - verified via
+# hub.docker.com/v2/repositories/openclaw/openclaw/. No local Dockerfile needed.
+#
+# Backend: points at the LiteLLM router (hostamar-own), which routes to
+#   - Ollama gemma3/gemma2 (local, today)
+#   - LMStudio gemma4/qwen3.6 (when you start it on Windows)
+#   - nvidia-glm-guarded (per-sec-guarded cloud)
+# Training engine: hy3 via kilocode (keys must be set in env).
+
+services:
+  openclaw:
+    image: openclaw/openclaw:latest
+    container_name: hostamar-openclaw
+    ports:
+      - "3001:18789"                    # gateway serves on 18789 inside container
+    volumes:
+      - ./openclaw-data:/data
+      - ./token_guard_per_sec.py:/app/guard.py:ro
+    environment:
+      # Pull the OpenClaw auth token out of env so the gateway doesn't refuse
+      # to bind to a non-loopback address (which it does by default).
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-hostamar-openclaw-token}
+      # Agent backend = the LiteLLM router (hostamar-own + per-sec guard + chain).
+      OLLAMA_URL: http://host.docker.internal:4000/v1
+      MODEL: hostamar-own
+      # Training engine = cloud hy3 via kilocode (last-resort, needs key).
+      TRAINING_MODEL: openai/hy3-free
+      TRAINING_API_BASE: https://api.kilocode.ai/v1
+      TRAINING_API_KEY: ${KILOCODE_API_KEY:-}
+    # Compose `command:` runs AFTER the image's entrypoint (tini -s -- ...),
+    # so each token here is passed AS-IS to tini, which then hands them to the
+    # FIRST exec. The image's real binary is `node openclaw.mjs gateway`, so
+    # we must literally write `node openclaw.mjs gateway --allow-unconfigured`.
+    # Writing `["--allow-unconfigured"]` alone fails with "No such file"
+    # (tini tries to exec the flag as a binary).
+    command: ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

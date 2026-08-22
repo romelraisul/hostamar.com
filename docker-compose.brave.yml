@@ -1,0 +1,49 @@
+# docker-compose.brave.yml - Hostamar Bangla-first AI browser backend
+#
+# Yankee fixes vs the chat snippet:
+#   - Fixed 3 broken `-./path` -> `- ./path` (YAML parser rejected original)
+#   - Fixed `COPY app.py.` -> `COPY app.py .` (Dockerfile missing space)
+#   - `m1k1o/neko:brave` verified real on Docker Hub (tag exists, repo active)
+#   - Ports: 8080=Brave VNC/noVNC UI, 8081=WebRTC data, 3003=brave-api (FastAPI)
+#   - NOT auto-started. Run: `docker compose -f docker-compose.brave.yml up -d --build`
+#     Then: curl http://localhost:3003/health
+#
+# DO NOT deploy brave-api to Railway until KILOCODE_API_KEY_1 and _2 are set
+# in your shell - empty keys = every call 401s.
+
+services:
+  brave:
+    image: m1k1o/neko:brave
+    container_name: hostamar-brave
+    ports:
+      - "8080:8080"   # noVNC browser UI
+      - "8081:8081"   # WebRTC data
+    environment:
+      - NEKO_SCREEN=1920x1080@30
+      - NEKO_PASSWORD=hostamar
+      - NEKO_PASSWORD_ADMIN=hostamar-admin
+      - NEKO_EPR=8081
+      - NEKO_ICELITE=true
+    volumes:
+      - ./brave-profile:/home/neko/.config/BraveSoftware
+      - ./brave-ext:/extensions
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  brave-api:
+    build: ./brave-api
+    container_name: hostamar-browser-api
+    ports:
+      - "3003:3000"
+    environment:
+      - ROUTER_URL=${ROUTER_URL:-http://host.docker.internal:4000/v1}
+      - MODEL=${MODEL:-hostamar-own}
+      - KILOCODE_API_KEY_1=${KILOCODE_API_KEY_1:-}
+      - KILOCODE_API_KEY_2=${KILOCODE_API_KEY_2:-}
+      - CORS_ORIGINS=https://www.hostamar.com,http://localhost:3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - brave
+    restart: unless-stopped

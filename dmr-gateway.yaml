@@ -1,0 +1,8 @@
+# DMR OpenAI-compatible gateway config.
+# Exposes the locally-pulled Docker Hub model ai/gemma4:12B over TCP :12434
+# so litellm (and hostamar-own) can call it like any OpenAI endpoint.
+models:
+  - name: gemma4:12b
+    provider:
+      type: docker-model-runner
+      model: ai/gemma4:12B

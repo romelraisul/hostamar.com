@@ -1,0 +1,94 @@
+# litellm-config.final.yaml - Hostamar bangla-first model router (FIXED, no dup keys).
+# Ground-verified 2026-07-18:
+#   - duplicate model_name top-level keys (gema4-12b etc.) collapsed: LiteLLM
+#     dropped the silent duplicates and only loaded 3 names. Now 7 distinct
+#     top-level model_names + hostamar-own as multi-deployment (5 ollama + 1 remote).
+#   - hostamar-own: latency-based routing across local gema4 family + qwen3.6
+#     with qwen.hostamar.com as the LAST (slowest) fallback in the same group.
+#   - Cloud providers guarded by token_guard_per_sec.guard: blocks cloud when
+#     tok>25000/60s or req>8/60s; LOCAL models are NEVER blocked (returns True).
+model_list:
+  # --- named single-model entries (one key each) ----------------------
+  - model_name: gemma3-fast
+    litellm_params:
+      model: ollama/gemma3:latest
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: gemma2-code
+    litellm_params:
+      model: ollama/gemma2:9b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: gema4-2b
+    litellm_params:
+      model: ollama/gema4:2b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: gema4-4b
+    litellm_params:
+      model: ollama/gema4:4b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: gema4-12b
+    litellm_params:
+      model: ollama/gema4:12b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: gema4-code
+    litellm_params:
+      model: ollama/gema4-code:12b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: qwen3.6
+    litellm_params:
+      model: ollama/qwen3.6:27b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+
+  # --- hostamar-own: multi-deployment group (latency-routed fallback) --
+  # LiteLLM allows SAME model_name across multiple entries -> routes across all.
+  - model_name: hostamar-own
+    litellm_params:
+      model: ollama/gema4:2b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: hostamar-own
+    litellm_params:
+      model: ollama/gema4:4b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: hostamar-own
+    litellm_params:
+      model: ollama/gema4:12b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: hostamar-own
+    litellm_params:
+      model: ollama/gema4-code:12b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  - model_name: hostamar-own
+    litellm_params:
+      model: ollama/qwen3.6:27b
+      api_base: http://host.docker.internal:11434
+      api_key: ollama
+  # Remote (VPS / docker model runner) fallback — LAST so latency-based
+  # routing only picks it when every local ollama replica is unreachable.
+  - model_name: hostamar-own
+    litellm_params:
+      model: openai/qwen3.6:27B
+      api_base: https://qwen.hostamar.com/engines/llama.cpp/v1
+      api_key: docker
+      request_timeout: 180
+
+litellm_settings:
+  callbacks:
+    - token_guard_per_sec.guard
+  drop_params: true
+  num_retries: 0
+  request_timeout: 120
+
+router_settings:
+  routing_strategy: latency-based-routing
+  enable_pre_call_checks: true
+  timeout: 5

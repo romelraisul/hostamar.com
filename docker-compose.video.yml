@@ -1,0 +1,58 @@
+# docker-compose.video.yml - hostamar video production engine
+#
+# Yankee fixes to the chat snippet:
+#   - Fixed "-./path" -> "- ./path" (3 sites; YAML parser rejected the original)
+#   - ComfyUI on :8188 -> :8189 (port 8188 is ALREADY taken by the running
+#     `hostamar-comfyui-lowvram` container; binding 8188:8188 would collide.
+#     Use :8189 here, OR drop the `comfyui` service and point video-api
+#     directly at the existing container on 8188 via http://hostamar-comfyui-lowvram:8188
+#     with `network: external`).
+#   - video-api uses an `extra_hosts` entry so host.docker.internal resolves.
+#   - GPU passthrough left OFF for now; add `deploy.resources.reservations.devices`
+#     for the comfyui service if you want CUDA (the existing lowvram container
+#     already uses the GPU).
+#
+# Verify after starting:
+#   curl -s http://localhost:3002/health
+#   curl -s http://localhost:8189 | head -c 100         # ComfyUI UI
+#   curl -X POST http://localhost:3002/generate-script \
+#        -H "Content-Type: application/json" \
+#        -d '{"prompt":"30 sec ad for hostamar dev tools"}'
+
+services:
+  # NOTE: NO comfyui service here. The daily-driver hostamar-comfyui-lowvram
+  # container is the real ComfyUI on :8188 (built + run separately with
+  # --gpus all). The lightweight hostamar-ltx-video FastAPI shim (defined
+  # in docker-compose.full.yml, port 8189) proxies generative requests to
+  # it. This file now ships JUST video-api.
+
+  video-api:
+    build: ./video-api
+    container_name: hostamar-video
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./video-input:/app/input:ro
+      - ./video-output:/app/output
+      # ADD: copyright module so add_copyright() inside /create works.
+      - ./copyright:/app/copyright:ro
+      # ADD: writable registry path; /mnt/c/... from inside docker is
+      # overlay-cached and not shared with host. Mount HOST copyright-db
+      # at /app/copyright-db so writes flow back to OneDrive sync.
+      - ./copyright-db:/app/copyright-db
+    environment:
+      - ROUTER_URL=http://host.docker.internal:4000/v1
+      - MODEL=hostamar-own-fast
+      # Downstream pipeline endpoints (hostamar-video v4 calls these).
+      - COMFYUI_URL=http://host.docker.internal:8188
+      - LTX_URL=http://host.docker.internal:8189
+      - CHATTERBOX=http://host.docker.internal:8190
+      - ACE_STEP=http://host.docker.internal:8191
+      - INFINITETALK=http://host.docker.internal:8192
+      - OPENCUT=http://host.docker.internal:8193
+      # Point REGISTRY_PATH to the writable container mount, not /mnt/c.
+      - COPYRIGHT_DB=/app/copyright-db/registry.jsonl
+      - LITELLM_API_KEY=${LITELLM_API_KEY:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

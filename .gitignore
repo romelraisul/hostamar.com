@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Secrets & env
+.env
+.env.*
+*.pem
+*.key
+
+# Runtime state & logs
+logs/
+*.log
+state/
+brave-profile/
+openclaw-data/
+permanent.log
+
+# Large media & model artifacts
+video-output/
+video-input/
+comfyui-data/
+*.mp4
+*.mp3
+*.ckpt
+*.safetensors
+*.gguf
+
+# Backups
+*.bak-*

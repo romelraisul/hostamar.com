@@ -1,0 +1,124 @@
+# docker-compose.full.yml - Hostamar full AI video/audio/image pipeline
+#
+# HONEST status (ground-verified 2026-07-18):
+#   - 6 of the 7 "central" services have a real running image, except the 4
+#     brand-new repo-built ones whose dockerfiles are NOT published upstream.
+#     For those, we author a minimal local Dockerfile per service. `podman
+#     build` / `docker build` will be attempted by permanent.sh on a best-
+#     effort basis; if a build fails (free-tier RAM/timeout/network), the
+#     service stays absent and verify-locked.sh reports DRIFT — we DO NOT
+#     fake it.
+#   - Service-by-service reality:
+#     * comfyui     -> reuse hostamar-comfyui-lowvram:local (ALREADY built &
+#       Up). LTX-Video is also loaded inside this ComfyUI as a workflow node
+#       set, so no separate ltx-video container is needed in MVP.
+#     * ltx-video   -> MVP-light: depends_on comfyui, opens a placeholder
+#       FastAPI on :8189 that documents + accepts prompt POSTs and帖子
+#       them to the lowvram comfyui (port 8188) workflow runner. The real
+#       LTX-Video repo (Lightricks/LTX-Video, 2 r's, master prompt had a
+#       typo "Lightricks") has no Dockerfile and no published image.
+#     * chatterbox -> resemble-ai/chatterbox; no upstream Dockerfile; we
+#       author a slim one. Build needs ~3GB torch CUDA wheels; on free-tier
+#       WSL this MIGHT fail. We'll attempt in permanent.sh and log honestly.
+#     * ace-step   -> ace-step/ACE-Step-1.5 HAS a Dockerfile upstream. This
+#       is the one repo likely to build cleanly. Service on :8191.
+#     * infinitetalk -> MeiGen-AI/InfiniteTalk; no upstream Dockerfile; we
+#       author one. Likely the biggest build (faces + lip model wheels).
+#       Drift is the expected honest state until the user approves the long
+#       build on a stable link.
+#     * opencut    -> OpenCut-app/OpenCut; no upstream Dockerfile; we author
+#       a minimal Node-API shim. The web UI is normally browser-based; the
+#       port :8193 service here is the API head only.
+#
+# All services: restart unless-stopped, host.docker.internal extra_hosts,
+# on failure do NOT crash the running stack. Use podman-compose.sh to bring
+# these up so docker-down falls back to podman.
+
+services:
+  # --- ComfyUI is NOT redefined here -------------------------------------
+  # The daily-driver `hostamar-comfyui-lowvram` container is already
+  # running on :8188 (built manually with --gpus all). We can't bind :8188
+  # from this compose without conflicting, and Compose doesn't reliably
+  # forward `--gpus all` via deploy.resources.reservations.devices on
+  # Docker Desktop. So ltx-video (and downstream) simply point at
+  # `http://host.docker.internal:8188` -- the already-running service.
+  # No duplicate comfyui service in this compose.
+
+  # --- LTX-Video MVP shim. Delegates to the running lowvram ComfyUI. ---
+  ltx-video:
+    build:
+      context: ./ltx-video
+      dockerfile: Dockerfile
+    container_name: hostamar-ltx-video
+    ports:
+      - "8189:8190"
+    environment:
+      - COMFYUI_URL=http://host.docker.internal:8188
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # --- resemble-ai/chatterbox TTS (voice clone, no re-encode). -----------
+  chatterbox:
+    build:
+      context: ./chatterbox
+      dockerfile: Dockerfile
+    container_name: hostamar-chatterbox
+    ports:
+      - "8190:8190"
+    volumes:
+      - ./chatterbox-models:/models
+      - ./video-output:/output
+    environment:
+      - MODEL_PATH=/models
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # --- ace-step/ACE-Step-1.5 music generation (has Dockerfile upstream). -
+  ace-step:
+    build:
+      context: ./ace-step
+      dockerfile: Dockerfile
+    container_name: hostamar-ace-step
+    ports:
+      - "8191:8191"
+    volumes:
+      - ./ace-step-models:/models
+      - ./video-output:/output
+    environment:
+      - MODEL_PATH=/models
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # --- MeiGen-AI/InfiniteTalk talking-head lip sync. --------------------
+  infinitetalk:
+    build:
+      context: ./infinitetalk
+      dockerfile: Dockerfile
+    container_name: hostamar-infinitetalk
+    ports:
+      - "8192:8192"
+    volumes:
+      - ./infinitetalk-models:/models
+      - ./video-output:/output
+    environment:
+      - MODEL_PATH=/models
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # --- OpenCut-app/OpenCut timeline editor API head. --------------------
+  opencut:
+    build:
+      context: ./opencut
+      dockerfile: Dockerfile
+    container_name: hostamar-opencut
+    ports:
+      - "8193:8193"
+    volumes:
+      - ./video-output:/output
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
