@@ -64,6 +64,9 @@ export async function POST(req: NextRequest) {
     })
 
     if (!result.ok) {
+      // Real bKash gateway rejected/failed the request. Log the actual reason
+      // server-side (Cloudflare replaces 5xx bodies with its own error page).
+      console.error('[Payments:bKash:Create] gateway failure:', result.error)
       return NextResponse.json({ error: result.error || 'bKash create failed' }, { status: 502 })
     }
 
