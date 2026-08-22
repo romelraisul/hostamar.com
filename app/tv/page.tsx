@@ -68,6 +68,10 @@ export default function TvPage() {
     const VP9_URL = "https://vp9.hostamar.com/master.m3u8";
     const startVp9 = () => {
       if (hlsRef.current) hlsRef.current.destroy();
+      // Reset the poisoned video element (error 4 sticks until load())
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
       const h = new Hls({ enableWorker: true, lowLatencyMode: false });
       h.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) setError(`HLS error: ${d.type} ${d.details}`); });
       h.loadSource(VP9_URL);
