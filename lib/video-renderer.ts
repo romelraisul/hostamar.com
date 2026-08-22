@@ -10,6 +10,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { prisma } from './prisma';
 import { env } from '@/lib/env'
+import { dispatchWebhookEvent } from '@/lib/webhooks'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -471,6 +472,21 @@ export async function renderPreviewVideo(
           duration: totalDuration,
         },
       });
+    }
+
+    // Outbound user webhook: video.completed (2026 feature)
+    if (preview.customerId) {
+      dispatchWebhookEvent({
+        customerId: preview.customerId,
+        event: 'video.completed',
+        payload: {
+          previewId,
+          videoId: preview.videoId || null,
+          videoUrl,
+          thumbnailUrl,
+          duration: totalDuration,
+        },
+      }).catch(() => {}); // fire-and-forget
     }
 
     renderProgressMap.set(previewId, {

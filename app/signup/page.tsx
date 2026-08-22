@@ -43,6 +43,25 @@ export default function SignupPage() {
   const [hydrated, setHydrated] = useState(false)
 
   const [error, setError] = useState('')
+
+  // Capture ?ref=CODE from the URL (affiliate link) and pre-fill refCode
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const ref = params.get('ref')
+      if (ref) {
+        setRefCode(ref.toUpperCase())
+        // Persist attribution + set affiliate_ref cookie
+        fetch('/api/affiliate/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ref: ref.toUpperCase() }),
+        }).catch(() => {})
+      }
+    } catch {
+      /* non-critical */
+    }
+  }, [])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {

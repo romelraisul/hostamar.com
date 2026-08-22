@@ -72,6 +72,53 @@ const STATEMENTS: string[] = [
 )`,
   `CREATE INDEX IF NOT EXISTS "SmsLog_parsedTrxId_idx" ON "SmsLog"("parsedTrxId")`,
   `CREATE INDEX IF NOT EXISTS "SmsLog_receivedAt_idx" ON "SmsLog"("receivedAt")`,
+  // ── Affiliate program + user webhooks (Phase 3) ─────────────────
+  `CREATE TABLE IF NOT EXISTS "AffiliateCommission" (
+  "id" TEXT NOT NULL,
+  "affiliateId" TEXT NOT NULL,
+  "fromCustomerId" TEXT NOT NULL,
+  "sourceType" TEXT NOT NULL,
+  "sourceId" TEXT,
+  "amount" DOUBLE PRECISION NOT NULL,
+  "rate" DOUBLE PRECISION NOT NULL DEFAULT 0.20,
+  "status" TEXT NOT NULL DEFAULT 'PENDING',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "paidAt" TIMESTAMP(3),
+  CONSTRAINT "AffiliateCommission_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "AffiliateCommission_affiliateId_status_idx" ON "AffiliateCommission"("affiliateId", "status")`,
+  `CREATE INDEX IF NOT EXISTS "AffiliateCommission_sourceId_idx" ON "AffiliateCommission"("sourceId")`,
+  `CREATE TABLE IF NOT EXISTS "UserWebhook" (
+  "id" TEXT NOT NULL,
+  "customerId" TEXT NOT NULL,
+  "url" TEXT NOT NULL,
+  "secret" TEXT NOT NULL,
+  "events" TEXT NOT NULL DEFAULT 'video.completed',
+  "isActive" BOOLEAN NOT NULL DEFAULT true,
+  "lastStatus" INTEGER,
+  "lastSentAt" TIMESTAMP(3),
+  "failCount" INTEGER NOT NULL DEFAULT 0,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "UserWebhook_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "UserWebhook_customerId_idx" ON "UserWebhook"("customerId")`,
+  // ── Team workspace invites (Phase 3) ────────────────────────────
+  `CREATE TABLE IF NOT EXISTS "TeamInvite" (
+  "id" TEXT NOT NULL,
+  "organizationId" TEXT NOT NULL,
+  "email" TEXT NOT NULL,
+  "role" TEXT NOT NULL DEFAULT 'member',
+  "token" TEXT NOT NULL,
+  "invitedBy" TEXT NOT NULL,
+  "status" TEXT NOT NULL DEFAULT 'PENDING',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "TeamInvite_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "TeamInvite_token_key" ON "TeamInvite"("token")`,
+  `CREATE INDEX IF NOT EXISTS "TeamInvite_organizationId_idx" ON "TeamInvite"("organizationId")`,
+  `CREATE INDEX IF NOT EXISTS "TeamInvite_email_idx" ON "TeamInvite"("email")`,
 ]
 
 let ensured: Promise<void> | null = null

@@ -14,6 +14,7 @@
 import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
 import { ensureSchema } from '@/lib/ensure-schema'
+import { recordAffiliateCommission } from '@/lib/affiliate'
 
 export const TRXID_REGEX = /^[A-Z0-9]{8,10}$/
 export const AMOUNT_TOLERANCE = 1 // ±1 Tk
@@ -177,7 +178,7 @@ export async function grantPaymentBenefits(verificationId: string): Promise<void
   }
 
   // 3. Record the payment
-  await prisma.payment.create({
+  const payment = await prisma.payment.create({
     data: {
       customerId: v.customerId,
       amount: v.amount,
@@ -186,9 +187,17 @@ export async function grantPaymentBenefits(verificationId: string): Promise<void
       status: 'COMPLETED',
       transactionId: v.trxId,
     },
-  }).catch(() => {}) // Payment model shape may differ; non-fatal
+  }).catch(() => null) // Payment model shape may differ; non-fatal
 
-  // 4. Mark verified
+  // 4. Affiliate commission (20% recurring) — if this customer was referred
+  await recordAffiliateCommission({
+    fromCustomerId: v.customerId,
+    amount: v.amount,
+    sourceType: 'PAYMENT',
+    sourceId: payment?.id || v.trxId,
+  }).catch((e) => console.warn('[affiliate] commission record failed:', e))
+
+  // 5. Mark verified
   await prisma.paymentVerification.update({
     where: { id: verificationId },
     data: { status: 'VERIFIED', verifiedAt: new Date() },

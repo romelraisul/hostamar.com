@@ -79,6 +79,8 @@ model Customer {
   creditTransactions CreditTransaction[]
   orders            Order[]
   paymentVerifications PaymentVerification[]
+  affiliateEarnings AffiliateCommission[] @relation("AffiliateEarnings")
+  userWebhooks      UserWebhook[]
   notifications     Notification[]
   leads             Lead[]
   referralsMade     Referral[]     @relation("ReferrerReferrals")
@@ -1032,4 +1034,65 @@ model SmsLog {
 
   @@index([parsedTrxId])
   @@index([receivedAt])
+}
+
+// ════════════════════════════════════════════════════════════════
+// Affiliate program (2026) — 20% recurring commission
+// ════════════════════════════════════════════════════════════════
+
+model AffiliateCommission {
+  id          String   @id @default(cuid())
+  affiliateId String   // Customer who earned it
+  affiliate   Customer @relation("AffiliateEarnings", fields: [affiliateId], references: [id], onDelete: Cascade)
+  fromCustomerId String // Customer whose payment generated it
+  sourceType  String   // PAYMENT | SUBSCRIPTION_RENEWAL
+  sourceId    String?  // Payment/Subscription id
+  amount      Float    // BDT commission
+  rate        Float    @default(0.20)
+  status      String   @default("PENDING") // PENDING | PAID | CANCELLED
+  createdAt   DateTime @default(now())
+  paidAt      DateTime?
+
+  @@index([affiliateId, status])
+  @@index([sourceId])
+}
+
+// ════════════════════════════════════════════════════════════════
+// User webhooks — outbound notifications (job completed etc.)
+// ════════════════════════════════════════════════════════════════
+
+model UserWebhook {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  url        String
+  secret     String   // HMAC signing secret
+  events     String   @default("video.completed") // comma-separated event names
+  isActive   Boolean  @default(true)
+  lastStatus Int?     // HTTP status of last delivery
+  lastSentAt DateTime?
+  failCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+// ════════════════════════════════════════════════════════════════
+// Team workspace invites (2026)
+// ════════════════════════════════════════════════════════════════
+
+model TeamInvite {
+  id             String   @id @default(cuid())
+  organizationId String
+  email          String   // invited email
+  role           String   @default("member") // admin | member
+  token          String   @unique
+  invitedBy      String   // customerId of inviter
+  status         String   @default("PENDING") // PENDING | ACCEPTED | REVOKED
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  @@index([organizationId])
+  @@index([email])
 }

@@ -124,6 +124,20 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
   return sendMail(to, 'Reset Your Hostamar Password', html)
 }
 
+export async function sendTeamInviteEmail(to: string, inviteLink: string) {
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#0a0a0a;color:#fff;border-radius:12px">
+      <h2 style="color:#10b981">You're invited to a Hostamar workspace</h2>
+      <p>Someone invited you to join their team workspace on Hostamar.</p>
+      <p style="margin:24px 0">
+        <a href="${inviteLink}" style="background:#10b981;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Accept Invite</a>
+      </p>
+      <p style="color:#888;font-size:12px">Or copy this link: ${inviteLink}</p>
+      <p style="color:#666;font-size:12px">This invite expires in 7 days. If you didn't expect this, ignore this email.</p>
+    </div>`
+  return sendMail(to, "You're invited to a Hostamar workspace", html)
+}
+
 export async function sendPaymentConfirmationEmail(
   to: string,
   name: string,
