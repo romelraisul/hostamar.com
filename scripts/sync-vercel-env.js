@@ -43,13 +43,20 @@ console.log(`Syncing ${entries.length} vars to Vercel (${targets.join(', ')})${D
 let ok = 0, fail = 0
 for (const [key, value] of entries) {
   if (DRY) { console.log(`  would set ${key}`); ok++; continue }
+  // SAFE ORDER: try add FIRST. Only rm+re-add if it already exists.
+  // Never rm before a confirmed add — a failed add after rm deletes the var.
+  const addOne = (t) =>
+    execSync(`printf %s ${JSON.stringify(value)} | vercel env add ${key} ${t}`, { stdio: 'pipe', shell: '/bin/bash' })
   try {
-    // Remove existing from every target (ignore error if absent), then add fresh
     for (const t of targets) {
-      try { execSync(`vercel env rm ${key} ${t} --yes`, { stdio: 'pipe' }) } catch {}
+      try {
+        addOne(t)
+      } catch {
+        // likely already exists -> replace
+        try { execSync(`vercel env rm ${key} ${t} --yes`, { stdio: 'pipe' }) } catch {}
+        addOne(t)
+      }
     }
-    const cmd = `printf %s ${JSON.stringify(value)} | vercel env add ${key} ${targets.join(' ')}`
-    execSync(cmd, { stdio: 'pipe', shell: '/bin/bash' })
     ok++
   } catch (e) {
     console.error(`  ✗ ${key}: ${String(e.message).split('\n')[0]}`)

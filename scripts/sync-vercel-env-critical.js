@@ -28,9 +28,16 @@ for (const key of WANTED) {
   const value = vars[key]
   if (!value) { console.log(`  - ${key}: empty locally, skipping`); skip++; continue }
   try {
-    for (const t of targets) {
-      try { execSync(`vercel env rm ${key} ${t} --yes`, { stdio: 'pipe' }) } catch {}
+    // SAFE ORDER: add first; only rm+re-add if it already exists.
+    const addOne = (t) =>
       execSync(`printf %s ${JSON.stringify(value)} | vercel env add ${key} ${t}`, { stdio: 'pipe', shell: '/bin/bash' })
+    for (const t of targets) {
+      try {
+        addOne(t)
+      } catch {
+        try { execSync(`vercel env rm ${key} ${t} --yes`, { stdio: 'pipe' }) } catch {}
+        addOne(t)
+      }
     }
     console.log(`  ✓ ${key}`)
     ok++
