@@ -127,6 +127,7 @@ export async function middleware(request: NextRequest) {
     '/api/health',
     '/api/products',
     '/api/pricing',
+    '/api/payments/sms-webhook',
     '/api/hosting/status',
     '/api/generate/history',
     '/api/chat/ai-assist',

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check, Phone, CreditCard, AlertCircle, Loader2, ArrowLeft, Shield, Copy, CheckCircle2, XCircle, Clock, Send, Wallet, Smartphone, Banknote } from 'lucide-react';
 import NextImage from 'next/image';
 import { useLocale } from '@/lib/locale-context';
+import PersonalPaymentPanel from './personal-payment-panel';
 
 type Plan = 'starter' | 'business' | 'enterprise';
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';
@@ -192,6 +193,15 @@ export default function PaymentPage() {
             <p className="text-[#0E7C3A] text-sm">{state.message}</p>
           </div>
         )}
+
+        {/* Personal Send-Money payment (Phase 2) — shown when enabled */}
+        <div className="mb-8">
+          <PersonalPaymentPanel
+            amount={selectedPlan ? PLANS[selectedPlan].amount : undefined}
+            plan={selectedPlan || undefined}
+            credits={selectedPlan ? (selectedPlan === 'starter' ? 6000 : selectedPlan === 'business' ? 12000 : 30000) : undefined}
+          />
+        </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
