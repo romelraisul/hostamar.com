@@ -70,8 +70,20 @@ async function getToken(): Promise<string> {
     signal: AbortSignal.timeout(10000),
   })
   if (!res.ok) throw new Error(`bKash token grant failed: ${res.status}`)
-  const json = (await safeJson(res)) as { id_token?: string; token_type?: string; expires_in?: number }
-  if (!json.id_token) throw new Error('bKash token grant returned no id_token')
+  const json = (await safeJson(res)) as {
+    id_token?: string
+    token_type?: string
+    expires_in?: number
+    // bKash error fields
+    statusMessage?: string
+    errorMessage?: string
+    errorCode?: string
+  }
+  if (!json.id_token) {
+    // Surface bKash's real rejection reason (invalid creds, wrong env, etc.)
+    const reason = json.statusMessage || json.errorMessage || json.errorCode || 'no id_token returned'
+    throw new Error(`bKash token grant rejected: ${reason}`)
+  }
   // cache for 50m (bKash tokens live 1h)
   tokenCache = { token: json.id_token, expiresAt: Date.now() + 50 * 60 * 1000 }
   return json.id_token
