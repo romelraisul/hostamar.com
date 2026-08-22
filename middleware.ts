@@ -130,6 +130,7 @@ export async function middleware(request: NextRequest) {
     '/api/pricing',
     '/api/payments/sms-webhook',
     '/api/tv/status',
+    '/api/tv/now-playing',
     '/api/tv/playlist',
     '/api/tv/hls-url',
     '/api/tv/generate-loop',

@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import TvHero from './TvHero'
 
 type V = { id:string; title:string; topic:string }
 
@@ -31,12 +32,19 @@ export default function HeroVideoGenerator(){
             <video src={`/showcase/${showcaseId}.mp4`} poster="" className="w-full h-24 object-cover rounded-xl border border-[#0E7C3A]/20 hidden md:block" muted loop playsInline autoPlay controls={false} />
           </div>
           <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black">
-            <video src={hero==='latest' ? src : hero==='eid' ? `/showcase/${showcaseId}.mp4` : hero==='boishakh' ? `/showcase/${showcaseId}.mp4` : `/showcase/${showcaseId}.mp4`} poster="" className="w-full h-full object-cover" muted loop playsInline autoPlay controls />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="bg-white/90 text-[#0E7C3A] rounded-full w-16 h-16 flex items-center justify-center text-2xl shadow">▶</span>
-            </div>
-            <div className="absolute top-2 left-2 bg-[#0E7C3A] text-white text-xs px-2 py-1 rounded-full font-bold">70% HERO • {showcaseId.slice(0,9)} • {title} • {topic}</div>
-            <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">🎬 {title} — {topic} • credit 6000 • 70% HERO ▶</div>
+            {hero==='latest' ? (
+              /* LIVE Hostamar TV — homepage main hero (70% cell) */
+              <TvHero />
+            ) : (
+              <>
+                <video src={`/showcase/${showcaseId}.mp4`} poster="" className="w-full h-full object-cover" muted loop playsInline autoPlay controls />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="bg-white/90 text-[#0E7C3A] rounded-full w-16 h-16 flex items-center justify-center text-2xl shadow">▶</span>
+                </div>
+                <div className="absolute top-2 left-2 bg-[#0E7C3A] text-white text-xs px-2 py-1 rounded-full font-bold">70% HERO • {showcaseId.slice(0,9)} • {title} • {topic}</div>
+                <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">🎬 {title} — {topic} • credit 6000 • 70% HERO ▶</div>
+              </>
+            )}
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-3">
