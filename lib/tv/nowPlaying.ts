@@ -77,7 +77,7 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
   try {
     const rows = await prisma.$queryRawUnsafe<any[]>(
       `SELECT "banglaPath", "titleBn", "title", "gender", "voiceUsed"
-       FROM "OpenSourceVideo" WHERE "banglaPath" IN (${paths.map(() => '?').join(',')})`,
+       FROM "OpenSourceVideo" WHERE "banglaPath" IN (${paths.map((_, i) => `$${i + 1}`).join(',')})`,
       ...paths,
     )
     for (const r of rows || []) {
