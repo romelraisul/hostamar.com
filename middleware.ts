@@ -108,6 +108,7 @@ export async function middleware(request: NextRequest) {
     '/verify-email', '/signin', '/developers',
     '/dev', '/products',
     '/generate', '/ai-browser', '/ide',
+    '/tv',
   ]
   for (const p of publicPages) {
     if (pathname === p || pathname.startsWith(p + '/')) {
@@ -119,6 +120,12 @@ export async function middleware(request: NextRequest) {
   const publicApiPaths = [
     '/api/auth/',
     '/api/health',
+    '/api/payments/sms-webhook',
+    '/api/tv/status',
+    '/api/tv/playlist',
+    '/api/tv/hls-url',
+    '/api/tv/generate-loop',
+    '/api/tv/agent/',
     '/api/bootstrap-admin',
     '/api/auth/saml/',
     '/api/auth/oidc/',

@@ -21,6 +21,8 @@ coverage/
 # Backup env files
 .env.local_backup
 .env.vercel
+.env.vercel.backup
+.env.backup.json
 .env.vercel-prod
 .env.production.local
 
@@ -126,4 +128,16 @@ voice-call-test_*.json
 .netlify/.cloudflared/.api_token
 .env.migrate
 .vercel.env
-.env*
+
+# Tauri / Rust
+apps/desktop/src-tauri/target/
+camofox/
+comfyui/custom_nodes/ComfyUI-AnimateDiff-Evolved
+comfyui/custom_nodes/ComfyUI-VideoHelperSuite
+apps/mobile/.expo/
+apps/mobile/android/
+apps/mobile/package-lock.json
+
+# Archived legacy env files (contain secrets, never commit)
+legacy-env-archive/
+.env.local
