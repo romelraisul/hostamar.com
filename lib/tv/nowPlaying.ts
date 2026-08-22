@@ -145,7 +145,12 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
   }
 
   const total = rota.reduce((s, r) => s + r.duration, 0)
-  const elapsed = await ffmpegUptimeSec()
+  let elapsed = await ffmpegUptimeSec()
+  if (elapsed == null) {
+    // Serverless (Vercel): no systemd/ffprobe — rotate by wall clock so the
+    // hero title still advances through the playlist over time.
+    elapsed = Date.now() / 1000
+  }
   let current = rota[0]
   if (elapsed != null && total > 0) {
     let pos = elapsed % total
