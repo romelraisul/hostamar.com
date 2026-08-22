@@ -119,6 +119,56 @@ const STATEMENTS: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS "TeamInvite_token_key" ON "TeamInvite"("token")`,
   `CREATE INDEX IF NOT EXISTS "TeamInvite_organizationId_idx" ON "TeamInvite"("organizationId")`,
   `CREATE INDEX IF NOT EXISTS "TeamInvite_email_idx" ON "TeamInvite"("email")`,
+  // ── 24/7 AI TV Station (Phase 4) ────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS "TvChannel" (
+  "id" TEXT NOT NULL,
+  "name" TEXT NOT NULL,
+  "description" TEXT,
+  "isLive" BOOLEAN NOT NULL DEFAULT false,
+  "liveSince" TIMESTAMP(3),
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "TvChannel_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE TABLE IF NOT EXISTS "TvPlaylistItem" (
+  "id" TEXT NOT NULL,
+  "channelId" TEXT NOT NULL,
+  "videoId" TEXT,
+  "title" TEXT NOT NULL,
+  "url" TEXT NOT NULL,
+  "source" TEXT NOT NULL DEFAULT 'generated',
+  "position" INTEGER NOT NULL DEFAULT 0,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "TvPlaylistItem_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "TvPlaylistItem_channelId_position_idx" ON "TvPlaylistItem"("channelId", "position")`,
+  `CREATE TABLE IF NOT EXISTS "TvStreamDestination" (
+  "id" TEXT NOT NULL,
+  "channelId" TEXT NOT NULL,
+  "platform" TEXT NOT NULL,
+  "rtmpUrl" TEXT NOT NULL,
+  "streamKey" TEXT NOT NULL,
+  "label" TEXT,
+  "isActive" BOOLEAN NOT NULL DEFAULT true,
+  "lastError" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "TvStreamDestination_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "TvStreamDestination_channelId_idx" ON "TvStreamDestination"("channelId")`,
+  `CREATE TABLE IF NOT EXISTS "TvSchedule" (
+  "id" TEXT NOT NULL,
+  "channelId" TEXT NOT NULL,
+  "promptTemplate" TEXT NOT NULL,
+  "style" TEXT NOT NULL DEFAULT 'cinematic',
+  "cron" TEXT NOT NULL DEFAULT '*/30 * * * *',
+  "lastRun" TIMESTAMP(3),
+  "nextRun" TIMESTAMP(3),
+  "isActive" BOOLEAN NOT NULL DEFAULT true,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "TvSchedule_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "TvSchedule_channelId_idx" ON "TvSchedule"("channelId")`,
 ]
 
 let ensured: Promise<void> | null = null
