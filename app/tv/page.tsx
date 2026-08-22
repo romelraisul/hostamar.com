@@ -37,7 +37,14 @@ export default function TvPage() {
       if (sRes?.ok || sRes?.isLive !== undefined) setStatus(sRes.isLive !== undefined ? sRes : sRes);
       else if (sRes) setStatus(sRes);
       const resolvedHls = sRes?.hlsUrl || hRes?.hlsUrl || null;
-      setHlsUrl(resolvedHls);
+      // Codec-free Chromium (no H.264 decoder) cannot play the H.264/AAC variant;
+      // fall back to the VP9/Opus fMP4 variant on vp9.hostamar.com.
+      const h264Ok = typeof MediaSource !== "undefined"
+        && MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E"');
+      const finalHls = resolvedHls && !h264Ok
+        ? "https://vp9.hostamar.com/master.m3u8"
+        : resolvedHls;
+      setHlsUrl(finalHls);
       if (pRes?.items) setPlaylist(pRes.items.filter((i: any) => i.url));
     } catch (e: any) {
       setError(e.message);
