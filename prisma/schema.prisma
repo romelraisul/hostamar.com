@@ -1119,7 +1119,7 @@ model TvChannel {
 /// Open-source video queued for Bangla dubbing (NASA / Prelinger / Blender)
 model OpenSourceVideo {
   id          String   @id @default(cuid())
-  source      String   // NASA | PRELINGER | BLENDER
+  source      String   // NASA | PRELINGER | BLENDER | IA-EDU | PEXELS | PIXABAY
   externalId  String
   title       String
   originalUrl String?
@@ -1131,6 +1131,8 @@ model OpenSourceVideo {
   localPath   String?
   banglaPath  String?
   titleBn     String?
+  gender      String? // detected speaker gender: male | female
+  voiceUsed   String? // Bangla edge-tts voice used for the dub
   addedToTv   Boolean  @default(false)
   createdAt   DateTime @default(now())
 
