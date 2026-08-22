@@ -101,12 +101,16 @@ export default function TvPage() {
         hls.destroy();
       });
       const onMediaErr = () => {
-        video.removeEventListener("error", onMediaErr);
         if (!vp9Tried) { vp9Tried = true; startVp9(); }
       };
       video.addEventListener("error", onMediaErr);
+      // Watchdog: some builds set video.error without dispatching usable events
+      const watchdog = setInterval(() => {
+        if (video.error && !vp9Tried) { vp9Tried = true; startVp9(); }
+      }, 2000);
       hlsRef.current = hls;
       return () => {
+        clearInterval(watchdog);
         video.removeEventListener("error", onMediaErr);
         hls.destroy();
       };
