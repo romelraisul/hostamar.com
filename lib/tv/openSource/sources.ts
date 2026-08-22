@@ -53,13 +53,14 @@ export async function searchNasa(q: string, limit = 8): Promise<SourceCandidate[
         return rank(a) - rank(b)
       })
       const thumb = (assets?.collection?.items || []).map((i: any) => i?.href || "").find((u: string) => u.endsWith("~thumb.jpg")) || undefined
+      const dl = mp4s[0].replace(/ /g, "%20");
       out.push({
         id: `nasa-${nid}`,
         source: "NASA",
         externalId: nid,
         title: String(d.title || nid).slice(0, 160),
         description: String(d.description || "").slice(0, 400),
-        downloadUrl: mp4s[0],
+        downloadUrl: dl,
         license: "Public Domain (NASA)",
         licenseUrl: "https://www.nasa.gov/nasa-brand-center/images-and-media/",
         thumbnail: thumb,
