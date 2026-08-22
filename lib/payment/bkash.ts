@@ -40,6 +40,21 @@ export interface CreatePaymentResult {
 // In-memory token cache (fallback when redis unavailable). Keyed by baseUrl.
 let tokenCache: { token: string; expiresAt: number } | null = null
 
+// bKash's gateway occasionally emits raw control characters (0x00-0x1F) inside
+// JSON string literals, which is invalid JSON and makes res.json() throw. Raw
+// control chars never legitimately appear in JSON (they must be \uXXXX-escaped),
+// so stripping them before parsing is a safe robustness fix.
+async function safeJson<T>(res: Response): Promise<T> {
+  const text = await res.text()
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    // Remove raw control characters and retry once.
+    const cleaned = text.replace(/[\u0000-\u001F]/g, ' ')
+    return JSON.parse(cleaned) as T
+  }
+}
+
 async function getToken(): Promise<string> {
   const env = ENV()
   if (!env.appKey || !env.appSecret || !env.username || !env.password) {
@@ -55,7 +70,7 @@ async function getToken(): Promise<string> {
     signal: AbortSignal.timeout(10000),
   })
   if (!res.ok) throw new Error(`bKash token grant failed: ${res.status}`)
-  const json = (await res.json()) as { id_token?: string; token_type?: string; expires_in?: number }
+  const json = (await safeJson(res)) as { id_token?: string; token_type?: string; expires_in?: number }
   if (!json.id_token) throw new Error('bKash token grant returned no id_token')
   // cache for 50m (bKash tokens live 1h)
   tokenCache = { token: json.id_token, expiresAt: Date.now() + 50 * 60 * 1000 }
@@ -91,7 +106,7 @@ export async function createPayment(input: CreatePaymentInput): Promise<CreatePa
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(10000),
   })
-  const json = (await res.json()) as {
+  const json = (await safeJson(res)) as {
     statusCode?: string
     statusMessage?: string
     bkashURL?: string
@@ -120,7 +135,7 @@ export async function executePayment(paymentID: string): Promise<ExecutePaymentR
     body: JSON.stringify({ paymentID }),
     signal: AbortSignal.timeout(10000),
   })
-  const json = (await res.json()) as {
+  const json = (await safeJson(res)) as {
     statusCode?: string
     statusMessage?: string
     paymentID?: string
@@ -204,7 +219,7 @@ export async function queryPayment(paymentID: string): Promise<{ ok: boolean; st
     if (!res.ok) {
       return { ok: false, error: `bKash status query failed: ${res.status}` }
     }
-    const json = (await res.json()) as { transactionStatus?: string; trxID?: string }
+    const json = (await safeJson(res)) as { transactionStatus?: string; trxID?: string }
     return { ok: true, status: json.transactionStatus, trxId: json.trxID }
   } catch (err: any) {
     return { ok: false, error: err?.message || 'bKash status query failed' }
