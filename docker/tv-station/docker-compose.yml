@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════
+# Hostamar 24/7 AI TV Station
+# nginx-rtmp ingest + FFmpeg multi-destination auto-streamer
+#
+# Usage:
+#   docker compose -f docker/tv-station/docker-compose.yml up -d
+#
+# The streamer polls https://hostamar.com/api/tv/status + /api/tv/playlist.
+# When the channel is marked live (via /api/tv/stream/start), it builds an
+# ffmpeg command that loops the playlist to every active RTMP destination.
+# ═══════════════════════════════════════════════════════════════
+
+services:
+  rtmp:
+    image: alfg/nginx-rtmp:latest
+    container_name: hostamar-tv-rtmp
+    restart: unless-stopped
+    ports:
+      - "1935:1935"   # RTMP ingest: rtmp://localhost:1935/live/<key>
+      - "8088:80"     # HLS playback: http://localhost:8088/live/<key>.m3u8
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - tv
+
+  streamer:
+    image: linuxserver/ffmpeg:latest
+    container_name: hostamar-tv-streamer
+    restart: unless-stopped
+    depends_on:
+      - rtmp
+    environment:
+      - HOSTAMAR_API=${HOSTAMAR_API:-https://hostamar.com}
+      - CRON_SECRET=${CRON_SECRET:-}
+      - POLL_SECONDS=${POLL_SECONDS:-30}
+      - LOCAL_RTMP=rtmp://rtmp:1935/live
+    volumes:
+      - ./streamer.sh:/streamer.sh:ro
+      - tv-media:/tv
+    entrypoint: ["/bin/sh", "/streamer.sh"]
+    networks:
+      - tv
+
+volumes:
+  tv-media:
+
+networks:
+  tv:
+    driver: bridge
