@@ -353,6 +353,31 @@ const STATEMENTS: string[] = [
   `ALTER TABLE "TvPlaylistItem" ADD COLUMN IF NOT EXISTS "played" BOOLEAN NOT NULL DEFAULT false`,
   `ALTER TABLE "TvPlaylistItem" ADD COLUMN IF NOT EXISTS "playedAt" TIMESTAMP(3)`,
   `CREATE INDEX IF NOT EXISTS "TvPlaylistItem_played_idx" ON "TvPlaylistItem"("played")`,
+  // ── Crypto tipping ──
+  `CREATE TABLE IF NOT EXISTS "CryptoWallet" (
+  "id" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "address" TEXT NOT NULL,
+  "privateKeyEncrypted" TEXT NOT NULL,
+  "chain" TEXT NOT NULL DEFAULT 'ethereum',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "CryptoWallet_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "CryptoWallet_address_key" ON "CryptoWallet"("address")`,
+  `CREATE INDEX IF NOT EXISTS "CryptoWallet_userId_idx" ON "CryptoWallet"("userId")`,
+  `CREATE TABLE IF NOT EXISTS "CryptoTip" (
+  "id" TEXT NOT NULL,
+  "walletId" TEXT NOT NULL,
+  "fromAddress" TEXT,
+  "amount" DOUBLE PRECISION NOT NULL,
+  "txHash" TEXT,
+  "message" TEXT,
+  "videoSlug" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "CryptoTip_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "CryptoTip_walletId_idx" ON "CryptoTip"("walletId")`,
+  `CREATE INDEX IF NOT EXISTS "CryptoTip_videoSlug_idx" ON "CryptoTip"("videoSlug")`,
 ]
 
 let ensured: Promise<void> | null = null

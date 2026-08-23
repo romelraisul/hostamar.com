@@ -1173,6 +1173,35 @@ model TvStreamDestination {
   @@index([channelId])
 }
 
+// Crypto tipping for TV (viewer → creator, per /tv/watch page)
+model CryptoWallet {
+  id                  String   @id @default(cuid())
+  userId              String
+  address             String   @unique
+  privateKeyEncrypted String   @db.Text
+  chain               String   @default("ethereum") // ethereum | base | solana | bitcoin
+  createdAt           DateTime @default(now())
+
+  tips CryptoTip[]
+
+  @@index([userId])
+}
+
+model CryptoTip {
+  id          String   @id @default(cuid())
+  walletId    String
+  wallet      CryptoWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  fromAddress String?
+  amount      Float
+  txHash      String?
+  message     String?
+  videoSlug   String?
+  createdAt   DateTime @default(now())
+
+  @@index([walletId])
+  @@index([videoSlug])
+}
+
 model TvSchedule {
   id             String   @id @default(cuid())
   channelId      String

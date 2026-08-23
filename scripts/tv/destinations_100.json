@@ -1,0 +1,17 @@
+[
+  {"platform":"YOUTUBE","rtmpUrl":"rtmp://a.rtmp.youtube.com/live2/","streamKey":"PLACEHOLDER_YT","label":"YouTube Main"},
+  {"platform":"FACEBOOK","rtmpUrl":"rtmps://live-api-s.facebook.com:443/rtmp/","streamKey":"PLACEHOLDER_FB","label":"Facebook Page"},
+  {"platform":"TWITCH","rtmpUrl":"rtmp://live.twitch.tv/app/","streamKey":"PLACEHOLDER_TWITCH","label":"Twitch"},
+  {"platform":"KICK","rtmpUrl":"rtmp://fa723fc1b171.global-contribute.live-video.net/app/","streamKey":"PLACEHOLDER_KICK","label":"Kick"},
+  {"platform":"TROVO","rtmpUrl":"rtmp://livepush.trovo.live/live/","streamKey":"PLACEHOLDER_TROVO","label":"Trovo"},
+  {"platform":"THETA","rtmpUrl":"rtmp://live.theta.tv/live/","streamKey":"PLACEHOLDER_THETA","label":"Theta"},
+  {"platform":"ODYSEE","rtmpUrl":"rtmp://live.odysee.com/live/","streamKey":"PLACEHOLDER_ODYSEE","label":"Odysee"},
+  {"platform":"DLIVE","rtmpUrl":"rtmp://stream.dlive.tv/live/","streamKey":"PLACEHOLDER_DLIVE","label":"DLive"},
+  {"platform":"CUSTOM","rtmpUrl":"rtmp://custom1.example.com/live/","streamKey":"PLACEHOLDER_CUSTOM1","label":"Custom 1"},
+  {"platform":"CUSTOM","rtmpUrl":"rtmp://custom2.example.com/live/","streamKey":"PLACEHOLDER_CUSTOM2","label":"Custom 2"},
+  {"platform":"CUSTOM","rtmpUrl":"rtmp://custom3.example.com/live/","streamKey":"PLACEHOLDER_CUSTOM3","label":"Custom 3"},
+  {"platform":"CUSTOM","rtmpUrl":"rtmp://live.soulbound.tv/app/","streamKey":"PLACEHOLDER_SOULBOUND","label":"Soulbound TV"},
+  {"platform":"CUSTOM","rtmpUrl":"rtmp://ingest.binancelive.com/live/","streamKey":"PLACEHOLDER_BINANCE","label":"Binance Live"},
+  {"platform":"CUSTOM","rtmpUrl":"rtmp://live-api.kucoin.com/live/","streamKey":"PLACEHOLDER_KUCOIN","label":"KuCoin Live"},
+  {"platform":"CUSTOM","rtmpUrl":"rtmp://rtmp.darazlive.example.com/live/","streamKey":"PLACEHOLDER_DARAZ","label":"Daraz Live"}
+]
