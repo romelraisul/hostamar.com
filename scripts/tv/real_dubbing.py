@@ -207,11 +207,13 @@ def main():
             c2 = psycopg2.connect(url); c2.cursor().execute('UPDATE "FreeVideoSource" SET used=true WHERE id=%s', (src['id'],)); c2.commit(); c2.close()
             sys.exit(0)
         log(f"Downloading original from {yt_url} ...")
-        subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-f', 'best[height<=720]/best', '-o', orig, '--no-warnings', yt_url], timeout=300)
+        # Combined selector — modern YouTube is DASH-only; progressive 'best' often unavailable.
+        subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-f', 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
+                        '--merge-output-format', 'mp4', '-o', orig, '--no-warnings', yt_url], timeout=300)
         if not os.path.exists(orig):
             # Retry once with default format selection (some videos have no <=720 single-file format).
             log("720p format unavailable — retrying with default format...")
-            subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-o', orig, '--no-warnings', yt_url], timeout=300)
+            subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '--merge-output-format', 'mp4', '-o', orig, '--no-warnings', yt_url], timeout=300)
     if not os.path.exists(orig):
         # Blacklist this source (used=true) and exit 0 — one bad video must never kill the batch.
         log("Original download failed — blacklisting source, continuing batch")
