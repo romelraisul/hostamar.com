@@ -185,8 +185,8 @@ def build_transcript(seo, src):
     parts.append("দেখা হবে পরের ভিডিওতে, আল্লাহ হাফেজ।")
 
     transcript = " ".join(p for p in parts if p)
-    # pad to ~150 words if short by repeating benefit variants
-    while len(transcript.split()) < 150:
+    # pad to ~200 words if short by repeating benefit variants (SEO index wants 200+)
+    while len(transcript.split()) < 200:
         transcript += " " + benefit + " বিস্তারিত জানতে hostamar.com ভিজিট করুন।"
     return transcript
 
