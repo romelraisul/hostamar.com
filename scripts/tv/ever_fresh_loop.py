@@ -61,11 +61,15 @@ def run(cmd, timeout=900):
 def refill():
     print("[ever-fresh] REFILLING — hunting 12 videos parallel (p-limit 3)...", flush=True)
     run([TSX, 'scripts/tv/hunter_parallel.ts', '--max-per-product=2', '--audience-focused'], timeout=600)
-    print("[ever-fresh] research gate (willPayScore>=7)...", flush=True)
+    print("[ever-fresh] research gate (willPayScore>=8)...", flush=True)
     run(['python3', 'scripts/tv/research_inhouse.py', '--limit', '12'], timeout=900)
-    print("[ever-fresh] creating 4 parallel (Piper) ...", flush=True)
-    run(['python3', 'scripts/tv/create_batch.py', '--batch=4', '--parallel=4', '--use-piper', '--force-restart'], timeout=1200)
-    # SEO for new batch is inside create_batch; also ensure any missing SEO
+    print("[ever-fresh] real dubbing keep-music ×4 (Demucs + Piper, sequential)...", flush=True)
+    for i in range(4):
+        ok = run(['python3', 'scripts/tv/real_dubbing.py', '--any', '--keep-music', '--force-restart'], timeout=900)
+        if not ok:
+            print(f"[ever-fresh] real_dubbing #{i+1} failed, stopping batch", flush=True)
+            break
+    # SEO for new batch is inside real_dubbing→create_from_free; also ensure any missing SEO
     run(['python3', 'scripts/tv/seo_generate.py', '--missing'], timeout=600)
 
 def main():
