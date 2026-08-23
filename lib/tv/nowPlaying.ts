@@ -33,6 +33,10 @@ export interface NowPlaying {
   slug: string | null
   /** true when the on-air file lives under videos/pure/ (no TTS, no watermark) */
   isPure: boolean
+  /** ISO-ish language code parsed from pure filename ({lang}_{place}_...) */
+  language: string | null
+  /** Place code parsed from pure filename ({lang}_{place}_...) */
+  place: string | null
 }
 
 async function ffprobeDuration(path: string): Promise<number | null> {
@@ -99,6 +103,8 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
         viralScore: null,
         slug: null,
         isPure: false,
+        language: null,
+        place: null,
       })
     }
   } catch {
@@ -119,20 +125,20 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
         orderBy: { createdAt: 'desc' },
         select: { title: true },
       })
-      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false }
- } catch {
- return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false }
- }
- }
+      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false, language: null, place: null }
+    } catch {
+      return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false, language: null, place: null }
+    }
+  }
 
- const rota: RotaItem[] = items.map((it) => ({
- title: it.title,
- url: it.url,
- titleBn: null,
- gender: null,
- voiceUsed: null,
- duration: DEFAULT_DURATION_SEC,
- }))
+  const rota: RotaItem[] = items.map((it) => ({
+    title: it.title,
+    url: it.url,
+    titleBn: null,
+    gender: null,
+    voiceUsed: null,
+    duration: DEFAULT_DURATION_SEC,
+  }))
 
   // Probe real durations only for local files (self-hosted mode), capped.
   let probed = 0
@@ -170,6 +176,8 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
             viralScore: null,
             slug: null,
             isPure: false,
+            language: null,
+            place: null,
           })
         }
       }
@@ -229,6 +237,8 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
     // TvVideoSeo may not exist yet pre-ensureSchema — slug stays null
   }
 
+  // Parse {lang}_{place}_ from pure filenames for the hero badge.
+  const lpMatch = (current.url || '').split('/').pop()?.match(/^([a-z]{2,3})_([A-Z]{2})_/)
   return {
     title: current.titleBn || current.title,
     titleBn: current.titleBn,
@@ -238,5 +248,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
     viralScore: (current as any).viralScore ?? null,
     slug,
     isPure: (current.url || '').includes('/videos/pure/'),
+    language: lpMatch ? lpMatch[1] : null,
+    place: lpMatch ? lpMatch[2] : null,
   }
 }
