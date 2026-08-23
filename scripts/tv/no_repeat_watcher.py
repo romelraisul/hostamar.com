@@ -66,7 +66,8 @@ def mark_played(url):
             cur.execute('UPDATE "TvPlaylistItem" SET position=%s WHERE id=%s', (i, pid))
         conn.commit()
         for p in [PLAYLIST, PLAYLIST.replace('playlist.host.txt','playlist.txt')]:
-            open(p+'.tmp','w').write('\n'.join([f"file '{u}'" for u in urls])+'\n')
+            esc_lines = [f"file '{u.replace(chr(39), chr(39)+chr(92)+chr(39)+chr(39))}'" for u in urls]
+            open(p+'.tmp','w').write('\n'.join(esc_lines)+'\n')
             os.rename(p+'.tmp', p)
         print(f"[watcher] marked played {os.path.basename(url)} — remaining {len(urls)}", flush=True)
         return len(urls)
