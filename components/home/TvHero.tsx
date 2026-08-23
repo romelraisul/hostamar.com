@@ -24,6 +24,8 @@ type NowPlaying = {
   gender?: string | null
   voiceUsed?: string | null
   credit?: number | null
+  isViral?: boolean
+  viralScore?: number | null
 }
 
 const VP9_URL = 'https://vp9.hostamar.com/master.m3u8'
@@ -50,6 +52,14 @@ export default function TvHero() {
   }, [])
 
   const isLive = !!(np?.isLive && np?.hlsReachable !== false)
+
+  // View heartbeat — every 30s while LIVE, for viral repeat scoring
+  useEffect(() => {
+    if (!isLive) return
+    const beat = () => fetch('/api/tv/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ watchSec: 30, watchPercent: 85 }) }).catch(() => {})
+    const t = setInterval(beat, 30000)
+    return () => clearInterval(t)
+  }, [isLive])
 
   // Player — identical error-driven fallback chain as /tv
   useEffect(() => {
@@ -141,7 +151,7 @@ export default function TvHero() {
 
       {/* Now playing bar */}
       <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded truncate z-10">
-        🎬 [TV] {title} • credit {credit} • 70% HERO ▶{unsupported ? ' • browser HLS unsupported' : ''}
+        🎬 [TV] {title} • credit {credit}{np?.isViral ? ` • 🔥 Viral ${np?.viralScore ?? ''}` : ''} • 70% HERO ▶{unsupported ? ' • browser HLS unsupported' : ''}
       </div>
     </div>
   )

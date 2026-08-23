@@ -27,6 +27,8 @@ export interface NowPlaying {
   titleBn: string | null
   gender: string | null
   voiceUsed: string | null
+  isViral: boolean
+  viralScore: number | null
 }
 
 async function ffprobeDuration(path: string): Promise<number | null> {
@@ -67,6 +69,8 @@ interface RotaItem {
   titleBn: string | null
   gender: string | null
   voiceUsed: string | null
+  isViral?: boolean
+  viralScore?: number | null
   duration: number
 }
 
@@ -87,6 +91,8 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
         gender: r.gender ?? null,
         voiceUsed: r.voiceUsed ?? null,
         title: r.title ?? null,
+        isViral: false,
+        viralScore: null,
       })
     }
   } catch {
@@ -107,9 +113,9 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
         orderBy: { createdAt: 'desc' },
         select: { title: true },
       })
-      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null }
+      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null }
     } catch {
-      return { title: null, titleBn: null, gender: null, voiceUsed: null }
+      return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null }
     }
   }
 
@@ -154,6 +160,8 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
             gender: r.gender ?? null,
             voiceUsed: r.voiceUsed ?? null,
             title: r.title ?? null,
+            isViral: false,
+            viralScore: null,
           })
         }
       }
@@ -171,6 +179,16 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
       r.voiceUsed = m.voiceUsed
     }
   }
+
+  // Enrich viral flags from TvVideoStats
+  try {
+    const vstats = await prisma.tvVideoStats.findMany({ where: { playlistItemId: { in: items.map(i => i.id) } } })
+    const vmap = new Map(vstats.map(s => [s.playlistItemId, s]))
+    for (let i = 0; i < rota.length; i++) {
+      const vs = vmap.get(items[i].id)
+      if (vs) { rota[i].isViral = vs.isViral; rota[i].viralScore = vs.viralScore }
+    }
+  } catch {}
 
   const total = rota.reduce((s, r) => s + r.duration, 0)
   let elapsed = await ffmpegUptimeSec()
@@ -192,5 +210,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
     titleBn: current.titleBn,
     gender: current.gender,
     voiceUsed: current.voiceUsed,
+    isViral: (current as any).isViral || false,
+    viralScore: (current as any).viralScore ?? null,
   }
 }
