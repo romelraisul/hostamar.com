@@ -301,19 +301,40 @@ async function main() {
   const enhance = comfyUp ? [] : (process.env.VIDEO_ENHANCE === '0' ? [] : ['eq=saturation=1.18:contrast=1.06:brightness=0.01', 'unsharp=5:5:0.6'])
   const hookEsc = tr.hook.replace(/[:'\\]/g, '').slice(0, 60)
   const tagEsc = (PRODUCT_TAGS[source.product] || source.product).replace(/[:'\\]/g, '')
-  const font = fs.existsSync(BENGALI_FONT) ? BENGALI_FONT : LATIN_FONT
-  const ff = font.replace(/:/g, '\\:')
+  // ASS subtitles via libass — drawtext can't do Harfbuzz complex shaping, so Bangla
+  // conjuncts (যুক্তাক্ষর) and vowel reordering render broken (detached ি/ে, □ for Latin
+  // since NotoSansBengali has no A-Z). libass + shaping=complex shapes Bangla correctly
+  // and falls back to DejaVu for Latin (verified: ক্ষ জ্ঞ ত্ত ন্দ ভাঙ্গা all fused).
+  const assPath = path.join('/tmp', `${source.id}_overlay.ass`)
+  const assEsc = (s: string) => s.replace(/\\/g, '\\\\').replace(/[{}]/g, '').replace(/\n/g, ' ')
+  const targetDur = ttsDur // audio drives video; original trimmed to this
+  const assEnd = `${String(Math.floor(targetDur / 60)).padStart(2, '0')}:${(targetDur % 60).toFixed(2).padStart(5, '0')}`
+  const assContent = [
+    '[Script Info]', 'ScriptType: v4.00+', 'PlayResX: 1280', 'PlayResY: 720',
+    'ScaledBorderAndShadow: yes', '',
+    '[V4+ Styles]',
+    'Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding',
+    // Alignment: 2=bottom-center (hook), 7=top-left (product tag), 9=top-right (brand)
+    'Style: Hook,Noto Sans Bengali,32,&H0000FFFF,&H000000FF,&H80000000,&H80000000,1,0,0,0,100,100,0,0,1,3,1,2,40,40,40,1',
+    'Style: Product,Noto Sans Bengali,22,&H0066E600,&H000000FF,&H80000000,&H80000000,1,0,0,0,100,100,0,0,1,2,1,7,20,20,20,1',
+    'Style: Brand,DejaVu Sans,24,&H00FFFFFF,&H000000FF,&H80000000,&H80000000,1,0,0,0,100,100,0,0,1,2,0,9,20,20,20,1',
+    '',
+    '[Events]',
+    'Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text',
+    `Dialogue: 0,0:00:00.00,0:${assEnd},Hook,,0,0,0,,${assEsc(hookEsc)}`,
+    `Dialogue: 0,0:00:00.00,0:${assEnd},Product,,0,0,0,,${assEsc(tagEsc)}`,
+    `Dialogue: 0,0:00:00.00,0:${assEnd},Brand,,0,0,0,,HOSTAMAR.COM/TV`,
+    '',
+  ].join('\n')
+  fs.writeFileSync(assPath, assContent, 'utf-8')
   const vfilter = [
     'scale=1280:720:force_original_aspect_ratio=decrease',
     'pad=1280:720:(ow-iw)/2:(oh-ih)/2',
     ...enhance,
     'fps=25', 'format=yuv420p',
-    `drawtext=fontfile=${ff}:text=HOSTAMAR.COM/TV:fontcolor=white:fontsize=28:box=1:boxcolor=black@0.45:boxborderw=8:x=w-tw-20:y=20`,
-    `drawtext=fontfile=${ff}:text=${hookEsc}:fontcolor=yellow:fontsize=32:box=1:boxcolor=black@0.6:boxborderw=6:x=(w-text_w)/2:y=h-th-30`,
-    `drawtext=fontfile=${ff}:text=${tagEsc}:fontcolor=#00E676:fontsize=22:box=1:boxcolor=black@0.5:boxborderw=5:x=20:y=20`,
+    `ass=${assPath}:fontsdir=/usr/share/fonts/truetype/noto:shaping=complex`,
   ].join(',')
-  console.log('  rendering final video (target '+ttsDur.toFixed(1)+'s, genpts+shortest)...')
-  const targetDur = ttsDur // audio drives video; original trimmed to this
+  console.log('  rendering final video (target '+targetDur.toFixed(1)+'s, genpts+shortest)...')
   const ffArgs: any[] = ['-y', '-fflags', '+genpts', '-ss', '0', '-t', targetDur.toFixed(1), '-i', rawPath]
   const fcParts = [`[0:v]${vfilter}[v]`, '[1:a]aresample=48000,aformat=channel_layouts=stereo[vo]']
   if (musicPath) {
@@ -332,6 +353,15 @@ async function main() {
     finalPath)
   await execAsync('ffmpeg', ffArgs, { timeout: 300000 } as any)
   if (!fs.existsSync(finalPath)) throw new Error('ffmpeg render failed')
+  // HARD GUARD: a non-playable render (0-byte / moov atom missing / no duration)
+  // would crash ffmpeg's concat demuxer on next TV restart and 404 the whole
+  // channel. Reject it here BEFORE it ever reaches the playlist.
+  const { stdout: probeS } = await execAsync('ffprobe', ['-v','error','-show_entries','format=duration','-of','csv=p=0', finalPath] as any)
+  const probeDur = parseFloat(String(probeS).trim()) || 0
+  if (probeDur < 5 || !fs.existsSync(finalPath) || fs.statSync(finalPath).size === 0) {
+    try { fs.unlinkSync(finalPath) } catch {}
+    throw new Error(`render not playable (dur=${probeDur}s) — aborted before publish to protect TV`)
+  }
   // Verify A/V sync: video duration ≈ audio duration (≈targetDur), no 10-min tail
   try {
     const { stdout: vDurS } = await execAsync('ffprobe', ['-v','error','-select_streams','v:0','-show_entries','stream=duration','-of','csv=p=0', finalPath] as any)
@@ -366,9 +396,21 @@ async function main() {
     const removable = ordered.filter(i => i.source !== 'viral').slice(-(ordered.length - 50))
     for (const r of removable) await prisma.tvPlaylistItem.delete({ where: { id: r.id } })
   }
-  // Regenerate playlist.host.txt — EVER-FRESH no-repeat: each file once, no weight loop
+  // Regenerate playlist.host.txt — EVER-FRESH no-repeat: each file once, no weight loop.
+  // HARD GUARD: skip any URL whose file is missing/0-byte/unplayable, so a stale
+  // corrupt render can never crash ffmpeg's concat demuxer → channel 404.
+  const { execSync } = require('child_process')
   const finalItems = await prisma.tvPlaylistItem.findMany({ where: { channelId: channel.id, played: false }, orderBy: { position: 'asc' } })
-  const lines: string[] = finalItems.map(it => `file '${it.url.replace(/'/g, "'\\''")}'`)
+  const lines: string[] = []
+  for (const it of finalItems) {
+    const u = String(it.url)
+    let ok = fs.existsSync(u) && fs.statSync(u).size > 0
+    if (ok) {
+      try { execSync(`ffprobe -v error -show_entries format=duration -of csv=p=0 '${u.replace(/'/g, "'\\''")}'`, { timeout: 10000 }) } catch { ok = false }
+    }
+    if (ok) lines.push(`file '${u.replace(/'/g, "'\\''")}'`)
+    else console.warn(`  ⚠ skipping unplayable playlist url (would 404 TV): ${u}`)
+  }
   fs.writeFileSync(PLAYLIST + '.tmp', lines.join('\n') + '\n')
   fs.renameSync(PLAYLIST + '.tmp', PLAYLIST)
   // FORCE restart: ffmpeg's concat demuxer never reloads the playlist file, and a
