@@ -188,7 +188,7 @@ def main():
             cur.execute('SELECT id, product, title, url, "videoId", "localPath" FROM "FreeVideoSource" WHERE product=%s AND used=false ORDER BY "viralScore" DESC LIMIT 1', (prod,))
         row = cur.fetchone()
         if not row:
-            print("No unused source for", 'ANY' if args.any else prod); sys.exit(1)
+            print("No unused source for", 'ANY' if args.any else prod); sys.exit(0)
         src = {'id': row[0], 'product': row[1], 'title': row[2], 'url': row[3], 'videoId': row[4], 'localPath': row[5]}
     conn.close()
     log(f"Source [{src['product']}] {src['title'][:50]}")
@@ -202,11 +202,27 @@ def main():
         elif src.get('url') and 'youtube' in src['url']:
             yt_url = src['url']
         if not yt_url:
-            log("No YouTube URL for source — cannot download original"); sys.exit(1)
+            # Permanently skip: a source with no downloadable URL must not block the batch forever.
+            log("No YouTube URL for source — marking used to unblock pipeline")
+            c2 = psycopg2.connect(url); c2.cursor().execute('UPDATE "FreeVideoSource" SET used=true WHERE id=%s', (src['id'],)); c2.commit(); c2.close()
+            sys.exit(0)
         log(f"Downloading original from {yt_url} ...")
         subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-f', 'best[height<=720]/best', '-o', orig, '--no-warnings', yt_url], timeout=300)
+        if not os.path.exists(orig):
+            # Retry once with default format selection (some videos have no <=720 single-file format).
+            log("720p format unavailable — retrying with default format...")
+            subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-o', orig, '--no-warnings', yt_url], timeout=300)
     if not os.path.exists(orig):
-        log("Original download failed — aborting"); sys.exit(1)
+        # Blacklist this source (used=true) and exit 0 — one bad video must never kill the batch.
+        log("Original download failed — blacklisting source, continuing batch")
+        try:
+            c3 = psycopg2.connect(url)
+            cur3 = c3.cursor()
+            cur3.execute('UPDATE "FreeVideoSource" SET used=true WHERE id=%s', (src['id'],))
+            c3.commit(); c3.close()
+        except Exception as e:
+            print(f"blacklist update failed: {e}")
+        sys.exit(0)
 
     # 1. Source separation (Demucs): keep original music+SFX, remove only speaking voice.
     #    no_vocals.wav becomes the music bed (DEMUCS_BG env) instead of synthetic chord.

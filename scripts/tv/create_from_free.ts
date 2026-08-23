@@ -68,15 +68,70 @@ function isPlaceholder(s: string): boolean {
   return t.length < 5 || !hasBangla(s)
 }
 
-async function translateViaRafan(titleEn: string, product: string): Promise<{ titleBn: string; hook: string; scriptBn: string; by: string }> {
+// DIVERSE fallback templates — rotate by source-id hash so videos never all sound
+// identical (the old single template made every video say the same sentence, which
+// viewers perceived as "the same words repeating"). Each product has 4 variants.
+const FALLBACK_SCRIPTS: Record<string, Array<{ hook: string; script: (tag: string) => string }>> = {
+  Video: [
+    { hook: 'ভিডিও বানিয়ে টাকা আয় করুন!', script: (t) => `আসসালামু আলাইকুম। মাত্র ৩০ সেকেন্ডে প্রফেশনাল ভিডিও বানাতে চান? ${t} দিয়ে কোনো এডিটিং স্কিল ছাড়াই দারুন ভিডিও তৈরি করুন। দারাজ সেলার আর ফেসবুক পেজ মালিকদের জন্য সেরা সমাধান। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'রিলস ভাইরাল করার সহজ উপায়!', script: (t) => `আপনার পণ্যের ভিডিও বানাতে ঘণ্টার পর ঘণ্টা সময় লাগে? ${t} দিয়ে মিনিটেই ভাইরাল রিলস তৈরি করুন। বাংলায় সহজ, বিকাশে পেমেন্ট। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'এই ঈদে সবাই তাকিয়ে থাকবে!', script: (t) => `ঈদ কালেকশনের মার্কেটিং ভিডিও নিজেই বানান। ${t} দিয়ে শাড়ি থ্রি-পিস কসমেটিকসের আকর্ষণীয় ভিডিও তৈরি করুন। ছোট ব্যবসার জন্য একদম পারফেক্ট। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'এডিটিং শিখতে হবে না!', script: (t) => `ভিডিও এডিটিং জানেন না? সমস্যা নেই। ${t} দিয়ে অটোমেটিক প্রফেশনাল ভিডিও পান। ফ্রিল্যান্সার আর উদ্যোক্তাদের জন্য সেরা টুল। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+  ],
+  Hosting: [
+    { hook: 'নিজের ওয়েবসাইট বানান আজই!', script: (t) => `ছোট ব্যবসার জন্য ওয়েবসাইট চান? ${t} দিয়ে বিডিআইএক্স ২০ মিলিসেকেন্ড স্পিডে ওয়ার্ডপ্রেস ই-কমার্স সাইট চালান। ডোমেইন হোস্টিং সব বাংলায়। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'ঢাকায় দ্রুততম হোস্টিং!', script: (t) => `ওয়েবসাইট স্লো লোড হয়? ${t} এর বিডিআইএক্স সার্ভারে ঢাকা থেকে মাত্র ২০ মিলিসেকেন্ডে লোড হয়। বিকাশে পেমেন্ট, বাংলা সাপোর্ট। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'ই-কমার্স সাইট এখন সহজ!', script: (t) => `ওয়ার্ডপ্রেস ই-কমার্স সাইট বানাতে চান? ${t} দিয়ে সি-প্যানেল সহ সম্পূর্ণ সেটআপ পান। ছোট ব্যবসার জন্য সাশ্রয়ী। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'ডোমেইন হোস্টিং এক জায়গায়!', script: (t) => `ডোমেইন আর হোস্টিং আলাদা কিনতে হবে না। ${t} এ সব এক প্যাকেজে, বাংলা টিউটোরিয়াল সহ। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+  ],
+  Chat: [
+    { hook: 'মেসেঞ্জার রিপ্লাই অটোমেটিক!', script: (t) => `প্রতিদিন ১০০ মেসেঞ্জার মেসেজের উত্তর দিতে পারছেন না? ${t} দিয়ে অটো রিপ্লাই সেট করুন, রাত ১১টা পর্যন্ত কাস্টমার সার্ভিস চালু থাকে। বাংলা ভয়েস ইনপুট সহ। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'কাস্টমার মিস হবে না আর!', script: (t) => `দোকানের মেসেজের উত্তর দিতে দেরি হলে কাস্টমার চলে যায়। ${t} দিয়ে তাৎক্ষণিক অটো রিপ্লাই পান। ছোট ব্যবসার জন্য পারফেক্ট। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'এআই চ্যাটবট বাংলায়!', script: (t) => `আপনার ফেসবুক পেজে এআই চ্যাটবট চান? ${t} দিয়ে বাংলায় কাস্টমার প্রশ্নের উত্তর দিন। বিক্রি বাড়ান সহজেই। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'ব্যবসা চলবে ২৪ ঘণ্টা!', script: (t) => `আপনি ঘুমালেও আপনার দোকান চলবে। ${t} এর অটো রিপ্লাই সিস্টেম ২৪ ঘণ্টা কাস্টমার সামলানো করে। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+  ],
+  Browser: [
+    { hook: 'ব্রাউজার অটোমেশন এখন সহজ!', script: (t) => `দারাজ প্রাইস ট্র্যাকিং আর ফেসবুক পোস্ট অটোমেট করতে চান? ${t} দিয়ে মার্কেটিং এজেন্সির কাজ দ্রুত করুন। টেক-স্যাভিদের জন্য সেরা। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'জিমেইল কোডিং অটোমেট করুন!', script: (t) => `ব্রাউজারে বারবার একই কাজ করছেন? ${t} দিয়ে অটোমেট করুন। ডেটা কালেকশন থেকে পোস্টিং সব এক ক্লিকে। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'মার্কেটারদের গোপন টুল!', script: (t) => `প্রতিযোগীর দাম মনিটর করতে চান? ${t} দিয়ে দারাজ প্রাইস অটোমেটিক ট্র্যাক করুন। মার্কেটারদের জন্য অপরিহার্য। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'কাজের সময় বাঁচান!', script: (t) => `ম্যানুয়াল ব্রাউজিংয়ে সময় নষ্ট? ${t} দিয়ে রিপিটিটিভ টাস্ক অটোমেট করুন। ফ্রিল্যান্সারদের সময় বাঁচায়। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+  ],
+  IDE: [
+    { hook: 'ফ্রি কোডিং এডিটর বাংলায়!', script: (t) => `কোডিং শিখতে চান কিন্তু টুল কিনতে পারছেন না? ${t} দিয়ে ফ্রিতে ভিএস কোডের মতো এডিটর পান। বিডি তরুণ ডেভেলপারদের জন্য। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'রিপ্লিটের সেরা বিকল্প!', script: (t) => `রিপ্লিটের ফ্রি বিকল্প খুঁজছেন? ${t} দিয়ে লাইভ এডিটর পান, জাভাস্ক্রিপ্ট পিএইচপি সব চলে। স্টুডেন্টদের জন্য একদম ফ্রি। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'কোড লিখুন যেকোনো জায়গায়!', script: (t) => `ল্যাপটপ ছাড়াও কোড করতে চান? ${t} এর অনলাইন আইডিই দিয়ে মোবাইলেও কোড লিখুন। বিডি ডেভেলপারদের জন্য। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'ই-কমার্স ডেভেলপমেন্ট শিখুন!', script: (t) => `জাভাস্ক্রিপ্ট দিয়ে ই-কমার্স সাইট বানাতে চান? ${t} দিয়ে ফ্রিতে শিখুন আর প্র্যাকটিস করুন। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+  ],
+  Gaming: [
+    { hook: 'ফ্রি ফায়ার টুর্নামেন্ট করুন!', script: (t) => `ফ্রি ফায়ার টুর্নামেন্ট হোস্ট করতে চান? ${t} দিয়ে গেম সার্ভার সেটআপ করুন সহজে। বাংলাদেশের গেমারদের জন্য। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'গেম সার্ভার এখন সাশ্রয়ী!', script: (t) => `পিইউবিজি বা ফ্রি ফায়ার টুর্নামেন্টের সার্ভার চান? ${t} দিয়ে কম খরচে হোস্টিং পান। গেমার কমিউনিটির জন্য সেরা। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'নিজের টুর্নামেন্ট নিজে করুন!', script: (t) => `গেমিং টুর্নামেন্ট অর্গানাইজ করতে চান? ${t} দিয়ে সার্ভার থেকে রেজিস্ট্রেশন সব ম্যানেজ করুন। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+    { hook: 'গেমারদের জন্য সেরা হোস্টিং!', script: (t) => `ল্যাগ ছাড়া গেম সার্ভার চান? ${t} দিয়ে বাংলাদেশ থেকে লো পিং সার্ভার পান। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।` },
+  ],
+}
+
+// Deterministic pick by source id so the same source always gets the same variant,
+// but different sources get different variants (no two videos sound identical).
+function pickFallback(product: string, seed: string): { hook: string; scriptBn: string } {
+  const variants = FALLBACK_SCRIPTS[product] || FALLBACK_SCRIPTS.Video
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  const v = variants[h % variants.length]
+  const tag = PRODUCT_TAGS[product] || product
+  return { hook: v.hook, scriptBn: v.script(tag) }
+}
+
+async function translateViaRafan(titleEn: string, product: string, sourceId: string): Promise<{ titleBn: string; hook: string; scriptBn: string; by: string }> {
+  const fb = pickFallback(product, sourceId)
   const fallback = {
     titleBn: `${PRODUCT_TAGS[product] || product} — ${titleEn.slice(0, 40)}`,
-    hook: `${PRODUCT_TAGS[product] || product} এখন ফ্রি!`,
-    scriptBn: `আসসালামু আলাইকুম। ${PRODUCT_TAGS[product] || product} নিযে এলাম আপনাদের জন্য। বাংলাদেশের ছোট ব্যবসার জন্য সেরা সমাধান। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।`,
+    hook: fb.hook,
+    scriptBn: fb.scriptBn,
     by: 'template',
   }
   const tag = PRODUCT_TAGS[product] || product
-  const prompt = `You are Hostamar's Bangla marketing writer for SMEs. Product: ${product} (${tag}).
+  const prompt = `No thinking, no explanation. Reply ONLY with raw JSON.
+You are Hostamar's Bangla marketing writer for SMEs. Product: ${product} (${tag}).
 English video title: "${titleEn}"
 Write in Bangla:
 1. titleBn: catchy Bangla title (max 60 chars, viral style)
@@ -90,10 +145,11 @@ Reply ONLY with JSON: {"titleBn":"...","hook":"...","scriptBn":"..."}`
       body: JSON.stringify({
         model: 'rafan',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 600,
+        max_tokens: 2000,
         stream: false,
+        chat_template_kwargs: { enable_thinking: false },
       }),
-      signal: AbortSignal.timeout(180000) as any,
+      signal: AbortSignal.timeout(60000) as any,
     })
     const j: any = await r.json()
     let text = j?.choices?.[0]?.message?.content || ''
@@ -109,7 +165,7 @@ Reply ONLY with JSON: {"titleBn":"...","hook":"...","scriptBn":"..."}`
     }
     throw new Error('unparseable or placeholder LLM output')
   } catch (e: any) {
-    console.warn('  [translate] rafan unusable, template fallback:', e?.message?.slice(0, 80))
+    console.warn('  [translate] rafan unusable, diverse template fallback:', e?.message?.slice(0, 80))
     return fallback
   }
 }
@@ -165,7 +221,7 @@ async function main() {
 
   // 2. Translate via in-house rafan
   console.log('  translating via rafan (in-house LLM)...')
-  const tr = await translateViaRafan(source.title, source.product)
+  const tr = await translateViaRafan(source.title, source.product, source.id)
   console.log(`  titleBn: ${tr.titleBn}`)
   console.log(`  hook: ${tr.hook}`)
 

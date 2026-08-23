@@ -28,6 +28,19 @@ def db_url():
             return line.strip().split('=',1)[1].strip().strip('"').split('&channel')[0]
     sys.exit('DATABASE_URL not found')
 
+def env_file():
+    """Full .env.local as dict — children need JWT/NEXTAUTH/etc too, not just DATABASE_URL."""
+    e = {}
+    for line in open(os.path.join(REPO, '.env.local')):
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        k, v = line.split('=', 1)
+        v = v.strip().strip('"').strip("'")
+        if v:
+            e[k.strip()] = v
+    return e
+
 def counts():
     import psycopg2
     conn = psycopg2.connect(db_url())
@@ -45,7 +58,7 @@ def run(cmd, timeout=900):
     print(f"[ever-fresh] $ {' '.join(cmd[:6])}...", flush=True)
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=REPO,
-                           env={**os.environ, 'DATABASE_URL': db_url()})
+                           env={**os.environ, **env_file()})
         # Print last line for progress
         tail = (p.stdout + p.stderr).strip().splitlines()[-1][:120] if (p.stdout+p.stderr).strip() else ""
         if tail:
