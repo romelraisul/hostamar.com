@@ -1,0 +1,13 @@
+services:
+  demucs:
+    image: docker.io/farbenorg/demucs:latest
+    container_name: hostamar-demucs
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:10204:10204"
+    volumes:
+      - ./models:/data
+      - /home/romel/hostamar-build/docker/tv-station/videos:/videos
+    # Usage: demucs --two-stems=vocals -o /tmp/separated /videos/original.mp4
+    # Produces vocals.wav (English voice to replace) + no_vocals.wav (music+SFX kept)
+    # Fallback: if service down, pipeline keeps synthetic music 0.12 bed
