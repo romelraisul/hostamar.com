@@ -349,6 +349,10 @@ const STATEMENTS: string[] = [
 )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "FreeVideoSourceResearch_videoSourceId_key" ON "FreeVideoSourceResearch"("videoSourceId")`,
   `CREATE INDEX IF NOT EXISTS "FreeVideoSourceResearch_relevanceScore_idx" ON "FreeVideoSourceResearch"("relevanceScore")`,
+  // ── No-repeat ever-fresh (played flag) ──
+  `ALTER TABLE "TvPlaylistItem" ADD COLUMN IF NOT EXISTS "played" BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE "TvPlaylistItem" ADD COLUMN IF NOT EXISTS "playedAt" TIMESTAMP(3)`,
+  `CREATE INDEX IF NOT EXISTS "TvPlaylistItem_played_idx" ON "TvPlaylistItem"("played")`,
 ]
 
 let ensured: Promise<void> | null = null

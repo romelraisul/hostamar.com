@@ -292,15 +292,9 @@ async function main() {
     const removable = ordered.filter(i => i.source !== 'viral').slice(-(ordered.length - 50))
     for (const r of removable) await prisma.tvPlaylistItem.delete({ where: { id: r.id } })
   }
-  // Regenerate playlist.host.txt with weights
-  const finalItems = await prisma.tvPlaylistItem.findMany({ where: { channelId: channel.id }, orderBy: { position: 'asc' } })
-  const stats = await prisma.tvVideoStats.findMany({ where: { playlistItemId: { in: finalItems.map(i => i.id) } } })
-  const wmap = new Map(stats.map(s => [s.playlistItemId, s.playWeight]))
-  const lines: string[] = []
-  for (const it of finalItems) {
-    const w = wmap.get(it.id) || 1
-    for (let k = 0; k < w; k++) lines.push(`file '${it.url}'`)
-  }
+  // Regenerate playlist.host.txt — EVER-FRESH no-repeat: each file once, no weight loop
+  const finalItems = await prisma.tvPlaylistItem.findMany({ where: { channelId: channel.id, played: false }, orderBy: { position: 'asc' } })
+  const lines: string[] = finalItems.map(it => `file '${it.url}'`)
   fs.writeFileSync(PLAYLIST + '.tmp', lines.join('\n') + '\n')
   fs.renameSync(PLAYLIST + '.tmp', PLAYLIST)
   // FORCE restart: ffmpeg's concat demuxer never reloads the playlist file, and a

@@ -1149,9 +1149,12 @@ model TvPlaylistItem {
   url       String    // playable video URL (local path or CDN)
   source    String    @default("generated") // generated | stock | loop
   position  Int      @default(0)
+  played    Boolean  @default(false)
+  playedAt  DateTime?
   createdAt DateTime @default(now())
 
   @@index([channelId, position])
+  @@index([played])
 }
 
 model TvStreamDestination {
