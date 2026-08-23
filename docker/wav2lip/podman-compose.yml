@@ -1,0 +1,15 @@
+services:
+  wav2lip:
+    image: docker.io/ahmetoner/wav2lip:latest
+    container_name: hostamar-wav2lip
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:10203:10203"
+    volumes:
+      - ./checkpoints:/app/checkpoints
+      - ./temp:/tmp
+      - /home/romel/hostamar-build/docker/tv-station/videos:/videos
+    # Checkpoint: wav2lip_gan.pth (120 MB) -> checkpoints/
+    # Download: https://github.com/Rudrabha/Wav2Lip/releases/download/v1/wav2lip_gan.pth
+    # Also needs s3fd-619a62匹?
+    # GFPGAN optional: pip install gfpgan basicsr; model GFPGANv1.4.pth

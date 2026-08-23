@@ -53,6 +53,12 @@ def mark_played(url):
     try:
         conn = psycopg2.connect(db_url())
         cur = conn.cursor()
+        # Keep at least 2 unplayed as buffer — never drain to 0 while refilling
+        cur.execute('SELECT count(*) FROM "TvPlaylistItem" WHERE played=false')
+        remaining_before = cur.fetchone()[0]
+        if remaining_before <= 2:
+            print(f"[watcher] buffer low ({remaining_before} left), skipping mark to keep TV alive", flush=True)
+            return remaining_before
         cur.execute('UPDATE "TvPlaylistItem" SET played=true, "playedAt"=NOW() WHERE url=%s', (url,))
         # Also regenerate playlist.host.txt without played items
         cur.execute('SELECT id FROM "TvChannel" LIMIT 1')
