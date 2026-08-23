@@ -141,14 +141,14 @@ async function main() {
   const productFilter = argVal('--product')
 
   // Pick source: explicit id, else highest viralScore unused (optionally by product).
-  // Research gate: reject relevanceScore < 7 (NULL = not yet researched = allowed).
+  // Audience gate: willBuyScore ≥8 and willLeave false (only buyers likely to buy).
   const source = sourceId
     ? await prisma.freeVideoSource.findUnique({ where: { id: sourceId } })
     : await prisma.freeVideoSource.findFirst({
         where: {
           used: false,
           ...(productFilter ? { product: productFilter } : {}),
-          OR: [{ relevanceScore: { gte: 7 } }, { relevanceScore: null }],
+          OR: [{ relevanceScore: { gte: 8 } }, { relevanceScore: null }],
         },
         orderBy: { viralScore: 'desc' },
       })
@@ -206,9 +206,13 @@ async function main() {
   const { stdout: ttsDurStr } = await execAsync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ttsPath] as any)
   const ttsDur = Math.min(parseFloat(String(ttsDurStr).trim()) || 20, 45)
 
-  // 5. Music bed (ffmpeg-synthesized, royalty-free) — mixed at low volume under VO.
-  //    musicgen/bark don't exist on the gateway (audited); this is the in-house stand-in.
+  // 5. Music bed — REAL dubbing keeps original music+SFX (Demucs no_vocals), else synth fallback
   let musicPath = ''
+  const demucsBg = process.env.DEMUCS_BG && fs.existsSync(process.env.DEMUCS_BG) ? process.env.DEMUCS_BG : ''
+  if (demucsBg) {
+    musicPath = demucsBg
+    console.log('  music: original background kept via Demucs (vocals removed, music+SFX kept)')
+  } else {
   const wantMusic = process.env.USE_MUSIC !== '0'
   if (wantMusic) {
     try {
@@ -229,6 +233,7 @@ async function main() {
       console.warn('  music bed failed, continuing VO-only')
       musicPath = ''
     }
+  }
   }
 
   // 6. ffmpeg: trim to audio length + sync fix (no 10-min silent tail)

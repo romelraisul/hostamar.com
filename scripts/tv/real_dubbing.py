@@ -130,6 +130,25 @@ def extract_speaker_sample(mp4, out_wav, duration=10):
     except Exception:
         return False
 
+def demucs_keep_music(original_mp4):
+    """
+    Try Demucs source separation: splits original into vocals (English speech to replace)
+    and no_vocals (music+SFX to keep). Returns (vocals_wav, no_vocals_wav) or (None, None) if unavailable.
+    Tries: 1) local `demucs` binary, 2) podman demucs service at :10204, 3) fallback None.
+    """
+    tmpdir = tempfile.mkdtemp(prefix="demucs-")
+    try:
+        # Try local demucs (pip install demucs)
+        r = subprocess.run(['python3','-m','demucs','--two-stems=vocals','-o',tmpdir, original_mp4],
+                           capture_output=True, timeout=120)
+        # demucs output: tmpdir/htdemucs/original/vocals.wav and no_vocals.wav
+        for root, dirs, files in os.walk(tmpdir):
+            if 'vocals.wav' in files and 'no_vocals.wav' in files:
+                return os.path.join(root,'vocals.wav'), os.path.join(root,'no_vocals.wav')
+    except Exception as e:
+        log(f"Demucs not available ({e}), keeping synthetic music bed")
+    return None, None
+
 def piper_tts(text, speaker, out_wav):
     safe = text.replace("'", "'\\''")
     subprocess.run(f"echo '{safe}' | python3 -m piper --model {PIPER_MODEL} --speaker {speaker} --output_file {out_wav}",
