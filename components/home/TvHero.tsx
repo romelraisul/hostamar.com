@@ -27,6 +27,7 @@ type NowPlaying = {
   isViral?: boolean
   viralScore?: number | null
   slug?: string | null
+  isPure?: boolean
 }
 
 const VP9_URL = 'https://vp9.hostamar.com/master.m3u8'
@@ -151,7 +152,13 @@ export default function TvHero() {
         </div>
       )}
 
-      {/* Now playing bar — links to the on-air video's SEO page when it has one */}
+      {/* Pure 1080p badge — shows when the on-air file is a pure (no-TTS, no-watermark) source */}
+      {isLive && np?.isPure && (
+        <div className="absolute top-11 left-2 flex items-center gap-1 bg-[#0E7C3A] text-white text-[10px] px-2 py-0.5 rounded-full font-bold z-10">
+          🔵 Pure 1080p • No Edit
+        </div>
+      )}
+
       <Link
         href={np?.slug ? `/tv/watch/${np.slug}` : '/tv'}
         className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block"
