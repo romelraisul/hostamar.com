@@ -294,7 +294,7 @@ async function main() {
   }
   // Regenerate playlist.host.txt — EVER-FRESH no-repeat: each file once, no weight loop
   const finalItems = await prisma.tvPlaylistItem.findMany({ where: { channelId: channel.id, played: false }, orderBy: { position: 'asc' } })
-  const lines: string[] = finalItems.map(it => `file '${it.url}'`)
+  const lines: string[] = finalItems.map(it => `file '${it.url.replace(/'/g, "'\\''")}'`)
   fs.writeFileSync(PLAYLIST + '.tmp', lines.join('\n') + '\n')
   fs.renameSync(PLAYLIST + '.tmp', PLAYLIST)
   // FORCE restart: ffmpeg's concat demuxer never reloads the playlist file, and a

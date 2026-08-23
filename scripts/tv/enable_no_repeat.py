@@ -75,7 +75,7 @@ def main():
         sys.exit(1)
     cur.execute('SELECT url FROM "TvPlaylistItem" WHERE "channelId"=%s ORDER BY position ASC', (cid,))
     urls = [r[0] for r in cur.fetchall()]
-    lines = [f"file '{u}'" for u in urls]
+    lines = [f"file '{u.replace(chr(39), chr(39)+chr(92)+chr(39)+chr(39))}'" for u in urls]
     for p in [PLAYLIST, PLAYLIST_TXT]:
         open(p+'.tmp','w').write('\n'.join(lines)+'\n')
         os.rename(p+'.tmp', p)

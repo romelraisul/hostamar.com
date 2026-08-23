@@ -118,7 +118,7 @@ def main():
         channel_id = row[0]
         cur.execute('SELECT url FROM "TvPlaylistItem" WHERE "channelId"=%s ORDER BY position ASC', (channel_id,))
         urls = [r[0] for r in cur.fetchall()]
-        lines = [f"file '{u}'" for u in urls]
+        lines = [f"file '{u.replace(chr(39), chr(39)+chr(92)+chr(39)+chr(39))}'" for u in urls]
         for path in [PLAYLIST_HOST, PLAYLIST_TXT]:
             tmp = path + '.tmp'
             open(tmp, 'w').write('\n'.join(lines) + '\n')
