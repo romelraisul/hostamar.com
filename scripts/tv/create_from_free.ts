@@ -45,7 +45,21 @@ const PRODUCT_TAGS: Record<string, string> = {
   Gaming: 'গেম টুর্নামেন্ট',
 }
 
+function hasBangla(s: string): boolean {
+  return /[\u0980-\u09FF]/.test(s || '')
+}
+function isPlaceholder(s: string): boolean {
+  const t = (s || '').replace(/[\s.।,!?]/g, '')
+  return t.length < 5 || !hasBangla(s)
+}
+
 async function translateViaRafan(titleEn: string, product: string): Promise<{ titleBn: string; hook: string; scriptBn: string; by: string }> {
+  const fallback = {
+    titleBn: `${PRODUCT_TAGS[product] || product} — ${titleEn.slice(0, 40)}`,
+    hook: `${PRODUCT_TAGS[product] || product} এখন ফ্রি!`,
+    scriptBn: `আসসালামু আলাইকুম। ${PRODUCT_TAGS[product] || product} নিযে এলাম আপনাদের জন্য। বাংলাদেশের ছোট ব্যবসার জন্য সেরা সমাধান। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।`,
+    by: 'template',
+  }
   const tag = PRODUCT_TAGS[product] || product
   const prompt = `You are Hostamar's Bangla marketing writer for SMEs. Product: ${product} (${tag}).
 English video title: "${titleEn}"
@@ -73,17 +87,15 @@ Reply ONLY with JSON: {"titleBn":"...","hook":"...","scriptBn":"..."}`
     const m = text.match(/\{[\s\S]*"titleBn"[\s\S]*\}/)
     if (m) {
       const parsed = JSON.parse(m[0])
-      if (parsed.titleBn && parsed.hook && parsed.scriptBn) return { ...parsed, by: 'rafan' }
+      // Reject placeholder/empty/non-Bangla output
+      if (!isPlaceholder(parsed.titleBn) && !isPlaceholder(parsed.hook) && !isPlaceholder(parsed.scriptBn)) {
+        return { titleBn: parsed.titleBn, hook: parsed.hook, scriptBn: parsed.scriptBn, by: 'rafan' }
+      }
     }
-    throw new Error('unparseable LLM output')
+    throw new Error('unparseable or placeholder LLM output')
   } catch (e: any) {
-    console.warn('  [translate] rafan failed, template fallback:', e?.message?.slice(0, 80))
-    return {
-      titleBn: `${tag} — ${titleEn.slice(0, 40)}`,
-      hook: `${tag} এখন ফ্রি! 🔥`,
-      scriptBn: `আসসালামু আলাইকুম। ${tag} নিয়ে এলাম আপনার জন্য। বাংলাদেশের ছোট ব্যবসার জন্য সেরা সমাধান। আজই hostamar.com এ যান, ফ্রি ট্রাই করুন।`,
-      by: 'template',
-    }
+    console.warn('  [translate] rafan unusable, template fallback:', e?.message?.slice(0, 80))
+    return fallback
   }
 }
 
@@ -135,8 +147,9 @@ async function main() {
   const voice = gender === 'female' ? 'bn-BD-NabanitaNeural' : 'bn-BD-PradeepNeural'
   console.log(`  gender: ${gender} → ${voice}`)
 
-  // 4. TTS
-  const ttsText = `${tr.hook} ${tr.scriptBn}`
+  // 4. TTS (strip emoji/special chars that break edge-tts)
+  const clean = (s: string) => (s || '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '').replace(/["'`\\]/g, '').trim()
+  const ttsText = clean(`${tr.hook} ${tr.scriptBn}`).slice(0, 400)
   const ttsPath = path.join('/tmp', `${source.id}_bn.mp3`)
   await execAsync('python3', ['-m', 'edge_tts', '--voice', voice, '--text', ttsText, '--write-media', ttsPath], { timeout: 120000 } as any)
   const { stdout: ttsDurStr } = await execAsync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ttsPath] as any)
