@@ -231,7 +231,8 @@ async function main() {
     }
   }
 
-  // 6. ffmpeg: trim + optional color enhance + watermark + hook + product tag
+  // 6. ffmpeg: trim to audio length + sync fix (no 10-min silent tail)
+  // Hardened: trim original to targetDur (audio length) at input, genpts+shortest, map only new audio
   const finalPath = path.join(VIRAL_DIR, `${source.id}_free_bn.mp4`)
   // HunyuanVideo little-edit via comfy when available; else in-process enhance.
   const comfyUp = await comfyAvailable()
@@ -250,24 +251,36 @@ async function main() {
     `drawtext=fontfile=${ff}:text=${hookEsc}:fontcolor=yellow:fontsize=32:box=1:boxcolor=black@0.6:boxborderw=6:x=(w-text_w)/2:y=h-th-30`,
     `drawtext=fontfile=${ff}:text=${tagEsc}:fontcolor=#00E676:fontsize=22:box=1:boxcolor=black@0.5:boxborderw=5:x=20:y=20`,
   ].join(',')
-  console.log('  rendering final video...')
-  const ffArgs: any[] = ['-y']
-  const fcParts = [`[0:v]${vfilter}[v]`, '[1:a]aresample=44100,aformat=channel_layouts=stereo[vo]']
+  console.log('  rendering final video (target '+ttsDur.toFixed(1)+'s, genpts+shortest)...')
+  const targetDur = ttsDur // audio drives video; original trimmed to this
+  const ffArgs: any[] = ['-y', '-fflags', '+genpts', '-ss', '0', '-t', targetDur.toFixed(1), '-i', rawPath]
+  const fcParts = [`[0:v]${vfilter}[v]`, '[1:a]aresample=48000,aformat=channel_layouts=stereo[vo]']
   if (musicPath) {
-    ffArgs.push('-i', rawPath, '-i', ttsPath, '-i', musicPath)
-    fcParts.push('[2:a]volume=1.0[m]', '[vo][m]amix=inputs=2:duration=first:dropout_transition=2[a]')
-    console.log('  audio: Bangla VO + music bed mixed')
+    ffArgs.push('-i', ttsPath, '-i', musicPath)
+    fcParts.push('[2:a]volume=0.12,aresample=48000[m]', '[vo][m]amix=inputs=2:duration=shortest:dropout_transition=0[a]')
+    console.log('  audio: Bangla VO + music bed mixed (shortest)')
   } else {
-    ffArgs.push('-i', rawPath, '-i', ttsPath)
+    ffArgs.push('-i', ttsPath)
     fcParts.push('[vo]anull[a]')
   }
   ffArgs.push('-filter_complex', fcParts.join(';'),
     '-map', '[v]', '-map', '[a]',
-    '-c:v', 'libx264', '-preset', 'veryfast', '-b:v', '2500k',
-    '-c:a', 'aac', '-b:a', '128k',
-    '-t', ttsDur.toFixed(1), finalPath)
+    '-c:v', 'libx264', '-profile:v', 'high', '-level', '3.1', '-pix_fmt', 'yuv420p', '-preset', 'veryfast', '-b:v', '2500k', '-maxrate', '2500k', '-bufsize', '5000k', '-g', '60',
+    '-c:a', 'aac', '-b:a', '128k', '-ar', '48000',
+    '-shortest', '-avoid_negative_ts', 'make_zero', '-fflags', '+genpts+igndts',
+    finalPath)
   await execAsync('ffmpeg', ffArgs, { timeout: 300000 } as any)
   if (!fs.existsSync(finalPath)) throw new Error('ffmpeg render failed')
+  // Verify A/V sync: video duration ≈ audio duration (≈targetDur), no 10-min tail
+  try {
+    const { stdout: vDurS } = await execAsync('ffprobe', ['-v','error','-select_streams','v:0','-show_entries','stream=duration','-of','csv=p=0', finalPath] as any)
+    const { stdout: aDurS } = await execAsync('ffprobe', ['-v','error','-select_streams','a:0','-show_entries','stream=duration','-of','csv=p=0', finalPath] as any)
+    const vd = parseFloat(String(vDurS).trim()) || 0, ad = parseFloat(String(aDurS).trim()) || 0
+    console.log(`  AV verify: video ${vd.toFixed(1)}s audio ${ad.toFixed(1)}s target ${targetDur.toFixed(1)}s`)
+    if (Math.abs(vd - ad) > 0.7) console.warn(`  ⚠ AV drift ${Math.abs(vd-ad).toFixed(1)}s`)
+    if (vd > 70) console.warn(`  ⚠ video too long ${vd.toFixed(1)}s — should be ~${targetDur.toFixed(0)}s`)
+    if (vd < 5) throw new Error(`video too short ${vd.toFixed(1)}s`)
+  } catch (e: any) { console.warn('  verify skipped:', e?.message?.slice(0,80)) }
 
   // 6. Publish: DB + playlist position 1 + regenerate + restart ffmpeg
   await prisma.freeVideoSource.update({
