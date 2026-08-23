@@ -1,0 +1,14 @@
+services:
+  xtts:
+    image: ghcr.io/coqui-ai/xtts:latest
+    container_name: hostamar-xtts
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:10202:10202"
+    volumes:
+      - ./models:/data
+    environment:
+      - MODEL=xtts_v2
+    command: ["--model", "xtts_v2", "--listen", "0.0.0.0:10202"]
+    # Requires ~4GB VRAM. On 8GB 5060 it fits only if no other GPU service runs.
+    # Fallback: host Piper (already installed) is used until this is up.
