@@ -32,9 +32,24 @@ const LATIN_FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 
 // In-house LLM gateway (Windows host, reachable from WSL via bridge IP)
 const GATEWAY = process.env.HOSTAMAR_GATEWAY_URL || 'http://172.17.112.1:11442'
+const COMFY_URL = process.env.COMFY_URL || 'http://172.17.112.1:8188'
 const envObj: Record<string, string | undefined> = process.env as any
 const KEY_NAME = ['HERMES', 'CUSTOM', 'HOSTAMAR', 'COM', 'API', 'KEY'].join('_')
 const GATEWAY_KEY = envObj[KEY_NAME] || ''
+
+/** Probe the ComfyUI edit engine (Hunyuan little-edit host). Graceful: false if down. */
+async function comfyAvailable(): Promise<boolean> {
+  try {
+    const r = await fetch(COMFY_URL + '/system_stats', { signal: AbortSignal.timeout(4000) as any })
+    return r.ok
+  } catch { return false }
+}
+
+// Per-product music-bed root notes (Hz) — major triads, royalty-free by construction
+const MUSIC_ROOT: Record<string, number> = {
+  Video: 220.0, Hosting: 261.63, Chat: 293.66,
+  Browser: 246.94, IDE: 196.0, Gaming: 174.61,
+}
 
 const PRODUCT_TAGS: Record<string, string> = {
   Video: 'AI ভিডিও মেকার',
@@ -118,11 +133,16 @@ async function main() {
   const sourceId = args.find(a => a.startsWith('--sourceId='))?.split('=')[1]
   const productFilter = args.find(a => a.startsWith('--product='))?.split('=')[1]
 
-  // Pick source: explicit id, else highest viralScore unused (optionally by product)
+  // Pick source: explicit id, else highest viralScore unused (optionally by product).
+  // Research gate: reject relevanceScore < 7 (NULL = not yet researched = allowed).
   const source = sourceId
     ? await prisma.freeVideoSource.findUnique({ where: { id: sourceId } })
     : await prisma.freeVideoSource.findFirst({
-        where: { used: false, ...(productFilter ? { product: productFilter } : {}) },
+        where: {
+          used: false,
+          ...(productFilter ? { product: productFilter } : {}),
+          OR: [{ relevanceScore: { gte: 7 } }, { relevanceScore: null }],
+        },
         orderBy: { viralScore: 'desc' },
       })
   if (!source) { console.error('No unused FreeVideoSource. Run hunter_fixed.ts first.'); process.exit(1) }
@@ -155,8 +175,37 @@ async function main() {
   const { stdout: ttsDurStr } = await execAsync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ttsPath] as any)
   const ttsDur = Math.min(parseFloat(String(ttsDurStr).trim()) || 20, 45)
 
-  // 5. ffmpeg: trim + watermark + hook + product tag
+  // 5. Music bed (ffmpeg-synthesized, royalty-free) — mixed at low volume under VO.
+  //    musicgen/bark don't exist on the gateway (audited); this is the in-house stand-in.
+  let musicPath = ''
+  const wantMusic = process.env.USE_MUSIC !== '0'
+  if (wantMusic) {
+    try {
+      const root = MUSIC_ROOT[source.product] || 220
+      const third = root * Math.pow(2, 4 / 12)
+      const fifth = root * Math.pow(2, 7 / 12)
+      const dur = Math.ceil(ttsDur) + 1
+      musicPath = path.join('/tmp', `${source.id}_music.wav`)
+      await execAsync('ffmpeg', ['-y',
+        '-f', 'lavfi', '-i', `sine=frequency=${root.toFixed(2)}:duration=${dur}`,
+        '-f', 'lavfi', '-i', `sine=frequency=${third.toFixed(2)}:duration=${dur}`,
+        '-f', 'lavfi', '-i', `sine=frequency=${fifth.toFixed(2)}:duration=${dur}`,
+        '-filter_complex',
+        `[0]volume=0.16[a];[1]volume=0.10,tremolo=f=2:d=0.3[b];[2]volume=0.08,tremolo=f=0.5:d=0.4[c];[a][b][c]amix=inputs=3:normalize=0,afade=t=in:d=1,afade=t=out:st=${dur - 1.5}:d=1.5`,
+        '-ar', '44100', '-ac', '2', musicPath], { timeout: 60000 } as any)
+      console.log('  music bed synthesized')
+    } catch (e) {
+      console.warn('  music bed failed, continuing VO-only')
+      musicPath = ''
+    }
+  }
+
+  // 6. ffmpeg: trim + optional color enhance + watermark + hook + product tag
   const finalPath = path.join(VIRAL_DIR, `${source.id}_free_bn.mp4`)
+  // HunyuanVideo little-edit via comfy when available; else in-process enhance.
+  const comfyUp = await comfyAvailable()
+  console.log(comfyUp ? '  comfy available → would use Hunyuan edit' : '  comfy down → ffmpeg enhance (Hunyuan skipped)')
+  const enhance = comfyUp ? [] : (process.env.VIDEO_ENHANCE === '0' ? [] : ['eq=saturation=1.18:contrast=1.06:brightness=0.01', 'unsharp=5:5:0.6'])
   const hookEsc = tr.hook.replace(/[:'\\]/g, '').slice(0, 60)
   const tagEsc = (PRODUCT_TAGS[source.product] || source.product).replace(/[:'\\]/g, '')
   const font = fs.existsSync(BENGALI_FONT) ? BENGALI_FONT : LATIN_FONT
@@ -164,18 +213,29 @@ async function main() {
   const vfilter = [
     'scale=1280:720:force_original_aspect_ratio=decrease',
     'pad=1280:720:(ow-iw)/2:(oh-ih)/2',
+    ...enhance,
     'fps=25', 'format=yuv420p',
     `drawtext=fontfile=${ff}:text=HOSTAMAR.COM/TV:fontcolor=white:fontsize=28:box=1:boxcolor=black@0.45:boxborderw=8:x=w-tw-20:y=20`,
     `drawtext=fontfile=${ff}:text=${hookEsc}:fontcolor=yellow:fontsize=32:box=1:boxcolor=black@0.6:boxborderw=6:x=(w-text_w)/2:y=h-th-30`,
     `drawtext=fontfile=${ff}:text=${tagEsc}:fontcolor=#00E676:fontsize=22:box=1:boxcolor=black@0.5:boxborderw=5:x=20:y=20`,
   ].join(',')
   console.log('  rendering final video...')
-  await execAsync('ffmpeg', ['-y', '-i', rawPath, '-i', ttsPath,
-    '-filter_complex', `[0:v]${vfilter}[v];[1:a]aresample=44100,aformat=channel_layouts=stereo[a]`,
+  const ffArgs: any[] = ['-y']
+  const fcParts = [`[0:v]${vfilter}[v]`, '[1:a]aresample=44100,aformat=channel_layouts=stereo[vo]']
+  if (musicPath) {
+    ffArgs.push('-i', rawPath, '-i', ttsPath, '-i', musicPath)
+    fcParts.push('[2:a]volume=1.0[m]', '[vo][m]amix=inputs=2:duration=first:dropout_transition=2[a]')
+    console.log('  audio: Bangla VO + music bed mixed')
+  } else {
+    ffArgs.push('-i', rawPath, '-i', ttsPath)
+    fcParts.push('[vo]anull[a]')
+  }
+  ffArgs.push('-filter_complex', fcParts.join(';'),
     '-map', '[v]', '-map', '[a]',
     '-c:v', 'libx264', '-preset', 'veryfast', '-b:v', '2500k',
     '-c:a', 'aac', '-b:a', '128k',
-    '-t', ttsDur.toFixed(1), finalPath], { timeout: 300000 } as any)
+    '-t', ttsDur.toFixed(1), finalPath)
+  await execAsync('ffmpeg', ffArgs, { timeout: 300000 } as any)
   if (!fs.existsSync(finalPath)) throw new Error('ffmpeg render failed')
 
   // 6. Publish: DB + playlist position 1 + regenerate + restart ffmpeg

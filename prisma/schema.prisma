@@ -1234,10 +1234,29 @@ model FreeVideoSource {
   translatedBy String? // rafan | rushan | template
   localPath   String? // downloaded mp4
   used        Boolean  @default(false)
+  relevanceScore Float? // in-house research gate (>=7 = relevant)
   createdAt   DateTime @default(now())
 
   @@index([product])
   @@index([used])
+}
+
+// In-house research results for a hunted free CC video (vision + relevance gate)
+model FreeVideoSourceResearch {
+  id             String   @id @default(cuid())
+  videoSourceId  String   @unique
+  transcriptEn   String?
+  visualDesc     String?
+  relevanceScore Float?
+  category       String?
+  summaryBn      String?
+  keywords       String[]
+  researchedBy   String? // e.g. "nemotron-nano-vl+llama-3.1-8b" or "llama-only"
+  accepted       Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([relevanceScore])
 }
 
 // ── Per-video SEO (every TV video gets its own Google-ranked page) ──
