@@ -52,13 +52,55 @@ export default function TvPage() {
     }
   };
 
+  const isLive = status?.isLive && hlsUrl && status?.hlsReachable !== false;
+
   useEffect(() => {
     load();
     const t = setInterval(load, 10000);
     return () => clearInterval(t);
   }, []);
 
-  const isLive = status?.isLive && hlsUrl && status?.hlsReachable !== false;
+  // AUTO-REFRESH / SELF-HEAL on the client:
+  //  - Refresh the playlist every 30 min so new ever-fresh videos appear.
+  //  - If HLS stalls (video present but readyState < 2 for >15s) reload.
+  //  - When tab regains focus, ping HLS; if 404/down, reload to recover.
+  //  - Hard fallback: full reload every 30 min catches any wedged state.
+  useEffect(() => {
+    const video = videoRef.current;
+    let stallCount = 0;
+    const stallTimer = setInterval(() => {
+      const v = videoRef.current;
+      if (!v) return;
+      // Stalled: element exists, should be playing, but no data
+      if (isLive && !v.paused && v.readyState < 2) {
+        stallCount += 1;
+        if (stallCount >= 3) {
+          console.warn('[tv] HLS stall detected, reloading');
+          window.location.reload();
+        }
+      } else {
+        stallCount = 0;
+      }
+    }, 5000);
+
+    const refreshTimer = setTimeout(() => {
+      window.location.reload();
+    }, 30 * 60 * 1000);
+
+    const onVisible = () => {
+      if (document.hidden) return;
+      fetch('/api/tv/hls-url', { cache: 'no-store' })
+        .then((r) => { if (!r.ok) window.location.reload(); })
+        .catch(() => window.location.reload());
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      clearInterval(stallTimer);
+      clearTimeout(refreshTimer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [isLive]);
 
   // HLS player when live. H.264 variant first; on decode failure some builds
   // claim support but can't decode (error 4) — switch to VP9 variant, which
