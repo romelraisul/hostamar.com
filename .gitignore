@@ -148,3 +148,5 @@ FINAL_DEPLOY_REPORT.md
 LIVE_*.md
 *.mp4
 !docker/tv-station/videos/viral/.gitkeep
+docker/tts/models/
+*.onnx

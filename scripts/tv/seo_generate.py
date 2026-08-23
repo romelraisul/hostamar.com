@@ -227,38 +227,38 @@ def validate_seo(seo, product):
 PRODUCT_SEO = {
     "Video": {
         "titleBn": "AI ভিডিও জেনারেটর টিউটোরিয়াল ২০২৬ — ৩০ সেকেন্ডে ভিডিও বানান | Hostamar TV",
-        "metaDescription": "ছোট ব্যবসার জন্য AI ভিডিও বানান মাত্র ৩০ সেকেন্ডে, বানল ভয়েস সহ, bKash পেমেন্ট। Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।",
-        "keywords": ["AI ভিডিও জেনারেটর", "ভিডিও টিউটোরিয়াল", "বানলা টিউটোরিয়াল", "AI ভিডিও মেকার", "Hostamar", "Daraz", "SME", "bKash"],
+        "metaDescription": "ছোট ব্যবসার জন্য AI ভিডিও বানান মাত্র ৩০ সেকেন্ডে, বাংলা ভয়েস সহ, bKash পেমেন্ট। Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।",
+        "keywords": ["AI ভিডিও জেনারেটর", "ভিডিও টিউটোরিয়াল", "বাংলাা টিউটোরিয়াল", "AI ভিডিও মেকার", "Hostamar", "Daraz", "SME", "bKash"],
         "benefit": "আপনি নিজেই মিনিটে মিনিটে প্রফেশনাল মার্কেটিং ভিডিও বানাতে পারবেন, কোনো এডিটিং স্কিল লাগবে না।",
     },
     "Hosting": {
         "titleBn": "BDIX হোস্টিং টিউটোরিয়াল ২০২৬ — ২০ms স্পিডে ওয়েবসাইট | Hostamar TV",
-        "metaDescription": "বাংলাদেশের দ্রুততম BDIX হোস্টিং, ৫GB স্টোরেজ, মাত্র ২০ms পিং। ওয়েবসাইট বানান বানলায়, bKash পেমেন্ট। ফ্রি শুরু করুন hostamar.com এ।",
-        "keywords": ["BDIX হোস্টিং", "হোস্টিং টিউটোরিয়াল", "ওয়েব হোস্টিং বানলা", "সস্তা হোস্টিং", "Hostamar", "Daraz", "SME", "bKash"],
+        "metaDescription": "বাংলাদেশের দ্রুততম BDIX হোস্টিং, ৫GB স্টোরেজ, মাত্র ২০ms পিং। ওয়েবসাইট বানান বাংলাায়, bKash পেমেন্ট। ফ্রি শুরু করুন hostamar.com এ।",
+        "keywords": ["BDIX হোস্টিং", "হোস্টিং টিউটোরিয়াল", "ওয়েব হোস্টিং বাংলাা", "সস্তা হোস্টিং", "Hostamar", "Daraz", "SME", "bKash"],
         "benefit": "BDIX ৫ জিবি হোস্টিং মাত্র ২০ এমএস পিংয়ে লোড হয়, তাই আপনার ওয়েবসাইট বাংলাদেশে সুপার ফাস্ট চলবে।",
     },
     "Chat": {
-        "titleBn": "AI চ্যাটবট টিউটোরিয়াল ২০২৬ — বানলা ভয়েসে কাস্টমার সার্ভিস | Hostamar TV",
-        "metaDescription": "আপনার দোকানের জন্য AI চ্যাটবট, বানলায় ২৪ ঘণ্টা কাস্টমার সার্ভিস। bKash পেমেন্ট, Daraz সেলারদের জন্য ফ্রি। এখনই দেখুন hostamar.com এ।",
-        "keywords": ["AI চ্যাটবট", "চ্যাটবট টিউটোরিয়াল", "বানলা চ্যাটবট", "কাস্টমার সার্ভিস AI", "Hostamar", "Daraz", "SME", "bKash"],
-        "benefit": "আপনার দোকানের কাস্টমার প্রশ্ন করলেই AI চ্যাটবট বানলায় উত্তর দেবে, ২৪ ঘণ্টা সার্ভিস, কোনো কর্মী লাগবে না।",
+        "titleBn": "AI চ্যাটবট টিউটোরিয়াল ২০২৬ — বাংলাা ভয়েসে কাস্টমার সার্ভিস | Hostamar TV",
+        "metaDescription": "আপনার দোকানের জন্য AI চ্যাটবট, বাংলাায় ২৪ ঘণ্টা কাস্টমার সার্ভিস। bKash পেমেন্ট, Daraz সেলারদের জন্য ফ্রি। এখনই দেখুন hostamar.com এ।",
+        "keywords": ["AI চ্যাটবট", "চ্যাটবট টিউটোরিয়াল", "বাংলাা চ্যাটবট", "কাস্টমার সার্ভিস AI", "Hostamar", "Daraz", "SME", "bKash"],
+        "benefit": "আপনার দোকানের কাস্টমার প্রশ্ন করলেই AI চ্যাটবট বাংলাায় উত্তর দেবে, ২৪ ঘণ্টা সার্ভিস, কোনো কর্মী লাগবে না।",
     },
     "Browser": {
         "titleBn": "AI ব্রাউজার টিউটোরিয়াল ২০২৬ — অটোমেটিক রিসার্চ ও ইমেইল | Hostamar TV",
-        "metaDescription": "AI ব্রাউজার দিয়ে রিসার্চ, ইমেইল লেখা, ডেটা বের করা সব অটোমেটিক। বানলায় শিখুন, bKash পেমেন্ট। ফ্রি শুরু করুন hostamar.com এ।",
-        "keywords": ["AI ব্রাউজার", "ব্রাউজার টিউটোরিয়াল", "অটোমেশন বানলা", "AI রিসার্চ টুল", "Hostamar", "Daraz", "SME", "bKash"],
+        "metaDescription": "AI ব্রাউজার দিয়ে রিসার্চ, ইমেইল লেখা, ডেটা বের করা সব অটোমেটিক। বাংলাায় শিখুন, bKash পেমেন্ট। ফ্রি শুরু করুন hostamar.com এ।",
+        "keywords": ["AI ব্রাউজার", "ব্রাউজার টিউটোরিয়াল", "অটোমেশন বাংলাা", "AI রিসার্চ টুল", "Hostamar", "Daraz", "SME", "bKash"],
         "benefit": "AI ব্রাউজার দিয়ে রিসার্চ, ইমেইল লেখা, ডেটা বের করা — সব অটোমেটিক হয়ে যাবে।",
     },
     "IDE": {
-        "titleBn": "ফ্রি ডেভ IDE টিউটোরিয়াল ২০২৬ — Replit বিকল্প বানলায় | Hostamar TV",
-        "metaDescription": "ফ্রি ডেভ IDE দিয়ে কোড লিখুন, রান করুন, ডিপ্লয় করুন — Replit-এর সেরা বিকল্প। বানলা টিউটোরিয়াল, bKash পেমেন্ট। ফ্রি শুরু করুন।",
-        "keywords": ["ফ্রি ডেভ IDE", "IDE টিউটোরিয়াল", "Replit বিকল্প", "কোডিং বানলা", "Hostamar", "Daraz", "SME", "bKash"],
+        "titleBn": "ফ্রি ডেভ IDE টিউটোরিয়াল ২০২৬ — Replit বিকল্প বাংলাায় | Hostamar TV",
+        "metaDescription": "ফ্রি ডেভ IDE দিয়ে কোড লিখুন, রান করুন, ডিপ্লয় করুন — Replit-এর সেরা বিকল্প। বাংলাা টিউটোরিয়াল, bKash পেমেন্ট। ফ্রি শুরু করুন।",
+        "keywords": ["ফ্রি ডেভ IDE", "IDE টিউটোরিয়াল", "Replit বিকল্প", "কোডিং বাংলাা", "Hostamar", "Daraz", "SME", "bKash"],
         "benefit": "ফ্রি ডেভ IDE দিয়ে কোড লিখুন, রান করুন, ডিপ্লয় করুন — Replit-এর সেরা বিকল্প, একদম ফ্রি।",
     },
     "Gaming": {
         "titleBn": "গেম টুর্নামেন্ট টিউটোরিয়াল ২০২৬ — প্রাইজ জিতুন | Hostamar TV",
-        "metaDescription": "গেম টুর্নামেন্টে অংশ নিন, প্রাইজ জিতুন, বন্ধুদের সাথে খেলুন। বানলায় শিখুন, bKash পেমেন্ট। এখনই দেখুন hostamar.com এ।",
-        "keywords": ["গেম টুর্নামেন্ট", "গেমিং টিউটোরিয়াল", "অনলাইন গেম বানলা", "গেম প্রাইজ", "Hostamar", "Daraz", "SME", "bKash"],
+        "metaDescription": "গেম টুর্নামেন্টে অংশ নিন, প্রাইজ জিতুন, বন্ধুদের সাথে খেলুন। বাংলাায় শিখুন, bKash পেমেন্ট। এখনই দেখুন hostamar.com এ।",
+        "keywords": ["গেম টুর্নামেন্ট", "গেমিং টিউটোরিয়াল", "অনলাইন গেম বাংলাা", "গেম প্রাইজ", "Hostamar", "Daraz", "SME", "bKash"],
         "benefit": "গেম টুর্নামেন্টে অংশ নিন, প্রাইজ জিতুন, বন্ধুদের সাথে খেলুন।",
     },
 }
@@ -274,10 +274,10 @@ def template_seo(product, title_en):
     slug_base = PRODUCT_INFO.get(product, (product, f"{product.lower()}-bangla-tutorial-2026", product))[1]
     if not info:
         title = f"{name_bn} টিউটোরিয়াল — ৩০ সেকেন্ডে রেডি | Hostamar TV"
-        desc = (f"ছোট ব্যবসার জন্য {name_bn} শিখুন বানলায় — ভিডিও দেখুন, bKash পেমেন্ট, "
+        desc = (f"ছোট ব্যবসার জন্য {name_bn} শিখুন বাংলাায় — ভিডিও দেখুন, bKash পেমেন্ট, "
                 f"Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।")
         info = {"titleBn": title, "metaDescription": desc,
-                "keywords": [name_bn, f"{product} টিউটোরিয়াল", "বানলা টিউটোরিয়াল", "Hostamar", "Daraz", "SME", "bKash", "free"],
+                "keywords": [name_bn, f"{product} টিউটোরিয়াল", "বাংলাা টিউটোরিয়াল", "Hostamar", "Daraz", "SME", "bKash", "free"],
                 "benefit": f"{name_bn} দিয়ে আপনার ব্যবসা এগিয়ে যাবে।"}
     return {
         "slug": slug_base,
@@ -330,10 +330,10 @@ def generate_seo_for_source(src, use_rafan=False):
             Example of a GOOD answer for a Video product (do NOT copy it, write a fresh one for THIS product):
             {{"slug":"ai-video-generator-bangla-tutorial-2026",
             "titleBn":"AI ভিডিও জেনারেটর টিউটোরিয়াল ২০২৬ — ৩০ সেকেন্ডে ভিডিও বানান | Hostamar TV",
-            "metaDescription":"ছোট ব্যবসার জন্য AI ভিডিও বানান ৩০ সেকেন্ডে, বানল ভয়েস, bKash পেমেন্ট। Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।",
-            "keywords":["AI ভিডিও জেনারেটর","ভিডিও টিউটোরিয়াল","বানল টিউটোরিয়াল","Hostamar","Daraz","SME","bKash","free"],
+            "metaDescription":"ছোট ব্যবসার জন্য AI ভিডিও বানান ৩০ সেকেন্ডে, বাংলা ভয়েস, bKash পেমেন্ট। Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।",
+            "keywords":["AI ভিডিও জেনারেটর","ভিডিও টিউটোরিয়াল","বাংলা টিউটোরিয়াল","Hostamar","Daraz","SME","bKash","free"],
             "ogTitle":"🔥 AI ভিডিও জেনারেটর টিউটোরিয়াল ২০২৬ — ৩০ সেকেন্ডে রেড",
-            "ogDescription":"৩০ সেকেন্ডে পেশাদার AI ভিডিও! বানল ভয়েস + bKash। ফ্রি শুরু করুন।"}}
+            "ogDescription":"৩০ সেকেন্ডে পেশাদার AI ভিডিও! বাংলা ভয়েস + bKash। ফ্রি শুরু করুন।"}}
 
             Now write the SAME JSON shape for THIS product ({product}). Requirements:
             - slug: use exactly "{slug_default}"

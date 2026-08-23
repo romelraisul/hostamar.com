@@ -130,8 +130,15 @@ async function main() {
   fs.mkdirSync(VIRAL_DIR, { recursive: true })
 
   const args = process.argv.slice(2)
-  const sourceId = args.find(a => a.startsWith('--sourceId='))?.split('=')[1]
-  const productFilter = args.find(a => a.startsWith('--product='))?.split('=')[1]
+  const argVal = (name: string) => {
+    const eq = args.find(a => a.startsWith(name + '='))
+    if (eq) return eq.split('=')[1]
+    const idx = args.indexOf(name)
+    if (idx !== -1 && args[idx + 1] && !args[idx + 1].startsWith('--')) return args[idx + 1]
+    return undefined
+  }
+  const sourceId = argVal('--sourceId')
+  const productFilter = argVal('--product')
 
   // Pick source: explicit id, else highest viralScore unused (optionally by product).
   // Research gate: reject relevanceScore < 7 (NULL = not yet researched = allowed).
@@ -167,11 +174,35 @@ async function main() {
   const voice = gender === 'female' ? 'bn-BD-NabanitaNeural' : 'bn-BD-PradeepNeural'
   console.log(`  gender: ${gender} → ${voice}`)
 
-  // 4. TTS (strip emoji/special chars that break edge-tts)
+  // 4. TTS — Piper in-house fast (<1s offline) primary, edge-tts fallback.
+  //    Model bn_BD-google-medium multi-speaker: 0=male 130Hz, 12=female 258Hz (pitch-scanned).
   const clean = (s: string) => (s || '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '').replace(/["'`\\]/g, '').trim()
   const ttsText = clean(`${tr.hook} ${tr.scriptBn}`).slice(0, 400)
   const ttsPath = path.join('/tmp', `${source.id}_bn.mp3`)
-  await execAsync('python3', ['-m', 'edge_tts', '--voice', voice, '--text', ttsText, '--write-media', ttsPath], { timeout: 120000 } as any)
+  const PIPER_MODEL = '/home/romel/hostamar-build/docker/tts/models/bn_BD-google-medium/bn_BD-google-medium.onnx'
+  const PIPER_SPEAKERS: Record<string, string> = { male: '0', female: '12' }
+  const piperSpeaker = PIPER_SPEAKERS[gender] || '0'
+  let ttsBy = 'edge-tts'
+  const wantPiper = process.env.USE_PIPER !== '0' && fs.existsSync(PIPER_MODEL)
+  if (wantPiper) {
+    try {
+      const piperWav = path.join('/tmp', `${source.id}_piper.wav`)
+      const { exec } = await import('child_process')
+      const execShell = promisify(exec)
+      // shell-escape single quotes in Bangla text
+      const safeText = ttsText.replace(/'/g, "'\\''")
+      await execShell(`echo '${safeText}' | python3 -m piper --model ${PIPER_MODEL} --speaker ${piperSpeaker} --output_file ${piperWav}`, { timeout: 30000 } as any)
+      // convert 22050Hz piper wav → mp3 48k for TV pipeline
+      await execAsync('ffmpeg', ['-y', '-i', piperWav, '-ar', '48000', '-b:a', '128k', ttsPath] as any)
+      ttsBy = `piper:${piperSpeaker}`
+      console.log(`  TTS Piper speaker ${piperSpeaker} SUCCESS`)
+    } catch (e: any) {
+      console.warn(`  Piper failed (${e?.message?.slice(0, 80)}), fallback edge-tts`)
+      await execAsync('python3', ['-m', 'edge_tts', '--voice', voice, '--text', ttsText, '--write-media', ttsPath], { timeout: 120000 } as any)
+    }
+  } else {
+    await execAsync('python3', ['-m', 'edge_tts', '--voice', voice, '--text', ttsText, '--write-media', ttsPath], { timeout: 120000 } as any)
+  }
   const { stdout: ttsDurStr } = await execAsync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ttsPath] as any)
   const ttsDur = Math.min(parseFloat(String(ttsDurStr).trim()) || 20, 45)
 
@@ -272,7 +303,15 @@ async function main() {
   }
   fs.writeFileSync(PLAYLIST + '.tmp', lines.join('\n') + '\n')
   fs.renameSync(PLAYLIST + '.tmp', PLAYLIST)
-  try { await execAsync('systemctl', ['--user', 'restart', 'tv-ffmpeg'] as any) } catch {}
+  // FORCE restart: ffmpeg's concat demuxer never reloads the playlist file, and a
+  // plain `systemctl restart` can silently no-op (zombie ffmpeg keeps OLD fd →
+  // hours-long loop of one video). pkill + restart + /proc fd verification.
+  try {
+    await execAsync('python3', ['/home/romel/hostamar-build/scripts/tv/force_restart.py'] as any, { timeout: 60000 } as any)
+  } catch (e: any) {
+    console.error('  force-restart failed, falling back to systemctl:', e?.message?.slice(0, 120))
+    try { await execAsync('systemctl', ['--user', 'restart', 'tv-ffmpeg'] as any) } catch {}
+  }
   try { await prisma.tvLog.create({ data: { level: 'info', message: `Free video published: [${source.product}] ${tr.titleBn} (${tr.by}, ${gender}/${voice})` } }) } catch {}
 
   console.log(`\n✓ PUBLISHED: ${tr.titleBn}`)
