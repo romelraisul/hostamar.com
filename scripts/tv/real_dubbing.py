@@ -174,27 +174,35 @@ def main():
     cur = conn.cursor()
     # Pick source
     if args.source_id:
-        cur.execute('SELECT id, product, title FROM "FreeVideoSource" WHERE id=%s', (args.source_id,))
+        cur.execute('SELECT id, product, title, url, "videoId", "localPath" FROM "FreeVideoSource" WHERE id=%s', (args.source_id,))
         row = cur.fetchone()
         if not row:
             print("source not found"); sys.exit(1)
-        src = {'id': row[0], 'product': row[1], 'title': row[2]}
+        src = {'id': row[0], 'product': row[1], 'title': row[2], 'url': row[3], 'videoId': row[4], 'localPath': row[5]}
     else:
         prod = args.product or 'Video'
-        cur.execute('SELECT id, product, title FROM "FreeVideoSource" WHERE product=%s AND used=false ORDER BY "viralScore" DESC LIMIT 1', (prod,))
+        cur.execute('SELECT id, product, title, url, "videoId", "localPath" FROM "FreeVideoSource" WHERE product=%s AND used=false ORDER BY "viralScore" DESC LIMIT 1', (prod,))
         row = cur.fetchone()
         if not row:
             print("No unused source for", prod); sys.exit(1)
-        src = {'id': row[0], 'product': row[1], 'title': row[2]}
+        src = {'id': row[0], 'product': row[1], 'title': row[2], 'url': row[3], 'videoId': row[4], 'localPath': row[5]}
     conn.close()
     log(f"Source [{src['product']}] {src['title'][:50]}")
 
-    # Download original if needed
-    orig = os.path.join(FREE_DIR, f"{src['id']}_original.mp4")
+    # Download original if needed — use videoId/url (NOT the cuid id)
+    orig = src.get('localPath') or os.path.join(FREE_DIR, f"{src['id']}_original.mp4")
     if not os.path.exists(orig):
-        log("Downloading original...")
-        subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-f', 'best[height<=720]/best', '-o', orig, '--no-warnings',
-                        f"https://www.youtube.com/watch?v={src['id']}"], timeout=300)
+        yt_url = None
+        if src.get('videoId'):
+            yt_url = f"https://www.youtube.com/watch?v={src['videoId']}"
+        elif src.get('url') and 'youtube' in src['url']:
+            yt_url = src['url']
+        if not yt_url:
+            log("No YouTube URL for source — cannot download original"); sys.exit(1)
+        log(f"Downloading original from {yt_url} ...")
+        subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-f', 'best[height<=720]/best', '-o', orig, '--no-warnings', yt_url], timeout=300)
+    if not os.path.exists(orig):
+        log("Original download failed — aborting"); sys.exit(1)
 
     # 1. Source separation (Demucs): keep original music+SFX, remove only speaking voice.
     #    no_vocals.wav becomes the music bed (DEMUCS_BG env) instead of synthetic chord.
