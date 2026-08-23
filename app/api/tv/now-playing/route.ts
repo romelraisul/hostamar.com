@@ -46,6 +46,7 @@ export async function GET(_req: NextRequest) {
       isPure: (np as any).isPure ?? false,
       language: (np as any).language ?? null,
       place: (np as any).place ?? null,
+      product: (np as any).product ?? null,
       credit: 6000,
     })
   } catch (err) {

@@ -37,6 +37,8 @@ export interface NowPlaying {
   language: string | null
   /** Place code parsed from pure filename ({lang}_{place}_...) */
   place: string | null
+  /** Hostamar product parsed from cc0_/slow_ filename (Video/Hosting/...) */
+  product: string | null
 }
 
 async function ffprobeDuration(path: string): Promise<number | null> {
@@ -105,6 +107,7 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
         isPure: false,
         language: null,
         place: null,
+        product: null,
       })
     }
   } catch {
@@ -125,9 +128,9 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
         orderBy: { createdAt: 'desc' },
         select: { title: true },
       })
-      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false, language: null, place: null }
+      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false, language: null, place: null, product: null }
     } catch {
-      return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false, language: null, place: null }
+      return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false, language: null, place: null, product: null }
     }
   }
 
@@ -178,6 +181,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
             isPure: false,
             language: null,
             place: null,
+            product: null,
           })
         }
       }
@@ -237,8 +241,10 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
     // TvVideoSeo may not exist yet pre-ensureSchema — slug stays null
   }
 
-  // Parse {lang}_{place}_ from pure filenames for the hero badge.
-  const lpMatch = (current.url || '').split('/').pop()?.match(/^([a-z]{2,3})_([A-Z]{2})_/)
+  // Parse product/lang/place from pure filenames for the hero badge.
+  const base = (current.url || '').split('/').pop() || ''
+  const prodMatch = base.match(/^(?:cc0|slow)_([A-Za-z]+)_/)
+  const lpMatch = base.match(/^([a-z]{2,3})_([A-Z]{2})_/)
   return {
     title: current.titleBn || current.title,
     titleBn: current.titleBn,
@@ -250,5 +256,6 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
     isPure: (current.url || '').includes('/videos/pure/'),
     language: lpMatch ? lpMatch[1] : null,
     place: lpMatch ? lpMatch[2] : null,
+    product: prodMatch ? prodMatch[1] : null,
   }
 }

@@ -30,6 +30,7 @@ type NowPlaying = {
   isPure?: boolean
   language?: string | null
   place?: string | null
+  product?: string | null
 }
 
 const VP9_URL = 'https://vp9.hostamar.com/master.m3u8'
@@ -154,10 +155,10 @@ export default function TvHero() {
         </div>
       )}
 
-      {/* Pure 1080p badge — shows when the on-air file is a pure (no-TTS, no-watermark) source */}
+      {/* Pure CC0 slow-net badge — shows when on-air file is from the pure library */}
       {isLive && np?.isPure && (
         <div className="absolute top-11 left-2 flex items-center gap-1 bg-[#0E7C3A] text-white text-[10px] px-2 py-0.5 rounded-full font-bold z-10">
-          🔵 Pure 1080p{np.language ? ` • 🌍 ${np.language.toUpperCase()}` : ''}{np.place ? ` • 📍 ${np.place}` : ''} • No Edit
+          🔵 CC0 Public Domain • 480p Slow Net{np.product ? ` • ${np.product}` : ''}
         </div>
       )}
 
