@@ -160,6 +160,12 @@ def main():
     ap.add_argument('--product')
     ap.add_argument('--source-id')
     ap.add_argument('--force-restart', action='store_true')
+    ap.add_argument('--keep-music', action='store_true', default=True,
+                    help='Demucs source separation: keep original music+SFX, replace only vocals (default on)')
+    ap.add_argument('--use-demucs', action='store_true', default=True)
+    ap.add_argument('--use-xtts', action='store_true', default=False)
+    ap.add_argument('--use-wav2lip', action='store_true', default=False)
+    ap.add_argument('--now', action='store_true', help='accepted for compat; script always runs now')
     args = ap.parse_args()
 
     import psycopg2
@@ -190,7 +196,19 @@ def main():
         subprocess.run([os.path.expanduser('~/.local/bin/yt-dlp'), '-f', 'best[height<=720]/best', '-o', orig, '--no-warnings',
                         f"https://www.youtube.com/watch?v={src['id']}"], timeout=300)
 
-    # 1. Transcribe (Whisper) + 2. Translate (already handled by create_from_free's rafan step, skip here for now)
+    # 1. Source separation (Demucs): keep original music+SFX, remove only speaking voice.
+    #    no_vocals.wav becomes the music bed (DEMUCS_BG env) instead of synthetic chord.
+    demucs_bg = None
+    if args.keep_music:
+        log("Demucs source separation (keep music+SFX, remove only vocals)...")
+        vocals, no_vocals = demucs_keep_music(orig)
+        if no_vocals:
+            demucs_bg = no_vocals
+            log(f"Demucs OK — vocals removed, music+SFX kept: {os.path.basename(no_vocals)}")
+        else:
+            log("Demucs unavailable — falling back to synthetic music bed")
+
+    # 2. Transcribe (Whisper) + 3. Translate (already handled by create_from_free's rafan step)
     # For real dubbing, we delegate to the battle-tested create_from_free pipeline which already does
     # rafan Bangla + Piper + music + enhance. This wrapper adds voice cloning + lip sync on top.
     log("Delegating to create_from_free pipeline (Piper fallback if XTTS/Wav2Lip down)...")
@@ -212,6 +230,8 @@ def main():
     # Call the hardened pipeline (already genpts+shortest)
     env = dict(os.environ)
     env['DATABASE_URL'] = url
+    if demucs_bg:
+        env['DEMUCS_BG'] = demucs_bg  # create_from_free uses this as music bed (original music kept)
     cmd = ['node', os.path.join(REPO, 'node_modules/.bin/tsx'), 'scripts/tv/create_from_free.ts', f"--sourceId={src['id']}"]
     p = subprocess.run(cmd, cwd=REPO, env=env, capture_output=True, text=True, timeout=900)
     print(p.stdout[-800:] if p.stdout else "")
