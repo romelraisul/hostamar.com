@@ -135,6 +135,8 @@ export async function middleware(request: NextRequest) {
     '/api/tv/hls-url',
     '/api/tv/generate-loop',
     '/api/tv/agent/',
+    '/api/tv/viral/',
+    '/api/tv/view',
     '/api/hosting/status',
     '/api/generate/history',
     '/api/chat/ai-assist',

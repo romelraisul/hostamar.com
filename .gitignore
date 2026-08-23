@@ -143,3 +143,8 @@ legacy-env-archive/
 .env.local
 
 .tv-agent-secret.local
+state/
+FINAL_DEPLOY_REPORT.md
+LIVE_*.md
+*.mp4
+!docker/tv-station/videos/viral/.gitkeep

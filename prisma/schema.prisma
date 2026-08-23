@@ -1216,3 +1216,69 @@ model TvLog {
 
   @@index([createdAt])
 }
+
+// ── Viral BD TV Engine — browser.hostamar.com → ViralTrend → AI video ──
+model ViralTrend {
+  id           String       @id @default(cuid())
+  source       String // youtube_bd | google_trends_bd | daraz | prothomalo | tiktok_bd
+  title        String
+  titleBn      String?
+  url          String?
+  thumbnail    String?
+  views        Int?
+  viralScore   Float        @default(0)
+  category     String? // fashion | food | ecommerce | beauty | electronics | news
+  rawData      Json?
+  used         Boolean      @default(false)
+  videoCreated Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  discoveredAt DateTime     @default(now())
+  videos       ViralVideo[]
+
+  @@index([source])
+  @@index([viralScore])
+  @@index([used, videoCreated])
+}
+
+model ViralVideo {
+  id           String   @id @default(cuid())
+  viralTrendId String?
+  viralTrend   ViralTrend? @relation(fields: [viralTrendId], references: [id])
+  titleBn      String
+  hook         String?
+  scriptBn     String?
+  hashtags     String?
+  category     String?
+  videoUrl     String // local path /home/romel/.../viral/xxx.mp4
+  hlsUrl       String?
+  duration     Int?
+  gender       String?
+  voiceUsed    String?
+  viralScore   Float    @default(0)
+  status       String   @default("READY") // READY | ON_TV | FAILED
+  playlistItemId String?
+  createdAt    DateTime @default(now())
+
+  @@index([viralTrendId])
+  @@index([status])
+}
+
+model TvVideoStats {
+  id              String   @id @default(cuid())
+  playlistItemId  String   @unique
+  viralTrendId    String?
+  viralVideoId    String?
+  title           String?
+  views           Int      @default(0)
+  totalWatchSec   Float    @default(0)
+  avgWatchPercent Float    @default(0)
+  viralScore      Float    @default(0)
+  isViral         Boolean  @default(false)
+  playWeight      Int      @default(1) // 1 normal, 3 viral
+  lastViewAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isViral])
+  @@index([viralScore])
+}
