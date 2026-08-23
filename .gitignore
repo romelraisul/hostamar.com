@@ -150,3 +150,19 @@ LIVE_*.md
 !docker/tv-station/videos/viral/.gitkeep
 docker/tts/models/
 *.onnx
+
+# TV runtime artifacts (large binary, regenerated — not source)
+docker/tv-station/hls2/**
+!docker/tv-station/hls2/index.html
+docker/tv-station/videos/*.m3u8
+docker/tv-station/videos/*.m3u8.tmp
+docker/tv-station/videos/hls2/
+*.m4s
+*.db-wal
+*.db-shm
+public/og/tv/
+scripts/bangla-dub/state.json
+state/*.db-wal
+state/*.db-shm
+
+docker/tv-station/videos/free/
