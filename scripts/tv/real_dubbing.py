@@ -166,6 +166,7 @@ def main():
     ap.add_argument('--use-xtts', action='store_true', default=False)
     ap.add_argument('--use-wav2lip', action='store_true', default=False)
     ap.add_argument('--now', action='store_true', help='accepted for compat; script always runs now')
+    ap.add_argument('--any', action='store_true', help='pick best unused source across ALL products (for ever-fresh loop)')
     args = ap.parse_args()
 
     import psycopg2
@@ -181,10 +182,13 @@ def main():
         src = {'id': row[0], 'product': row[1], 'title': row[2], 'url': row[3], 'videoId': row[4], 'localPath': row[5]}
     else:
         prod = args.product or 'Video'
-        cur.execute('SELECT id, product, title, url, "videoId", "localPath" FROM "FreeVideoSource" WHERE product=%s AND used=false ORDER BY "viralScore" DESC LIMIT 1', (prod,))
+        if args.any:
+            cur.execute('SELECT id, product, title, url, "videoId", "localPath" FROM "FreeVideoSource" WHERE used=false ORDER BY "viralScore" DESC LIMIT 1')
+        else:
+            cur.execute('SELECT id, product, title, url, "videoId", "localPath" FROM "FreeVideoSource" WHERE product=%s AND used=false ORDER BY "viralScore" DESC LIMIT 1', (prod,))
         row = cur.fetchone()
         if not row:
-            print("No unused source for", prod); sys.exit(1)
+            print("No unused source for", 'ANY' if args.any else prod); sys.exit(1)
         src = {'id': row[0], 'product': row[1], 'title': row[2], 'url': row[3], 'videoId': row[4], 'localPath': row[5]}
     conn.close()
     log(f"Source [{src['product']}] {src['title'][:50]}")
