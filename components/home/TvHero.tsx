@@ -153,6 +153,8 @@ export default function TvHero() {
       <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded truncate z-10">
         🎬 [TV] {title} • credit {credit}{np?.isViral ? ` • 🔥 Viral ${np?.viralScore ?? ''}` : ''} • 70% HERO ▶{unsupported ? ' • browser HLS unsupported' : ''}
       </div>
+      {/* IPTV link */}
+      <Link href="/tv" className="absolute -bottom-7 left-0 text-[11px] text-[#0E7C3A] font-semibold hover:underline z-10">📺 IPTV: hostamar.com/api/tv/iptv.m3u → VLC / Smart TV</Link>
     </div>
   )
 }
