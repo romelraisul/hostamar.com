@@ -136,7 +136,7 @@ export default async function RootLayout({
         <meta charSet="utf-8" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta name="format-detection" content="telephone=no, address=no, email=no" />
-        <link rel="canonical" href={SITE_URL} />
+        {/* canonical comes from metadata.alternates (layout default, overridden per-page) */}
         <link rel="manifest" href="/manifest.json" />
         {/* GA4 events: hero_cta_click, pricing_click, bkash_click — fired via components */}
         {process.env.NEXT_PUBLIC_GA_ID ? (
