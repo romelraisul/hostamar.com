@@ -42,13 +42,19 @@ python3 scripts/tv/seo_generate.py --product Video  # one product
 python3 scripts/tv/seo_generate.py --missing        # only rows without SEO (loop mode)
 ```
 
-- Calls **rafan** (in-house LLM, gateway :11442) with a hardened SEO prompt.
+- Calls **rafan** (in-house LLM, gateway :11442) with a concise fill-in prompt.
 - rafan is a REASONING model: it thinks first, JSON comes last. The script
-  extracts the LAST JSON object containing `"titleBn"` and uses `max_tokens=3000`,
-  `timeout=600s`. Do not lower these — it will truncate mid-thought.
+  extracts the LAST JSON object containing the wanted key via the stdlib
+  decoder (`extract_json(content, want_key=...)`). `timeout=900s`.
+- rafan DEGENERATES into repetition loops on long-form generation (27B Q1_0),
+  so the transcript is NOT rafan-generated. `build_transcript()` builds a
+  deterministic 150-200 word Bangla transcript from the video's REAL
+  scriptBn/hook + product benefit sentences. Reliable + instant.
 - Validation: Bangla letters present, title 30-90 chars, slug kebab-case,
   keywords ≥6. Retries 3× with rising temperature, then falls back to a
   deterministic Bangla template (logged as FALLBACK).
+- Neon drops idle SSL connections during the ~5-min rafan call, so the upsert
+  opens a FRESH connection (`upsert_seo` ignores the passed conn).
 - OG image: PIL 1200x630 — video frame (blurred) or gradient, green product
   tag, HOSTAMAR.COM/TV watermark, titleBn in NotoSansBengali-Bold, yellow hook,
   green bottom bar. Saved to `public/og/tv/{slug}.jpg`.
