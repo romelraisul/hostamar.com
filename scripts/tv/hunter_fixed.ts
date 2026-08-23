@@ -17,13 +17,14 @@ const CAMOFOX = 'https://camofox.hostamar.com'
 const USER_ID = 'tv-hunter'
 
 // 6 products x queries. sp=EgIwAQ%3D%3D = Creative Commons filter on YouTube search.
+// AUDIENCE-FOCUSED: only queries Daraz sellers / BD SME will love (no Perl, no generic English).
 const PRODUCT_QUERIES: Record<string, string[]> = {
-  Video: ['ai video generator tutorial', 'video editing tutorial for beginners', 'marketing video tutorial'],
-  Hosting: ['web hosting tutorial for beginners', 'wordpress hosting tutorial', 'website hosting guide'],
-  Chat: ['ai chatbot tutorial', 'customer service chatbot tutorial', 'messenger bot tutorial'],
-  Browser: ['browser automation tutorial', 'playwright tutorial', 'web scraping tutorial'],
-  IDE: ['vs code tutorial for beginners', 'coding tutorial for beginners', 'online code editor tutorial'],
-  Gaming: ['game server hosting tutorial', 'minecraft server tutorial', 'esports tournament guide'],
+  Video: ['Daraz product video tutorial Bangla', 'Facebook Reels fashion video tutorial', 'Eid collection marketing video'],
+  Hosting: ['WordPress e-commerce website tutorial Bangla', 'How to make website for small business Bangla', 'Domain hosting Bangla tutorial'],
+  Chat: ['Messenger auto reply tutorial Bangla small business', 'Facebook page auto reply', 'AI chatbot for shop'],
+  Browser: ['Daraz price tracking automation', 'Browser automation for marketers Bangla', 'How to automate Facebook posts'],
+  IDE: ['VS Code tutorial Bangla beginners', 'JavaScript tutorial Bangla for e-commerce', 'WordPress PHP tutorial Bangla'],
+  Gaming: ['Free Fire tournament hosting Bangla', 'Game server hosting tutorial Bangladesh', 'PUBG tournament how to organize'],
 }
 
 const CC_SP = 'sp=EgIwAQ%253D%253D' // double-encoded CC filter (survives URL building)
