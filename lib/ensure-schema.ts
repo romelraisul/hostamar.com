@@ -223,6 +223,29 @@ const STATEMENTS: string[] = [
   CONSTRAINT "TvLog_pkey" PRIMARY KEY ("id")
 )`,
   `CREATE INDEX IF NOT EXISTS "TvLog_createdAt_idx" ON "TvLog"("createdAt")`,
+  // ── Free video hunter (Phase 4) ────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS "FreeVideoSource" (
+  "id" TEXT NOT NULL,
+  "product" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "titleBn" TEXT,
+  "url" TEXT NOT NULL,
+  "videoId" TEXT,
+  "license" TEXT,
+  "views" INTEGER,
+  "duration" DOUBLE PRECISION,
+  "viralScore" DOUBLE PRECISION NOT NULL DEFAULT 0,
+  "hook" TEXT,
+  "scriptBn" TEXT,
+  "translatedBy" TEXT,
+  "localPath" TEXT,
+  "used" BOOLEAN NOT NULL DEFAULT false,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "FreeVideoSource_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "FreeVideoSource_url_key" ON "FreeVideoSource"("url")`,
+  `CREATE INDEX IF NOT EXISTS "FreeVideoSource_product_idx" ON "FreeVideoSource"("product")`,
+  `CREATE INDEX IF NOT EXISTS "FreeVideoSource_used_idx" ON "FreeVideoSource"("used")`,
   // ── Viral BD TV Engine (Phase 6) ───────────────────────────────
   `CREATE TABLE IF NOT EXISTS "ViralTrend" (
   "id" TEXT NOT NULL,

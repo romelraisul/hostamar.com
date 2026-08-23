@@ -1217,6 +1217,29 @@ model TvLog {
   @@index([createdAt])
 }
 
+// ── Free video hunter (Phase 4) — CC-licensed source videos per product ──
+model FreeVideoSource {
+  id          String   @id @default(cuid())
+  product     String // Video | Hosting | Chat | Browser | IDE | Gaming
+  title       String
+  titleBn     String?
+  url         String   @unique
+  videoId     String? // youtube id
+  license     String? // CC-BY | CC0 | Public Domain | unknown
+  views       Int?
+  duration    Float?
+  viralScore  Float    @default(0)
+  hook        String?
+  scriptBn    String?
+  translatedBy String? // rafan | rushan | template
+  localPath   String? // downloaded mp4
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([product])
+  @@index([used])
+}
+
 // ── Viral BD TV Engine — browser.hostamar.com → ViralTrend → AI video ──
 model ViralTrend {
   id           String       @id @default(cuid())
