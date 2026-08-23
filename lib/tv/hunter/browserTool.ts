@@ -19,14 +19,14 @@ const CAMOFOX = process.env.CAMOFOX_URL || 'https://camofox.hostamar.com'
 const USER_ID = 'tv-hunter-tool'
 const YT_DLP = process.env.HOME + '/.local/bin/yt-dlp'
 
-// 6 products × 4 queries each (24 hunts)
+// 6 products x 4 queries each — AUDIENCE-FOCUSED (Daraz seller, BD SME, not generic/Perl)
 export const PRODUCT_QUERIES: Record<string, string[]> = {
-  Video: ['AI video generator tutorial creative commons', 'CapCut tutorial free', 'video editing Bangla', 'marketing video'],
-  Hosting: ['web hosting tutorial creative commons', 'cPanel tutorial free', 'WordPress hosting', 'BDIX hosting'],
-  Chat: ['AI chatbot tutorial creative commons', 'ChatGPT tutorial free', 'Messenger bot'],
-  Browser: ['browser automation tutorial', 'playwright tutorial free', 'puppeteer tutorial'],
-  IDE: ['VS Code tutorial free', 'coding tutorial creative commons', 'Replit tutorial'],
-  Gaming: ['game server hosting tutorial', 'Minecraft server hosting free', 'eSports tournament'],
+  Video: ['Daraz product video tutorial Bangla', 'Facebook Reels fashion video tutorial', 'Eid collection marketing video', 'Saree 3-piece product photography'],
+  Hosting: ['WordPress e-commerce website tutorial Bangla', 'How to make website for small business Bangla', 'Domain hosting Bangla tutorial'],
+  Chat: ['Messenger auto reply tutorial Bangla small business', 'Facebook page auto reply', 'AI chatbot for shop'],
+  Browser: ['Daraz price tracking automation', 'Browser automation for marketers Bangla', 'How to automate Facebook posts'],
+  IDE: ['VS Code tutorial Bangla beginners', 'JavaScript tutorial Bangla for e-commerce', 'Free website hosting for students Bangla', 'WordPress PHP tutorial Bangla'],
+  Gaming: ['Free Fire tournament hosting Bangla', 'Game server hosting tutorial Bangladesh', 'PUBG tournament how to organize'],
 }
 
 const CC_SP = 'sp=EgIwAQ%253D%253D' // double-encoded YouTube CC filter

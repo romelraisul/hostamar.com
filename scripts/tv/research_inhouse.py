@@ -151,28 +151,46 @@ def vision_describe(mp4):
         return None
 
 def relevance(title_en, product, transcript_en, visual_desc):
-    """Relevance JSON via RESEARCH_MODEL. Falls back through model list."""
+    """Audience gate via RESEARCH_MODEL. Falls back through model list.
+    New audience-focused prompt: willPayScore + willLeave + bestProduct.
+    Legacy relevanceScore is kept as alias for DB compat.
+    """
     models = [os.environ.get('RESEARCH_MODEL') or 'meta/llama-3.1-8b-instruct',
               'mistralai/mistral-7b-instruct-v0.3']
-    ctx = f'Video title: "{title_en}"\nProduct: {product}'
+    ctx = f'Video title: "{title_en}"\nProduct candidate: {product}'
     if transcript_en:
         ctx += f'\nTranscript excerpt: "{transcript_en[:600]}"'
     if visual_desc:
         ctx += f'\nVisual description: "{visual_desc[:300]}"'
-    prompt = (ctx + ('\nIs this video relevant to that Hostamar product for Bangladeshi SME marketing?\n'
-                     'Reply ONLY with JSON: {"relevanceScore": <0-10 number>, "category": "<short>", '
-                     '"keywords": ["k1","k2","k3"], "summaryBn": "<one Bangla sentence>"}'))
+    prompt = (ctx + ('\n\nYou are Hostamar audience expert. Hostamar 6 products for Bangladeshi SME: '
+                     'Video (AI marketing video 30 sec Bangla voice for Daraz sellers), '
+                     'Hosting (BDIX 20ms bKash), Chat (Messenger auto reply), '
+                     'Browser (automation for marketers), IDE (free Replit for BD young devs JS/PHP), '
+                     'Gaming (Free Fire tournament hosting). Audience age 18-35 SME/Daraz sellers, NOT Perl devs.\n'
+                     'Task: 1) Who will like this? [SME Daraz seller, Fashion shop, Cosmetics seller, Website owner, Messenger shop, Marketing agency, BD young dev JS/PHP, Gamer, NONE] '
+                     '2) Will they pay? willPayScore 0-10  3) bestProduct among 6 or NONE  4) willLeave if Perl/C++/Rust advanced, truncated title, old sale, generic English no BD benefit?\n'
+                     'Reply ONLY JSON: {"audience":"...","willPayScore":<0-10>,"bestProduct":"Video|Hosting|Chat|Browser|IDE|Gaming|NONE","willLeave":true/false,"reason":"...","category":"<short>","keywords":["k1","k2","k3"],"summaryBn":"<one Bangla sentence>"}\n'
+                     'Rules: Perl/C++/Rust/advanced Java (not JS/PHP) => willLeave true, willPayScore 0-2, bestProduct NONE; truncated "Minu"/"Walkthr" => willLeave true; Daraz 11.11 old sale => willLeave true; generic no-BD-benefit => 0-3 willLeave true; good SME benefit/BD context/Daraz/fashion/WordPress Bangla/Messenger/Free Fire => 7-10 willLeave false.'))
     last_err = None
     for model in models:
         try:
             t0 = __import__('time').time()
-            # reasoning models need headroom before the final JSON
             content = chat(model, [{"role": "user", "content": prompt}],
                            max_tokens=int(os.environ.get('RESEARCH_MAX_TOKENS', '2000')), timeout=280)
-            obj = extract_json(content, 'relevanceScore')
+            # Try new key first, fallback to legacy relevanceScore
+            obj = extract_json(content, 'willPayScore') or extract_json(content, 'relevanceScore')
             dt = __import__('time').time() - t0
-            if obj and isinstance(obj.get('relevanceScore'), (int, float)):
-                log(f"  relevance via {model} in {dt:.0f}s: {obj.get('relevanceScore')}")
+            if obj and isinstance(obj.get('willPayScore') or obj.get('relevanceScore'), (int, float)):
+                # Normalize: legacy relevanceScore -> willPayScore, and vice versa
+                if 'willPayScore' not in obj and 'relevanceScore' in obj:
+                    obj['willPayScore'] = obj['relevanceScore']
+                if 'relevanceScore' not in obj and 'willPayScore' in obj:
+                    obj['relevanceScore'] = obj['willPayScore']
+                # Gate: willLeave true => force low score
+                if obj.get('willLeave') is True and obj.get('willPayScore', 10) > 3:
+                    obj['willPayScore'] = min(obj['willPayScore'], 2)
+                    obj['relevanceScore'] = obj['willPayScore']
+                log(f"  relevance via {model} in {dt:.0f}s: willPay={obj.get('willPayScore')} leave={obj.get('willLeave')} best={obj.get('bestProduct')}")
                 return obj, model
             log(f"  {model}: no usable JSON in {dt:.0f}s")
         except Exception as e:
