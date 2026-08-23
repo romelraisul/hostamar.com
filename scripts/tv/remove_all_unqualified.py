@@ -63,7 +63,7 @@ def main():
     cur = conn.cursor()
 
     # Fetch all playlist items with their source research scores
-    cur.execute('''SELECT p.id, p.title, p.url, s."relevanceScore", r."relevanceScore" as rscore, r."willPayScore", r.category
+    cur.execute('''SELECT p.id, p.title, p.url, s."relevanceScore", r."relevanceScore" as rscore, r.category
                    FROM "TvPlaylistItem" p
                    LEFT JOIN "FreeVideoSource" s ON s."localPath" = p.url OR s.title = p.title
                    LEFT JOIN "FreeVideoSourceResearch" r ON r."videoSourceId" = s.id
@@ -74,8 +74,8 @@ def main():
     # Check which are unqualified
     to_delete = []
     to_keep = []
-    for pid, title, url, s_score, r_score, willPay, cat in rows:
-        willBuyScore = willPay if willPay is not None else (r_score if r_score is not None else s_score)
+    for pid, title, url, s_score, r_score, cat in rows:
+        willBuyScore = r_score if r_score is not None else s_score
         willLeave = False # we don't have willLeave in DB yet, infer from title
         low_title = (title or "").lower()
         if any(k in low_title for k in ["perl", "minu", "walkthr", "animated videos", "daraz 11.11"]):
