@@ -26,6 +26,7 @@ type NowPlaying = {
   credit?: number | null
   isViral?: boolean
   viralScore?: number | null
+  slug?: string | null
 }
 
 const VP9_URL = 'https://vp9.hostamar.com/master.m3u8'
@@ -134,9 +135,10 @@ export default function TvHero() {
         <div className="absolute top-2 left-2 bg-zinc-700 text-white text-xs px-2 py-1 rounded-full font-bold z-10">OFFLINE</div>
       )}
 
-      {/* Watch Live — below watermark so both fit in the top-right stack */}
+      {/* Watch Live — below watermark so both fit in the top-right stack.
+          When the on-air video has an SEO page, deep-link to it. */}
       <Link
-        href="/tv"
+        href={np?.slug ? `/tv/watch/${np.slug}` : '/tv'}
         className="absolute top-11 right-3 bg-white/90 hover:bg-white text-[#0E7C3A] text-xs px-2.5 py-1 rounded-full font-bold shadow z-10"
       >
         LIVE দেখুন →
@@ -149,10 +151,13 @@ export default function TvHero() {
         </div>
       )}
 
-      {/* Now playing bar */}
-      <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded truncate z-10">
+      {/* Now playing bar — links to the on-air video's SEO page when it has one */}
+      <Link
+        href={np?.slug ? `/tv/watch/${np.slug}` : '/tv'}
+        className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block"
+      >
         🎬 [TV] {title} • credit {credit}{np?.isViral ? ` • 🔥 Viral ${np?.viralScore ?? ''}` : ''} • 70% HERO ▶{unsupported ? ' • browser HLS unsupported' : ''}
-      </div>
+      </Link>
       {/* IPTV link */}
       <Link href="/tv" className="absolute -bottom-7 left-0 text-[11px] text-[#0E7C3A] font-semibold hover:underline z-10">📺 IPTV: hostamar.com/api/tv/iptv.m3u → VLC / Smart TV</Link>
     </div>

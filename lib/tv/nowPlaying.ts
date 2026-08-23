@@ -29,6 +29,8 @@ export interface NowPlaying {
   voiceUsed: string | null
   isViral: boolean
   viralScore: number | null
+  /** SEO slug of the on-air video (TvVideoSeo) → /tv/watch/{slug}, when known */
+  slug: string | null
 }
 
 async function ffprobeDuration(path: string): Promise<number | null> {
@@ -93,6 +95,7 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
         title: r.title ?? null,
         isViral: false,
         viralScore: null,
+        slug: null,
       })
     }
   } catch {
@@ -113,9 +116,9 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
         orderBy: { createdAt: 'desc' },
         select: { title: true },
       })
-      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null }
+      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null }
     } catch {
-      return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null }
+      return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null }
     }
   }
 
@@ -162,6 +165,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
             title: r.title ?? null,
             isViral: false,
             viralScore: null,
+            slug: null,
           })
         }
       }
@@ -205,6 +209,22 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
       pos -= r.duration
     }
   }
+
+  // Resolve the SEO slug of the on-air video: playlist URLs for free CC videos
+  // are .../viral/{FreeVideoSource.id}_free_bn.mp4 → TvVideoSeo.videoSourceId.
+  let slug: string | null = null
+  try {
+    const m = current.url.match(/\/([a-z0-9]{20,})_(?:free|viral)_bn\.mp4$/)
+    if (m) {
+      const seo = await prisma.$queryRawUnsafe<{ slug: string }[]>(
+        'SELECT slug FROM "TvVideoSeo" WHERE "videoSourceId" = $1 LIMIT 1', m[1],
+      )
+      slug = seo?.[0]?.slug ?? null
+    }
+  } catch {
+    // TvVideoSeo may not exist yet pre-ensureSchema — slug stays null
+  }
+
   return {
     title: current.titleBn || current.title,
     titleBn: current.titleBn,
@@ -212,5 +232,6 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
     voiceUsed: current.voiceUsed,
     isViral: (current as any).isViral || false,
     viralScore: (current as any).viralScore ?? null,
+    slug,
   }
 }

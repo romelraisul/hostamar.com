@@ -308,6 +308,28 @@ const STATEMENTS: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS "TvVideoStats_playlistItemId_key" ON "TvVideoStats"("playlistItemId")`,
   `CREATE INDEX IF NOT EXISTS "TvVideoStats_isViral_idx" ON "TvVideoStats"("isViral")`,
   `CREATE INDEX IF NOT EXISTS "TvVideoStats_viralScore_idx" ON "TvVideoStats"("viralScore")`,
+  // ── Per-video SEO (every TV video gets its own Google-ranked page) ──
+  `CREATE TABLE IF NOT EXISTS "TvVideoSeo" (
+  "id" TEXT NOT NULL,
+  "videoSourceId" TEXT NOT NULL,
+  "slug" TEXT NOT NULL,
+  "titleBn" TEXT NOT NULL,
+  "metaDescription" TEXT NOT NULL,
+  "keywords" TEXT[] DEFAULT ARRAY[]::TEXT[],
+  "transcriptBn" TEXT,
+  "schemaJson" JSONB,
+  "ogImage" TEXT,
+  "canonicalUrl" TEXT NOT NULL,
+  "product" TEXT NOT NULL,
+  "viralScore" DOUBLE PRECISION,
+  "views" INTEGER NOT NULL DEFAULT 0,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "TvVideoSeo_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "TvVideoSeo_videoSourceId_key" ON "TvVideoSeo"("videoSourceId")`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "TvVideoSeo_slug_key" ON "TvVideoSeo"("slug")`,
+  `CREATE INDEX IF NOT EXISTS "TvVideoSeo_product_idx" ON "TvVideoSeo"("product")`,
 ]
 
 let ensured: Promise<void> | null = null

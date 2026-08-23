@@ -1240,6 +1240,27 @@ model FreeVideoSource {
   @@index([used])
 }
 
+// ── Per-video SEO (every TV video gets its own Google-ranked page) ──
+model TvVideoSeo {
+  id              String   @id @default(cuid())
+  videoSourceId   String   @unique // FreeVideoSource.id
+  slug            String   @unique // ai-video-generator-bangla-tutorial-2025
+  titleBn         String // SEO title ~60 chars with product keyword + Bangla + Hostamar TV
+  metaDescription String // ~155 chars Bangla with CTA (bKash, Daraz)
+  keywords        String[] // 6-8 mixed Bangla + English keywords
+  transcriptBn    String?  @db.Text // full Bangla transcript for SEO index
+  schemaJson      Json? // VideoObject schema.org payload
+  ogImage         String? // /og/tv/{slug}.jpg — 1200x630 with watermark + titleBn
+  canonicalUrl    String // https://hostamar.com/tv/watch/{slug}
+  product         String // Video | Hosting | Chat | Browser | IDE | Gaming
+  viralScore      Float?
+  views           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([product])
+}
+
 // ── Viral BD TV Engine — browser.hostamar.com → ViralTrend → AI video ──
 model ViralTrend {
   id           String       @id @default(cuid())
