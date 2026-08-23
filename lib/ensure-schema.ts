@@ -330,6 +330,25 @@ const STATEMENTS: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS "TvVideoSeo_videoSourceId_key" ON "TvVideoSeo"("videoSourceId")`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "TvVideoSeo_slug_key" ON "TvVideoSeo"("slug")`,
   `CREATE INDEX IF NOT EXISTS "TvVideoSeo_product_idx" ON "TvVideoSeo"("product")`,
+  // ── In-house research (browser hunt → 100+ models gate) ──
+  `ALTER TABLE "FreeVideoSource" ADD COLUMN IF NOT EXISTS "relevanceScore" DOUBLE PRECISION`,
+  `CREATE TABLE IF NOT EXISTS "FreeVideoSourceResearch" (
+  "id" TEXT NOT NULL,
+  "videoSourceId" TEXT NOT NULL,
+  "transcriptEn" TEXT,
+  "visualDesc" TEXT,
+  "relevanceScore" DOUBLE PRECISION,
+  "category" TEXT,
+  "summaryBn" TEXT,
+  "keywords" TEXT[],
+  "researchedBy" TEXT,
+  "accepted" BOOLEAN NOT NULL DEFAULT false,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "FreeVideoSourceResearch_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "FreeVideoSourceResearch_videoSourceId_key" ON "FreeVideoSourceResearch"("videoSourceId")`,
+  `CREATE INDEX IF NOT EXISTS "FreeVideoSourceResearch_relevanceScore_idx" ON "FreeVideoSourceResearch"("relevanceScore")`,
 ]
 
 let ensured: Promise<void> | null = null
