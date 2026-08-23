@@ -43,6 +43,7 @@ export async function GET(_req: NextRequest) {
       isViral: (np as any).isViral || false,
       viralScore: (np as any).viralScore ?? null,
       slug: (np as any).slug ?? null,
+      isPure: (np as any).isPure ?? false,
       credit: 6000,
     })
   } catch (err) {

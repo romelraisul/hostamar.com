@@ -31,6 +31,8 @@ export interface NowPlaying {
   viralScore: number | null
   /** SEO slug of the on-air video (TvVideoSeo) → /tv/watch/{slug}, when known */
   slug: string | null
+  /** true when the on-air file lives under videos/pure/ (no TTS, no watermark) */
+  isPure: boolean
 }
 
 async function ffprobeDuration(path: string): Promise<number | null> {
@@ -96,6 +98,7 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
         isViral: false,
         viralScore: null,
         slug: null,
+        isPure: false,
       })
     }
   } catch {
@@ -116,20 +119,20 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
         orderBy: { createdAt: 'desc' },
         select: { title: true },
       })
-      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null }
-    } catch {
-      return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null }
-    }
-  }
+      return { title: video?.title || null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false }
+ } catch {
+ return { title: null, titleBn: null, gender: null, voiceUsed: null, isViral: false, viralScore: null, slug: null, isPure: false }
+ }
+ }
 
-  const rota: RotaItem[] = items.map((it) => ({
-    title: it.title,
-    url: it.url,
-    titleBn: null,
-    gender: null,
-    voiceUsed: null,
-    duration: DEFAULT_DURATION_SEC,
-  }))
+ const rota: RotaItem[] = items.map((it) => ({
+ title: it.title,
+ url: it.url,
+ titleBn: null,
+ gender: null,
+ voiceUsed: null,
+ duration: DEFAULT_DURATION_SEC,
+ }))
 
   // Probe real durations only for local files (self-hosted mode), capped.
   let probed = 0
@@ -166,6 +169,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
             isViral: false,
             viralScore: null,
             slug: null,
+            isPure: false,
           })
         }
       }
@@ -233,5 +237,6 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
     isViral: (current as any).isViral || false,
     viralScore: (current as any).viralScore ?? null,
     slug,
+    isPure: (current.url || '').includes('/videos/pure/'),
   }
 }
