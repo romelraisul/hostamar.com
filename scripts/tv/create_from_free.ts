@@ -219,6 +219,24 @@ async function main() {
   console.log(`  video: ${finalPath}`)
   console.log(`  gender: ${gender} voice: ${voice} translatedBy: ${tr.by}`)
   console.log(`  playlist: ${lines.length} lines, new video at position 1`)
+
+  // 7. AUTO-SEO: every video SEOs itself — generate TvVideoSeo + OG image +
+  //    /tv/watch/{slug} page (ISR picks it up within the hour, no rebuild).
+  //    Runs detached so a slow rafan call never blocks the publish loop.
+  try {
+    const { spawn } = await import('child_process')
+    const seoLog = fs.openSync('/tmp/tv-seo-auto.log', 'a')
+    const child = spawn('python3', ['/home/romel/hostamar-build/scripts/tv/seo_generate.py', '--source-id', source.id], {
+      detached: true,
+      stdio: ['ignore', seoLog, seoLog],
+      env: process.env,
+    })
+    child.unref()
+    console.log(`  seo: auto-generating in background (pid ${child.pid}) → /tmp/tv-seo-auto.log`)
+  } catch (e) {
+    console.error('  seo: auto-generate failed to start:', e)
+  }
+
   await prisma.$disconnect()
 }
 

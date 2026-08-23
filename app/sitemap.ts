@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { prisma } from '@/lib/prisma'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com'
 
@@ -37,12 +38,35 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/dev/android', changeFrequency: 'weekly', priority: 0.7 },
 ]
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// ISR: re-check the DB hourly so newly SEO'd videos enter the sitemap
+// without a full rebuild.
+export const revalidate = 3600
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
-  return routes.map(({ path, changeFrequency, priority }) => ({
+  const base = routes.map(({ path, changeFrequency, priority }) => ({
     url: `${SITE_URL}${path}`,
     lastModified: now,
     changeFrequency,
     priority,
   }))
+
+  // Every TV video SEOs itself: /tv/watch/{slug} entries from TvVideoSeo.
+  let videoEntries: MetadataRoute.Sitemap = []
+  try {
+    const videos = await (prisma as any).tvVideoSeo.findMany({
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+    })
+    videoEntries = videos.map((v: { slug: string; updatedAt: Date }) => ({
+      url: `${SITE_URL}/tv/watch/${v.slug}`,
+      lastModified: v.updatedAt || now,
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    }))
+  } catch {
+    // DB unreachable (e.g. build sandbox) — static routes only.
+  }
+
+  return [...base, ...videoEntries]
 }

@@ -21,7 +21,7 @@ export async function GET(_req: NextRequest) {
   try {
     const status = await getStreamStatus()
 
-    let np = { title: null as string | null, titleBn: null as string | null, gender: null as string | null, voiceUsed: null as string | null, isViral: false as boolean, viralScore: null as number | null }
+    let np = { title: null as string | null, titleBn: null as string | null, gender: null as string | null, voiceUsed: null as string | null, isViral: false as boolean, viralScore: null as number | null, slug: null as string | null }
     try {
       await ensureSchema()
       const channel = await getOrCreateDefaultChannel()
@@ -42,6 +42,7 @@ export async function GET(_req: NextRequest) {
       voiceUsed: np.voiceUsed,
       isViral: (np as any).isViral || false,
       viralScore: (np as any).viralScore ?? null,
+      slug: (np as any).slug ?? null,
       credit: 6000,
     })
   } catch (err) {
