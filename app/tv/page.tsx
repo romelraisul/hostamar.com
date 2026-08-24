@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Tv, Radio, PlayCircle, RefreshCw, ListVideo } from 'lucide-react';
 import Hls from 'hls.js';
+import { registerTvSw, TV_LEVEL_KEY } from '@/lib/tv/useHlsSaveData';
 
 type TvStatus = {
   isLive: boolean;
@@ -56,6 +57,7 @@ export default function TvPage() {
 
   useEffect(() => {
     load();
+    registerTvSw();
     const t = setInterval(load, 10000);
     return () => clearInterval(t);
   }, []);
@@ -116,7 +118,32 @@ export default function TvPage() {
 
     if (Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
-      const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+      // Slow-net profile: deep buffer + remembered start level (see
+      // lib/tv/useHlsSaveData.ts — config must be set at construction).
+      let savedLevel = -1;
+      try { savedLevel = Number(localStorage.getItem(TV_LEVEL_KEY) ?? '-1'); } catch {}
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 30,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60,
+        maxBufferSize: 20 * 1000 * 1000,
+        maxBufferHole: 0.5,
+        highBufferWatchdogPeriod: 2,
+        nudgeOffset: 0.1,
+        nudgeMaxRetry: 5,
+        maxFragLookUpTolerance: 0.25,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 10,
+        liveDurationInfinity: false,
+        startLevel: Number.isFinite(savedLevel) && savedLevel >= 0 ? savedLevel : -1,
+        capLevelToPlayerSize: true,
+        autoStartLoad: true,
+        testBandwidth: true,
+        progressive: false,
+      });
+      try { localStorage.setItem(TV_LEVEL_KEY, '-1'); } catch {}
       hls.loadSource(source);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_, data) => {

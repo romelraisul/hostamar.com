@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Hls from 'hls.js'
+import { registerTvSw, TV_LEVEL_KEY } from '@/lib/tv/useHlsSaveData'
 
 /**
  * TvHero — Hostamar TV live player for the homepage 70% HERO cell.
@@ -66,6 +67,12 @@ export default function TvHero() {
     return () => clearInterval(t)
   }, [isLive])
 
+  // Register the save-data service worker (caches .ts segments; enables
+  // background prefetch so slow connections never stall).
+  useEffect(() => {
+    registerTvSw()
+  }, [])
+
   // Player — identical error-driven fallback chain as /tv
   useEffect(() => {
     const video = videoRef.current
@@ -77,7 +84,34 @@ export default function TvHero() {
 
     if (Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy()
-      const hls = new Hls({ enableWorker: true, lowLatencyMode: false })
+      // Slow-net profile: deep buffer + capped level + remembered floor.
+      // (Set at CONSTRUCTION — hls.config is read-only afterwards.)
+      let savedLevel = -1
+      try { savedLevel = Number(localStorage.getItem(TV_LEVEL_KEY) ?? '-1') } catch {}
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 30,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60,
+        maxBufferSize: 20 * 1000 * 1000,
+        maxBufferHole: 0.5,
+        highBufferWatchdogPeriod: 2,
+        nudgeOffset: 0.1,
+        nudgeMaxRetry: 5,
+        maxFragLookUpTolerance: 0.25,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 10,
+        liveDurationInfinity: false,
+        startLevel: Number.isFinite(savedLevel) && savedLevel >= 0 ? savedLevel : -1,
+        capLevelToPlayerSize: true,
+        autoStartLoad: true,
+        testBandwidth: true,
+        progressive: false,
+      })
+      try {
+        localStorage.setItem(TV_LEVEL_KEY, '-1') // re-probe each session; stall memory only for start
+      } catch {}
       hls.loadSource(source)
       hls.attachMedia(video)
       hls.on(Hls.Events.ERROR, (_, data) => {
