@@ -147,6 +147,8 @@ export async function middleware(request: NextRequest) {
     '/api/hosting/status',
     '/api/generate/history',
     '/api/chat/ai-assist',
+    '/api/test-or',
+    '/api/test-chat',
     '/api/browser/summarize',
     '/api/game/credits',
     '/api/bootstrap-admin',

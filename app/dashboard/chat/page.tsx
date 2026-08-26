@@ -7,15 +7,11 @@ import { Send, Sparkles, Coins } from 'lucide-react'
 type Model = { id: string; name: string; per1k: number; cls: string }
 type Msg = { role: 'user' | 'assistant'; content: string; model?: string; cost?: number; tokens?: { p: number; c: number } }
 
+// Live-tested working models (kilo free tier, 2026-08-26 pong-verified)
 const PRESET: Model[] = [
-  { id: 'meta-llama/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', per1k: 0.1, cls: 'cheap' },
-  { id: 'moonshotai/kimi-k3', name: 'Kimi K3 (1M ctx)', per1k: 0.5, cls: 'cheap' },
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o mini', per1k: 0.5, cls: 'mid' },
-  { id: 'minimax/minimax-m1', name: 'minimax M1 (1M)', per1k: 0.5, cls: 'cheap' },
-  { id: 'openai/gpt-4o', name: 'GPT-4o', per1k: 3, cls: 'mid' },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', per1k: 3, cls: 'mid' },
-  { id: 'openai/o1', name: 'o1 (reasoning)', per1k: 10, cls: 'premium' },
-  { id: 'anthropic/claude-3-opus', name: 'Claude 3 Opus', per1k: 10, cls: 'premium' },
+  { id: 'meituan/longcat-2.0-free', name: 'LongCat 2.0 [1M]', per1k: 0.5, cls: 'cheap' },
+  { id: 'minimax/minimax-m3:free', name: 'MiniMax M3 [1M]', per1k: 0.5, cls: 'cheap' },
+  { id: 'stealth/ox-alpha', name: 'Ox Alpha [1M]', per1k: 0.5, cls: 'cheap' },
 ]
 
 
