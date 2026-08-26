@@ -14,6 +14,53 @@ const FALLBACK_MODEL = "minimax/minimax-m3:free";
 const INTERNAL_KEY = "hostamar-edge-internal-2026-xK39m";
 const JWT_SECRET = "hostamar-docker-jwt-local-2026";
 
+// ── No-card catalog tiers: KV -> GitHub raw -> embedded CATALOG ──
+// R2 replaced (err 10042 needs card). KV is free without card; GitHub raw is the
+// versioned source of truth; embedded CATALOG is the last-resort snapshot.
+const GITHUB_RAW = "https://raw.githubusercontent.com/romelraisul/hostamar.com/main/MODEL_CATALOG.json";
+
+function modelsFromCatalogDoc(doc) {
+  if (!doc) return null;
+  // gen-model-catalog.mjs writes { generatedAt, count, models: [...] };
+  // older snapshots may be a bare array.
+  const list = Array.isArray(doc) ? doc : doc.models;
+  return Array.isArray(list) && list.length ? list : null;
+}
+
+async function getCatalog(env) {
+  // Tier 1: KV (free, no card, <1ms edge read)
+  try {
+    const fromKv = await env.HOSTAMAR_CATALOG.get("MODEL_CATALOG", "json");
+    const kvModels = modelsFromCatalogDoc(fromKv);
+    if (kvModels) return { models: kvModels, source: "kv" };
+  } catch (_) { /* fall through */ }
+
+  // Tier 2: GitHub raw (source of truth, updated by model-heal.yml)
+  try {
+    const res = await fetch(GITHUB_RAW, { cf: { cacheTtl: 300, cacheEverything: true } });
+    if (res.ok) {
+      const doc = await res.json();
+      const ghModels = modelsFromCatalogDoc(doc);
+      if (ghModels) {
+        // write-back cache for the next request (1h TTL)
+        env.HOSTAMAR_CATALOG.put("MODEL_CATALOG", JSON.stringify(doc), { expirationTtl: 3600 }).catch(() => {});
+        return { models: ghModels, source: "github" };
+      }
+    }
+  } catch (_) { /* fall through */ }
+
+  // Tier 3: embedded snapshot baked at deploy time
+  const emb = modelsFromCatalogDoc(CATALOG);
+  return { models: emb || [], source: "embedded" };
+}
+
+async function logUsage(env, entry) {
+  // Usage log into KV HOSTAMAR_LOGS: logs/usage/<date>/<n> (call via ctx.waitUntil)
+  const day = new Date().toISOString().slice(0, 10);
+  const key = `logs/usage/${day}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  await env.HOSTAMAR_LOGS.put(key, JSON.stringify(entry));
+}
+
 function b64url(s) { return atob(s.replace(/-/g, "+").replace(/_/g, "/")); }
 
 async function verifyJwt(token) {
@@ -43,13 +90,15 @@ async function verifyJwt(token) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (url.pathname === "/v1/models") {
+      const { models, source } = await getCatalog(env);
       return new Response(JSON.stringify({
         object: "list",
-        data: CATALOG.map(m => ({
+        source,
+        data: models.map(m => ({
           id: m.id,
           object: "model",
           created: 1677610602,
@@ -125,6 +174,18 @@ export default {
       const c = Number(data?.usage?.completion_tokens || 0);
       const costTaka = Math.round((((p + c) / 1000) * 0.5) * 100) / 100;
 
+      // usage log -> KV HOSTAMAR_LOGS via waitUntil (survives response return)
+      ctx.waitUntil(logUsage(env, {
+        ts: new Date().toISOString(),
+        model,
+        usedFallback,
+        prompt: p,
+        completion: c,
+        costTaka,
+        internal,
+        user: user ? (user.sub || user.email || "jwt") : null,
+      }).catch(() => {}));
+
       return Response.json({
         id: data.id,
         object: "chat.completion",
@@ -140,7 +201,8 @@ export default {
     }
 
     if (url.pathname === "/health") {
-      return Response.json({ ok: true, models: CATALOG.length });
+      const { models, source } = await getCatalog(env);
+      return Response.json({ ok: true, models: models.length, catalogSource: source });
     }
 
     return Response.json({ error: "Not found" }, { status: 404 });

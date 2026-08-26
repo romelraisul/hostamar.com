@@ -9,5 +9,13 @@ account_id = "e00717304c1139751214b8cda5078a8d"
 # Custom-domain binding for ai.hostamar.com is done in the CF dashboard,
 # not via deploy.
 
+[[kv_namespaces]]
+binding = "HOSTAMAR_CATALOG"
+id = "7ce14c69f70d48449dd50edd4be3dca3"
+
+[[kv_namespaces]]
+binding = "HOSTAMAR_LOGS"
+id = "5f358674d8fc4488a2e733dee6a26194"
+
 [vars]
 KILO_API_BASE = "https://api.kilo.ai/api/gateway"

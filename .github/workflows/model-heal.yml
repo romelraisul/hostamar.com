@@ -59,6 +59,17 @@ jobs:
           PONG
           OPENCODE_ZEN_API_KEY="$OPENCODE_ZEN_API_KEY" node /tmp/pong.mjs
 
+      - name: Sync catalog to Cloudflare KV (Tier-1 no-card R2 replacement)
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          NS=7ce14c69f70d48449dd50edd4be3dca3
+          npx wrangler kv key put MODEL_CATALOG --namespace-id=$NS --path=./MODEL_CATALOG.json --remote
+          npx wrangler kv key put ROUTE_MAP --namespace-id=$NS --path=./ROUTE_MAP.json --remote
+          npx wrangler kv key put 124_MODELS --namespace-id=$NS --path=./docs/124_MODELS.md --remote
+
       - name: Commit + push regenerated catalog
         run: |
           git config user.name "model-heal-bot"
