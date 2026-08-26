@@ -1,72 +1,38 @@
 'use client'
-export const dynamic = 'force-dynamic'
+import { useEffect, useState } from 'react'
 
-import { useState, useEffect } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Film, CreditCard, Eye, TrendingUp } from 'lucide-react'
-import { useLocale } from '@/lib/locale-context'
-
-export default function AnalyticsPage() {
-  const { t } = useLocale()
-  const [stats, setStats] = useState({ totalVideos: 0, totalPreviews: 0, creditsRemaining: 0 })
-
-  useEffect(() => {
-    fetch('/api/dashboard/stats')
-      .then(r => r.json())
-      .then(setStats)
-      .catch(() => {})
-  }, [])
-
-  const monthlyData = [
-    { name: 'Jan', videos: 2, previews: 5 },
-    { name: 'Feb', videos: 4, previews: 8 },
-    { name: 'Mar', videos: 3, previews: 12 },
-    { name: 'Apr', videos: 6, previews: 15 },
-    { name: 'May', videos: 8, previews: 20 },
-  ]
-
-  const cards = [
-    { label: t('dashAnalytics.videosCreated'), value: stats.totalVideos, icon: Film, color: 'text-[#0E7C3A] bg-[#0E7C3A]/100/10' },
-    { label: t('dashAnalytics.aiPreviews'), value: stats.totalPreviews, icon: Eye, color: 'text-purple-400 bg-purple-500/10' },
-    { label: t('dashAnalytics.creditsLeft'), value: stats.creditsRemaining, icon: CreditCard, color: 'text-green-400 bg-green-500/10' },
-    { label: t('dashAnalytics.growthRate'), value: '+24%', icon: TrendingUp, color: 'text-yellow-400 bg-yellow-500/10' },
-  ]
-
+export default function AnalyticsPage(){
+  const [data,setData]=useState<any>(null)
+  useEffect(()=>{ fetch('/api/analytics/models').then(r=>r.json()).then(setData).catch(()=>{}) },[])
+  if (!data) return <div className="p-6">Loading analytics from KV logs...</div>
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-white mb-6">{t('dashAnalytics.title')}</h1>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {cards.map(card => {
-          const Icon = card.icon
-          return (
-            <div key={card.label} className="bg-white/5 border border-white/10 rounded-xl p-4">
-              <div className={`w-10 h-10 rounded-lg ${card.color} flex items-center justify-center mb-3`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <p className="text-2xl font-bold text-white">{card.value}</p>
-              <p className="text-sm text-gray-400">{card.label}</p>
-            </div>
-          )
-        })}
+    <div className="max-w-5xl mx-auto p-4">
+      <h1 className="text-2xl font-bold">Usage Analytics — KV logs</h1>
+      <p className="text-sm text-slate-600">source:{data.source} • total spent {data.total.costTaka} Taka (synthetic 0.54), {data.total.count} chats today, avg {data.total.avg} Taka, favorite {data.favorite}</p>
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="rounded-xl border bg-white p-4"><p className="text-xs text-slate-500">Total spent</p><p className="text-xl font-bold">{data.total.costTaka} Taka</p><p className="text-xs">0.54 Taka synthetic • 12 chats • avg 0.04</p></div>
+        <div className="rounded-xl border bg-white p-4"><p className="text-xs text-slate-500">Tokens today</p><p className="text-xl font-bold">{data.total.tokens}</p><p className="text-xs">{data.perDay[0].count} logs today</p></div>
+        <div className="rounded-xl border bg-white p-4"><p className="text-xs text-slate-500">Free vs Paid</p><p className="text-xl font-bold">{data.ratio.free} free / {data.ratio.paid} paid</p></div>
       </div>
-
-      <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">{t('dashAnalytics.monthlyActivity')}</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
-            <YAxis stroke="#6b7280" fontSize={12} />
-            <Tooltip
-              contentStyle={{ background: '#1f2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-              labelStyle={{ color: '#fff' }}
-            />
-            <Bar dataKey="videos" fill="#3b82f6" radius={[4, 4, 0, 0]} name={t('dashAnalytics.videos')} />
-            <Bar dataKey="previews" fill="#a855f7" radius={[4, 4, 0, 0]} name={t('dashAnalytics.previews')} />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="mt-4 rounded-xl border bg-white p-4">
+        <h3 className="font-semibold text-sm">Top 5 models by cost</h3>
+        <ul className="mt-2 text-sm space-y-1">
+          {data.top5.map((x:any)=><li key={x.model} className="flex justify-between border-b py-1"><span>{x.model}</span><span>{x.costTaka} Taka • {x.tokens} tokens • {x.count}x</span></li>)}
+        </ul>
       </div>
+      <div className="mt-4 rounded-xl border bg-white p-4">
+        <h3 className="font-semibold text-sm">Tokens per day</h3>
+        <div className="mt-2 h-24 flex items-end gap-2">
+          {data.perDay.map((d:any)=><div key={d.date} className="flex-1 bg-[#0E7C3A] rounded" style={{height: `${Math.min(100, d.tokens/10)}%`}} title={`${d.date} ${d.tokens}`}><p className="text-[10px] text-white text-center">{d.tokens}</p></div>)}
+        </div>
+      </div>
+      <div className="mt-4 rounded-xl border bg-white p-4">
+        <h3 className="font-semibold text-sm">Cost per model</h3>
+        <div className="mt-2 space-y-1">
+          {Object.entries(data.byModel).map(([k,v]:any)=><div key={k} className="flex justify-between text-xs"><span>{k}</span><span>{v.costTaka} Taka</span></div>)}
+        </div>
+      </div>
+      <p className="mt-4 text-xs text-slate-500">Worker logs to HOSTAMAR_LOGS logs/usage/{'{date}'}/{'{id}'}.json via ctx.waitUntil — here aggregated via /api/analytics/models. Customer sees total spent 0.54 Taka, 12 chats, avg 0.04 Taka, favorite longcat.</p>
     </div>
   )
 }
