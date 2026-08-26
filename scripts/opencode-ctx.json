@@ -1,0 +1,156 @@
+{
+  "deepseek-v4-flash-free": {
+    "probed_at": "2026-08-26T00:39:49.131Z",
+    "tiers": {
+      "131072": {
+        "ok": false,
+        "status": 400,
+        "body": "{\"error\":{\"type\":\"server_error\",\"message\":\"Error from provider (Console): Upstream request failed: Model is unavailable.\"}}",
+        "dt": "0.8"
+      }
+    },
+    "min_context": null
+  },
+  "x-preview-f-free": {
+    "probed_at": "2026-08-26T00:39:49.953Z",
+    "tiers": {
+      "131072": {
+        "ok": true,
+        "dt": "4.8"
+      },
+      "262144": {
+        "ok": true,
+        "dt": "5.7"
+      },
+      "524288": {
+        "ok": true,
+        "dt": "5.8"
+      },
+      "1048576": {
+        "ok": true,
+        "dt": "7.8"
+      }
+    },
+    "min_context": 1048576
+  },
+  "muse-spark-1.2-contributor-free": {
+    "probed_at": "2026-08-26T00:40:13.957Z",
+    "tiers": {
+      "131072": {
+        "ok": false,
+        "status": 500,
+        "body": "{\"type\":\"error\",\"error\":{\"type\":\"error\",\"message\":\"Internal server error\"}}",
+        "dt": "1.6"
+      }
+    },
+    "min_context": null
+  },
+  "mimo-v2.5-free": {
+    "probed_at": "2026-08-26T00:40:15.547Z",
+    "tiers": {
+      "131072": {
+        "ok": true,
+        "dt": "20.4"
+      },
+      "262144": {
+        "ok": true,
+        "dt": "16.9"
+      },
+      "524288": {
+        "ok": true,
+        "dt": "104.4"
+      },
+      "1048576": {
+        "ok": true,
+        "dt": "85.0"
+      }
+    },
+    "min_context": 1048576
+  },
+  "hy3-free": {
+    "probed_at": "2026-08-26T00:44:02.183Z",
+    "tiers": {
+      "131072": {
+        "ok": true,
+        "dt": "12.6"
+      },
+      "262144": {
+        "ok": true,
+        "dt": "49.5"
+      },
+      "524288": {
+        "ok": true,
+        "dt": "42.2"
+      },
+      "1048576": {
+        "ok": true,
+        "dt": "43.7"
+      }
+    },
+    "min_context": 1048576
+  },
+  "nemotron-3-ultra-free": {
+    "probed_at": "2026-08-26T00:46:30.287Z",
+    "tiers": {
+      "131072": {
+        "ok": true,
+        "dt": "6.3"
+      },
+      "262144": {
+        "ok": true,
+        "dt": "9.3"
+      },
+      "524288": {
+        "ok": true,
+        "dt": "11.7"
+      },
+      "1048576": {
+        "ok": true,
+        "dt": "34.9"
+      }
+    },
+    "min_context": 1048576
+  },
+  "nemotron-3.5-lightning-free": {
+    "probed_at": "2026-08-26T00:47:32.554Z",
+    "tiers": {
+      "131072": {
+        "ok": true,
+        "dt": "7.6"
+      },
+      "262144": {
+        "ok": true,
+        "dt": "6.5"
+      },
+      "524288": {
+        "ok": true,
+        "dt": "14.4"
+      },
+      "1048576": {
+        "ok": true,
+        "dt": "36.3"
+      }
+    },
+    "min_context": 1048576
+  },
+  "laguna-s-2.1-free": {
+    "probed_at": "2026-08-26T00:48:37.382Z",
+    "tiers": {
+      "131072": {
+        "ok": true,
+        "dt": "5.4"
+      },
+      "262144": {
+        "ok": true,
+        "dt": "5.1"
+      },
+      "524288": {
+        "ok": false,
+        "status": 400,
+        "body": "{\"error\":{\"type\":\"server_error\",\"message\":\"Error from provider (Console): Upstream request failed: [400] This endpoint's maximum context length is 262144 tokens. However, you requested about 393216 to",
+        "dt": "2.3"
+      }
+    },
+    "min_context": 262144
+  }
+}
