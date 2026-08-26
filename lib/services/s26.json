@@ -1,0 +1,48 @@
+{
+  "id": "s26",
+  "name": "Conference Badge Designer",
+  "nameBn": "কনফারেন্স ব্যাজ ডিজাইনার",
+  "category": "Event",
+  "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+  "creditCost": 25,
+  "dollarRange": "$11",
+  "benefit": "500 badges from Excel in seconds",
+  "benefitBn": "এক্সেল থেকে সেকেন্ডে ৫০০ ব্যাজ",
+  "perfectFor": "Organizers",
+  "perfectForBn": "আয়োজক",
+  "promptTemplate": "Create \"Conference Badge Designer\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: 500 badges from Excel in seconds. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Conference",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83E\\uDEAA",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259754Z"
+}

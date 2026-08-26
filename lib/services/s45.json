@@ -1,0 +1,53 @@
+{
+  "id": "s45",
+  "name": "Ecom Ad Creative Pack",
+  "nameBn": "ই-কম অ্যাড ক্রিয়েটিভ প্যাক",
+  "category": "E-commerce",
+  "categoryBn": "ই-কমার্স ও সেলস",
+  "creditCost": 75,
+  "dollarRange": "$33",
+  "benefit": "12 ad variants for FB/TikTok",
+  "benefitBn": "ফেসবুক/টিকটকের জন্য ১২টি অ্যাড ভেরিয়েন্ট",
+  "perfectFor": "Dropshippers",
+  "perfectForBn": "ড্রপশিপার",
+  "promptTemplate": "Create \"Ecom Ad Creative Pack\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: 12 ad variants for FB/TikTok. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Ecom",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "product": {
+      "type": "string",
+      "label": "Product name",
+      "placeholder": "My Product"
+    }
+  },
+  "icon": "\\uD83D\\uDCE2",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259789Z"
+}

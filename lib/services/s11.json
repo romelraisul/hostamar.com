@@ -1,0 +1,48 @@
+{
+  "id": "s11",
+  "name": "Invoice & Quote Generator",
+  "nameBn": "ইনভয়েস ও কোট জেনারেটর",
+  "category": "Business",
+  "categoryBn": "বিজনেস ও মার্কেটিং",
+  "creditCost": 15,
+  "dollarRange": "$6",
+  "benefit": "Branded invoice & quote PDF instantly",
+  "benefitBn": "ব্র্যান্ডেড ইনভয়েস ও কোট পিডিএফ তাৎক্ষণিক",
+  "perfectFor": "Shops",
+  "perfectForBn": "দোকান",
+  "promptTemplate": "Create \"Invoice & Quote Generator\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Branded invoice & quote PDF instantly. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Invoice",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83E\\uDDFE",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259724Z"
+}

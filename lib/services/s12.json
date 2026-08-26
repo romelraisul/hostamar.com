@@ -1,0 +1,48 @@
+{
+  "id": "s12",
+  "name": "Business Plan Writer",
+  "nameBn": "বিজনেস প্ল্যান রাইটার",
+  "category": "Business",
+  "categoryBn": "বিজনেস ও মার্কেটিং",
+  "creditCost": 100,
+  "dollarRange": "$59",
+  "benefit": "Full plan: market, finance, ops",
+  "benefitBn": "মার্কেট, ফাইন্যান্স, অপস সহ পূর্ণাঙ্গ প্ল্যান",
+  "perfectFor": "Founders",
+  "perfectForBn": "ফাউন্ডার",
+  "promptTemplate": "Create \"Business Plan Writer\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Full plan: market, finance, ops. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Business",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDCDD",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259727Z"
+}

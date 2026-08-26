@@ -1,0 +1,48 @@
+{
+  "id": "s47",
+  "name": "TikTok Shop Video Kit",
+  "nameBn": "টিকটক শপ ভিডিও কিট",
+  "category": "E-commerce",
+  "categoryBn": "ই-কমার্স ও সেলস",
+  "creditCost": 75,
+  "dollarRange": "$29",
+  "benefit": "5 TikTok Shop videos with hooks + captions",
+  "benefitBn": "হুক + ক্যাপশন সহ ৫টি টিকটক শপ ভিডিও",
+  "perfectFor": "Shop Owners",
+  "perfectForBn": "দোকান মালিক",
+  "promptTemplate": "Create TikTok Shop Video Kit for brand {{brand}} product {{product}} topic {{topic}}. Generate 5 short vertical video scripts (hook, scene, VO, caption) optimized for TikTok Shop conversion. Bangla + English mix allowed.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "product": {
+      "type": "string",
+      "label": "Product",
+      "placeholder": "Saree Collection",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic",
+      "placeholder": "Eid Offer",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "energetic",
+        "friendly",
+        "luxury"
+      ],
+      "default": "energetic"
+    }
+  },
+  "icon": "🛍️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259794Z"
+}

@@ -1,0 +1,53 @@
+{
+  "id": "s38",
+  "name": "Portfolio Website Copy",
+  "nameBn": "পোর্টফোলিও ওয়েবসাইট কপি",
+  "category": "Professional",
+  "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+  "creditCost": 40,
+  "dollarRange": "$21",
+  "benefit": "Home, about, work, contact copy",
+  "benefitBn": "হোম, অ্যাবাউট, ওয়ার্ক, কন্টাক্ট কপি",
+  "perfectFor": "Designers",
+  "perfectForBn": "ডিজাইনার",
+  "promptTemplate": "Create \"Portfolio Website Copy\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: Home, about, work, contact copy. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Portfolio",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "role": {
+      "type": "string",
+      "label": "Target role",
+      "placeholder": "Marketing Manager"
+    }
+  },
+  "icon": "\\uD83D\\uDCBB",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259776Z"
+}

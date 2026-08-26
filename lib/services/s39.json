@@ -1,0 +1,53 @@
+{
+  "id": "s39",
+  "name": "Cover Letter Studio",
+  "nameBn": "কভার লেটার স্টুডিও",
+  "category": "Professional",
+  "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+  "creditCost": 15,
+  "dollarRange": "$9",
+  "benefit": "3 tailored cover letters per job",
+  "benefitBn": "প্রতি জবে ৩টি টেইলর্ড কভার লেটার",
+  "perfectFor": "Applicants",
+  "perfectForBn": "আবেদনকারী",
+  "promptTemplate": "Create \"Cover Letter Studio\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: 3 tailored cover letters per job. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Cover",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "role": {
+      "type": "string",
+      "label": "Target role",
+      "placeholder": "Marketing Manager"
+    }
+  },
+  "icon": "\\uD83D\\uDCE8",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259778Z"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "s34",
+  "name": "Charity Campaign Kit",
+  "nameBn": "চ্যারিটি ক্যাম্পেইন কিট",
+  "category": "Organization",
+  "categoryBn": "ব্যক্তিগত সংগঠন",
+  "creditCost": 75,
+  "dollarRange": "$31",
+  "benefit": "Donation page + posters + emails",
+  "benefitBn": "ডোনেশন পেজ + পোস্টার + ইমেইল",
+  "perfectFor": "Charities",
+  "perfectForBn": "চ্যারিটি",
+  "promptTemplate": "Create \"Charity Campaign Kit\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Donation page + posters + emails. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Charity",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "❤️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259769Z"
+}

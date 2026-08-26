@@ -1,0 +1,48 @@
+{
+  "id": "s17",
+  "name": "Newsletter Engine",
+  "nameBn": "নিউজলেটার ইঞ্জিন",
+  "category": "Content Creator",
+  "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+  "creditCost": 25,
+  "dollarRange": "$16",
+  "benefit": "4 newsletters from your ideas",
+  "benefitBn": "আপনার আইডিয়া থেকে ৪টি নিউজলেটার",
+  "perfectFor": "Writers",
+  "perfectForBn": "লেখক",
+  "promptTemplate": "Create \"Newsletter Engine\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 4 newsletters from your ideas. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Newsletter",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDCE7",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259735Z"
+}

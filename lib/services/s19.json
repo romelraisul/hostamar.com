@@ -1,0 +1,48 @@
+{
+  "id": "s19",
+  "name": "Short-form Script Pack",
+  "nameBn": "শর্ট-ফর্ম স্ক্রিপ্ট প্যাক",
+  "category": "Content Creator",
+  "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+  "creditCost": 25,
+  "dollarRange": "$13",
+  "benefit": "20 reels/shorts scripts in one go",
+  "benefitBn": "একবারে ২০টি রিলস/শর্টস স্ক্রিপ্ট",
+  "perfectFor": "Creators",
+  "perfectForBn": "ক্রিয়েটর",
+  "promptTemplate": "Create \"Short-form Script Pack\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 20 reels/shorts scripts in one go. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Short-form",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDCF1",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259739Z"
+}

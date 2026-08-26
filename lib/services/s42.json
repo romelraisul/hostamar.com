@@ -1,0 +1,53 @@
+{
+  "id": "s42",
+  "name": "Amazon Listing Optimizer",
+  "nameBn": "অ্যামাজন লিস্টিং অপটিমাইজার",
+  "category": "E-commerce",
+  "categoryBn": "ই-কমার্স ও সেলস",
+  "creditCost": 40,
+  "dollarRange": "$22",
+  "benefit": "Title, bullets, A+ content rewrite",
+  "benefitBn": "টাইটেল, বুলেট, এ+ কন্টেন্ট রিরাইট",
+  "perfectFor": "Sellers",
+  "perfectForBn": "সেলার",
+  "promptTemplate": "Create \"Amazon Listing Optimizer\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Title, bullets, A+ content rewrite. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Amazon",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "product": {
+      "type": "string",
+      "label": "Product name",
+      "placeholder": "My Product"
+    }
+  },
+  "icon": "\\uD83D\\uDCE6",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259783Z"
+}

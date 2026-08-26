@@ -1,0 +1,48 @@
+{
+  "id": "s22",
+  "name": "Content Calendar Planner",
+  "nameBn": "কন্টেন্ট ক্যালেন্ডার প্ল্যানার",
+  "category": "Content Creator",
+  "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+  "creditCost": 40,
+  "dollarRange": "$18",
+  "benefit": "30-day calendar with ideas + hooks",
+  "benefitBn": "আইডিয়া + হুক সহ ৩০ দিনের ক্যালেন্ডার",
+  "perfectFor": "Social Managers",
+  "perfectForBn": "সোশ্যাল ম্যানেজার",
+  "promptTemplate": "Create \"Content Calendar Planner\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 30-day calendar with ideas + hooks. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Content",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDDD3️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259745Z"
+}

@@ -1,0 +1,48 @@
+{
+  "id": "s35",
+  "name": "Association Letterhead Set",
+  "nameBn": "অ্যাসোসিয়েশন লেটারহেড সেট",
+  "category": "Organization",
+  "categoryBn": "ব্যক্তিগত সংগঠন",
+  "creditCost": 15,
+  "dollarRange": "$8",
+  "benefit": "Letterhead, envelope, stamp design",
+  "benefitBn": "লেটারহেড, খাম, স্ট্যাম্প ডিজাইন",
+  "perfectFor": "Associations",
+  "perfectForBn": "অ্যাসোসিয়েশন",
+  "promptTemplate": "Create \"Association Letterhead Set\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Letterhead, envelope, stamp design. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Association",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "✉️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259770Z"
+}

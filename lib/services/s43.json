@@ -1,0 +1,53 @@
+{
+  "id": "s43",
+  "name": "Shopify Banner Set",
+  "nameBn": "শপিফাই ব্যানার সেট",
+  "category": "E-commerce",
+  "categoryBn": "ই-কমার্স ও সেলস",
+  "creditCost": 25,
+  "dollarRange": "$14",
+  "benefit": "Homepage + collection banners",
+  "benefitBn": "হোমপেজ + কালেকশন ব্যানার",
+  "perfectFor": "Shopify Stores",
+  "perfectForBn": "শপিফাই স্টোর",
+  "promptTemplate": "Create \"Shopify Banner Set\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Homepage + collection banners. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Shopify",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "product": {
+      "type": "string",
+      "label": "Product name",
+      "placeholder": "My Product"
+    }
+  },
+  "icon": "\\uD83D\\uDDA5️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259786Z"
+}

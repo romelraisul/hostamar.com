@@ -1,0 +1,53 @@
+{
+  "id": "s44",
+  "name": "Product Photo Background Kit",
+  "nameBn": "প্রোডাক্ট ফটো ব্যাকগ্রাউন্ড কিট",
+  "category": "E-commerce",
+  "categoryBn": "ই-কমার্স ও সেলস",
+  "creditCost": 40,
+  "dollarRange": "$19",
+  "benefit": "Remove bg + studio shadows",
+  "benefitBn": "ব্যাকগ্রাউন্ড রিমুভ + স্টুডিও শ্যাডো",
+  "perfectFor": "Ecom Brands",
+  "perfectForBn": "ই-কম ব্র্যান্ড",
+  "promptTemplate": "Create \"Product Photo Background Kit\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Remove bg + studio shadows. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Product",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "product": {
+      "type": "string",
+      "label": "Product name",
+      "placeholder": "My Product"
+    }
+  },
+  "icon": "\\uD83D\\uDCF8",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259788Z"
+}

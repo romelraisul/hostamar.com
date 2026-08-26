@@ -1408,6 +1408,49 @@ model HostingRequest {
   updatedAt   DateTime @updatedAt
 }
 
+// ── Hostamar 50-service Bangla store ──
+model ServiceCatalog {
+  id             String   @id
+  name           String
+  nameBn         String
+  category       String
+  categoryBn     String
+  creditCost     Int
+  dollarRange    String?
+  benefit        String
+  benefitBn      String
+  perfectFor     String
+  perfectForBn   String
+  promptTemplate String   @db.Text
+  model          String?  @default("flux-pro")
+  inputs         Json     @default("{}")
+  icon           String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  orders ServiceOrder[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model ServiceOrder {
+  id         String   @id @default(cuid())
+  userId     String
+  serviceId  String
+  service    ServiceCatalog @relation(fields: [serviceId], references: [id])
+  creditCost Int
+  status     String   @default("queued") // queued | processing | delivered | failed
+  inputs     Json     @default("{}")
+  resultUrl  String?
+  resultJson Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([serviceId])
+  @@index([status])
+}
+
 // ── SEO: Preferred Sources / submit tracking ──
 model SeoEvent {
   id        String   @id @default(cuid())

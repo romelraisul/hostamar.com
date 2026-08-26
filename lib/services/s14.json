@@ -1,0 +1,48 @@
+{
+  "id": "s14",
+  "name": "Client Contract Kit",
+  "nameBn": "ক্লায়েন্ট কন্ট্রাক্ট কিট",
+  "category": "Business",
+  "categoryBn": "বিজনেস ও মার্কেটিং",
+  "creditCost": 25,
+  "dollarRange": "$15",
+  "benefit": "3 contracts tailored to BD law",
+  "benefitBn": "বাংলাদেশ আইন অনুযায়ী ৩টি কন্ট্রাক্ট",
+  "perfectFor": "Agencies",
+  "perfectForBn": "এজেন্সি",
+  "promptTemplate": "Create \"Client Contract Kit\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: 3 contracts tailored to BD law. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Client",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83E\\uDD1D",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259731Z"
+}

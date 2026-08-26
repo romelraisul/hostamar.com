@@ -1,0 +1,37 @@
+{
+  "id": "s50",
+  "name": "AI Business Card Designer",
+  "nameBn": "এআই বিজনেস কার্ড ডিজাইনার",
+  "category": "Business",
+  "categoryBn": "বিজনেস ও মার্কেটিং",
+  "creditCost": 15,
+  "dollarRange": "$9",
+  "benefit": "3 business card concepts print-ready",
+  "benefitBn": "প্রিন্ট-রেডি ৩টি বিজনেস কার্ড কনসেপ্ট",
+  "perfectFor": "Freelancers",
+  "perfectForBn": "ফ্রিল্যান্সার",
+  "promptTemplate": "Create AI Business Card Designer for brand {{brand}} topic {{topic}}. Generate 3 double-sided business card concepts with QR, typography, and print-ready layout. Modern Bangladeshi business aesthetic.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Person",
+      "placeholder": "Hostamar Studio",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Profession",
+      "placeholder": "Creative Agency",
+      "required": true
+    },
+    "colors": {
+      "type": "string",
+      "label": "Colors",
+      "placeholder": "#0ea5e9, #0f172a"
+    }
+  },
+  "icon": "💳",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259839Z"
+}

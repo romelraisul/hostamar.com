@@ -1,0 +1,48 @@
+{
+  "id": "s06",
+  "name": "Social Caption Bank",
+  "nameBn": "সোশ্যাল ক্যাপশন ব্যাংক",
+  "category": "Social Media",
+  "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+  "creditCost": 25,
+  "dollarRange": "$14",
+  "benefit": "60 captions tailored to your niche",
+  "benefitBn": "আপনার নিশ অনুযায়ী ৬০টি ক্যাপশন",
+  "perfectFor": "Agencies",
+  "perfectForBn": "এজেন্সি",
+  "promptTemplate": "Create \"Social Caption Bank\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 60 captions tailored to your niche. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Social",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "✍️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259708Z"
+}
