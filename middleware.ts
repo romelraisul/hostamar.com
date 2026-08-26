@@ -165,6 +165,7 @@ export async function middleware(request: NextRequest) {
     '/api/internal/',
     '/api/cron/',
     '/api/binance-price',
+    '/api/market-adjust',
     '/api/video/render/process',
     '/api/queue/process',
     '/api/payment/verify',
