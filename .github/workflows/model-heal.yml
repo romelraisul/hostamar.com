@@ -18,6 +18,15 @@ jobs:
         with:
           node-version: 20
 
+      - name: Write .env from secrets
+        run: |
+          cat > .env <<ENVFILE
+          OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}
+          KILOCODE_API_KEY=${{ secrets.KILO_API_KEY }}
+          OPENCODE_ZEN_API_KEY=${{ secrets.OPENCODE_ZEN_API_KEY }}
+          NVIDIA_API_KEY=${{ secrets.NVIDIA_API_KEY }}
+          ENVFILE
+
       - name: Regenerate catalog from live upstreams
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
