@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { WelcomeBanner } from '@/components/pricing-binance'
+import Turnstile from '@/components/Turnstile'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
@@ -40,6 +42,7 @@ export default function SignupPage() {
   const [refCode, setRefCode] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
   const [hydrated, setHydrated] = useState(false)
 
   const [error, setError] = useState('')
@@ -106,6 +109,7 @@ export default function SignupPage() {
           name,
           email,
           password,
+          turnstileToken: turnstileToken || undefined,
           inviteCode: inviteCode.trim().toUpperCase() || undefined,
           refCode: refCode.trim().toUpperCase() || undefined,
         }),
@@ -158,6 +162,11 @@ export default function SignupPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+            <div className="rounded-xl bg-[#0E7C3A]/[0.06] border border-[#0E7C3A]/20 px-4 py-3">
+              <p className="text-sm font-bold text-[#0E7C3A]">🎉 ফ্রি ৬,০০০ টাকা ক্রেডিট</p>
+              <p className="text-xs text-slate-500 mt-0.5">≈ $50 USD (Binance P2P) — chat, video, hosting সব কাজে ব্যবহার করুন। কার্ড লাগবে না।</p>
+            </div>
+
             <div>
               <input
                 type="text" value={name} onChange={(e) => setName(e.target.value)} required
@@ -223,6 +232,8 @@ export default function SignupPage() {
               <span className="text-lg">💳</span>
               <p className="bangla text-[13px] text-[#0E7C3A]">bKash / Nagad / Rocket দিয়ে পরে পেমেন্ট করবেন — এখন ফ্রি ট্রায়াল।</p>
             </div>
+
+            <Turnstile onToken={setTurnstileToken} />
 
             <button
               type="submit" disabled={!formValid || loading}

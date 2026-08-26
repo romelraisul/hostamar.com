@@ -27,3 +27,12 @@ comfyui/
 **/*.bin
 **/*.gguf
 **/*.onnx
+docker/
+state/
+demo/
+video-output/
+*.zip
+*.mp4
+*.mkv
+*.wav
+*.flac

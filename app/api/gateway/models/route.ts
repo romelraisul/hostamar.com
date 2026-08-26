@@ -52,7 +52,18 @@ export async function GET(req: NextRequest) {
     }
 
     const source = live ? 'live' : 'static'
-    const data = live ?? STATIC_MODELS
+    let data = live ?? STATIC_MODELS
+    // Enrich with context window info from the always-on 95 list so customers
+    // can choose big-context vs small-context models in the dashboard picker.
+    try {
+      const { CONTEXT_MAP, formatContext } = await import('@/lib/gateway/95-models')
+      data = data.map((m: any) => {
+        const cl = CONTEXT_MAP[m.id]
+        return cl
+          ? { ...m, display_name: `${m.id} [${formatContext(cl)}]`, context_length: cl, context: formatContext(cl) }
+          : m
+      })
+    } catch { /* enrichment is best-effort */ }
     return NextResponse.json(
       { source, data, gatewayUrl: GATEWAY_URL, hasKey: !!key },
       { headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' } }

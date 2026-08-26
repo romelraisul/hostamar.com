@@ -1,0 +1,1409 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- NextAuth PrismaAdapter models ---
+// Following canonical @auth/prisma-adapter schema for password-reset (VerificationToken)
+// and OAuth account linking (Account/Session). Customer table kept untouched so existing users continue to work.
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// User/Customer Model
+model Customer {
+  customerId       String    @unique @default(cuid())
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  password         String
+  emailVerified    DateTime?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  role             String    @default("customer") // "customer" | "admin" | "superadmin"
+  phone            String?
+  stage            String?   @default("lead")
+  source           String?   @default("website")
+  score            Int?      @default(0)
+  credits          Int       @default(0)
+  notes            String?
+  referralCode     String?   @unique
+  referredBy       String?
+  referralBonus    Float?    @default(0)
+  balance          Float?    @default(0)
+
+  // relationships
+  business          Business?
+  subscriptions     Subscription[]
+  videos            Video[]
+  services          Service[]
+  payments          Payment[]
+  transactions      Transaction[]
+  creditTransactions CreditTransaction[]
+  hostingRequests    HostingRequest[]
+  orders            Order[]
+  paymentVerifications PaymentVerification[]
+  affiliateEarnings AffiliateCommission[] @relation("AffiliateEarnings")
+  userWebhooks      UserWebhook[]
+  notifications     Notification[]
+  leads             Lead[]
+  referralsMade     Referral[]     @relation("ReferrerReferrals")
+  referralsReceived Referral[]     @relation("ReferredReferrals")
+  videoQueues       VideoQueue[]
+  activityLogs      ActivityLog[]
+  campaigns         Campaign[]
+  userProgress      UserProgress[]
+  previews          Preview[]
+  conversations     Conversation[]
+  gameBalances      GameBalance[]
+  gameSpins         GameSpin[]
+  apiKeys           ApiKey[]
+
+  // Twitter OAuth 2.0
+  twitterAccessToken       String?
+  twitterAccessTokenExpiry DateTime?
+  twitterUserId            String?
+  twitterUsername          String?
+
+  // Enterprise SSO (SAML)
+  ssoId       String? // NameID from SAML assertion
+  ssoProvider String? // e.g. saml:acme-corp
+  memberships Membership[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Business {
+  id         String   @id @default(cuid())
+  customerId String   @unique
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name        String
+  industry    String
+  description String?
+  website     String?
+  logo        String?
+  brandColor  String  @default("#3B82F6")
+
+  facebook  String?
+  instagram String?
+  youtube   String?
+  tiktok    String?
+
+  videoFrequency String  @default("daily")
+  videoTopics    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id         String   @id @default(cuid())
+  customerId String   @unique
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  plan   String
+  status String @default("active")
+
+  videosPerMonth Int @default(10)
+  storageGB      Int @default(5)
+
+  price           Float
+  currency        String   @default("BDT")
+  billingCycle    String   @default("monthly")
+  nextBillingDate DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Video {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  prompt      String?
+  script      String?
+  templateId  String?
+
+  duration   Int
+  format     String @default("webm")
+  resolution String @default("720p")
+  fileSize   Int?
+
+  url          String?
+  thumbnailUrl String?
+
+  topic    String?
+  language String  @default("bn")
+  status   String  @default("processing")
+
+  downloads Int @default(0)
+  views     Int @default(0)
+  shares    Int @default(0)
+
+  organizationId String? // NEW (PR d): tenant FK (Decision A). Nullable for backfill, made required later.
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([createdAt])
+  @@index([organizationId])
+  @@index([customerId, organizationId])
+  
+  creditTransactions CreditTransaction[]
+}
+
+model Preview {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  subtitles Subtitle[]
+
+  videoId      String?
+  title        String?
+  description  String?
+  duration     Int?
+  prompt       String?
+  style        String?
+  mood         String?
+  topic        String?
+  script       String?
+  status       String  @default("pending")
+  renderStatus String?
+  renderError  String?
+  errorMessage String?
+  thumbnailUrl String?
+  videoUrl     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId, status])
+}
+
+model Subtitle {
+  id        String   @id @default(cuid())
+  previewId String?
+  preview   Preview? @relation(fields: [previewId], references: [id], onDelete: Cascade)
+
+  videoId    String?
+  language   String? @default("bn")
+  content    String?
+  timestamps Json?
+  text       String?
+  start      Float   @default(0)
+  end        Float   @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model Service {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  type   String
+  name   String
+  status String @default("active")
+
+  specs       String?
+  credentials String
+
+  serverIp String?
+  serverId String?
+
+  price        Float
+  billingCycle String    @default("monthly")
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@index([customerId, status])
+}
+
+model VideoQueue {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  topic    String
+  priority Int     @default(5)
+  status   String  @default("pending")
+  type     String? @default("video")
+
+  attempts    Int     @default(0)
+  maxAttempts Int     @default(3)
+  error       String?
+
+  renderStatus String?
+  renderError  String?
+  videoUrl     String?
+  thumbnailUrl String?
+  videoId      String?
+
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([status, priority])
+  
+  creditTransactions CreditTransaction[]
+}
+
+model ActivityLog {
+  id         String    @id @default(cuid())
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  action      String
+  description String
+  metadata    String?
+  ipAddress   String?
+  userAgent   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([createdAt])
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  method        String
+  amount        Float
+  currency      String  @default("BDT")
+  status        String  @default("pending")
+  transactionId String? @unique
+
+  walletAddress String?
+  usdtTxHash    String?
+
+  planName      String?
+  billingPeriod String?
+  startsAt      DateTime?
+  endsAt        DateTime?
+
+  webhookSent Boolean  @default(false)
+  invoiceUrl  String?
+
+  // bKash tokenized-checkout linkage (TASK 6): provider payment id + our
+  // own invoice number. transactionId (existing @unique) carries bKash trxID.
+  providerPaymentId String? @unique // bKash paymentID from /create
+  invoiceNumber    String? @unique // orgId-orderId-ts
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organizationId String? // NEW (PR d): tenant FK (Decision A). Nullable for backfill.
+
+  @@index([customerId, status])
+  @@index([transactionId])
+  @@index([createdAt])
+  @@index([organizationId])
+}
+
+model Transaction {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  amount       Float
+  currency     String  @default("BDT")
+  status       String  @default("pending")
+  gateway      String
+  gatewayTrxId String?
+  cardType     String?
+  cardBrand    String?
+  sessionKey   String?
+  videoPackage String?
+  creditsAdded Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([gatewayTrxId])
+  @@index([createdAt])
+}
+
+model CreditTransaction {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  amount       Int
+  type         String
+  description  String?
+  balanceAfter Int
+  
+  // Relations to Video and VideoQueue
+  videoId      String?
+  video        Video?        @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  videoQueueId String?
+  videoQueue   VideoQueue?   @relation(fields: [videoQueueId], references: [id], onDelete: SetNull)
+  
+  createdAt DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  type      String
+  title     String
+  message   String
+  read      Boolean @default(false)
+  actionUrl String?
+
+  createdAt DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referrer    Customer @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId  String
+  referred    Customer @relation("ReferredReferrals", fields: [referredId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING")
+  bonusAmount Float
+
+  createdAt DateTime @default(now())
+
+  @@index([referrerId])
+  @@index([referredId])
+}
+
+model Order {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  plan     String
+  amount   Float
+  status   String @default("pending")
+  currency String @default("BDT")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([createdAt])
+}
+
+model Lead {
+  id         String    @id @default(cuid())
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name    String
+  email   String?
+  phone   String?
+  company String?
+  source  String  @default("manual")
+  status  String  @default("new")
+  score   Int     @default(0)
+  tags    String?
+  notes   String?
+
+  contactedAt   DateTime?
+  lastContactAt DateTime?
+  attemptCount  Int       @default(0)
+  convertedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs         LeadLog[]
+  followUps    FollowUp[]
+  outreachLogs OutreachLog[]
+
+  @@index([status])
+  @@index([source])
+}
+
+model LeadLog {
+  id     String @id @default(cuid())
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  action  String
+  notes   String?
+  outcome String?
+
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+}
+
+model Campaign {
+  id         String    @id @default(cuid())
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  name        String
+  description String?
+  type        String
+  channel     String?
+  targetCount Int       @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+
+  status         String @default("draft")
+  reachedCount   Int    @default(0)
+  respondedCount Int    @default(0)
+  convertedCount Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model FollowUp {
+  id         String  @id @default(cuid())
+  leadId     String?
+  lead       Lead?   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  customerId String?
+
+  followUpType String
+  scheduledFor DateTime
+  notes        String?
+  priority     String    @default("medium")
+  status       String    @default("pending")
+  completedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scheduledFor])
+  @@index([status])
+}
+
+model OutreachLog {
+  id         String  @id @default(cuid())
+  leadId     String?
+  lead       Lead?   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  customerId String?
+
+  channel   String
+  direction String  @default("outbound")
+  subject   String?
+  message   String?
+  status    String
+  response  String?
+  outcome   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+  @@index([createdAt])
+}
+
+model PipelineSnapshot {
+  id String @id @default(cuid())
+
+  totalLeads   Int
+  contacted    Int
+  interested   Int
+  converted    Int
+  paying       Int
+  totalRevenue Float
+
+  createdAt DateTime @default(now())
+}
+
+model UserProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  user      Customer @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  lessonId  String
+  completed Boolean  @default(false)
+  quizScore Int?     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId, lessonId], name: "userId_courseId_lessonId")
+  @@index([userId])
+  @@index([courseId])
+  @@index([courseId, completed])
+}
+
+enum BetaStatus {
+  PENDING
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+model RateLimitEvent {
+  id        String   @id @default(cuid())
+  bucket    String // "ip:path" hash
+  ip        String
+  path      String
+  method    String   @default("GET")
+  createdAt DateTime @default(now())
+
+  @@index([bucket, createdAt])
+  @@index([ip, createdAt])
+}
+
+// ============================================================================
+// Support system (PR #3) — 3-tier automated support.
+// SupportEvent: every Tier1 automated check result / Tier2 escalation.
+// Incident: Tier3 incident response + on-call (created when a fix needs human
+//   approval or is destructive). Timeline is stored as JSON[] on the Incident.
+// ============================================================================
+model SupportEvent {
+  id         String   @id @default(cuid())
+  tier       Int      @default(1) // 1 = auto-resolved, 2 = needs triage
+  service    String // app | postgres | redis | livekit | nginx | saml
+  check      String // the check name that fired
+  action     String // the auto-fix attempted, if any
+  result      String // resolved | failed | escalated | pending
+  detail     String? // logs tail / error message
+  resolvedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([tier, createdAt])
+  @@index([service, createdAt])
+}
+
+model Incident {
+  id              String   @id @default(cuid())
+  severity        String   @default("SEV2") // SEV1 | SEV2 | SEV3
+  status          String   @default("open") // open | ack | resolved
+  service         String
+  title           String
+  timeline        Json[] // append-only: { at, actor, action, result }
+  onCallCustomerId String?
+  createdAt       DateTime @default(now())
+  resolvedAt      DateTime?
+
+  @@index([status, severity])
+  @@index([createdAt])
+}
+
+model BetaInvite {
+  id              String     @id @default(cuid())
+  code            String     @unique
+  email           String
+  name            String
+  phone           String?
+  status          BetaStatus @default(PENDING)
+  discountPercent Float      @default(10)
+
+  usedAt    DateTime?
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @default("New conversation")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customer Customer  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId, createdAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  role           String
+  content        String
+  model          String?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model GameBalance {
+  id         String   @id @default(cuid())
+  customerId String   @unique
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  credits    Int      @default(1000)
+  balance    Float    @default(1000)
+  mode       String   @default("demo")
+  updatedAt  DateTime @updatedAt
+
+  spins GameSpin[]
+
+  @@index([customerId])
+}
+
+model GameSpin {
+  id         String      @id @default(cuid())
+  balanceId  String
+  customerId String
+  balance    GameBalance @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  bet        Int
+  reels      String[]
+  won        Boolean     @default(false)
+  multiplier Int         @default(0)
+  amount     Float       @default(0)
+  message    String?
+  createdAt  DateTime    @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([balanceId, createdAt])
+}
+
+// ============================================================================
+// Provisioning Ledger (B) — idempotent record of a payment + its provisioning
+// outcome. Decoupled from the legacy Payment/Transaction models so the
+// Agent->Provision bridge can be tested in isolation. No cPanel calls yet;
+// `provisioned_at` is set by the internal provision endpoint.
+// ============================================================================
+model ProvisioningLedger {
+  id            String    @id @default(uuid())
+  tranId        String    @unique
+  status        String    @default("pending") // pending | paid | provisioned | failed
+  customerEmail String
+  plan          String
+  amount        Float?
+  gateway       String    @default("mock")
+  rawPayload    Json?
+  accountId     String?
+  loginUrl      String?
+  provisionedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([customerEmail])
+}
+
+// ============================================================================
+// Autonomous Harness (Phase 2) — Production agent engine.
+// AutonomousTask: scheduled background tasks (system + customer).
+// TaskRunLog: per-run execution record (status, output, approval link).
+// ApprovalQueue: human-in-the-loop approvals for risky tools (Telegram-gated).
+// Session: harness chat session (mode plan/execute, todos, memory ref).
+// Tables are also self-healed at runtime by lib/harness/ensure-harness-schema.ts
+// because `prisma migrate deploy` cannot run against the pooled Neon URL from
+// the build sandbox.
+// ============================================================================
+model AutonomousTask {
+  // GLOBAL (Decision B): intentionally has NO tenant FK — system automation, not tenant data.
+  id         String    @id @default(cuid())
+  slug       String    @unique
+  owner      String    @default("system") // "system" | "customer:<email>"
+  schedule   String // cron expression, e.g. "*/10 * * * *"
+  enabled    Boolean   @default(true)
+  lastRunAt  DateTime?
+  nextRunAt  DateTime?
+  configJson Json?
+  status     String    @default("idle") // idle | running | error | paused
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  runs TaskRunLog[]
+
+  @@index([enabled, nextRunAt])
+  @@index([slug])
+}
+
+model TaskRunLog {
+  // GLOBAL (Decision B): intentionally has NO tenant FK — system automation, not tenant data.
+  id         String         @id @default(cuid())
+  taskId     String
+  task       AutonomousTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  startedAt  DateTime       @default(now())
+  finishedAt DateTime?
+  status     String         @default("running") // running | completed | failed | blocked
+  outputJson Json?
+  error      String?
+  approvalId String?
+
+  @@index([taskId, startedAt])
+}
+
+model ApprovalQueue {
+  id        String    @id @default(cuid())
+  toolName  String
+  argsJson  Json
+  status    String    @default("pending") // pending | approved | denied
+  createdAt DateTime  @default(now())
+  decidedAt DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model HarnessSession {
+  id        String   @id @default(cuid())
+  mode      String   @default("plan") // plan | execute
+  todosJson Json?
+  memoryRef String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+// ============================================================================
+// Goal: end-objective the dynamic loop works toward. GoalRunner ticks hourly,
+// measures real KPIs, and creates/updates AutonomousTasks to close the gap.
+// Self-healed at runtime by lib/autonomy/ensure-goal-schema.ts (pooled Neon
+// rejects DDL in the build sandbox, same pattern as the harness tables).
+// ============================================================================
+model Goal {
+  // GLOBAL (Decision B): intentionally has NO tenant FK — system automation, not tenant data.
+  id         String   @id @default(uuid())
+  slug       String   @unique
+  objective  String
+  kpiTarget  Json
+  kpiCurrent Json
+  strategy   Json?
+  status     String   @default("active") // active | paused | achieved
+  iterations Int      @default(0)
+  maxIter    Int      @default(100)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status])
+}
+
+// model VoiceCall — durable post-call artifact (transcript + summary + action items)
+// from the production Voice Agent (7th product). Written by processPostCall
+// and consumed by the Inngest voice.postcall.process worker + /dashboard/voice.
+model VoiceCall {
+  id             String   @id
+  userId         String? // customerId alias
+  organizationId String? // NEW (PR d): tenant FK via userId->customer->membership (Decision A)
+  transcript     Json
+  summary        String?
+  actionItems    Json?
+  reportJson     Json?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([organizationId])
+}
+
+// ============================================================================
+// Enterprise SSO (SAML 2.0, tenant-specific) — closes procurement line 1.
+//
+// `SamlConnection` is the tenant's IdP config + the per-org enforcement flag.
+// Jackson stores the *crypto* connection in its own _jackson_* tables (via
+// apiController.createSAMLConnection); this model is our source of truth for
+// UI, domain discovery, and SSO-enforcement gating. The two are kept in sync
+// on admin save.
+model Organization {
+  id          String   @id @default(uuid())
+  slug        String   @unique // acme-corp
+  name        String
+  domain      String?  @unique // acme.com — used for email-domain discovery
+  ssoEnforced Boolean  @default(false)
+  oidcEnforced Boolean @default(false) // DC prisma: OIDC discovery + enforced login
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  samlConnection SamlConnection?
+  oidcConnection OidcConnection?
+  scimTokens     ScimToken[]
+  members        Membership[]
+}
+
+// OIDC connection (tenant-scoped IdP), mirrors SamlConnection shape.
+// Jackson's _jackson_* tables hold the live OIDC crypto; this is the UI/config store.
+model OidcConnection {
+  id             String       @id @default(uuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  issuer        String // https://acme.okta.com/oauth2/default
+  clientId      String
+  clientSecretEncrypted String @db.Text // encrypted at rest
+  authorizationEndpoint String?
+  tokenEndpoint String?
+  userInfoEndpoint String?
+  jwksUri       String?
+  isActive      Boolean @default(false)
+  isTested      Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// SCIM 2.0 bearer token, one (rotatable) per organization.
+// Replaces Jackson's directory-sync token store — our Prisma is authoritative for
+// tenant isolation (decision: Customer/Video/Payment scoped via Membership hop).
+model ScimToken {
+  id           String   @id @default(cuid())
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  token        String   @unique @default(cuid())
+  createdBy    String
+  createdAt    DateTime @default(now())
+
+  @@index([organizationId])
+}
+
+model SamlConnection {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Tenant-specific IdP config — keyed per Organization.slug.
+  idpMetadataUrl   String? // https://acme.okta.com/app/xxx/sso/saml/metadata
+  idpMetadataXml   String?  @db.Text // raw XML upload fallback
+  idpEntityId      String? // IdP issuer
+  idpSsoUrl        String? // IdP login URL
+  idpX509Cert      String?  @db.Text // IdP signing cert
+  spEntityId       String // https://hostamar.com/api/auth/saml/metadata?tenant=acme-corp
+  spAcsUrl         String // https://hostamar.com/api/auth/saml/acs?tenant=acme-corp
+  attributeMapping Json     @default("{\"email\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress\",\"firstName\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname\",\"lastName\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname\"}")
+  isActive         Boolean  @default(false)
+  isTested         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([organizationId])
+}
+
+model Membership {
+  id             String       @id @default(uuid())
+  customerId     String
+  customer       Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isDefault      Boolean      @default(false) // NEW (PR d): Decision A default org for tenant resolution
+  role           String       @default("member") // owner | admin | member
+
+  @@unique([customerId, organizationId])
+  @@index([customerId, isDefault])
+}
+
+// ============================================================================
+// API Keys — per-customer OpenAI-compatible keys (hk_live_...) for the AI gateway.
+// The local hostamar-ai-gateway validates each key against
+// /api/ai-gateway/validate. Key stored as a SHA-256 hash; plaintext returned
+// exactly once at creation time.
+// ============================================================================
+model ApiKey {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  name          String
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Permissions
+  canGenerateImage  Boolean @default(true)
+  canGenerateVideo Boolean @default(true)
+  canUseChat       Boolean @default(true)
+
+  // Rate limiting
+  rateLimitPerMinute Int @default(10)
+
+  // Usage tracking
+  totalRequests Int       @default(0)
+  lastUsedAt    DateTime?
+
+  // Status
+  isActive   Boolean   @default(true)
+  expiresAt  DateTime?
+
+  // Relations
+  apiRequestLogs ApiRequestLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([key])
+}
+
+model ApiRequestLog {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  endpoint    String
+  method      String
+  statusCode  Int
+  responseTime Int // ms
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([apiKeyId, createdAt])
+}
+
+// ════════════════════════════════════════════════════════════════
+// Personal Send-Money payments (P2P — no merchant account needed)
+// ════════════════════════════════════════════════════════════════
+
+model PaymentVerification {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  method       String   // BKASH | NAGAD | ROCKET
+  amount       Float    // BDT the user claims to have sent
+  senderNumber String   // number money was sent FROM
+  trxId        String   @unique
+  plan         String?  // plan being purchased (free|starter|pro)
+  credits      Int      @default(0) // credits to grant on verify
+
+  status       String   @default("PENDING") // PENDING | VERIFIED | REJECTED | EXPIRED
+  smsMatched   Boolean  @default(false)      // auto-matched an incoming SMS
+  reviewedBy   String?  // admin email who approved/rejected
+  reviewNote   String?
+
+  createdAt    DateTime @default(now())
+  verifiedAt   DateTime?
+  expiresAt    DateTime // PENDING submissions expire after 15 min without SMS match
+
+  @@index([customerId])
+  @@index([status])
+  @@index([trxId])
+}
+
+model SmsLog {
+  id           String   @id @default(cuid())
+  rawSms       String   // full SMS text from the Android sync app
+  provider     String?  // BKASH | NAGAD | ROCKET (parsed)
+  parsedAmount Float?
+  parsedTrxId  String?
+  senderNumber String?  // number the money came FROM
+  balance      Float?   // balance mentioned in SMS, if any
+  matched      Boolean  @default(false) // matched to a PaymentVerification
+  receivedAt   DateTime @default(now())
+
+  @@index([parsedTrxId])
+  @@index([receivedAt])
+}
+
+// ════════════════════════════════════════════════════════════════
+// Affiliate program (2026) — 20% recurring commission
+// ════════════════════════════════════════════════════════════════
+
+model AffiliateCommission {
+  id          String   @id @default(cuid())
+  affiliateId String   // Customer who earned it
+  affiliate   Customer @relation("AffiliateEarnings", fields: [affiliateId], references: [id], onDelete: Cascade)
+  fromCustomerId String // Customer whose payment generated it
+  sourceType  String   // PAYMENT | SUBSCRIPTION_RENEWAL
+  sourceId    String?  // Payment/Subscription id
+  amount      Float    // BDT commission
+  rate        Float    @default(0.20)
+  status      String   @default("PENDING") // PENDING | PAID | CANCELLED
+  createdAt   DateTime @default(now())
+  paidAt      DateTime?
+
+  @@index([affiliateId, status])
+  @@index([sourceId])
+}
+
+// ════════════════════════════════════════════════════════════════
+// User webhooks — outbound notifications (job completed etc.)
+// ════════════════════════════════════════════════════════════════
+
+model UserWebhook {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  url        String
+  secret     String   // HMAC signing secret
+  events     String   @default("video.completed") // comma-separated event names
+  isActive   Boolean  @default(true)
+  lastStatus Int?     // HTTP status of last delivery
+  lastSentAt DateTime?
+  failCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+// ════════════════════════════════════════════════════════════════
+// Team workspace invites (2026)
+// ════════════════════════════════════════════════════════════════
+
+model TeamInvite {
+  id             String   @id @default(cuid())
+  organizationId String
+  email          String   // invited email
+  role           String   @default("member") // admin | member
+  token          String   @unique
+  invitedBy      String   // customerId of inviter
+  status         String   @default("PENDING") // PENDING | ACCEPTED | REVOKED
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  @@index([organizationId])
+  @@index([email])
+}
+
+// ════════════════════════════════════════════════════════════════
+// 24/7 AI TV Station (Phase 4) — auto-generated content + RTMP streaming
+// ════════════════════════════════════════════════════════════════
+
+model TvChannel {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isLive      Boolean  @default(false)
+  liveSince   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  playlistItems TvPlaylistItem[]
+  destinations  TvStreamDestination[]
+  schedules     TvSchedule[]
+}
+
+
+/// Open-source video queued for Bangla dubbing (NASA / Prelinger / Blender)
+model OpenSourceVideo {
+  id          String   @id @default(cuid())
+  source      String   // NASA | PRELINGER | BLENDER | IA-EDU | PEXELS | PIXABAY
+  externalId  String
+  title       String
+  originalUrl String?
+  license     String?
+  licenseUrl  String?
+  duration    Int?
+  status      String   @default("NEW") // NEW|QUEUED|DOWNLOADED|DUBBING|DUBBED|ON_TV|FAILED
+  error       String?
+  localPath   String?
+  banglaPath  String?
+  titleBn     String?
+  gender      String? // detected speaker gender: male | female
+  voiceUsed   String? // Bangla edge-tts voice used for the dub
+  addedToTv   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([source, externalId])
+  @@index([status])
+}
+
+model TvPlaylistItem {
+  id        String   @id @default(cuid())
+  channelId String
+  channel   TvChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  videoId   String?   // FK to Video when generated by our pipeline
+  title     String
+  url       String    // playable video URL (local path or CDN)
+  source    String    @default("generated") // generated | stock | loop
+  position  Int      @default(0)
+  played    Boolean  @default(false)
+  playedAt  DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([channelId, position])
+  @@index([played])
+}
+
+model TvStreamDestination {
+  id        String   @id @default(cuid())
+  channelId String
+  channel   TvChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  platform  String   // YOUTUBE | FACEBOOK | TWITCH | CUSTOM
+  rtmpUrl   String
+  streamKey String
+  label     String?
+  isActive  Boolean  @default(true)
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([channelId])
+}
+
+// Crypto tipping for TV (viewer → creator, per /tv/watch page)
+model CryptoWallet {
+  id                  String   @id @default(cuid())
+  userId              String
+  address             String   @unique
+  privateKeyEncrypted String   @db.Text
+  chain               String   @default("ethereum") // ethereum | base | solana | bitcoin
+  createdAt           DateTime @default(now())
+
+  tips CryptoTip[]
+
+  @@index([userId])
+}
+
+model CryptoTip {
+  id          String   @id @default(cuid())
+  walletId    String
+  wallet      CryptoWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  fromAddress String?
+  amount      Float
+  txHash      String?
+  message     String?
+  videoSlug   String?
+  createdAt   DateTime @default(now())
+
+  @@index([walletId])
+  @@index([videoSlug])
+}
+
+model TvSchedule {
+  id             String   @id @default(cuid())
+  channelId      String
+  channel        TvChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  promptTemplate String   // "Create viral short news video about {topic} in {style}"
+  style          String   @default("cinematic")
+  cron           String   @default("*/30 * * * *")
+  lastRun        DateTime?
+  nextRun        DateTime?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@index([channelId])
+}
+
+model TvSettings {
+  id             String   @id @default("default")
+  channelName    String   @default("Hostamar TV")
+  hlsUrl         String?
+  rtmpUrl        String?  @default("rtmp://localhost:1935/live/tv")
+  tunnelAutoUrl  String?
+  autoGenerate   Boolean  @default(true)
+  rssFeeds       String[] @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TvCommand {
+  id         String    @id @default(cuid())
+  action     String    // START_WEBSITE | START_ALL | STOP | RELOAD_PLAYLIST | GENERATE_VIDEO
+  payload    Json?
+  status     String    @default("PENDING") // PENDING | RUNNING | DONE | FAILED
+  createdAt  DateTime  @default(now())
+  executedAt DateTime?
+
+  @@index([status, createdAt])
+}
+
+model TvLog {
+  id        String   @id @default(cuid())
+  level     String   // info | warn | error
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ── Free video hunter (Phase 4) — CC-licensed source videos per product ──
+model FreeVideoSource {
+  id          String   @id @default(cuid())
+  product     String // Video | Hosting | Chat | Browser | IDE | Gaming
+  title       String
+  titleBn     String?
+  url         String   @unique
+  videoId     String? // youtube id
+  license     String? // CC-BY | CC0 | Public Domain | unknown
+  views       Int?
+  duration    Float?
+  viralScore  Float    @default(0)
+  hook        String?
+  scriptBn    String?
+  translatedBy String? // rafan | rushan | template
+  localPath   String? // downloaded mp4
+  used        Boolean  @default(false)
+  relevanceScore Float? // in-house research gate (>=7 = relevant)
+  createdAt   DateTime @default(now())
+
+  @@index([product])
+  @@index([used])
+}
+
+// In-house research results for a hunted free CC video (vision + relevance gate)
+model FreeVideoSourceResearch {
+  id             String   @id @default(cuid())
+  videoSourceId  String   @unique
+  transcriptEn   String?
+  visualDesc     String?
+  relevanceScore Float?
+  category       String?
+  summaryBn      String?
+  keywords       String[]
+  researchedBy   String? // e.g. "nemotron-nano-vl+llama-3.1-8b" or "llama-only"
+  accepted       Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([relevanceScore])
+}
+
+// ── Per-video SEO (every TV video gets its own Google-ranked page) ──
+model TvVideoSeo {
+  id              String   @id @default(cuid())
+  videoSourceId   String   @unique // FreeVideoSource.id
+  slug            String   @unique // ai-video-generator-bangla-tutorial-2025
+  titleBn         String // SEO title ~60 chars with product keyword + Bangla + Hostamar TV
+  metaDescription String // ~155 chars Bangla with CTA (bKash, Daraz)
+  keywords        String[] // 6-8 mixed Bangla + English keywords
+  transcriptBn    String?  @db.Text // full Bangla transcript for SEO index
+  schemaJson      Json? // VideoObject schema.org payload
+  ogImage         String? // /og/tv/{slug}.jpg — 1200x630 with watermark + titleBn
+  canonicalUrl    String // https://hostamar.com/tv/watch/{slug}
+  product         String // Video | Hosting | Chat | Browser | IDE | Gaming
+  viralScore      Float?
+  views           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([product])
+}
+
+// ── Viral BD TV Engine — browser.hostamar.com → ViralTrend → AI video ──
+model ViralTrend {
+  id           String       @id @default(cuid())
+  source       String // youtube_bd | google_trends_bd | daraz | prothomalo | tiktok_bd
+  title        String
+  titleBn      String?
+  url          String?
+  thumbnail    String?
+  views        Int?
+  viralScore   Float        @default(0)
+  category     String? // fashion | food | ecommerce | beauty | electronics | news
+  rawData      Json?
+  used         Boolean      @default(false)
+  videoCreated Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  discoveredAt DateTime     @default(now())
+  videos       ViralVideo[]
+
+  @@index([source])
+  @@index([viralScore])
+  @@index([used, videoCreated])
+}
+
+model ViralVideo {
+  id           String   @id @default(cuid())
+  viralTrendId String?
+  viralTrend   ViralTrend? @relation(fields: [viralTrendId], references: [id])
+  titleBn      String
+  hook         String?
+  scriptBn     String?
+  hashtags     String?
+  category     String?
+  videoUrl     String // local path /home/romel/.../viral/xxx.mp4
+  hlsUrl       String?
+  duration     Int?
+  gender       String?
+  voiceUsed    String?
+  viralScore   Float    @default(0)
+  status       String   @default("READY") // READY | ON_TV | FAILED
+  playlistItemId String?
+  createdAt    DateTime @default(now())
+
+  @@index([viralTrendId])
+  @@index([status])
+}
+
+model TvVideoStats {
+  id              String   @id @default(cuid())
+  playlistItemId  String   @unique
+  viralTrendId    String?
+  viralVideoId    String?
+  title           String?
+  views           Int      @default(0)
+  totalWatchSec   Float    @default(0)
+  avgWatchPercent Float    @default(0)
+  viralScore      Float    @default(0)
+  isViral         Boolean  @default(false)
+  playWeight      Int      @default(1) // 1 normal, 3 viral
+  lastViewAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isViral])
+  @@index([viralScore])
+}
+
+// Hosting provisioning queue — Vercel frontend enqueues, local podman
+// provisioner worker claims and runs. Replaces direct docker calls that 503.
+model HostingRequest {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name     String
+  image    String
+  plan     String? // starter | basic | pro | premium
+  cpu      Int     @default(1)
+  ram      Int     @default(1)
+  storage  Int     @default(25)
+  os       String?
+  ports    String[]
+  domain   String?
+  ssl      Boolean @default(false)
+
+  status     String   @default("queued") // queued | provisioning | running | failed | cancelled
+  error      String?
+  containerId String?
+  ip         String?
+
+  creditsCharged Int @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

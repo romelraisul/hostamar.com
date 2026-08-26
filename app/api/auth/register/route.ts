@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { WELCOME_CREDITS } from '@/lib/pricing'
 import bcrypt from 'bcryptjs'
 
 export async function POST(req: NextRequest) {
@@ -26,12 +27,21 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create customer
+    // Create customer with welcome credits so they can try the products
     const customer = await prisma.customer.create({
       data: {
         name,
         email,
         password: hashedPassword,
+        credits: WELCOME_CREDITS,
+        creditTransactions: {
+          create: {
+            amount: WELCOME_CREDITS,
+            type: 'welcome_bonus',
+            description: 'Signup welcome credits',
+            balanceAfter: WELCOME_CREDITS,
+          },
+        },
       }
     })
 

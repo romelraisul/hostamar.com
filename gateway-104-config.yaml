@@ -1,0 +1,479 @@
+model_list:
+  - model_name: moonshotai/kimi-k3
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k3
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 131072
+  - model_name: moonshotai/kimi-k2-0711-preview
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k2-0711-preview
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: minimax/minimax-m1
+    litellm_params:
+      model: openrouter/minimax/minimax-m1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: hostamar-1m-a
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k2-0711-preview
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: hostamar-1m-b
+    litellm_params:
+      model: openrouter/minimax/minimax-m1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: minimax/minimax-m3:free
+    litellm_params:
+      model: openrouter/minimax/minimax-m3:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: thinkingmachines/inkling:free
+    litellm_params:
+      model: openrouter/thinkingmachines/inkling:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: thinkingmachines/inkling-small:free
+    litellm_params:
+      model: openrouter/thinkingmachines/inkling-small:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3-super-120b-a12b
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-super-120b-a12b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3-ultra-550b-a55b:free
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3.5-lightning:free
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3.5-lightning:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama-3.3-nemotron-super-49b-v1
+    litellm_params:
+      model: openrouter/nvidia/llama-3.3-nemotron-super-49b-v1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama-3.3-nemotron-super-49b-v1.5
+    litellm_params:
+      model: openrouter/nvidia/llama-3.3-nemotron-super-49b-v1.5
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/llama-3.1-70b-instruct
+    litellm_params:
+      model: openrouter/meta/llama-3.1-70b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/muse-glimmer-30b
+    litellm_params:
+      model: openrouter/meta/muse-glimmer-30b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama-3.1-nemotron-ultra-253b-v1
+    litellm_params:
+      model: openrouter/nvidia/llama-3.1-nemotron-ultra-253b-v1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: google/gemma-4-31b-it
+    litellm_params:
+      model: openrouter/google/gemma-4-31b-it
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/llama-3.3-70b-instruct
+    litellm_params:
+      model: openrouter/meta/llama-3.3-70b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: mistralai/mixtral-8x22b-v0.1
+    litellm_params:
+      model: openrouter/mistralai/mixtral-8x22b-v0.1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama-3.1-nemotron-70b-instruct
+    litellm_params:
+      model: openrouter/nvidia/llama-3.1-nemotron-70b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: databricks/dbrx-instruct
+    litellm_params:
+      model: openrouter/databricks/dbrx-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/codellama-70b
+    litellm_params:
+      model: openrouter/meta/codellama-70b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama-3.1-nemotron-51b-instruct
+    litellm_params:
+      model: openrouter/nvidia/llama-3.1-nemotron-51b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: ai21labs/jamba-1.5-large-instruct
+    litellm_params:
+      model: openrouter/ai21labs/jamba-1.5-large-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: deepseek-ai/deepseek-v4-flash-0731
+    litellm_params:
+      model: openrouter/deepseek-ai/deepseek-v4-flash-0731
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: mistralai/mistral-large
+    litellm_params:
+      model: openrouter/mistralai/mistral-large
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: mistralai/mistral-large-2-instruct
+    litellm_params:
+      model: openrouter/mistralai/mistral-large-2-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: 01-ai/yi-large
+    litellm_params:
+      model: openrouter/01-ai/yi-large
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: ibm/granite-34b-code-instruct
+    litellm_params:
+      model: openrouter/ibm/granite-34b-code-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: microsoft/phi-3.5-moe-instruct
+    litellm_params:
+      model: openrouter/microsoft/phi-3.5-moe-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: stepfun-ai/step-3.7-flash
+    litellm_params:
+      model: openrouter/stepfun-ai/step-3.7-flash
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: stepfun/step-3.7-flash:free
+    litellm_params:
+      model: openrouter/stepfun/step-3.7-flash:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: tencent/hy3:free
+    litellm_params:
+      model: openrouter/tencent/hy3:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: google/gemma-3-12b-it
+    litellm_params:
+      model: openrouter/google/gemma-3-12b-it
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: bigcode/starcoder2-15b
+    litellm_params:
+      model: openrouter/bigcode/starcoder2-15b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: deepseek-ai/deepseek-coder-6.7b-instruct
+    litellm_params:
+      model: openrouter/deepseek-ai/deepseek-coder-6.7b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/llama-3.1-8b-instruct
+    litellm_params:
+      model: openrouter/meta/llama-3.1-8b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: google/gemma-3-4b-it
+    litellm_params:
+      model: openrouter/google/gemma-3-4b-it
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: ibm/granite-8b-code-instruct
+    litellm_params:
+      model: openrouter/ibm/granite-8b-code-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: mistralai/mistral-7b-instruct-v0.3
+    litellm_params:
+      model: openrouter/mistralai/mistral-7b-instruct-v0.3
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: mistralai/mistral-nemotron
+    litellm_params:
+      model: openrouter/mistralai/mistral-nemotron
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nv-mistralai/mistral-nemo-12b-instruct
+    litellm_params:
+      model: openrouter/nv-mistralai/mistral-nemo-12b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/mistral-nemo-minitron-8b-8k-instruct
+    litellm_params:
+      model: openrouter/nvidia/mistral-nemo-minitron-8b-8k-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: google/codegemma-1.1-7b
+    litellm_params:
+      model: openrouter/google/codegemma-1.1-7b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: google/codegemma-7b
+    litellm_params:
+      model: openrouter/google/codegemma-7b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/llama-3.2-3b-instruct
+    litellm_params:
+      model: openrouter/meta/llama-3.2-3b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: google/gemma-2b
+    litellm_params:
+      model: openrouter/google/gemma-2b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: google/recurrentgemma-2b
+    litellm_params:
+      model: openrouter/google/recurrentgemma-2b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/llama-3.2-1b-instruct
+    litellm_params:
+      model: openrouter/meta/llama-3.2-1b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: aisingapore/sea-lion-7b-instruct
+    litellm_params:
+      model: openrouter/aisingapore/sea-lion-7b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: cohere/north-mini-code:free
+    litellm_params:
+      model: openrouter/cohere/north-mini-code:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: dots-studio/dots-3-note-preview:free
+    litellm_params:
+      model: openrouter/dots-studio/dots-3-note-preview:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: ibm/granite-3.0-3b-a800m-instruct
+    litellm_params:
+      model: openrouter/ibm/granite-3.0-3b-a800m-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: ibm/granite-3.0-8b-instruct
+    litellm_params:
+      model: openrouter/ibm/granite-3.0-8b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: liquid/lfm-2.5-2.6b:free
+    litellm_params:
+      model: openrouter/liquid/lfm-2.5-2.6b:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: meta/llama2-70b
+    litellm_params:
+      model: openrouter/meta/llama2-70b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: minimax/minimax-m2.7:free
+    litellm_params:
+      model: openrouter/minimax/minimax-m2.7:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: minimaxai/minimax-m3
+    litellm_params:
+      model: openrouter/minimaxai/minimax-m3
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: mistralai/codestral-22b-instruct-v0.1
+    litellm_params:
+      model: openrouter/mistralai/codestral-22b-instruct-v0.1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: moonshotai/kimi-k2.6
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k2.6
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/cosmos-reason2-8b
+    litellm_params:
+      model: openrouter/nvidia/cosmos-reason2-8b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama-3.1-nemotron-nano-8b-v1
+    litellm_params:
+      model: openrouter/nvidia/llama-3.1-nemotron-nano-8b-v1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama-3.1-nemotron-nano-vl-8b-v1
+    litellm_params:
+      model: openrouter/nvidia/llama-3.1-nemotron-nano-vl-8b-v1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/llama3-chatqa-1.5-70b
+    litellm_params:
+      model: openrouter/nvidia/llama3-chatqa-1.5-70b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3-nano-30b-a3b
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-nano-30b-a3b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3-super-120b-a12b:free
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-super-120b-a12b:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3-ultra-550b-a55b
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-3.5-lightning-30b-a3b
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3.5-lightning-30b-a3b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-4-340b-instruct
+    litellm_params:
+      model: openrouter/nvidia/nemotron-4-340b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-4-340b-reward
+    litellm_params:
+      model: openrouter/nvidia/nemotron-4-340b-reward
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-mini-4b-instruct
+    litellm_params:
+      model: openrouter/nvidia/nemotron-mini-4b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-nano-12b-v2-vl
+    litellm_params:
+      model: openrouter/nvidia/nemotron-nano-12b-v2-vl
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-nano-3-30b-a3b
+    litellm_params:
+      model: openrouter/nvidia/nemotron-nano-3-30b-a3b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nemotron-parse
+    litellm_params:
+      model: openrouter/nvidia/nemotron-parse
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/neva-22b
+    litellm_params:
+      model: openrouter/nvidia/neva-22b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/nvidia-nemotron-nano-9b-v2
+    litellm_params:
+      model: openrouter/nvidia/nvidia-nemotron-nano-9b-v2
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/riva-translate-4b-instruct
+    litellm_params:
+      model: openrouter/nvidia/riva-translate-4b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/riva-translate-4b-instruct-v1.1
+    litellm_params:
+      model: openrouter/nvidia/riva-translate-4b-instruct-v1.1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/riva-translate-4b-instruct-v2
+    litellm_params:
+      model: openrouter/nvidia/riva-translate-4b-instruct-v2
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: nvidia/vila
+    litellm_params:
+      model: openrouter/nvidia/vila
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: openai/gpt-oss-120b
+    litellm_params:
+      model: openrouter/openai/gpt-oss-120b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: openai/gpt-oss-20b
+    litellm_params:
+      model: openrouter/openai/gpt-oss-20b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: poolside/laguna-s-2.1:free
+    litellm_params:
+      model: openrouter/poolside/laguna-s-2.1:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: poolside/laguna-xs-2.1
+    litellm_params:
+      model: openrouter/poolside/laguna-xs-2.1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: poolside/laguna-xs-2.1:free
+    litellm_params:
+      model: openrouter/poolside/laguna-xs-2.1:free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: qwen/qwen3.8-max-free
+    litellm_params:
+      model: openrouter/qwen/qwen3.8-max-free
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: writer/palmyra-creative-122b
+    litellm_params:
+      model: openrouter/writer/palmyra-creative-122b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: writer/palmyra-fin-70b-32k
+    litellm_params:
+      model: openrouter/writer/palmyra-fin-70b-32k
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: writer/palmyra-med-70b
+    litellm_params:
+      model: openrouter/writer/palmyra-med-70b
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: writer/palmyra-med-70b-32k
+    litellm_params:
+      model: openrouter/writer/palmyra-med-70b-32k
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: zyphra/zamba2-7b-instruct
+    litellm_params:
+      model: openrouter/zyphra/zamba2-7b-instruct
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: hostamar-own
+    litellm_params:
+      model: ollama/qwen3:8b
+      api_base: http://host.docker.internal:11434
+  - model_name: minimax-m3
+    litellm_params:
+      model: ollama/qwen3.5:4b
+      api_base: http://host.docker.internal:11434
+
+litellm_settings:
+  num_retries: 0
+  request_timeout: 90

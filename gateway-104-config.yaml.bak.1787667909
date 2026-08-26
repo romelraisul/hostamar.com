@@ -1,0 +1,39 @@
+model_list:
+  - model_name: moonshotai/kimi-k3
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k3
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 131072
+  - model_name: moonshotai/kimi-k2-0711-preview
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k2-0711-preview
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: minimax/minimax-m1
+    litellm_params:
+      model: openrouter/minimax/minimax-m1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: hostamar-1m-a
+    litellm_params:
+      model: openrouter/moonshotai/kimi-k2-0711-preview
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: hostamar-1m-b
+    litellm_params:
+      model: openrouter/minimax/minimax-m1
+      api_base: os.environ/OPENROUTER_BASE_URL
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: hostamar-own
+    litellm_params:
+      model: ollama/qwen3:8b
+      api_base: http://host.docker.internal:11434
+  - model_name: minimax-m3
+    litellm_params:
+      model: ollama/qwen3.5:4b
+      api_base: http://host.docker.internal:11434
+
+litellm_settings:
+  num_retries: 0
+  request_timeout: 90

@@ -42,6 +42,6 @@
     "camofox",
     "scripts",
     "apps",
-    "packages"
-  ]
+    "packages",
+    "tests"]
 }

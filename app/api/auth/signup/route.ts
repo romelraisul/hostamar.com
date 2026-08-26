@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
+import { WELCOME_CREDITS } from '@/lib/pricing'
+import { verifyTurnstile } from '@/lib/turnstile'
 import * as bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { NextRequest } from 'next/server'
@@ -42,12 +44,17 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    // Bot check — protects the 6000 welcome credits from scripted farming.
+    if (!(await verifyTurnstile(body.turnstileToken))) {
+      return NextResponse.json({ error: 'Bot check failed' }, { status: 400 })
+    }
+
     const customer = await prisma.customer.create({
       data: {
         email,
         password: hashedPassword,
         name,
-        credits: 6000, // free credit pool granted at signup
+        credits: WELCOME_CREDITS, // free credit pool granted at signup
         business: businessName ? {
           create: {
             name: businessName,
@@ -60,6 +67,24 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // NEW (2026-08-26): Create CreditAccount + audit row for EVERY new signup.
+    // The legacy Customer.credits column is kept for backward compat but the
+    // CreditAccount is the real source of truth — lib/credits.ts checks it first.
+    const acctRes: any = await prisma.$executeRaw`INSERT INTO "CreditAccount" (id, "customerId", credits) VALUES (gen_random_uuid()::text, ${customer.id}, ${WELCOME_CREDITS})`
+    const acctRows: any = await prisma.$queryRaw`SELECT id FROM "CreditAccount" WHERE "customerId" = ${customer.id} LIMIT 1`
+    const creditAccount = { id: acctRows[0]?.id }
+    await prisma.$executeRaw`INSERT INTO "CreditTransaction" (id, "accountId", amount, product, "balanceAfter", description)
+      VALUES (gen_random_uuid()::text, ${creditAccount.id}, ${WELCOME_CREDITS}, 'welcome_bonus', ${WELCOME_CREDITS}, 'Signup welcome credits — 6000 Taka ≈ $47 USD')`.catch(() => null)
+
+    // Audit row against the REAL prod table shape (accountId→CreditAccount);
+    // best-effort — skipped when the customer has no CreditAccount yet.
+    try {
+      const acct = await prisma.$queryRaw`SELECT id FROM "CreditAccount" WHERE "customerId" = ${customer.id} LIMIT 1`
+      if (Array.isArray(acct) && acct[0]) {
+        await prisma.$executeRaw`INSERT INTO "CreditTransaction" (id, "accountId", amount, product, "balanceAfter", description)
+          VALUES (gen_random_uuid()::text, ${acct[0].id}, ${WELCOME_CREDITS}, 'welcome_bonus', ${WELCOME_CREDITS}, 'Signup welcome credits')`
+      }
+    } catch { /* best-effort */ } // audit trail is best-effort — never block signup
 
     // Track referral if ref code provided
     if (refCode) {

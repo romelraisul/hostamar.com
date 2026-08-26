@@ -1,0 +1,57 @@
+name: TV Fallback — GitHub -> YT/FB when PC down
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  tv-fallback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check PC heartbeat
+        id: heartbeat
+        run: |
+          URL="${{ secrets.TV_HEARTBEAT_URL || 'https://hostamar.com/api/tv/heartbeat' }}"
+          echo "Checking $URL"
+          RES=$(curl -s -m 15 "$URL" || echo '{"pcAlive":false}')
+          echo "Response: $RES"
+          ALIVE=$(echo "$RES" | python3 -c "import json,sys; d=json.load(sys.stdin); print(str(d.get('pcAlive', False)).lower())" 2>/dev/null || echo "false")
+          echo "pcAlive=$ALIVE"
+          echo "alive=$ALIVE" >> $GITHUB_OUTPUT
+          if [ "$ALIVE" = "true" ]; then
+            echo "PC is alive — no fallback needed"
+            exit 0
+          fi
+
+      - name: Install ffmpeg
+        if: steps.heartbeat.outputs.alive == 'false'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Stream from R2 to YT and FB
+        if: steps.heartbeat.outputs.alive == 'false'
+        env:
+          YT_RTMP_URL: ${{ secrets.YT_RTMP_URL }}
+          FB_RTMP_URL: ${{ secrets.FB_RTMP_URL }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        run: |
+          if [ -z "$YT_RTMP_URL" ] && [ -z "$FB_RTMP_URL" ]; then
+            echo "No YT_RTMP_URL or FB_RTMP_URL set — skipping"
+            exit 0
+          fi
+          # Pick a video from R2 (or fallback to public test)
+          VIDEO_URL="${R2_PUBLIC_URL}/tv/sample.mp4"
+          if [ -n "$R2_PUBLIC_URL" ]; then
+            # Try to list via API
+            LIST=$(curl -s https://hostamar.com/api/tv/r2 || echo '{"videos":[]}')
+            VIDEO=$(echo "$LIST" | python3 -c "import json,sys; d=json.load(sys.stdin); v=d.get('videos',[]); print(v[0]['url'] if v else '')" 2>/dev/null || echo "")
+            if [ -n "$VIDEO" ]; then
+              VIDEO_URL="$VIDEO"
+            fi
+          fi
+          echo "Streaming $VIDEO_URL"
+          # Build ffmpeg command with both outputs if available
+          OUTPUTS=""
+          if [ -n "$YT_RTMP_URL" ]; then OUTPUTS="$OUTPUTS -f flv $YT_RTMP_URL"; fi
+          if [ -n "$FB_RTMP_URL" ]; then OUTPUTS="$OUTPUTS -f flv $FB_RTMP_URL"; fi
+          ffmpeg -re -i "$VIDEO_URL" -c:v libx264 -preset veryfast -b:v 800k -maxrate 800k -bufsize 1600k -g 30 -c:a aac -b:a 96k -ar 44100 $OUTPUTS

@@ -6,19 +6,19 @@ model_list:
   # PRIMARY: local Ollama fallback. Always on, never 429s.
   - model_name: hostamar-own            # main chat / reasoning
     litellm_params:
-      model: ollama/gema4:12b
+      model: ollama/qwen3:8b
       api_base: http://host.docker.internal:11434
       timeout: 1800
       max_retries: 4
       retry_after: 5
   - model_name: hostamar-own-fast       # edge
     litellm_params:
-      model: ollama/gema4:4b
+      model: ollama/qwen3.5:4b
       api_base: http://host.docker.internal:11434
       timeout: 1200
   - model_name: hostamar-own-coder      # local coder
     litellm_params:
-      model: ollama/gema4-code:12b
+      model: ollama/qwen3.6:latest
       api_base: http://host.docker.internal:11434
       alias: gemma4-12b-code
       timeout: 1800
@@ -62,12 +62,9 @@ router_settings:
 
 # LiteLLM server-level config.
 general_settings:
-  master_key: sk-hostamar-router
   disable_spend_logs: true
   disable_reset_budget: false
   telemetry: false
-  # No database_url here — LiteLLM should not try to use a DB at all.
-  # disable_jwt_auth and friends stop it loading the DB layer.
   ui: false
   disable_end_user_auth: true
 litellm_settings:
