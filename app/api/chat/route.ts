@@ -20,14 +20,17 @@ export const runtime = 'nodejs'
  * free gateways.
  */
 /**
- * Chat routing (2026-08-26): Kilo is the only FUNDED free-tier gateway right now
- * (opencode zen rejects most ids; OpenRouter key has 0 credits). All :free
- * models route to Kilo first; paid-model errors trigger the minimax fallback.
+ * Chat routing (2026-08-26 FINAL): free models go through the Cloudflare Worker
+ * edge gateway (hostamar-ai-gateway.romelraisul.workers.dev) which proxies to
+ * Kilo — always-on even when this Vercel function or the home VPS is down.
+ * Paid models hard-blocked at BOTH layers (402 PAID_BLOCKED).
  */
+const EDGE_URL = process.env.EDGE_GATEWAY_URL || 'https://hostamar-ai-gateway.romelraisul.workers.dev'
+const EDGE_INTERNAL_KEY = process.env.EDGE_INTERNAL_KEY || 'hostamar-edge-internal-2026-xK39m'
+
 function getProvider(model: string): { base: string; key?: string; provider: string } {
-  // Everything free goes to Kilo — it accepts openrouter-style ids directly.
   if (isFree(model) || model.endsWith(':free')) {
-    return { base: process.env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway', key: process.env.KILOCODE_API_KEY, provider: 'kilo' }
+    return { base: EDGE_URL, key: EDGE_INTERNAL_KEY, provider: 'kilo-edge', edge: true } as any
   }
   switch (ROUTE_MAP[model]) {
     case 'nvidia':
@@ -67,14 +70,17 @@ export async function POST(req: NextRequest) {
 
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 4000)
+    const isEdge = prov.provider === 'kilo-edge'
     const upRes = await fetch(`${prov.base}/chat/completions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${prov.key}`,
-        'HTTP-Referer': 'https://hostamar.com',
-        'X-Title': 'Hostamar AI Chat',
-      },
+      headers: isEdge
+        ? { 'Content-Type': 'application/json', 'x-internal-key': String(prov.key) }
+        : {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${prov.key}`,
+            'HTTP-Referer': 'https://hostamar.com',
+            'X-Title': 'Hostamar AI Chat',
+          },
       body: JSON.stringify({ model, messages, stream: false, max_tokens: 256 }),
       signal: controller.signal,
       cache: 'no-store',
