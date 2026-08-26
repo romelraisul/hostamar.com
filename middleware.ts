@@ -128,6 +128,7 @@ export async function middleware(request: NextRequest) {
     '/api/health',
     '/api/products',
     '/api/pricing',
+    '/api/seo/track',
     '/api/payments/sms-webhook',
     '/api/tv/status',
     '/api/tv/heartbeat',
