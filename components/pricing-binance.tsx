@@ -69,19 +69,24 @@ export function WelcomeBanner() {
 }
 
 /**
- * $HOSTA teaser — credits are pre-mine, 1:1 conversion.
+ * $HOSTA teaser — credits are pre-mine, 1:1 conversion. Live price from Dexscreener.
  */
 export function HostaTeaser() {
+  const [price, setPrice] = useState<number | null>(null)
+  useEffect(() => {
+    fetch('/api/market-adjust').then(r=>r.json()).then(d=>{ if (d?.hosta?.price) setPrice(d.hosta.price) }).catch(()=>{})
+  }, [])
   return (
     <div className="mt-12 rounded-2xl border border-dashed border-[#F59E0B]/50 bg-amber-50/40 p-6 text-center">
       <Coins className="mx-auto mb-2 h-6 w-6 text-[#F59E0B]" />
       <h3 className="text-lg font-bold">
-        Future $HOSTA Coin — your credits convert 1:1
+        Future $HOSTA Coin — your credits convert 1:1 {price?`— $${price}`:''}
       </h3>
       <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600">
-        1 Credit = 1 Taka ≈ 0.008 USDT (Binance P2P pegged). Total supply 1B $HOSTA.
-        Your credits are the pre-mine — every Taka you spend today becomes $HOSTA at listing.
+        1 Credit = 1 Taka ≈ {((1/126.24)).toFixed(4)} USDT @ 126.24 BDT (Binance P2P pegged). Total supply 1B $HOSTA.
+        Your credits are the pre-mine — every Taka you spend today becomes $HOSTA at listing. {price?`Live $HOSTA $${price} (Dexscreener)`:''}
       </p>
+      <p className="mt-1 text-xs text-slate-500">599 Taka Starter = $4.74 USD @ 126.24 • 5999.46 Taka ≈ $47.53 ≈ {price?Math.round(5999.46/price).toLocaleString():1234} $HOSTA</p>
     </div>
   )
 }

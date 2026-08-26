@@ -205,6 +205,37 @@ export default {
       return Response.json({ ok: true, models: models.length, catalogSource: source });
     }
 
+    // KV Binance rate for Worker costTaka -> usdtBdt conversion (cron writes here)
+    if (url.pathname === "/kv/binance-rate") {
+      if (request.method === "POST") {
+        const internal = request.headers.get("x-internal-key") === INTERNAL_KEY;
+        if (!internal) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        const body = await request.json().catch(() => null);
+        const rate = Number(body?.usdtBdt);
+        if (!Number.isFinite(rate) || rate < 50) return Response.json({ error: "bad rate" }, { status: 400 });
+        await env.HOSTAMAR_CATALOG.put("binance_rate", JSON.stringify({ usdtBdt: rate, source: body.source || "binance_p2p", updatedAt: new Date().toISOString() }));
+        return Response.json({ ok: true, usdtBdt: rate });
+      }
+      if (request.method === "GET") {
+        const raw = await env.HOSTAMAR_CATALOG.get("binance_rate", "json").catch(() => null);
+        if (raw) return Response.json(raw);
+        return Response.json({ usdtBdt: 126.24, source: "fallback", updatedAt: new Date().toISOString() });
+      }
+    }
+
+    // logs proxy for analytics (KV HOSTAMAR_LOGS list)
+    if (url.pathname === "/logs" && request.method === "GET") {
+      const internal = request.headers.get("x-internal-key") === INTERNAL_KEY;
+      if (!internal) return Response.json({ error: "Unauthorized" }, { status: 401 });
+      const list = await env.HOSTAMAR_LOGS.list({ prefix: "logs/usage/" }).catch(() => ({ keys: [] }));
+      const logs = [];
+      for (const k of (list.keys || []).slice(0, 50)) {
+        const v = await env.HOSTAMAR_LOGS.get(k.name, "json").catch(() => null);
+        if (v) logs.push(v);
+      }
+      return Response.json({ logs, count: logs.length });
+    }
+
     return Response.json({ error: "Not found" }, { status: 404 });
   },
 };

@@ -19,8 +19,8 @@ export type BinanceRate = {
 const CACHE_TTL = 60 * 60 * 1000 // 1h
 let cache: { at: number; rate: BinanceRate } | null = null
 
-/** Marketing fallback constant when all sources fail. */
-export const FALLBACK_USDT_BDT = 122.78
+/** Marketing fallback constant when all sources fail. 126.24 = 599 Taka Starter anchor ($4.74). */
+export const FALLBACK_USDT_BDT = 126.24
 
 async function fromBinanceP2P(): Promise<number | null> {
   try {
