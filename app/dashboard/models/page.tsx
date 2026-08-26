@@ -49,7 +49,7 @@ export default function ModelsPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-2xl font-bold">Model Marketplace — 120 KV Catalog</h1>
+      <h1 className="text-2xl font-bold">মডেল মার্কেটপ্লেস — ১২০ KV ক্যাটালগ</h1>
       <p className="text-sm text-slate-600">source:{source||'kv'} • {models.length} models • free {freeCount} • Tier S (Reasoning) kimi-k3 1M, Tier A Long 1M longcat 1,048,756 + gemini 1M, Tier B Balanced</p>
 
       <div className="mt-4">

@@ -58,7 +58,7 @@ export default function ChatPage() {
       <header className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-white p-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-[#0E7C3A]" />
-          <span className="text-sm font-bold">Hostamar AI Chat — 120 KV</span>
+          <span className="text-sm font-bold">Hostamar AI চ্যাট — 120 KV</span>
           <span className="rounded-full bg-[#0E7C3A]/10 px-2 py-0.5 text-[10px] font-semibold text-[#0E7C3A]">$HOSTA ready</span>
           {sel && <span className="text-xs text-slate-500">{sel.displayName} • {sel.provider} {sel.free?'FREE':'PAID'} {sel.id.includes('longcat')||sel.id.includes('ox-alpha')?'PONG':''}</span>}
         </div>
@@ -73,7 +73,7 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto rounded-xl border bg-white p-4 space-y-3">
         {msgs.length===0 && (
           <div className="flex h-full flex-col items-center justify-center text-center text-sm text-slate-500">
-            <p className="mb-1 font-semibold text-slate-700">Start chatting — 120 models marketplace</p>
+            <p className="mb-1 font-semibold text-slate-700">চ্যাট শুরু করুন — 120 models marketplace</p>
             <p>5999.46 Taka ≈ $47.53 (Binance 126.24) • Enter to send • est {estCost(input)} Taka/msg • provider kilo-edge • PONG</p>
             <p className="mt-1 text-xs">1 Credit = 1 Taka = future 1 $HOSTA. Try longcat pong → 0.03 Taka</p>
           </div>
@@ -93,7 +93,7 @@ export default function ChatPage() {
         <div ref={endRef} />
       </div>
       <form onSubmit={send} className="flex items-end gap-2">
-        <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(e as any) } }} rows={2} placeholder="Ask anything — est 0.05 Taka/msg — 1 Credit = 1 Taka" className="flex-1 resize-none rounded-xl border bg-white p-3 text-sm outline-none focus:border-[#0E7C3A]" />
+        <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(e as any) } }} rows={2} placeholder="কিছু জিজ্ঞাসা করুন — est 0.05 Taka/msg — 1 Credit = 1 Taka" className="flex-1 resize-none rounded-xl border bg-white p-3 text-sm outline-none focus:border-[#0E7C3A]" />
         <button type="submit" disabled={busy||!input.trim()} className="rounded-xl bg-[#0E7C3A] p-3 text-white disabled:opacity-50"><Send className="h-4 w-4" /></button>
       </form>
       {input && <p className="text-xs text-slate-500">Estimated cost as you type: {estCost(input)} Taka/msg • dual balance 5999.46 ≈ $47.53</p>}

@@ -673,13 +673,13 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="flex gap-2 mb-6 bg-black border border-[#0E7C3A]/20 rounded-2xl p-1.5 overflow-x-auto scrollbar-none">
           {[
-            { id:'overview', label:'Overview', icon: LayoutDashboard },
-            { id:'users', label:'Users', icon: Users },
-            { id:'credits', label:'Credits', icon: Coins },
-            { id:'transactions', label:'Transactions', icon: Receipt },
-            { id:'models', label:'Models', icon: Cpu },
-            { id:'products', label:'Products', icon: Package },
-            { id:'hosting', label:'Hosting', icon: Server },
+            { id:'overview', label:'ওভারভিউ', icon: LayoutDashboard },
+            { id:'users', label:'ইউজারসমূহ', icon: Users },
+            { id:'credits', label:'ক্রেডিট', icon: Coins },
+            { id:'transactions', label:'লেনদেন', icon: Receipt },
+            { id:'models', label:'মডেল·১২০', icon: Cpu },
+            { id:'products', label:'প্রোডাক্ট·৫০+', icon: Package },
+            { id:'hosting', label:'হোস্টিং', icon: Server },
           ].map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id as Tab)} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition border ${active===t.id ? 'bg-[#0E7C3A] text-white border-[#10B981] shadow-[0_0_18px_rgba(16,185,129,0.25)]' : 'text-zinc-500 border-transparent hover:text-white hover:bg-[#0E7C3A]/10'}`}>
               <t.icon className="w-4 h-4"/>{t.label}

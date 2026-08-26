@@ -1,0 +1,48 @@
+{
+  "id": "s10",
+  "name": "Brand Identity Starter",
+  "nameBn": "ব্র্যান্ড আইডেন্টিটি স্টার্টার",
+  "category": "Business",
+  "categoryBn": "বিজনেস ও মার্কেটিং",
+  "creditCost": 75,
+  "dollarRange": "$29",
+  "benefit": "Logo variants, colors, fonts + guidelines",
+  "benefitBn": "লোগো ভেরিয়েন্ট, রঙ, ফন্ট + গাইডলাইন",
+  "perfectFor": "New Brands",
+  "perfectForBn": "নতুন ব্র্যান্ড",
+  "promptTemplate": "Create \"Brand Identity Starter\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Logo variants, colors, fonts + guidelines. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Brand",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83C\\uDFAF",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259722Z"
+}

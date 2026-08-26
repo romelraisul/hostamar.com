@@ -1,0 +1,42 @@
+{
+  "id": "s49",
+  "name": "Birthday Video Invitation",
+  "nameBn": "ভিডিও জন্মদিন দাওয়াত",
+  "category": "Event",
+  "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+  "creditCost": 40,
+  "dollarRange": "$16",
+  "benefit": "Animated video invite + static cards",
+  "benefitBn": "অ্যানিমেটেড ভিডিও দাওয়াত + স্ট্যাটিক কার্ড",
+  "perfectFor": "Parents",
+  "perfectForBn": "অভিভাবক",
+  "promptTemplate": "Create Birthday Video Invitation for {{brand}} celebrating {{topic}} event. Generate 15s vertical video invite script + 3 static poster designs. Festive, Bangla friendly.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Host name",
+      "placeholder": "Aarav's 5th Birthday",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Theme",
+      "placeholder": "Superhero",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "playful",
+        "elegant",
+        "colorful"
+      ],
+      "default": "playful"
+    }
+  },
+  "icon": "🎬",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259838Z"
+}

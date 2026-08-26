@@ -1,0 +1,48 @@
+{
+  "id": "s21",
+  "name": "Creator Media Kit",
+  "nameBn": "ক্রিয়েটর মিডিয়া কিট",
+  "category": "Content Creator",
+  "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+  "creditCost": 40,
+  "dollarRange": "$24",
+  "benefit": "PDF media kit with stats & rates",
+  "benefitBn": "পরিসংখ্যান ও রেট সহ পিডিএফ মিডিয়া কিট",
+  "perfectFor": "Influencers",
+  "perfectForBn": "ইনফ্লুয়েন্সার",
+  "promptTemplate": "Create \"Creator Media Kit\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: PDF media kit with stats & rates. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Creator",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83C\\uDF1F",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259743Z"
+}

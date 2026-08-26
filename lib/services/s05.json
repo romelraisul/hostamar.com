@@ -1,0 +1,48 @@
+{
+  "id": "s05",
+  "name": "YouTube Thumbnail Studio",
+  "nameBn": "ইউটিউব থাম্বনেইল স্টুডিও",
+  "category": "Social Media",
+  "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+  "creditCost": 40,
+  "dollarRange": "$24",
+  "benefit": "6 high-CTR thumbnails with text",
+  "benefitBn": "টেক্সট সহ ৬টি হাই-সিটিআর থাম্বনেইল",
+  "perfectFor": "YouTubers",
+  "perfectForBn": "ইউটিউবার",
+  "promptTemplate": "Create \"YouTube Thumbnail Studio\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 6 high-CTR thumbnails with text. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "YouTube",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDDBC️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259705Z"
+}

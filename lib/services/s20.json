@@ -1,0 +1,48 @@
+{
+  "id": "s20",
+  "name": "Thumbnail A/B Tester",
+  "nameBn": "থাম্বনেইল এ/বি টেস্টার",
+  "category": "Content Creator",
+  "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+  "creditCost": 15,
+  "dollarRange": "$9",
+  "benefit": "AI predicts CTR + improves design",
+  "benefitBn": "এআই সিটিআর প্রেডিকশন + ডিজাইন উন্নতি",
+  "perfectFor": "YouTubers",
+  "perfectForBn": "ইউটিউবার",
+  "promptTemplate": "Create \"Thumbnail A/B Tester\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: AI predicts CTR + improves design. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Thumbnail",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83E\\uDDEA",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259741Z"
+}

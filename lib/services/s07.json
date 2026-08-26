@@ -1,0 +1,48 @@
+{
+  "id": "s07",
+  "name": "Hashtag & Trend Research",
+  "nameBn": "হ্যাশট্যাগ ও ট্রেন্ড রিসার্চ",
+  "category": "Social Media",
+  "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+  "creditCost": 15,
+  "dollarRange": "$8",
+  "benefit": "Daily trends + 50 niche hashtags",
+  "benefitBn": "দৈনিক ট্রেন্ড + ৫০টি নিশ হ্যাশট্যাগ",
+  "perfectFor": "Marketers",
+  "perfectForBn": "মার্কেটার",
+  "promptTemplate": "Create \"Hashtag & Trend Research\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: Daily trends + 50 niche hashtags. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Hashtag",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDD0D",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259710Z"
+}

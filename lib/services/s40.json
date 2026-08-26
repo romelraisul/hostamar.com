@@ -1,0 +1,53 @@
+{
+  "id": "s40",
+  "name": "LinkedIn Banner & Bio",
+  "nameBn": "লিংকডইন ব্যানার ও বায়ো",
+  "category": "Professional",
+  "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+  "creditCost": 25,
+  "dollarRange": "$13",
+  "benefit": "Banner + headline + about section",
+  "benefitBn": "ব্যানার + হেডলাইন + অ্যাবাউট সেকশন",
+  "perfectFor": "Professionals",
+  "perfectForBn": "প্রফেশনাল",
+  "promptTemplate": "Create \"LinkedIn Banner & Bio\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: Banner + headline + about section. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "LinkedIn",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "role": {
+      "type": "string",
+      "label": "Target role",
+      "placeholder": "Marketing Manager"
+    }
+  },
+  "icon": "\\uD83D\\uDD17",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259779Z"
+}

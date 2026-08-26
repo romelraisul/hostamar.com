@@ -1,0 +1,48 @@
+{
+  "id": "s36",
+  "name": "Organization Profile Deck",
+  "nameBn": "অর্গানাইজেশন প্রোফাইল ডেক",
+  "category": "Organization",
+  "categoryBn": "ব্যক্তিগত সংগঠন",
+  "creditCost": 75,
+  "dollarRange": "$36",
+  "benefit": "Profile deck for partnerships",
+  "benefitBn": "পার্টনারশিপের জন্য প্রোফাইল ডেক",
+  "perfectFor": "NGOs",
+  "perfectForBn": "এনজিও",
+  "promptTemplate": "Create \"Organization Profile Deck\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Profile deck for partnerships. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Organization",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDCD1",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259771Z"
+}

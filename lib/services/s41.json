@@ -1,0 +1,53 @@
+{
+  "id": "s41",
+  "name": "Product Description Writer",
+  "nameBn": "প্রোডাক্ট ডেসক্রিপশন রাইটার",
+  "category": "E-commerce",
+  "categoryBn": "ই-কমার্স ও সেলস",
+  "creditCost": 15,
+  "dollarRange": "$8",
+  "benefit": "20 SEO descriptions from specs",
+  "benefitBn": "স্পেস থেকে ২০টি এসইও ডেসক্রিপশন",
+  "perfectFor": "Shop Owners",
+  "perfectForBn": "দোকান মালিক",
+  "promptTemplate": "Create \"Product Description Writer\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: 20 SEO descriptions from specs. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Product",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "product": {
+      "type": "string",
+      "label": "Product name",
+      "placeholder": "My Product"
+    }
+  },
+  "icon": "\\uD83D\\uDECD️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259781Z"
+}

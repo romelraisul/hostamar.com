@@ -1,0 +1,48 @@
+{
+  "id": "s25",
+  "name": "Corporate Event Branding",
+  "nameBn": "কর্পোরেট ইভেন্ট ব্র্যান্ডিং",
+  "category": "Event",
+  "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+  "creditCost": 100,
+  "dollarRange": "$45",
+  "benefit": "Backdrop, badge, banner system",
+  "benefitBn": "ব্যাকড্রপ, ব্যাজ, ব্যানার সিস্টেম",
+  "perfectFor": "Companies",
+  "perfectForBn": "কোম্পানি",
+  "promptTemplate": "Create \"Corporate Event Branding\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: Backdrop, badge, banner system. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Corporate",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83C\\uDFE2",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259752Z"
+}

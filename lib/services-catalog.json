@@ -1,0 +1,2425 @@
+[
+  {
+    "id": "s01",
+    "name": "Instagram Carousel Templates",
+    "nameBn": "ইনস্টাগ্রাম ক্যারোসেল টেমপ্লেট",
+    "category": "Social Media",
+    "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+    "creditCost": 25,
+    "dollarRange": "$12",
+    "benefit": "10 ready-to-post carousel slides in your brand",
+    "benefitBn": "আপনার ব্র্যান্ডে ১০টি রেডি-টু-পোস্ট ক্যারোসেল স্লাইড",
+    "perfectFor": "Coaches & Shops",
+    "perfectForBn": "কোচ ও দোকান",
+    "promptTemplate": "Create \"Instagram Carousel Templates\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 10 ready-to-post carousel slides in your brand. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Instagram",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDFA8",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259688Z"
+  },
+  {
+    "id": "s02",
+    "name": "Viral Reel Hooks Generator",
+    "nameBn": "ভাইরাল রিল হুক জেনারেটর",
+    "category": "Social Media",
+    "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+    "creditCost": 15,
+    "dollarRange": "$7",
+    "benefit": "30 scroll-stopping hooks + script outlines",
+    "benefitBn": "৩০টি স্ক্রল-স্টপিং হুক + স্ক্রিপ্ট আউটলাইন",
+    "perfectFor": "Creators",
+    "perfectForBn": "ক্রিয়েটর",
+    "promptTemplate": "Create \"Viral Reel Hooks Generator\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 30 scroll-stopping hooks + script outlines. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Viral",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "⚡",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259697Z"
+  },
+  {
+    "id": "s03",
+    "name": "Facebook Page Bio & Cover Kit",
+    "nameBn": "ফেসবুক পেজ বায়ো ও কভার কিট",
+    "category": "Social Media",
+    "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+    "creditCost": 15,
+    "dollarRange": "$9",
+    "benefit": "Bio, CTA, and 3 cover variations auto-designed",
+    "benefitBn": "অটো-ডিজাইন বায়ো, সিটিএ এবং ৩টি কভার ভেরিয়েশন",
+    "perfectFor": "Small Business",
+    "perfectForBn": "ছোট ব্যবসা",
+    "promptTemplate": "Create \"Facebook Page Bio & Cover Kit\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: Bio, CTA, and 3 cover variations auto-designed. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Facebook",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCD8",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259701Z"
+  },
+  {
+    "id": "s04",
+    "name": "LinkedIn Thought Leader Posts",
+    "nameBn": "লিংকডইন থট লিডার পোস্ট",
+    "category": "Social Media",
+    "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+    "creditCost": 40,
+    "dollarRange": "$19",
+    "benefit": "12 authority posts from your notes",
+    "benefitBn": "আপনার নোট থেকে ১২টি অথরিটি পোস্ট",
+    "perfectFor": "Founders",
+    "perfectForBn": "ফাউন্ডার",
+    "promptTemplate": "Create \"LinkedIn Thought Leader Posts\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 12 authority posts from your notes. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "LinkedIn",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCBC",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259703Z"
+  },
+  {
+    "id": "s05",
+    "name": "YouTube Thumbnail Studio",
+    "nameBn": "ইউটিউব থাম্বনেইল স্টুডিও",
+    "category": "Social Media",
+    "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+    "creditCost": 40,
+    "dollarRange": "$24",
+    "benefit": "6 high-CTR thumbnails with text",
+    "benefitBn": "টেক্সট সহ ৬টি হাই-সিটিআর থাম্বনেইল",
+    "perfectFor": "YouTubers",
+    "perfectForBn": "ইউটিউবার",
+    "promptTemplate": "Create \"YouTube Thumbnail Studio\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 6 high-CTR thumbnails with text. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "YouTube",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDDBC️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259705Z"
+  },
+  {
+    "id": "s06",
+    "name": "Social Caption Bank",
+    "nameBn": "সোশ্যাল ক্যাপশন ব্যাংক",
+    "category": "Social Media",
+    "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+    "creditCost": 25,
+    "dollarRange": "$14",
+    "benefit": "60 captions tailored to your niche",
+    "benefitBn": "আপনার নিশ অনুযায়ী ৬০টি ক্যাপশন",
+    "perfectFor": "Agencies",
+    "perfectForBn": "এজেন্সি",
+    "promptTemplate": "Create \"Social Caption Bank\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 60 captions tailored to your niche. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Social",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "✍️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259708Z"
+  },
+  {
+    "id": "s07",
+    "name": "Hashtag & Trend Research",
+    "nameBn": "হ্যাশট্যাগ ও ট্রেন্ড রিসার্চ",
+    "category": "Social Media",
+    "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+    "creditCost": 15,
+    "dollarRange": "$8",
+    "benefit": "Daily trends + 50 niche hashtags",
+    "benefitBn": "দৈনিক ট্রেন্ড + ৫০টি নিশ হ্যাশট্যাগ",
+    "perfectFor": "Marketers",
+    "perfectForBn": "মার্কেটার",
+    "promptTemplate": "Create \"Hashtag & Trend Research\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: Daily trends + 50 niche hashtags. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Hashtag",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDD0D",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259710Z"
+  },
+  {
+    "id": "s08",
+    "name": "Business Proposal Builder",
+    "nameBn": "বিজনেস প্রপোজাল বিল্ডার",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 75,
+    "dollarRange": "$35",
+    "benefit": "Client-ready proposal with pricing table",
+    "benefitBn": "প্রাইসিং টেবিল সহ ক্লায়েন্ট-রেডি প্রপোজাল",
+    "perfectFor": "Freelancers",
+    "perfectForBn": "ফ্রিল্যান্সার",
+    "promptTemplate": "Create \"Business Proposal Builder\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Client-ready proposal with pricing table. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Business",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCC4",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259718Z"
+  },
+  {
+    "id": "s09",
+    "name": "Pitch Deck Designer",
+    "nameBn": "পিচ ডেক ডিজাইনার",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 100,
+    "dollarRange": "$47",
+    "benefit": "12-slide investor deck from bullet points",
+    "benefitBn": "বুলেট পয়েন্ট থেকে ১২ স্লাইডের ইনভেস্টর ডেক",
+    "perfectFor": "Startups",
+    "perfectForBn": "স্টার্টআপ",
+    "promptTemplate": "Create \"Pitch Deck Designer\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: 12-slide investor deck from bullet points. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Pitch",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCCA",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259721Z"
+  },
+  {
+    "id": "s10",
+    "name": "Brand Identity Starter",
+    "nameBn": "ব্র্যান্ড আইডেন্টিটি স্টার্টার",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 75,
+    "dollarRange": "$29",
+    "benefit": "Logo variants, colors, fonts + guidelines",
+    "benefitBn": "লোগো ভেরিয়েন্ট, রঙ, ফন্ট + গাইডলাইন",
+    "perfectFor": "New Brands",
+    "perfectForBn": "নতুন ব্র্যান্ড",
+    "promptTemplate": "Create \"Brand Identity Starter\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Logo variants, colors, fonts + guidelines. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Brand",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDFAF",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259722Z"
+  },
+  {
+    "id": "s11",
+    "name": "Invoice & Quote Generator",
+    "nameBn": "ইনভয়েস ও কোট জেনারেটর",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 15,
+    "dollarRange": "$6",
+    "benefit": "Branded invoice & quote PDF instantly",
+    "benefitBn": "ব্র্যান্ডেড ইনভয়েস ও কোট পিডিএফ তাৎক্ষণিক",
+    "perfectFor": "Shops",
+    "perfectForBn": "দোকান",
+    "promptTemplate": "Create \"Invoice & Quote Generator\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Branded invoice & quote PDF instantly. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Invoice",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83E\\uDDFE",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259724Z"
+  },
+  {
+    "id": "s12",
+    "name": "Business Plan Writer",
+    "nameBn": "বিজনেস প্ল্যান রাইটার",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 100,
+    "dollarRange": "$59",
+    "benefit": "Full plan: market, finance, ops",
+    "benefitBn": "মার্কেট, ফাইন্যান্স, অপস সহ পূর্ণাঙ্গ প্ল্যান",
+    "perfectFor": "Founders",
+    "perfectForBn": "ফাউন্ডার",
+    "promptTemplate": "Create \"Business Plan Writer\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Full plan: market, finance, ops. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Business",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCDD",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259727Z"
+  },
+  {
+    "id": "s13",
+    "name": "SOP Document Creator",
+    "nameBn": "এসওপি ডকুমেন্ট ক্রিয়েটর",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 40,
+    "dollarRange": "$18",
+    "benefit": "Step-by-step SOP from loom transcript",
+    "benefitBn": "লুম ট্রান্সক্রিপ্ট থেকে ধাপে ধাপে এসওপি",
+    "perfectFor": "Teams",
+    "perfectForBn": "টিম",
+    "promptTemplate": "Create \"SOP Document Creator\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: Step-by-step SOP from loom transcript. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "SOP",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "⚙️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259729Z"
+  },
+  {
+    "id": "s14",
+    "name": "Client Contract Kit",
+    "nameBn": "ক্লায়েন্ট কন্ট্রাক্ট কিট",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 25,
+    "dollarRange": "$15",
+    "benefit": "3 contracts tailored to BD law",
+    "benefitBn": "বাংলাদেশ আইন অনুযায়ী ৩টি কন্ট্রাক্ট",
+    "perfectFor": "Agencies",
+    "perfectForBn": "এজেন্সি",
+    "promptTemplate": "Create \"Client Contract Kit\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: 3 contracts tailored to BD law. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Client",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83E\\uDD1D",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259731Z"
+  },
+  {
+    "id": "s15",
+    "name": "YouTube Script Writer",
+    "nameBn": "ইউটিউব স্ক্রিপ্ট রাইটার",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 40,
+    "dollarRange": "$22",
+    "benefit": "8-min script with hooks + B-roll list",
+    "benefitBn": "হুক + বি-রোল লিস্ট সহ ৮ মিনিটের স্ক্রিপ্ট",
+    "perfectFor": "YouTubers",
+    "perfectForBn": "ইউটিউবার",
+    "promptTemplate": "Create \"YouTube Script Writer\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 8-min script with hooks + B-roll list. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "YouTube",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDFAC",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259732Z"
+  },
+  {
+    "id": "s16",
+    "name": "Podcast Show Notes Maker",
+    "nameBn": "পডকাস্ট শো নোটস মেকার",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 25,
+    "dollarRange": "$12",
+    "benefit": "Title, summary, timestamps + clips",
+    "benefitBn": "টাইটেল, সারাংশ, টাইমস্ট্যাম্প + ক্লিপস",
+    "perfectFor": "Podcasters",
+    "perfectForBn": "পডকাস্টার",
+    "promptTemplate": "Create \"Podcast Show Notes Maker\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: Title, summary, timestamps + clips. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Podcast",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDF99️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259734Z"
+  },
+  {
+    "id": "s17",
+    "name": "Newsletter Engine",
+    "nameBn": "নিউজলেটার ইঞ্জিন",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 25,
+    "dollarRange": "$16",
+    "benefit": "4 newsletters from your ideas",
+    "benefitBn": "আপনার আইডিয়া থেকে ৪টি নিউজলেটার",
+    "perfectFor": "Writers",
+    "perfectForBn": "লেখক",
+    "promptTemplate": "Create \"Newsletter Engine\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 4 newsletters from your ideas. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Newsletter",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCE7",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259735Z"
+  },
+  {
+    "id": "s18",
+    "name": "Blog Post Expander",
+    "nameBn": "ব্লগ পোস্ট এক্সপ্যান্ডার",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 40,
+    "dollarRange": "$20",
+    "benefit": "1500w SEO post from outline",
+    "benefitBn": "আউটলাইন থেকে ১৫০০ শব্দের এসইও পোস্ট",
+    "perfectFor": "Bloggers",
+    "perfectForBn": "ব্লগার",
+    "promptTemplate": "Create \"Blog Post Expander\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 1500w SEO post from outline. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Blog",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCD6",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259737Z"
+  },
+  {
+    "id": "s19",
+    "name": "Short-form Script Pack",
+    "nameBn": "শর্ট-ফর্ম স্ক্রিপ্ট প্যাক",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 25,
+    "dollarRange": "$13",
+    "benefit": "20 reels/shorts scripts in one go",
+    "benefitBn": "একবারে ২০টি রিলস/শর্টস স্ক্রিপ্ট",
+    "perfectFor": "Creators",
+    "perfectForBn": "ক্রিয়েটর",
+    "promptTemplate": "Create \"Short-form Script Pack\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 20 reels/shorts scripts in one go. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Short-form",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCF1",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259739Z"
+  },
+  {
+    "id": "s20",
+    "name": "Thumbnail A/B Tester",
+    "nameBn": "থাম্বনেইল এ/বি টেস্টার",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 15,
+    "dollarRange": "$9",
+    "benefit": "AI predicts CTR + improves design",
+    "benefitBn": "এআই সিটিআর প্রেডিকশন + ডিজাইন উন্নতি",
+    "perfectFor": "YouTubers",
+    "perfectForBn": "ইউটিউবার",
+    "promptTemplate": "Create \"Thumbnail A/B Tester\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: AI predicts CTR + improves design. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Thumbnail",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83E\\uDDEA",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259741Z"
+  },
+  {
+    "id": "s21",
+    "name": "Creator Media Kit",
+    "nameBn": "ক্রিয়েটর মিডিয়া কিট",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 40,
+    "dollarRange": "$24",
+    "benefit": "PDF media kit with stats & rates",
+    "benefitBn": "পরিসংখ্যান ও রেট সহ পিডিএফ মিডিয়া কিট",
+    "perfectFor": "Influencers",
+    "perfectForBn": "ইনফ্লুয়েন্সার",
+    "promptTemplate": "Create \"Creator Media Kit\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: PDF media kit with stats & rates. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Creator",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDF1F",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259743Z"
+  },
+  {
+    "id": "s22",
+    "name": "Content Calendar Planner",
+    "nameBn": "কন্টেন্ট ক্যালেন্ডার প্ল্যানার",
+    "category": "Content Creator",
+    "categoryBn": "কন্টেন্ট ক্রিয়েটর টুলস",
+    "creditCost": 40,
+    "dollarRange": "$18",
+    "benefit": "30-day calendar with ideas + hooks",
+    "benefitBn": "আইডিয়া + হুক সহ ৩০ দিনের ক্যালেন্ডার",
+    "perfectFor": "Social Managers",
+    "perfectForBn": "সোশ্যাল ম্যানেজার",
+    "promptTemplate": "Create \"Content Calendar Planner\" for brand {{brand}} about \"{{topic}}\". Category: Content Creator. Benefit: 30-day calendar with ideas + hooks. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Content",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDDD3️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259745Z"
+  },
+  {
+    "id": "s23",
+    "name": "Wedding Invitation Suite",
+    "nameBn": "বিয়ের দাওয়াত কার্ড স্যুট",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 75,
+    "dollarRange": "$32",
+    "benefit": "Invite + envelope + thank you card",
+    "benefitBn": "দাওয়াত + খাম + ধন্যবাদ কার্ড",
+    "perfectFor": "Families",
+    "perfectForBn": "পরিবার",
+    "promptTemplate": "Create \"Wedding Invitation Suite\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: Invite + envelope + thank you card. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Wedding",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDC8C",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259747Z"
+  },
+  {
+    "id": "s24",
+    "name": "Birthday Poster Pack",
+    "nameBn": "জন্মদিন পোস্টার প্যাক",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 15,
+    "dollarRange": "$7",
+    "benefit": "5 posters + social story set",
+    "benefitBn": "৫টি পোস্টার + সোশ্যাল স্টোরি সেট",
+    "perfectFor": "Parents",
+    "perfectForBn": "অভিভাবক",
+    "promptTemplate": "Create \"Birthday Poster Pack\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: 5 posters + social story set. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Birthday",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDF82",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259749Z"
+  },
+  {
+    "id": "s25",
+    "name": "Corporate Event Branding",
+    "nameBn": "কর্পোরেট ইভেন্ট ব্র্যান্ডিং",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 100,
+    "dollarRange": "$45",
+    "benefit": "Backdrop, badge, banner system",
+    "benefitBn": "ব্যাকড্রপ, ব্যাজ, ব্যানার সিস্টেম",
+    "perfectFor": "Companies",
+    "perfectForBn": "কোম্পানি",
+    "promptTemplate": "Create \"Corporate Event Branding\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: Backdrop, badge, banner system. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Corporate",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDFE2",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259752Z"
+  },
+  {
+    "id": "s26",
+    "name": "Conference Badge Designer",
+    "nameBn": "কনফারেন্স ব্যাজ ডিজাইনার",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 25,
+    "dollarRange": "$11",
+    "benefit": "500 badges from Excel in seconds",
+    "benefitBn": "এক্সেল থেকে সেকেন্ডে ৫০০ ব্যাজ",
+    "perfectFor": "Organizers",
+    "perfectForBn": "আয়োজক",
+    "promptTemplate": "Create \"Conference Badge Designer\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: 500 badges from Excel in seconds. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Conference",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83E\\uDEAA",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259754Z"
+  },
+  {
+    "id": "s27",
+    "name": "Event Social Kit",
+    "nameBn": "ইভেন্ট সোশ্যাল কিট",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 40,
+    "dollarRange": "$19",
+    "benefit": "20 posts, stories, countdowns",
+    "benefitBn": "২০টি পোস্ট, স্টোরি, কাউন্টডাউন",
+    "perfectFor": "Event Teams",
+    "perfectForBn": "ইভেন্ট টিম",
+    "promptTemplate": "Create \"Event Social Kit\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: 20 posts, stories, countdowns. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Event",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCE3",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259755Z"
+  },
+  {
+    "id": "s28",
+    "name": "Certificate Generator",
+    "nameBn": "সার্টিফিকেট জেনারেটর",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 25,
+    "dollarRange": "$10",
+    "benefit": "Bulk certs with QR verify",
+    "benefitBn": "কিউআর ভেরিফাই সহ বাল্ক সার্টিফিকেট",
+    "perfectFor": "Schools & NGOs",
+    "perfectForBn": "স্কুল ও এনজিও",
+    "promptTemplate": "Create \"Certificate Generator\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: Bulk certs with QR verify. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Certificate",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDFC5",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259757Z"
+  },
+  {
+    "id": "s29",
+    "name": "Menu Card Creator",
+    "nameBn": "মেনু কার্ড ক্রিয়েটর",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 40,
+    "dollarRange": "$16",
+    "benefit": "Trifold menu + QR digital menu",
+    "benefitBn": "ট্রাইফোল্ড মেনু + কিউআর ডিজিটাল মেনু",
+    "perfectFor": "Restaurants",
+    "perfectForBn": "রেস্টুরেন্ট",
+    "promptTemplate": "Create \"Menu Card Creator\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: Trifold menu + QR digital menu. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Menu",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDF7D️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259760Z"
+  },
+  {
+    "id": "s30",
+    "name": "Event Proposal Pack",
+    "nameBn": "ইভেন্ট প্রপোজাল প্যাক",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 75,
+    "dollarRange": "$28",
+    "benefit": "Proposal + budget + timeline deck",
+    "benefitBn": "প্রপোজাল + বাজেট + টাইমলাইন ডেক",
+    "perfectFor": "Planners",
+    "perfectForBn": "প্ল্যানার",
+    "promptTemplate": "Create \"Event Proposal Pack\" for brand {{brand}} about \"{{topic}}\". Category: Event. Benefit: Proposal + budget + timeline deck. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Event",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCCB",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259761Z"
+  },
+  {
+    "id": "s31",
+    "name": "NGO Annual Report",
+    "nameBn": "এনজিও বার্ষিক রিপোর্ট",
+    "category": "Organization",
+    "categoryBn": "ব্যক্তিগত সংগঠন",
+    "creditCost": 100,
+    "dollarRange": "$52",
+    "benefit": "32-page impact report from data",
+    "benefitBn": "ডেটা থেকে ৩২ পৃষ্ঠার ইমপ্যাক্ট রিপোর্ট",
+    "perfectFor": "NGOs",
+    "perfectForBn": "এনজিও",
+    "promptTemplate": "Create \"NGO Annual Report\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: 32-page impact report from data. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "NGO",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDF0D",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259763Z"
+  },
+  {
+    "id": "s32",
+    "name": "School Admission Kit",
+    "nameBn": "স্কুল ভর্তি কিট",
+    "category": "Organization",
+    "categoryBn": "ব্যক্তিগত সংগঠন",
+    "creditCost": 75,
+    "dollarRange": "$29",
+    "benefit": "Form, flyer, banner + social pack",
+    "benefitBn": "ফর্ম, ফ্লায়ার, ব্যানার + সোশ্যাল প্যাক",
+    "perfectFor": "Schools",
+    "perfectForBn": "স্কুল",
+    "promptTemplate": "Create \"School Admission Kit\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Form, flyer, banner + social pack. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "School",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83C\\uDFEB",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259765Z"
+  },
+  {
+    "id": "s33",
+    "name": "Club Membership Cards",
+    "nameBn": "ক্লাব মেম্বারশিপ কার্ড",
+    "category": "Organization",
+    "categoryBn": "ব্যক্তিগত সংগঠন",
+    "creditCost": 25,
+    "dollarRange": "$12",
+    "benefit": "100 cards print-ready from sheet",
+    "benefitBn": "শিট থেকে ১০০টি প্রিন্ট-রেডি কার্ড",
+    "perfectFor": "Clubs",
+    "perfectForBn": "ক্লাব",
+    "promptTemplate": "Create \"Club Membership Cards\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: 100 cards print-ready from sheet. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Club",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCB3",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259767Z"
+  },
+  {
+    "id": "s34",
+    "name": "Charity Campaign Kit",
+    "nameBn": "চ্যারিটি ক্যাম্পেইন কিট",
+    "category": "Organization",
+    "categoryBn": "ব্যক্তিগত সংগঠন",
+    "creditCost": 75,
+    "dollarRange": "$31",
+    "benefit": "Donation page + posters + emails",
+    "benefitBn": "ডোনেশন পেজ + পোস্টার + ইমেইল",
+    "perfectFor": "Charities",
+    "perfectForBn": "চ্যারিটি",
+    "promptTemplate": "Create \"Charity Campaign Kit\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Donation page + posters + emails. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Charity",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "❤️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259769Z"
+  },
+  {
+    "id": "s35",
+    "name": "Association Letterhead Set",
+    "nameBn": "অ্যাসোসিয়েশন লেটারহেড সেট",
+    "category": "Organization",
+    "categoryBn": "ব্যক্তিগত সংগঠন",
+    "creditCost": 15,
+    "dollarRange": "$8",
+    "benefit": "Letterhead, envelope, stamp design",
+    "benefitBn": "লেটারহেড, খাম, স্ট্যাম্প ডিজাইন",
+    "perfectFor": "Associations",
+    "perfectForBn": "অ্যাসোসিয়েশন",
+    "promptTemplate": "Create \"Association Letterhead Set\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Letterhead, envelope, stamp design. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Association",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "✉️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259770Z"
+  },
+  {
+    "id": "s36",
+    "name": "Organization Profile Deck",
+    "nameBn": "অর্গানাইজেশন প্রোফাইল ডেক",
+    "category": "Organization",
+    "categoryBn": "ব্যক্তিগত সংগঠন",
+    "creditCost": 75,
+    "dollarRange": "$36",
+    "benefit": "Profile deck for partnerships",
+    "benefitBn": "পার্টনারশিপের জন্য প্রোফাইল ডেক",
+    "perfectFor": "NGOs",
+    "perfectForBn": "এনজিও",
+    "promptTemplate": "Create \"Organization Profile Deck\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Profile deck for partnerships. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Organization",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      }
+    },
+    "icon": "\\uD83D\\uDCD1",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259771Z"
+  },
+  {
+    "id": "s37",
+    "name": "Resume Revamp AI",
+    "nameBn": "সিভি রিভ্যাম্প এআই",
+    "category": "Professional",
+    "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+    "creditCost": 40,
+    "dollarRange": "$18",
+    "benefit": "ATS resume + cover + LinkedIn rewrite",
+    "benefitBn": "এটিএস সিভি + কভার + লিংকডইন রিরাইট",
+    "perfectFor": "Job Seekers",
+    "perfectForBn": "চাকরি প্রার্থী",
+    "promptTemplate": "Create \"Resume Revamp AI\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: ATS resume + cover + LinkedIn rewrite. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Resume",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "role": {
+        "type": "string",
+        "label": "Target role",
+        "placeholder": "Marketing Manager"
+      }
+    },
+    "icon": "\\uD83D\\uDC54",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259774Z"
+  },
+  {
+    "id": "s38",
+    "name": "Portfolio Website Copy",
+    "nameBn": "পোর্টফোলিও ওয়েবসাইট কপি",
+    "category": "Professional",
+    "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+    "creditCost": 40,
+    "dollarRange": "$21",
+    "benefit": "Home, about, work, contact copy",
+    "benefitBn": "হোম, অ্যাবাউট, ওয়ার্ক, কন্টাক্ট কপি",
+    "perfectFor": "Designers",
+    "perfectForBn": "ডিজাইনার",
+    "promptTemplate": "Create \"Portfolio Website Copy\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: Home, about, work, contact copy. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Portfolio",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "role": {
+        "type": "string",
+        "label": "Target role",
+        "placeholder": "Marketing Manager"
+      }
+    },
+    "icon": "\\uD83D\\uDCBB",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259776Z"
+  },
+  {
+    "id": "s39",
+    "name": "Cover Letter Studio",
+    "nameBn": "কভার লেটার স্টুডিও",
+    "category": "Professional",
+    "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+    "creditCost": 15,
+    "dollarRange": "$9",
+    "benefit": "3 tailored cover letters per job",
+    "benefitBn": "প্রতি জবে ৩টি টেইলর্ড কভার লেটার",
+    "perfectFor": "Applicants",
+    "perfectForBn": "আবেদনকারী",
+    "promptTemplate": "Create \"Cover Letter Studio\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: 3 tailored cover letters per job. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Cover",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "role": {
+        "type": "string",
+        "label": "Target role",
+        "placeholder": "Marketing Manager"
+      }
+    },
+    "icon": "\\uD83D\\uDCE8",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259778Z"
+  },
+  {
+    "id": "s40",
+    "name": "LinkedIn Banner & Bio",
+    "nameBn": "লিংকডইন ব্যানার ও বায়ো",
+    "category": "Professional",
+    "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+    "creditCost": 25,
+    "dollarRange": "$13",
+    "benefit": "Banner + headline + about section",
+    "benefitBn": "ব্যানার + হেডলাইন + অ্যাবাউট সেকশন",
+    "perfectFor": "Professionals",
+    "perfectForBn": "প্রফেশনাল",
+    "promptTemplate": "Create \"LinkedIn Banner & Bio\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: Banner + headline + about section. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "LinkedIn",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "role": {
+        "type": "string",
+        "label": "Target role",
+        "placeholder": "Marketing Manager"
+      }
+    },
+    "icon": "\\uD83D\\uDD17",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259779Z"
+  },
+  {
+    "id": "s41",
+    "name": "Product Description Writer",
+    "nameBn": "প্রোডাক্ট ডেসক্রিপশন রাইটার",
+    "category": "E-commerce",
+    "categoryBn": "ই-কমার্স ও সেলস",
+    "creditCost": 15,
+    "dollarRange": "$8",
+    "benefit": "20 SEO descriptions from specs",
+    "benefitBn": "স্পেস থেকে ২০টি এসইও ডেসক্রিপশন",
+    "perfectFor": "Shop Owners",
+    "perfectForBn": "দোকান মালিক",
+    "promptTemplate": "Create \"Product Description Writer\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: 20 SEO descriptions from specs. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Product",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "product": {
+        "type": "string",
+        "label": "Product name",
+        "placeholder": "My Product"
+      }
+    },
+    "icon": "\\uD83D\\uDECD️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259781Z"
+  },
+  {
+    "id": "s42",
+    "name": "Amazon Listing Optimizer",
+    "nameBn": "অ্যামাজন লিস্টিং অপটিমাইজার",
+    "category": "E-commerce",
+    "categoryBn": "ই-কমার্স ও সেলস",
+    "creditCost": 40,
+    "dollarRange": "$22",
+    "benefit": "Title, bullets, A+ content rewrite",
+    "benefitBn": "টাইটেল, বুলেট, এ+ কন্টেন্ট রিরাইট",
+    "perfectFor": "Sellers",
+    "perfectForBn": "সেলার",
+    "promptTemplate": "Create \"Amazon Listing Optimizer\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Title, bullets, A+ content rewrite. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Amazon",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "product": {
+        "type": "string",
+        "label": "Product name",
+        "placeholder": "My Product"
+      }
+    },
+    "icon": "\\uD83D\\uDCE6",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259783Z"
+  },
+  {
+    "id": "s43",
+    "name": "Shopify Banner Set",
+    "nameBn": "শপিফাই ব্যানার সেট",
+    "category": "E-commerce",
+    "categoryBn": "ই-কমার্স ও সেলস",
+    "creditCost": 25,
+    "dollarRange": "$14",
+    "benefit": "Homepage + collection banners",
+    "benefitBn": "হোমপেজ + কালেকশন ব্যানার",
+    "perfectFor": "Shopify Stores",
+    "perfectForBn": "শপিফাই স্টোর",
+    "promptTemplate": "Create \"Shopify Banner Set\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Homepage + collection banners. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Shopify",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "product": {
+        "type": "string",
+        "label": "Product name",
+        "placeholder": "My Product"
+      }
+    },
+    "icon": "\\uD83D\\uDDA5️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259786Z"
+  },
+  {
+    "id": "s44",
+    "name": "Product Photo Background Kit",
+    "nameBn": "প্রোডাক্ট ফটো ব্যাকগ্রাউন্ড কিট",
+    "category": "E-commerce",
+    "categoryBn": "ই-কমার্স ও সেলস",
+    "creditCost": 40,
+    "dollarRange": "$19",
+    "benefit": "Remove bg + studio shadows",
+    "benefitBn": "ব্যাকগ্রাউন্ড রিমুভ + স্টুডিও শ্যাডো",
+    "perfectFor": "Ecom Brands",
+    "perfectForBn": "ই-কম ব্র্যান্ড",
+    "promptTemplate": "Create \"Product Photo Background Kit\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Remove bg + studio shadows. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Product",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "product": {
+        "type": "string",
+        "label": "Product name",
+        "placeholder": "My Product"
+      }
+    },
+    "icon": "\\uD83D\\uDCF8",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259788Z"
+  },
+  {
+    "id": "s45",
+    "name": "Ecom Ad Creative Pack",
+    "nameBn": "ই-কম অ্যাড ক্রিয়েটিভ প্যাক",
+    "category": "E-commerce",
+    "categoryBn": "ই-কমার্স ও সেলস",
+    "creditCost": 75,
+    "dollarRange": "$33",
+    "benefit": "12 ad variants for FB/TikTok",
+    "benefitBn": "ফেসবুক/টিকটকের জন্য ১২টি অ্যাড ভেরিয়েন্ট",
+    "perfectFor": "Dropshippers",
+    "perfectForBn": "ড্রপশিপার",
+    "promptTemplate": "Create \"Ecom Ad Creative Pack\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: 12 ad variants for FB/TikTok. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Ecom",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "product": {
+        "type": "string",
+        "label": "Product name",
+        "placeholder": "My Product"
+      }
+    },
+    "icon": "\\uD83D\\uDCE2",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259789Z"
+  },
+  {
+    "id": "s46",
+    "name": "Price Tag & Label Designer",
+    "nameBn": "প্রাইস ট্যাগ ও লেবেল ডিজাইনার",
+    "category": "E-commerce",
+    "categoryBn": "ই-কমার্স ও সেলস",
+    "creditCost": 15,
+    "dollarRange": "$7",
+    "benefit": "Printable tags + barcode set",
+    "benefitBn": "প্রিন্টেবল ট্যাগ + বারকোড সেট",
+    "perfectFor": "Retail",
+    "perfectForBn": "রিটেইল",
+    "promptTemplate": "Create \"Price Tag & Label Designer\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Printable tags + barcode set. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Name",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic / Product",
+        "placeholder": "Price",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "professional",
+          "friendly",
+          "playful",
+          "luxury"
+        ],
+        "default": "professional"
+      },
+      "colors": {
+        "type": "string",
+        "label": "Brand colors (optional)",
+        "placeholder": "#3B82F6, #111827"
+      },
+      "product": {
+        "type": "string",
+        "label": "Product name",
+        "placeholder": "My Product"
+      }
+    },
+    "icon": "\\uD83C\\uDFF7️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259791Z"
+  },
+  {
+    "id": "s47",
+    "name": "TikTok Shop Video Kit",
+    "nameBn": "টিকটক শপ ভিডিও কিট",
+    "category": "E-commerce",
+    "categoryBn": "ই-কমার্স ও সেলস",
+    "creditCost": 75,
+    "dollarRange": "$29",
+    "benefit": "5 TikTok Shop videos with hooks + captions",
+    "benefitBn": "হুক + ক্যাপশন সহ ৫টি টিকটক শপ ভিডিও",
+    "perfectFor": "Shop Owners",
+    "perfectForBn": "দোকান মালিক",
+    "promptTemplate": "Create TikTok Shop Video Kit for brand {{brand}} product {{product}} topic {{topic}}. Generate 5 short vertical video scripts (hook, scene, VO, caption) optimized for TikTok Shop conversion. Bangla + English mix allowed.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand",
+        "placeholder": "Hostamar",
+        "required": true
+      },
+      "product": {
+        "type": "string",
+        "label": "Product",
+        "placeholder": "Saree Collection",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Topic",
+        "placeholder": "Eid Offer",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "energetic",
+          "friendly",
+          "luxury"
+        ],
+        "default": "energetic"
+      }
+    },
+    "icon": "🛍️",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259794Z"
+  },
+  {
+    "id": "s48",
+    "name": "Job Application Tracker",
+    "nameBn": "জব অ্যাপ্লিকেশন ট্র্যাকার",
+    "category": "Professional",
+    "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+    "creditCost": 25,
+    "dollarRange": "$12",
+    "benefit": "Tracker sheet + follow-up email templates",
+    "benefitBn": "ট্র্যাকার শিট + ফলো-আপ ইমেইল টেমপ্লেট",
+    "perfectFor": "Job Seekers",
+    "perfectForBn": "চাকরি প্রার্থী",
+    "promptTemplate": "Create Job Application Tracker for {{brand}} targeting role {{role}} about {{topic}}. Output notion-ready tracker table + 3 follow-up email templates (Bangla/English).",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Your name",
+        "placeholder": "Rahim Ahmed",
+        "required": true
+      },
+      "role": {
+        "type": "string",
+        "label": "Target role",
+        "placeholder": "Software Engineer",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Industry",
+        "placeholder": "IT",
+        "required": true
+      }
+    },
+    "icon": "📊",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259836Z"
+  },
+  {
+    "id": "s49",
+    "name": "Birthday Video Invitation",
+    "nameBn": "ভিডিও জন্মদিন দাওয়াত",
+    "category": "Event",
+    "categoryBn": "ইভেন্ট ও সেলিব্রেশন",
+    "creditCost": 40,
+    "dollarRange": "$16",
+    "benefit": "Animated video invite + static cards",
+    "benefitBn": "অ্যানিমেটেড ভিডিও দাওয়াত + স্ট্যাটিক কার্ড",
+    "perfectFor": "Parents",
+    "perfectForBn": "অভিভাবক",
+    "promptTemplate": "Create Birthday Video Invitation for {{brand}} celebrating {{topic}} event. Generate 15s vertical video invite script + 3 static poster designs. Festive, Bangla friendly.",
+    "model": "flux-pro",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Host name",
+        "placeholder": "Aarav's 5th Birthday",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Theme",
+        "placeholder": "Superhero",
+        "required": true
+      },
+      "tone": {
+        "type": "select",
+        "label": "Tone",
+        "options": [
+          "playful",
+          "elegant",
+          "colorful"
+        ],
+        "default": "playful"
+      }
+    },
+    "icon": "🎬",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259838Z"
+  },
+  {
+    "id": "s50",
+    "name": "AI Business Card Designer",
+    "nameBn": "এআই বিজনেস কার্ড ডিজাইনার",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "creditCost": 15,
+    "dollarRange": "$9",
+    "benefit": "3 business card concepts print-ready",
+    "benefitBn": "প্রিন্ট-রেডি ৩টি বিজনেস কার্ড কনসেপ্ট",
+    "perfectFor": "Freelancers",
+    "perfectForBn": "ফ্রিল্যান্সার",
+    "promptTemplate": "Create AI Business Card Designer for brand {{brand}} topic {{topic}}. Generate 3 double-sided business card concepts with QR, typography, and print-ready layout. Modern Bangladeshi business aesthetic.",
+    "model": "flux-schnell",
+    "inputs": {
+      "brand": {
+        "type": "string",
+        "label": "Brand / Person",
+        "placeholder": "Hostamar Studio",
+        "required": true
+      },
+      "topic": {
+        "type": "string",
+        "label": "Profession",
+        "placeholder": "Creative Agency",
+        "required": true
+      },
+      "colors": {
+        "type": "string",
+        "label": "Colors",
+        "placeholder": "#0ea5e9, #0f172a"
+      }
+    },
+    "icon": "💳",
+    "isActive": true,
+    "createdAt": "2026-08-26T17:15:05.259839Z"
+  }
+]

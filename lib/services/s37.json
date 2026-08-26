@@ -1,0 +1,53 @@
+{
+  "id": "s37",
+  "name": "Resume Revamp AI",
+  "nameBn": "সিভি রিভ্যাম্প এআই",
+  "category": "Professional",
+  "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+  "creditCost": 40,
+  "dollarRange": "$18",
+  "benefit": "ATS resume + cover + LinkedIn rewrite",
+  "benefitBn": "এটিএস সিভি + কভার + লিংকডইন রিরাইট",
+  "perfectFor": "Job Seekers",
+  "perfectForBn": "চাকরি প্রার্থী",
+  "promptTemplate": "Create \"Resume Revamp AI\" for brand {{brand}} about \"{{topic}}\". Category: Professional. Benefit: ATS resume + cover + LinkedIn rewrite. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Resume",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "role": {
+      "type": "string",
+      "label": "Target role",
+      "placeholder": "Marketing Manager"
+    }
+  },
+  "icon": "\\uD83D\\uDC54",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259774Z"
+}

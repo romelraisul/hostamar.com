@@ -17,7 +17,7 @@ export default function CreditsPage(){
   const hostaCalc = Math.round(taka / hosta / 126.24 * rate) // approx
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold">Credits — Dual Pricing Live</h1>
+      <h1 className="text-2xl font-bold">ক্রেডিট — ডুয়াল প্রাইসিং লাইভ</h1>
       <div className="mt-4 rounded-xl border bg-white p-6">
         <p className="text-sm text-slate-500">Binance P2P 126.24 BDT/USDT • $HOSTA ${hosta}</p>
         <p className="mt-2 text-2xl font-bold">{taka.toLocaleString()} Taka ≈ ${usd.toFixed(2)} USD ≈ {hostaSimple.toLocaleString()} $HOSTA</p>

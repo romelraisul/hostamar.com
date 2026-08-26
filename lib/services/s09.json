@@ -1,0 +1,48 @@
+{
+  "id": "s09",
+  "name": "Pitch Deck Designer",
+  "nameBn": "পিচ ডেক ডিজাইনার",
+  "category": "Business",
+  "categoryBn": "বিজনেস ও মার্কেটিং",
+  "creditCost": 100,
+  "dollarRange": "$47",
+  "benefit": "12-slide investor deck from bullet points",
+  "benefitBn": "বুলেট পয়েন্ট থেকে ১২ স্লাইডের ইনভেস্টর ডেক",
+  "perfectFor": "Startups",
+  "perfectForBn": "স্টার্টআপ",
+  "promptTemplate": "Create \"Pitch Deck Designer\" for brand {{brand}} about \"{{topic}}\". Category: Business. Benefit: 12-slide investor deck from bullet points. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Pitch",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDCCA",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259721Z"
+}

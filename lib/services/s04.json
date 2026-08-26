@@ -1,0 +1,48 @@
+{
+  "id": "s04",
+  "name": "LinkedIn Thought Leader Posts",
+  "nameBn": "লিংকডইন থট লিডার পোস্ট",
+  "category": "Social Media",
+  "categoryBn": "সোশ্যাল মিডিয়া টেমপ্লেট",
+  "creditCost": 40,
+  "dollarRange": "$19",
+  "benefit": "12 authority posts from your notes",
+  "benefitBn": "আপনার নোট থেকে ১২টি অথরিটি পোস্ট",
+  "perfectFor": "Founders",
+  "perfectForBn": "ফাউন্ডার",
+  "promptTemplate": "Create \"LinkedIn Thought Leader Posts\" for brand {{brand}} about \"{{topic}}\". Category: Social Media. Benefit: 12 authority posts from your notes. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "LinkedIn",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83D\\uDCBC",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259703Z"
+}

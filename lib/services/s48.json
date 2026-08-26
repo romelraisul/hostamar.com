@@ -1,0 +1,38 @@
+{
+  "id": "s48",
+  "name": "Job Application Tracker",
+  "nameBn": "জব অ্যাপ্লিকেশন ট্র্যাকার",
+  "category": "Professional",
+  "categoryBn": "প্রফেশনাল ডকুমেন্টস",
+  "creditCost": 25,
+  "dollarRange": "$12",
+  "benefit": "Tracker sheet + follow-up email templates",
+  "benefitBn": "ট্র্যাকার শিট + ফলো-আপ ইমেইল টেমপ্লেট",
+  "perfectFor": "Job Seekers",
+  "perfectForBn": "চাকরি প্রার্থী",
+  "promptTemplate": "Create Job Application Tracker for {{brand}} targeting role {{role}} about {{topic}}. Output notion-ready tracker table + 3 follow-up email templates (Bangla/English).",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Your name",
+      "placeholder": "Rahim Ahmed",
+      "required": true
+    },
+    "role": {
+      "type": "string",
+      "label": "Target role",
+      "placeholder": "Software Engineer",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Industry",
+      "placeholder": "IT",
+      "required": true
+    }
+  },
+  "icon": "📊",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259836Z"
+}

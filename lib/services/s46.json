@@ -1,0 +1,53 @@
+{
+  "id": "s46",
+  "name": "Price Tag & Label Designer",
+  "nameBn": "প্রাইস ট্যাগ ও লেবেল ডিজাইনার",
+  "category": "E-commerce",
+  "categoryBn": "ই-কমার্স ও সেলস",
+  "creditCost": 15,
+  "dollarRange": "$7",
+  "benefit": "Printable tags + barcode set",
+  "benefitBn": "প্রিন্টেবল ট্যাগ + বারকোড সেট",
+  "perfectFor": "Retail",
+  "perfectForBn": "রিটেইল",
+  "promptTemplate": "Create \"Price Tag & Label Designer\" for brand {{brand}} about \"{{topic}}\". Category: E-commerce. Benefit: Printable tags + barcode set. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-schnell",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "Price",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    },
+    "product": {
+      "type": "string",
+      "label": "Product name",
+      "placeholder": "My Product"
+    }
+  },
+  "icon": "\\uD83C\\uDFF7️",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259791Z"
+}

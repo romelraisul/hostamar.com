@@ -1,0 +1,48 @@
+{
+  "id": "s32",
+  "name": "School Admission Kit",
+  "nameBn": "স্কুল ভর্তি কিট",
+  "category": "Organization",
+  "categoryBn": "ব্যক্তিগত সংগঠন",
+  "creditCost": 75,
+  "dollarRange": "$29",
+  "benefit": "Form, flyer, banner + social pack",
+  "benefitBn": "ফর্ম, ফ্লায়ার, ব্যানার + সোশ্যাল প্যাক",
+  "perfectFor": "Schools",
+  "perfectForBn": "স্কুল",
+  "promptTemplate": "Create \"School Admission Kit\" for brand {{brand}} about \"{{topic}}\". Category: Organization. Benefit: Form, flyer, banner + social pack. Use Hostamar style, Bangla+English where appropriate. Inputs: brand={{brand}}, topic={{topic}}, tone={{tone}}, colors={{colors}}. Output high-quality design/copy ready to publish.",
+  "model": "flux-pro",
+  "inputs": {
+    "brand": {
+      "type": "string",
+      "label": "Brand / Name",
+      "placeholder": "Hostamar",
+      "required": true
+    },
+    "topic": {
+      "type": "string",
+      "label": "Topic / Product",
+      "placeholder": "School",
+      "required": true
+    },
+    "tone": {
+      "type": "select",
+      "label": "Tone",
+      "options": [
+        "professional",
+        "friendly",
+        "playful",
+        "luxury"
+      ],
+      "default": "professional"
+    },
+    "colors": {
+      "type": "string",
+      "label": "Brand colors (optional)",
+      "placeholder": "#3B82F6, #111827"
+    }
+  },
+  "icon": "\\uD83C\\uDFEB",
+  "isActive": true,
+  "createdAt": "2026-08-26T17:15:05.259765Z"
+}
