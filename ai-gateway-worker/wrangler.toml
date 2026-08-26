@@ -3,9 +3,11 @@ main = "src/index.js"
 compatibility_date = "2024-01-01"
 account_id = "e00717304c1139751214b8cda5078a8d"
 
-routes = [
-  { pattern = "ai.hostamar.com/*", zone_name = "hostamar.com" }
-]
+# NOTE: no custom `routes` here on purpose — declaring routes disables the
+# workers.dev subdomain, and if route creation fails (token lacks
+# Zone > Workers Routes > Edit) the worker ends up unreachable on BOTH.
+# Custom-domain binding for ai.hostamar.com is done in the CF dashboard,
+# not via deploy.
 
 [vars]
 KILO_API_BASE = "https://api.kilo.ai/api/gateway"
