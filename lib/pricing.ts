@@ -1,10 +1,11 @@
 // Single source of truth for pricing plans (BDT).
 // Consumed by /pricing page and /api/pricing.
 export type Plan = {
-  id: 'free' | 'starter' | 'pro'
+  id: 'starter' | 'pro' | 'business'
   name: string
+  nameBn: string
   priceMonthly: number // BDT
-  priceEarlyMonthly?: number // Early 1000/mo promo
+  credits: number
   badge?: string
   tagline: string
   cta: string
@@ -13,50 +14,56 @@ export type Plan = {
 
 export const PLANS: Plan[] = [
   {
-    id: 'free',
-    name: 'Free',
-    priceMonthly: 0,
-    tagline: 'ট্রাই করুন — ক্রেডিট কার্ড লাগবে না',
-    cta: 'ফ্রি শুরু করুন',
-    features: [
-      '৩টি AI ভিডিও / মাস (ওয়াটারমার্ক সহ)',
-      '১GB BDIX হোস্টিং',
-      '৫০+ বাংলা টেমপ্লেট (প্রিভিউ)',
-      'Chat বেসিক',
-      '৭২০p এক্সপোর্ট',
-    ],
-  },
-  {
     id: 'starter',
     name: 'Starter',
-    priceMonthly: 2000,
-    priceEarlyMonthly: 1000,
+    nameBn: 'স্টার্টার',
+    priceMonthly: 599,
+    credits: 6000,
     badge: 'Most Popular',
-    tagline: 'SME দের পছন্দ — ১০০ ভিডিও',
-    cta: 'Starter নিন',
+    tagline: 'শুরু করার জন্য সেরা — ৬০০০ ক্রেডিট',
+    cta: 'স্টার্টার নিন',
     features: [
-      '১০০ AI ভিডিও / মাস (ওয়াটারমার্ক ছাড়া)',
+      '৬০০০ ক্রেডিট / মাস (১০০+ AI ভিডিও)',
       '১০GB NVMe হোস্টিং + ফ্রি .com ডোমেইন',
-      '৫০+ বাংলা টেমপ্লেট (ঈদ, বৈশাখ, 11.11) সব',
-      'bKash / Nagad / Rocket',
-      '১০৮০p, No watermark',
-      'Priority সাপোর্ট',
+      '৫০+ বাংলা টেমপ্লেট (ঈদ, বৈশাখ, ১১.১১)',
+      'ওয়াটারমার্ক ছাড়া ১০৮০p এক্সপোর্ট',
+      'bKash / Nagad / Rocket সাপোর্ট',
+      'ইমেইল সাপোর্ট',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    priceMonthly: 3500,
-    priceEarlyMonthly: 1000,
-    tagline: 'এজেন্সি ও টিম — Unlimited',
-    cta: 'Pro নিন',
+    nameBn: 'প্রো',
+    priceMonthly: 1299,
+    credits: 13000,
+    badge: '2× ভ্যালু',
+    tagline: '২× ভ্যালু — ১৩০০০ ক্রেডিট',
+    cta: 'প্রো নিন',
     features: [
-      'Unlimited AI ভিডিও',
-      '২০GB NVMe + ফ্রি SSL',
+      '১৩০০০ ক্রেডিট / মাস (২× ভ্যালু)',
+      '৫০GB NVMe হোস্টিং + ফ্রি SSL',
       'API এক্সেস + টিম ৫ জন',
-      'সব প্রোডাক্ট আনলিমিটেড',
-      '4K এক্সপোর্ট',
+      '৪K এক্সপোর্ট + No watermark',
       'Priority সাপোর্ট',
+      'সব প্রোডাক্ট আনলিমিটেড',
+    ],
+  },
+  {
+    id: 'business',
+    name: 'Business',
+    nameBn: 'বিজনেস',
+    priceMonthly: 2999,
+    credits: 30000,
+    tagline: 'আনলিমিটেড হোস্টিং — ৩০০০০ ক্রেডিট',
+    cta: 'বিজনেস নিন',
+    features: [
+      '৩০০০০ ক্রেডিট / মাস',
+      'আনলিমিটেড হোস্টিং + ফ্রি SSL',
+      'আনলিমিটেড AI ভিডিও',
+      'API এক্সেস + টিম আনলিমিটেড',
+      'ডেডিকেটেড সাপোর্ট',
+      'কাস্টম ডোমেইন আনলিমিটেড',
     ],
   },
 ]
@@ -117,4 +124,21 @@ export function resolveHostingPlan(cpu: number, ram: number, storage: number): H
     if (cpu <= p.cpu && ram <= p.ram && storage <= p.storage) return key as HostingPlanKey
   }
   return null // bigger than premium → custom quote
+}
+
+// ——— Monetization compat — Stripe/PayPal expect PRICING + normalizeTier ———
+export type Tier = Plan['id']
+export const PRICING: Record<Tier, { taka: number; usd: number; usdCents: number; credits: number; label: string; videosPerMonth: number; storageGB: number }> = {
+  starter: { taka: 599, usd: 4.75, usdCents: 475, credits: 6000, label: 'Starter', videosPerMonth: 10, storageGB: 5 },
+  pro: { taka: 1299, usd: 10.30, usdCents: 1030, credits: 13000, label: 'Pro', videosPerMonth: 30, storageGB: 20 },
+  business: { taka: 2999, usd: 23.75, usdCents: 2375, credits: 30000, label: 'Business', videosPerMonth: 80, storageGB: 100 },
+}
+export function normalizeTier(v: unknown): Tier | null {
+  const s = String(v || '').toLowerCase().trim()
+  if (s === 'starter' || s === 'pro' || s === 'business') return s as Tier
+  return null
+}
+export function formatTierPrice(tier: Tier, currency: 'BDT'|'USD' = 'BDT') {
+  const p = PRICING[tier]
+  return currency === 'USD' ? `$${p.usd.toFixed(2)}` : `৳${p.taka.toLocaleString()}`
 }

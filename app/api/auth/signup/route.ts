@@ -86,14 +86,24 @@ export async function POST(request: NextRequest) {
       }
     } catch { /* best-effort */ } // audit trail is best-effort — never block signup
 
-    // Track referral if ref code provided
-    if (refCode) {
+    // Referral viral: create Referral with bonusAmount 60 (starter) status pending
+    // Supports 6-char code via Customer.referralCode (new) and legacy HST* codes
+    const effectiveRef = (refCode || (request as any).headers?.get?.('x-ref-code') || '').toString().trim().toUpperCase()
+    // also check cookie affiliate_ref
+    let cookieRef = ''
+    try { cookieRef = (request.cookies.get('affiliate_ref')?.value || '').toUpperCase() } catch {}
+    const finalRef = (effectiveRef || cookieRef || '').trim().toUpperCase()
+    if (finalRef) {
       try {
-        await fetch(`${env.NEXTAUTH_URL || 'http://localhost:3000'}/api/referral`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refCode, newUserId: customer.id })
-        });
+        const referrer = await prisma.customer.findFirst({ where: { referralCode: finalRef } })
+        if (referrer && referrer.id !== customer.id) {
+          const exists = await prisma.referral.findFirst({ where: { referrerId: referrer.id, referredId: customer.id } })
+          if (!exists) {
+            await prisma.referral.create({
+              data: { referrerId: referrer.id, referredId: customer.id, status: 'pending', bonusAmount: 60 },
+            })
+          }
+        }
       } catch { /* referral tracking is non-critical */ }
     }
 

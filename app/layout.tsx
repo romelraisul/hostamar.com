@@ -7,6 +7,7 @@ import { defaultSeo } from '@/lib/seo'
 import ThemeToggle from '@/components/ThemeToggle'
 import SupportWidget from '@/components/SupportWidget'
 import ChromeGuard from '@/components/layout/ChromeGuard'
+import ReferralCapture from '@/components/ReferralCapture'
 import { LocaleProvider } from '@/lib/locale-context'
 import { cookies } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
@@ -166,6 +167,7 @@ export default async function RootLayout({
               <Providers>
                 <LocaleProvider>
                   <ChromeGuard>{children}</ChromeGuard>
+                  <ReferralCapture />
                   <ThemeToggle />
                   <SupportWidget />
                 </LocaleProvider>

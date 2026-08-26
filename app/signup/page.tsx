@@ -70,8 +70,14 @@ export default function SignupPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
+    const urlRef = params.get('ref') || ''
+    const stored = (()=>{ try{ return localStorage.getItem('hostamar_ref')||'' }catch{ return ''}})()
+    const effective = (urlRef || stored || '').toUpperCase()
+    if (effective) {
+      try{ localStorage.setItem('hostamar_ref', effective); document.cookie=`affiliate_ref=${effective}; path=/; max-age=${60*60*24*30}; SameSite=Lax` }catch{}
+    }
     setInviteCode(params.get('invite') || '')
-    setRefCode(params.get('ref') || '')
+    setRefCode(effective)
     setHydrated(true)
   }, [])
 
@@ -102,6 +108,8 @@ export default function SignupPage() {
     }
 
     try {
+      const storedRef = (()=>{ try{ return (localStorage.getItem('hostamar_ref')||'').toUpperCase() }catch{return ''}})()
+      const finalRef = (refCode.trim().toUpperCase() || storedRef || '').trim()
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,7 +119,7 @@ export default function SignupPage() {
           password,
           turnstileToken: turnstileToken || undefined,
           inviteCode: inviteCode.trim().toUpperCase() || undefined,
-          refCode: refCode.trim().toUpperCase() || undefined,
+          refCode: finalRef || undefined,
         }),
       })
       const data = await res.json()
@@ -133,6 +141,7 @@ export default function SignupPage() {
         return
       }
       if (typeof window !== 'undefined') window.localStorage.setItem('auth_token', loginData.token)
+      try{ localStorage.removeItem('hostamar_ref') }catch{}
       await signIn('credentials', { email, password, redirect: false })
       router.push('/dashboard')
     } catch {

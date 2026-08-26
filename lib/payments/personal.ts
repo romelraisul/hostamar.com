@@ -197,6 +197,12 @@ export async function grantPaymentBenefits(verificationId: string): Promise<void
     sourceId: payment?.id || v.trxId,
   }).catch((e) => console.warn('[affiliate] commission record failed:', e))
 
+  // 4b. Referral viral reward: 500cr + 10% Taka (60 for starter) on FIRST payment
+  try {
+    const { rewardReferrerOnPayment } = await import('@/lib/referral')
+    await rewardReferrerOnPayment(v.customerId, v.amount, payment?.id || v.trxId)
+  } catch (e) { console.warn('[referral] reward failed:', e) }
+
   // 5. Mark verified
   await prisma.paymentVerification.update({
     where: { id: verificationId },
