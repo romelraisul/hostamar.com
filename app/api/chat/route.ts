@@ -25,7 +25,7 @@ export const runtime = 'nodejs'
  * Kilo — always-on even when this Vercel function or the home VPS is down.
  * Paid models hard-blocked at BOTH layers (402 PAID_BLOCKED).
  */
-const EDGE_URL = process.env.EDGE_GATEWAY_URL || 'https://hostamar-ai-gateway.romelraisul.workers.dev'
+const EDGE_URL = process.env.EDGE_GATEWAY_URL || 'https://hostamar-ai-gateway.romelraisul.workers.dev/v1'
 const EDGE_INTERNAL_KEY = process.env.EDGE_INTERNAL_KEY || 'hostamar-edge-internal-2026-xK39m'
 
 function getProvider(model: string): { base: string; key?: string; provider: string } {
