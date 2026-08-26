@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowLeft, Eye, Clock, Calendar } from 'lucide-react'
 import { POSTS, getPost, FEATURED, GRID, formatViews } from '@/lib/blog'
+import { injectPreferredSourceBadge } from '@/lib/seo/preferredSourcesInjector'
 
 export function generateStaticParams() {
   return POSTS.map((p) => ({ slug: p.slug }))
@@ -84,6 +85,9 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             ফ্রিতে স্টুর্ট করুন
           </Link>
         </div>
+
+        {/* Preferred Sources badge — auto-injected, opt-out via post.preferredSource:false */}
+        {injectPreferredSourceBadge(post.slug)}
       </article>
 
       <section className="mx-auto max-w-[1180px] px-4 md:px-6 pb-16">

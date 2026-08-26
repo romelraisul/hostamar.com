@@ -1407,3 +1407,14 @@ model HostingRequest {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ── SEO: Preferred Sources / submit tracking ──
+model SeoEvent {
+  id        String   @id @default(cuid())
+  type      String // preferred_source_click | seo_submit_google | seo_submit_bing
+  url       String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+}
