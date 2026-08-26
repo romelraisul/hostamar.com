@@ -317,4 +317,10 @@ async function activateSubscription(
       description: `Payment of ৳${payment.amount} via ${gateway} for ${planKey} plan`,
     },
   })
+
+  // Referral viral reward on first payment (bKash/Stripe/PayPal universal hook)
+  try {
+    const { rewardReferrerOnPayment } = await import('@/lib/referral')
+    await rewardReferrerOnPayment(customerId, payment.amount, (payment as any).id || trxId)
+  } catch (e) { console.warn('[referral] webhook reward failed:', e) }
 }

@@ -151,6 +151,12 @@ model Subscription {
   billingCycle    String   @default("monthly")
   nextBillingDate DateTime
 
+  // Monetization: Stripe/PayPal + auto-renew
+  stripeSubscriptionId String? @unique
+  paypalSubscriptionId String? @unique
+  autoRenew            Boolean @default(true)
+  creditsPerMonth      Int     @default(6000)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

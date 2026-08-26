@@ -173,6 +173,8 @@ export async function middleware(request: NextRequest) {
     '/api/payment/verify',
     '/api/payment/personal',
     '/api/payment/webhook',
+    '/api/payments/bkash/verify',
+    '/api/payments/bkash/create',
     '/api/payment/ipn',
     '/api/payment/bkash-verify',
     '/api/video/status',

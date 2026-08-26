@@ -75,6 +75,8 @@ async function activateSubscription(customerId: string, planKey: string, amount:
       },
     })
     .catch(() => {})
+  // Referral viral reward on first payment
+  try { const { rewardReferrerOnPayment } = await import('@/lib/referral'); await rewardReferrerOnPayment(customerId, amount) } catch (e) { console.warn('[referral] webhooks reward failed', e) }
 }
 
 // --- Main handler ---
