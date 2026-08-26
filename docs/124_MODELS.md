@@ -98,3 +98,7 @@ run 32945267776 success — regenerated 120 models from live upstreams, wrote
 docs/MODEL_CONTEXT_TABLE.md (120 rows), pong-tested flagships, committed when
 drift detected. Secrets set: KILO_API_KEY, OPENCODE_ZEN_API_KEY,
 CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
+
+## Vercel /api/v1/models proxies to KV (2026-08-26)
+
+`app/api/v1/models/route.ts` tries the KV-backed worker first (4s timeout), falls back to local catalog. Both `ai.hostamar.com` and `workers.dev` return identical `{count:120, source:"kv"}`.

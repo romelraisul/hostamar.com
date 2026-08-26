@@ -76,4 +76,10 @@ CREATE TABLE model_catalog (id TEXT PRIMARY KEY, data JSONB NOT NULL, updated_at
 - [x] `raw.githubusercontent.com/romelraisul/hostamar.com/main/MODEL_CATALOG.json` → 200, 120 models
 - [x] Neon `model_catalog` → 2 rows, JSONB valid
 - [x] MinIO up, bucket `hostamar-models` created
-- [ ] `s3.hostamar.com` live — needs `systemctl --user restart hostamar-tunnel` (2s blip on other endpoints)
+- [x] `s3.hostamar.com` live → 200 (MinIO through tunnel)
+- [x] Tunnel endpoints: openwebui 200, ide 302, uptime 302, s3 200
+- [x] Unified gateway: ai.hostamar.com/v1/models → `{"count":120,"source":"kv"}` (identical to workers.dev)
+
+## Tunnel endpoint recovery (rootlessport fix)
+
+Symptom: openwebui/ide/uptime returned 502 while `podman ps` showed containers "Up". Cause: the rootless `rootlessport` forwarder processes had died (WSL2 + podman 4.x long-uptime failure), so no kernel listener existed on 3003/8443/3002 despite the containers running. Fix: `podman start <container>` re-spawns the forwarder; `podman restart` fails with "conmon exited prematurely" on these stale containers. Recovery verified: all four endpoints (openwebui 200, ide 302, uptime 302, s3 200) green.
