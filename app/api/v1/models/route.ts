@@ -5,6 +5,31 @@ import { isFree } from '@/lib/gateway/filter'
 export const dynamic = 'force-dynamic'
 
 /**
+ * Unified gateway: ai.hostamar.com serves the SAME catalog as the edge worker.
+ * Tier 1: KV-backed worker (hostamar-ai-gateway, 120 models, source:"kv")
+ * Tier 2: local generated catalog (MODELS_95) + fresh free-model discovery
+ * Keeps both domains identical even when the home computer is off.
+ */
+const EDGE_MODELS_URL = process.env.EDGE_GATEWAY_URL
+  ? `${process.env.EDGE_GATEWAY_URL.replace(/\/+$/, '')}/models`
+  : 'https://hostamar-ai-gateway.romelraisul.workers.dev/v1/models'
+
+async function edgeCatalog(): Promise<{ data: any[]; source: string } | null> {
+  try {
+    const r = await fetch(EDGE_MODELS_URL, {
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    })
+    if (!r.ok) return null
+    const d: any = await r.json()
+    if (Array.isArray(d?.data) && d.data.length) return { data: d.data, source: d.source || 'kv' }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Runtime free-model discovery cache. The generated catalog is redeploy-static;
  * this layer merges in freshly discovered free models from all upstreams so a
  * brand-new :free model appears here within an hour of its upstream listing,
@@ -35,6 +60,16 @@ export async function GET(req: NextRequest) {
     // still allow without auth for discovery, but mark as public
   }
 
+  // Tier 1: unified edge catalog (KV via worker)
+  const edge = await edgeCatalog()
+  if (edge) {
+    return Response.json(
+      { object: 'list', source: edge.source, data: edge.data },
+      { headers: { 'Cache-Control': 'public, max-age=60' } }
+    )
+  }
+
+  // Tier 2: local generated catalog + fresh discovery (worker unreachable)
   const servedIds = new Set(MODELS_95.map(m => m.id))
   const fresh = await freshFreeIds()
   const extra = fresh.filter(id => !servedIds.has(id)).map(id => ({
