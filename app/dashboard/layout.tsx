@@ -30,6 +30,10 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { PRODUCT_NAV } from '@/lib/products'
+import { DASHBOARD_ROUTES } from '@/lib/dashboard-routes'
+import dynamic from 'next/dynamic'
+
+const DashHelpCenter = dynamic(() => import('@/components/DashHelpCenter'), { ssr: false })
 
 // ---------- helpers ----------
 const PRODUCT_ICON: Record<string, typeof Video> = {
@@ -40,15 +44,6 @@ const PRODUCT_ICON: Record<string, typeof Video> = {
   'dev-ide': Code2,
   'game': Gamepad2,
 }
-const DASH_ROUTES: Record<string, string> = {
-  'ai-video': '/dashboard/videos',
-  'cloud-hosting': '/dashboard/hosting',
-  'ai-chat': '/chat',
-  'ai-browser': '/browser',
-  'dev-ide': '/ide',
-  'game': '/game',
-}
-
 interface DashStats {
   creditsRemaining?: number
   creditsBalance?: number
@@ -120,7 +115,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navProducts = PRODUCT_NAV.map((p) => ({
     ...p,
-    href: DASH_ROUTES[p.slug] ?? `/dashboard/${p.slug}`,
+    href: DASHBOARD_ROUTES[p.slug] ?? `/dashboard/${p.slug}`,
     icon: PRODUCT_ICON[p.slug] ?? Video,
   }))
 
@@ -451,6 +446,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="lg:ml-64 pt-14 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8">{children}</div>
       </main>
+
+      {/* Docked help center — visible on every dashboard page */}
+      <DashHelpCenter />
     </div>
   )
 }

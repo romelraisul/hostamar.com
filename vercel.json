@@ -1,6 +1,21 @@
 {
   "buildCommand": "prisma generate && next build",
+  "rewrites": [
+    { "source": "/v1/:path*", "destination": "/api/v1/:path*" }
+  ],
   "crons": [
+    {
+      "path": "/api/cron/binance-price",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/market-sync",
+      "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/cron/update-models",
+      "schedule": "0 0 * * *"
+    },
     {
       "path": "/api/tv/generate-loop",
       "schedule": "0 3 * * *"

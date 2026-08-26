@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Check, X, ShieldCheck, Sparkles } from 'lucide-react'
 import { PLANS, type Plan } from '@/lib/pricing'
+import { useBinanceRate, BinanceBadge, WelcomeBanner, HostaTeaser } from '@/components/pricing-binance'
 
 // Locked brand
 const PRIMARY = '#0E7C3A'
@@ -35,6 +36,8 @@ const COMPARISON = [
 
 export default function PricingPage() {
   const [early, setEarly] = useState(false)
+  const [currency, setCurrency] = useState<'bdt' | 'usd'>('bdt')
+  const binance = useBinanceRate()
   const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null)
 
   async function startCheckout(plan: 'starter' | 'pro') {
@@ -74,6 +77,33 @@ export default function PricingPage() {
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0E7C3A] text-white px-2.5 py-1 font-semibold">bKash • Nagad • Rocket</span>
           <span className="text-[#475569]">ক্রেডিট কার্ড লাগবে না</span>
         </div>
+      </div>
+
+      {/* Binance live rate + currency toggle + welcome banner */}
+      <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 pt-6">
+        <WelcomeBanner />
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <BinanceBadge rate={binance} />
+          <div className="inline-flex rounded-full border p-0.5 text-xs font-semibold">
+            {(['bdt','usd'] as const).map(c => (
+              <button key={c} onClick={() => setCurrency(c)}
+                className={`rounded-full px-3 py-1 ${currency===c ? 'bg-[#0E7C3A] text-white' : 'text-slate-500 hover:text-slate-700'}`}>
+                {c.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* USD equivalents strip when toggle = USD */}
+        {currency === 'usd' && binance && (
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+            {Object.entries(binance.plans ?? {}).map(([k, v]) => (
+              <div key={k} className="rounded-lg border bg-white px-3 py-2">
+                <p className="font-semibold capitalize">{k}</p>
+                <p className="text-slate-500">${v.priceUsd} / mo</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Hero */}
@@ -229,6 +259,9 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+    
+
+      <HostaTeaser />
     </div>
   )
 }

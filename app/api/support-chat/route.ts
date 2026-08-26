@@ -20,6 +20,25 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const GEN_MODEL = env.OLLAMA_MODEL || 'llama3.2:latest'
+
+// Dashboard navigation context — injected into every RAG prompt so answers
+// always include concrete sidebar steps even when the KB has no hit.
+const DASH_CONTEXT = `
+You are the Hostamar dashboard guide. The customer is INSIDE the dashboard at /dashboard.
+Left-sidebar tabs: AI Video (make videos), Cloud Hosting (add hosting servers), AI Chat (chat studio),
+AI Browser (browse websites inside the dashboard), Dev IDE (write and run code), Game (game lab),
+Analytics, Billing, Referral, Settings. A Help Center chat is docked bottom-right on every page.
+
+Step-by-step how-tos:
+- Generate a video: click "AI Video" in the left sidebar -> open your video or click "Create Video" ->
+  enter your prompt -> submit. Credits are deducted when generation starts.
+- Browse a website: click "AI Browser" in the left sidebar -> type a URL like wikipedia.org -> click Browse.
+  Use the "AI Summary" button for a summary of the page.
+- Add hosting: click "Cloud Hosting" in the left sidebar -> pick a plan -> confirm with credits.
+  Credits are checked before and deducted after success; insufficient balance shows an error.
+- Use the IDE: click "Dev IDE" in the left sidebar -> create/open a file -> write code -> run -> save.
+Always answer with numbered steps referencing the exact sidebar tab names. Keep it short.
+`
 const EMBED_MODEL = env.OLLAMA_EMBED_MODEL || 'nomic-embed-text'
 const OLLAMA_URL = (env.OLLAMA_PUBLIC_URL || 'http://localhost:11434').replace(/\/$/, '')
 const QDRANT_URL = (env.QDRANT_PUBLIC_URL || 'http://localhost:8200').replace(/\/$/, '')
@@ -198,7 +217,7 @@ export async function POST(request: NextRequest) {
       toolCtx = ''
     }
 
-    const sys = buildSystemPrompt(rag)
+    const sys = `${DASH_CONTEXT}\n\n${buildSystemPrompt(rag)}`
     const context =
       (history || [])
         .slice(-8)

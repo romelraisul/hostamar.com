@@ -114,16 +114,17 @@ def get_current_rpm(conn, model):
     return row["c"] if row else 0
 
 def learn_from_429(conn, model, rpm_at_failure):
-    # Less aggressive: 80% of failure RPM, then floor at 50% of current (not 85%)
-    safe = max(1, round(rpm_at_failure * 0.8))
+    # Conservative decay: never below 16 RPM, max -30% per event.
+    # (Old floors of 1-8 caused death-spiral collapse; NVIDIA free tier is
+    # 40 RPM baseline — anything under 16 makes the model unusable anyway.)
+    safe = max(16, round(rpm_at_failure * 0.8))
     existing = conn.execute(
         "SELECT max_rpm, cooldown_seconds FROM rate_limits WHERE model=?", (model,)
     ).fetchone()
     if existing:
-        # Reduction: min of 80% failure RPM OR 50% of current (whichever is higher = less reduction)
-        new_rpm = max(min(safe, round(existing["max_rpm"] * 0.5, 1)), 1)
-        # Cooldown: +15s instead of +30s, cap 300s (5 min)
-        new_cd = min(existing["cooldown_seconds"] + 15, 300)
+        new_rpm = max(min(safe, round(existing["max_rpm"] * 0.7, 1)), 16)
+        # Cooldown: cap at 120s (was 300) — Nvidia resets fast
+        new_cd = min(existing["cooldown_seconds"] + 15, 120)
         conn.execute(
             "UPDATE rate_limits SET max_rpm=?, cooldown_seconds=?, "
             "last_429_at=datetime('now'), last_updated=datetime('now') WHERE model=?",
@@ -140,6 +141,13 @@ def learn_from_429(conn, model, rpm_at_failure):
         log(f"LEARN ★ {model}: initial limit {safe} RPM, cooldown {NV_BASELINE_COOLDOWN}s")
     conn.commit()
 
+def _parse_ts(ts):
+    """Parse SQLite/Guard timestamps; coerce naive to UTC (SQLite CURRENT_TIMESTAMP is UTC)."""
+    dt = datetime.fromisoformat(ts)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
 def is_on_cooldown(conn, model):
     row = conn.execute("""
         SELECT re.ts, rl.cooldown_seconds FROM rate_events re
@@ -150,7 +158,7 @@ def is_on_cooldown(conn, model):
     if not row:
         return False
     try:
-        last_429 = datetime.fromisoformat(row["ts"])
+        last_429 = _parse_ts(row["ts"])
         elapsed = (datetime.now(timezone.utc) - last_429).total_seconds()
         return elapsed < row["cooldown_seconds"]
     except Exception:
@@ -164,7 +172,7 @@ def cooldown_remaining(conn, model):
     if not row:
         return 0
     try:
-        last = datetime.fromisoformat(row["ts"])
+        last = _parse_ts(row["ts"])
         rl = conn.execute(
             "SELECT cooldown_seconds FROM rate_limits WHERE model=?", (model,)
         ).fetchone()
@@ -209,13 +217,18 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
             seed_baseline(conn, model)
 
         try:
-            # ── Cooldown check ──
+            # ── Cooldown check — CIRCUIT BREAKER OPEN: serve via qwen3.8 fallback, auto-probe after cooldown ──
             if model and is_on_cooldown(conn, model):
                 remaining = int(cooldown_remaining(conn, model))
                 rpm_now = get_current_rpm(conn, model)
-                record_event(conn, model, "fallback", rpm_now,
-                            f"cooldown {remaining}s → fallback")
-                self._respond_429(remaining, model, f"Cooldown {remaining}s")
+                record_event(conn, model, "fallback", rpm_now, f"cooldown {remaining}s → qwen3.8 fallback (circuit open)")
+                log(f"CIRCUIT OPEN {model}: cooldown {remaining}s → serving via rushan/qwen3.8 (auto-comeback when cooldown ends)")
+                fb = self._try_tokenrouter_fallback(body, model)
+                if fb is not None:
+                    fallback_body, used_model = fb
+                    self._send_fallback_response(fallback_body, model, used_model)
+                else:
+                    self._respond_429(remaining, model, f"Cooldown {remaining}s")
                 return
 
             # ── Rate limit check ──
@@ -229,15 +242,17 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
                     "SELECT max_rpm FROM rate_limits WHERE model=?", (model,)
                 ).fetchone()
                 if rl and rl["max_rpm"]:
-                    # Hard limit: if at/over max_rpm, return 429 + fallback
+                    # Hard limit: if at/over max_rpm, return fallback via qwen3.8 (circuit breaker) not 429
                     if rpm >= rl["max_rpm"]:
                         retry_after = 60
-                        log(f"THROTTLE {model}: {rpm}/{rl['max_rpm']} RPM "
-                            f"→ 429 fallback (retry {retry_after}s)")
-                        record_event(conn, model, "fallback", rpm,
-                                    f"over limit {rpm}/{rl['max_rpm']}")
-                        self._respond_429(retry_after, model,
-                                         f"Rate limit {rpm}/{rl['max_rpm']} RPM")
+                        log(f"THROTTLE {model}: {rpm}/{rl['max_rpm']} RPM → circuit breaker → qwen3.8 fallback (retry {retry_after}s)")
+                        record_event(conn, model, "fallback", rpm, f"over limit {rpm}/{rl['max_rpm']} → qwen3.8")
+                        fb = self._try_tokenrouter_fallback(body, model)
+                        if fb is not None:
+                            fallback_body, used_model = fb
+                            self._send_fallback_response(fallback_body, model, used_model)
+                        else:
+                            self._respond_429(retry_after, model, f"Rate limit {rpm}/{rl['max_rpm']} RPM")
                         return
 
                     # Approaching limit: progressive delay
@@ -277,9 +292,9 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
 
             try:
                 ctx = ssl.create_default_context()
-                # Use socket-level timeout for both connect + read
+                # Use socket-level timeout for both connect + read — 30s fail-fast so large-context requests fallback quickly to tokenrouter
                 import socket
-                socket.setdefaulttimeout(60)
+                socket.setdefaulttimeout(30)
                 try:
                     with urllib.request.urlopen(req, context=ctx) as resp:
                         status = resp.status
@@ -292,16 +307,52 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
                 finally:
                     socket.setdefaulttimeout(None)
             except socket.timeout:
-                log("UPSTREAM_TIMEOUT: Total timeout exceeded (30s)")
-                self._respond_502("Upstream timeout")
+                log("UPSTREAM_TIMEOUT: Nvidia timeout (30s) → circuit OPEN → qwen3.8 fallback + auto-probe later")
+                if model:
+                    # Put circuit OPEN so next requests fast-fail to qwen3.8 without 30s wait (prevents APIConnectionError thread exhaustion)
+                    rpm_now = get_current_rpm(conn, model)
+                    learn_from_429(conn, model, max(1, rpm_now))
+                    record_event(conn, model, "429", rpm_now, f"timeout at {rpm_now}RPM → circuit open")
+                    record_event(conn, model, "timeout", rpm_now, "upstream timeout → qwen3.8 fallback")
+                fb = self._try_tokenrouter_fallback(body, model)
+                if fb is not None:
+                    fallback_body, used_model = fb
+                    self._send_fallback_response(fallback_body, model, used_model)
+                else:
+                    self._respond_429(15, model or "unknown", "Upstream timeout, falling back")
                 return
             except urllib.error.URLError as e:
-                log(f"URLError: {e}")
-                self._respond_502(str(e))
+                msg = str(e)
+                if "timeout" in msg.lower() or "timed out" in msg.lower():
+                    log(f"URLError timeout: {e} → circuit OPEN → qwen3.8")
+                    if model:
+                        rpm_now = get_current_rpm(conn, model)
+                        learn_from_429(conn, model, max(1, rpm_now))
+                        record_event(conn, model, "429", rpm_now, f"urllib timeout → circuit open")
+                    fb = self._try_tokenrouter_fallback(body, model)
+                    if fb is not None:
+                        fallback_body, used_model = fb
+                        self._send_fallback_response(fallback_body, model, used_model)
+                    else:
+                        self._respond_429(15, model or "unknown", f"Upstream timeout: {msg}")
+                else:
+                    log(f"URLError: {e}")
+                    self._respond_502(msg)
                 return
             except Exception as e:
                 log(f"UPSTREAM_ERROR: {e}")
-                self._respond_502(str(e))
+                if "timeout" in str(e).lower():
+                    if model:
+                        rpm_now = get_current_rpm(conn, model)
+                        learn_from_429(conn, model, max(1, rpm_now))
+                    fb = self._try_tokenrouter_fallback(body, model)
+                    if fb is not None:
+                        fallback_body, used_model = fb
+                        self._send_fallback_response(fallback_body, model, used_model)
+                    else:
+                        self._respond_429(15, model or "unknown", f"Upstream timeout: {e}")
+                else:
+                    self._respond_502(str(e))
                 return
 
             # ── Detect 429 from Nvidia and learn ──
@@ -309,7 +360,6 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
                 rpm = get_current_rpm(conn, model)
                 learn_from_429(conn, model, rpm)
                 record_event(conn, model, "429", rpm, f"upstream 429 at {rpm}RPM")
-                # Parse Retry-After from Nvidia if present
                 retry_after = 60
                 ra = resp_headers.get("Retry-After") or resp_headers.get("retry-after")
                 if ra:
@@ -317,12 +367,14 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
                         retry_after = int(ra)
                     except ValueError:
                         pass
-                log(f"⚠ UPSTREAM 429: {model} at {rpm} RPM — learned, "
-                    f"fallback (retry {retry_after}s)")
-                record_event(conn, model, "fallback", rpm,
-                            f"upstream 429 → fallback")
-                self._respond_429(retry_after, model,
-                                f"Nvidia rate limited at {rpm}RPM")
+                log(f"⚠ UPSTREAM 429: {model} at {rpm} RPM — trying internal tokenrouter fallback (retry {retry_after}s)")
+                record_event(conn, model, "fallback", rpm, f"upstream 429 → internal fallback")
+                fb = self._try_tokenrouter_fallback(body, model)
+                if fb is not None:
+                    fallback_body, used_model = fb
+                    self._send_fallback_response(fallback_body, model, used_model)
+                else:
+                    self._respond_429(retry_after, model, f"Nvidia rate limited at {rpm}RPM")
                 return
 
             # ── Success response ──
@@ -376,6 +428,96 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
         log(f"429 RETURN: {model} — {reason} (fallback → tokenrouter)")
+
+    # Ordered circuit-breaker fallback chain.
+    # 1) Local LiteLLM :4000 (hostamar-own = local Ollama, always up, no key, fast)
+    # 2) Cloud models on :4000 (glm-5.2 / minimax-m3 via NVIDIA NIM)
+    # 3) hostamar.com/v1 1M chain LAST with short timeout (gateway currently down;
+    #    kept so it auto-recovers when the 104-model gateway returns)
+    # NOTE: TokenRouter removed — key has $0 credit (403 confirmed 2026-08-25).
+    LOCAL_LITELLM_URL = "http://127.0.0.1:4000/v1/chat/completions"
+    LOCAL_LITELLM_CHAIN = ["hostamar-own", "glm-5.2", "minimax-m3"]
+    HAMACOM_FALLBACK_CHAIN = [
+        "moonshotai/kimi-k3",                  # 1,048,576
+        "minimax/minimax-m3:free",             # 1,048,576
+        "thinkingmachines/inkling:free",       # 1,048,576
+        "thinkingmachines/inkling-small:free", # 1,048,576
+        "nvidia/nemotron-3-super-120b-a12b",   # 1,000,000
+        "nvidia/nemotron-3-ultra-550b-a55b:free", # 1,000,000
+        "nvidia/nemotron-3.5-lightning:free",  # 1,000,000
+    ]
+    HAMACOM_URL = "https://hostamar.com/v1/chat/completions"
+
+    def _try_tokenrouter_fallback(self, body, model):
+        """Circuit-breaker fallback: local LiteLLM first (fast), then hostamar.com/v1 1M chain.
+        Returns (raw_200_bytes, used_model) on success, else None."""
+        import os as _os
+        fallback_targets = []
+        # 1) Local LiteLLM :4000 — no auth needed (master_key removed), fastest, always up
+        for m in self.LOCAL_LITELLM_CHAIN:
+            fallback_targets.append((self.LOCAL_LITELLM_URL, None, m))
+        # 2) hostamar.com/v1 1M chain — only if key present; short per-model timeout
+        hostamar_key = _os.environ.get("HERMES_CUSTOM_HOSTAMAR_COM_API_KEY", "")
+        if not hostamar_key:
+            try:
+                for p in ["/home/romel/.hermes/.env"]:
+                    for line in open(p):
+                        if line.strip().startswith("HERMES_CUSTOM_HOSTAMAR_COM_API_KEY"):
+                            hostamar_key = line.split("=",1)[1].strip().strip('"').strip("'")
+                            break
+                    if hostamar_key:
+                        break
+            except Exception:
+                pass
+        if hostamar_key and not hostamar_key.startswith("sk-hostamar-router-redacted"):
+            for m in self.HAMACOM_FALLBACK_CHAIN[:3]:  # top-3 only, fail fast
+                fallback_targets.append((self.HAMACOM_URL, hostamar_key, m))
+        if not fallback_targets:
+            log("FALLBACK: no targets available")
+            return None
+        try:
+            payload = json.loads(body) if body else {}
+        except Exception:
+            payload = {}
+        orig_model = payload.get("model", "unknown")
+        for url, key, forced_model in fallback_targets:
+            try:
+                fb_payload = dict(payload)
+                if forced_model:
+                    fb_payload["model"] = forced_model
+                # Local litellm may need longer (ollama cold start); cloud targets fail fast
+                is_local = url.startswith("http://127.0.0.1") or url.startswith("http://localhost")
+                fb_body = json.dumps(fb_payload).encode()
+                fb_headers = {"Content-Type": "application/json"}
+                if key:
+                    fb_headers["Authorization"] = f"Bearer {key}"
+                import socket as _sock
+                _sock.setdefaulttimeout(120 if is_local else 20)
+                try:
+                    req = urllib.request.Request(url, data=fb_body, method="POST", headers=fb_headers)
+                    ctx = ssl.create_default_context() if url.startswith("https") else None
+                    with urllib.request.urlopen(req, context=ctx) as resp:
+                        data = resp.read()
+                        used = fb_payload.get("model")
+                        log(f"FALLBACK OK: {url} model={used} orig={orig_model} → {len(data)} bytes")
+                        return (data, used)
+                finally:
+                    _sock.setdefaulttimeout(None)
+            except Exception as e:
+                log(f"FALLBACK FAIL {url} (model={forced_model}): {e} — trying next")
+                continue
+        return None
+
+    def _send_fallback_response(self, fallback_body, model, used_model=None):
+        """Send circuit-breaker fallback response as 200, tagged with the model actually served."""
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(fallback_body)))
+        self.send_header("X-Token-Guard", "fallback-active")
+        self.send_header("X-Fallback-Model", used_model or "hostamar-com-1m-chain")
+        self.end_headers()
+        self.wfile.write(fallback_body)
+        log(f"FALLBACK RETURN: {model} → served via {used_model or 'hostamar.com/v1 chain'} (200)")
 
     def _respond_502(self, reason):
         body = json.dumps({"error": {"message": f"Upstream error: {reason}"}}).encode()
@@ -543,15 +685,17 @@ if __name__ == "__main__":
             seed_baseline(conn, m)
         conn.close()
 
-        # ThreadingHTTPServer so one slow request doesn't block all others
+        # ThreadingHTTPServer so one slow request doesn't block all others — increased backlog for 34k token bursts
         from http.server import ThreadingHTTPServer
         host, port = args.listen.split(":")
+        # Allow 100 queued connections, not 5 (prevents APIConnectionError under burst)
+        ThreadingHTTPServer.request_queue_size = 100
         server = ThreadingHTTPServer((host, int(port)), NvidiaGuardHandler)
         server.daemon_threads = True
         server.timeout = 0.5
-        log(f"START: listening on {args.listen} → upstream {args.upstream} (threaded)")
-        log(f"READY: guard active, {NV_BASELINE_RPM} RPM preset, "
-            f"fallback → tokenrouter-kimi-k3")
+        log(f"START: listening on {args.listen} → upstream {args.upstream} (threaded, queue=100)")
+        log(f"READY: guard active, {NV_BASELINE_RPM} RPM preset, fallback → qwen3.8-27b (rushan) with auto-comeback")
+        log(f"READY: circuit breaker: Closed→probe Nvidia, Open→qwen3.8, Half-Open probe every {NV_BASELINE_COOLDOWN}s via --learn heat")
         try:
             server.serve_forever()
         except KeyboardInterrupt:

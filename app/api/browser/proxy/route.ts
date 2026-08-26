@@ -4,6 +4,26 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const ALLOWED_PROTOCOLS = new Set(['https:', 'http:']);
 
+// Hosts/IPs that must never be proxied (SSRF guard).
+const BLOCKED_HOSTS = new Set([
+  'localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]',
+  '169.254.169.254', // cloud metadata
+  'metadata.google.internal',
+]);
+
+function isPrivateIp(hostname: string): boolean {
+  const m = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!m) return false;
+  const a = parseInt(m[1], 10);
+  const b = parseInt(m[2], 10);
+  if (a === 10 || a === 127) return true; // 10.0.0.0/8, loopback
+  if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
+  if (a === 192 && b === 168) return true; // 192.168.0.0/16
+  if (a === 169 && b === 254) return true; // link-local incl. metadata
+  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+  return false;
+}
+
 function sanitizeRedirectUrl(raw: string): { url: string; error?: string } {
   const trimmed = raw.trim();
   if (!trimmed) return { url: '', error: 'URL is required' };
@@ -17,6 +37,15 @@ function sanitizeRedirectUrl(raw: string): { url: string; error?: string } {
   if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
     return { url: '', error: 'Unsupported protocol' };
   }
+
+  const host = parsed.hostname.toLowerCase();
+  if (BLOCKED_HOSTS.has(host) || host.endsWith('.internal') || host.endsWith('.local')) {
+    return { url: '', error: 'Blocked host' };
+  }
+  if (isPrivateIp(host)) {
+    return { url: '', error: 'Blocked host' };
+  }
+
   return { url: parsed.href };
 }
 

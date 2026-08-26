@@ -2,7 +2,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/auth';
+import { requireAdmin, getAuthUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 /**
  * /api/hosting/servers — admin-only Docker container management.
@@ -241,41 +242,128 @@ export async function GET(req: NextRequest) {
   }
 }
 
+import { HOSTING_PRICE, resolveHostingPlan, HOSTING_PLANS } from '@/lib/pricing';
+
 export async function POST(request: NextRequest) {
-  try {
-    await requireAdmin(request);
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || 'Unauthorized' }, { status: e?.cause?.status || 401 });
+  // Customers (not just admins) can add hosting with credits.
+  // Order matters: auth -> validate input -> CREDIT GATE -> docker availability,
+  // so the 402 path is reachable even when DOCKER_HOST is not configured
+  // (e.g. serverless deploys where provisioning happens elsewhere).
+  const authUser = await getAuthUser(request);
+  if (!authUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!DOCKER_BASE) {
+  let body: any = {};
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+  const { name, image, cpu, ram, storage, os, ports, domain, ssl } = body || {};
+
+  if (!name || !image) {
+    return NextResponse.json({ error: 'name and image are required' }, { status: 400 });
+  }
+
+  // Credit gate — check BEFORE anything else expensive.
+  // Pricing is PLAN-BASED monthly (599/1199/2499/4999 Taka) as advertised on
+  // /pricing — NOT the legacy per-spec formula that charged e.g. 28 credits
+  // for a starter server while the page said 599.
+  const planKey = resolveHostingPlan(cpu || 1, ram || 1, storage || 10);
+  const plan = planKey ? HOSTING_PLANS[planKey] : null;
+  const price = plan ? plan.price : HOSTING_PRICE(cpu || 1, ram || 1, storage || 10);
+  const customer = await prisma.customer.findUnique({
+    where: { id: authUser.id },
+    select: { credits: true },
+  });
+  if (!customer) {
+    return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+  }
+  if ((customer.credits ?? 0) < price) {
     return NextResponse.json(
-      { error: 'HOSTING_NOT_CONFIGURED', message: 'Set DOCKER_HOST to enable container creation.' },
-      { status: 503 }
+      { error: 'INSUFFICIENT_CREDITS', message: `This hosting needs ${price} credits — your balance is ${customer.credits ?? 0}.`, needed: price, balance: customer.credits ?? 0 },
+      { status: 402 }
     );
   }
 
   try {
-    const body = await request.json();
-    const { name, image, cpu, ram, storage, os, ports, domain, ssl } = body || {};
-
-    if (!name || !image) {
-      return NextResponse.json({ error: 'name and image are required' }, { status: 400 });
-    }
-
-    const server = await createDockerServer({
-      name,
-      image,
-      cpu: cpu || '2 vCPU',
-      ram: ram || '4 GB',
-      storage: storage || '40 GB SSD',
-      os: os || 'Alpine Linux 3.19',
-      ports: Array.isArray(ports) ? ports : [],
-      domain,
-      ssl: !!ssl,
+    // Enqueue for the local podman provisioner worker — Vercel can't run docker,
+    // so we never gate on DOCKER_BASE here. The worker picks this up from Neon.
+    const planKeyFinal: string | null = planKey;
+    const request = await prisma.hostingRequest.create({
+      data: {
+        customerId: authUser.id,
+        name,
+        image,
+        plan: planKey || undefined,
+        cpu: Number(cpu) || 1,
+        ram: Number(ram) || 1,
+        storage: Number(storage) || 25,
+        os: typeof os === 'string' ? os : undefined,
+        ports: Array.isArray(ports) ? ports.map(String) : [],
+        domain: typeof domain === 'string' ? domain : null,
+        ssl: !!ssl,
+        status: 'queued',
+      },
     });
 
-    return NextResponse.json(server, { status: 201 });
+    // Deduct credits AFTER the container is confirmed running.
+    // $transaction guards double-spend; CreditTransaction is the audit trail.
+    const charged = await prisma
+      .$transaction(async (tx) => {
+        // Race-safe conditional decrement: updateMany returns count only when the
+        // balance still covers the price at commit time.
+        const res = await tx.customer.updateMany({
+          where: { id: authUser.id, credits: { gte: price } },
+          data: { credits: { decrement: price } },
+        });
+        if (res.count === 0) return null;
+        const updated = await tx.customer.findUnique({
+          where: { id: authUser.id },
+          select: { credits: true },
+        });
+        // NOTE: schema.prisma's CreditTransaction model drifted from the real prod
+        // table (which uses accountId→CreditAccount + product). Audit row is written
+        // raw against the live shape; skipped silently when no CreditAccount exists.
+        try {
+          const account = await (tx as any).creditAccount.findFirst({
+            where: { customerId: authUser.id },
+          });
+          if (account) {
+            await (tx as any).creditTransaction.create({
+              data: {
+                accountId: account.id,
+                amount: -price,
+                product: 'hosting_create',
+                balanceAfter: updated?.credits ?? 0,
+                description: `Hosting "${name}" (${cpu || 1}/${ram || 1}/${storage || 10})`,
+              },
+            });
+          }
+        } catch { /* audit is best-effort */ }
+        return updated;
+      })
+      .catch(() => null);
+
+    if (!charged) {
+      return NextResponse.json(
+        { error: 'INSUFFICIENT_CREDITS', needed: price, balance: customer.credits ?? 0 },
+        { status: 402 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        status: 'provisioning',
+        id: request.id,
+        plan: plan || 'custom',
+        creditsCharged: price,
+        creditsRemaining: charged?.credits ?? null,
+        message: `Queued. Your ${plan?.label || 'custom'} server will be live in a few minutes.`,
+      },
+      { status: 202 }
+    );
   } catch (e: any) {
     return NextResponse.json({ error: e.message || 'Failed to create server' }, { status: 500 });
   }

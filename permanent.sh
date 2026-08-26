@@ -161,3 +161,4 @@ print("history row written")
 PY
 
 log "=== permanent.sh done ==="
+bash /home/romel/hostamar-build/longcat-boot.sh &

@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, useRef } from 'react'
+import { DASHBOARD_ROUTES } from '@/lib/dashboard-routes'
 import Link from 'next/link'
 import {
   Video, Server, CreditCard, TrendingUp, Play, Clock, Sparkles,
@@ -24,11 +25,7 @@ const PRODUCT_ICON: Record<string, typeof Video> = {
   'ai-video': Video, 'cloud-hosting': Server, 'ai-chat': MessageCircle,
   'ai-browser': Globe, 'dev-ide': Code2, game: Gamepad2,
 }
-const DASH_ROUTES: Record<string, string> = {
-  'ai-video': '/dashboard/videos', 'cloud-hosting': '/dashboard/hosting',
-  'ai-chat': '/chat', 'ai-browser': '/browser',
-  'dev-ide': '/ide', game: '/game',
-}
+
 const COST_HINT: Record<string, string> = {
   'ai-video': '100cr', 'cloud-hosting': '0cr', 'ai-chat': '1cr/msg',
   'ai-browser': '5cr', 'dev-ide': '10cr/run', game: '20cr/play',
@@ -228,7 +225,7 @@ export default function DashboardPage() {
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {PRODUCT_NAV.map(p => {
                 const Icon = PRODUCT_ICON[p.slug] ?? Video
-                const href = DASH_ROUTES[p.slug] ?? '/dashboard'
+                const href = DASHBOARD_ROUTES[p.slug] ?? '/dashboard'
                 const isActive = activeProduct === p.slug
                 return (
                   <button
@@ -369,7 +366,7 @@ export default function DashboardPage() {
       <div className="sticky bottom-4 z-10">
         <div className="mx-auto max-w-3xl rounded-full bg-[#0F172A] text-white px-4 py-3 flex items-center justify-between gap-3 shadow-xl border border-white/10">
           <span className="text-sm"><span className="font-bold">{shownCredits.toLocaleString()} credit</span> • {COST_HINT[activeProduct] || '—'} per use</span>
-          <Link href={DASH_ROUTES[activeProduct] ?? '/dashboard'} className="shrink-0 rounded-full bg-[#0E7C3A] px-5 py-2 text-sm font-bold hover:bg-[#0c6a32] flex items-center gap-2">
+          <Link href={DASHBOARD_ROUTES[activeProduct] ?? '/dashboard'} className="shrink-0 rounded-full bg-[#0E7C3A] px-5 py-2 text-sm font-bold hover:bg-[#0c6a32] flex items-center gap-2">
             Use now <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

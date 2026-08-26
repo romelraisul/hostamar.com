@@ -1,0 +1,71 @@
+# Hostamar production stack — PODMAN ONLY (no docker)
+# Run on the VPS (or locally):  podman-compose -f podman-compose.yml up -d
+# Systemd quadlets are the preferred prod form — see docs/PRODUCTION_PODMAN.md
+version: "3.8"
+
+networks:
+  hostamar-net:
+    external: true
+
+volumes:
+  openwebui-data:
+  ide-data:
+  uptime-data:
+
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: hostamar-openwebui
+    ports:
+      - "3003:8080"
+    environment:
+      OPENAI_API_BASE_URL: https://openrouter.ai/api/v1
+      OPENAI_API_KEY: ${OPENROUTER_API_KEY}
+      WEBUI_NAME: Hostamar AI
+      ENABLE_SIGNUP: "false"
+      DEFAULT_USER_ROLE: pending
+    volumes:
+      - openwebui-data:/app/backend/data
+    networks:
+      - hostamar-net
+    restart: unless-stopped
+
+  code-server:
+    image: docker.io/codercom/code-server:latest
+    container_name: hostamar-code-server
+    ports:
+      - "8443:8080"
+    environment:
+      PASSWORD: ${IDE_PASSWORD:-change-me}
+    volumes:
+      - ide-data:/home/coder
+    networks:
+      - hostamar-net
+    restart: unless-stopped
+
+  hosting-provisioner:
+    image: docker.io/library/node:22-alpine
+    container_name: hostamar-provisioner
+    working_dir: /app
+    # rootless podman on the host socket; on the VPS run podman system service first
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      POLL_INTERVAL: "10"
+    volumes:
+      - ./apps/provisioner/worker.mjs:/app/worker.mjs:ro
+      - /run/user/1000/podman/podman.sock:/run/podman/podman.sock
+    command: sh -c "npm i --omit=dev @prisma/client && node worker.mjs"
+    networks:
+      - hostamar-net
+    restart: unless-stopped
+
+  uptime-kuma:
+    image: docker.io/louislam/uptime-kuma:1
+    container_name: hostamar-uptime
+    ports:
+      - "3002:3001"
+    volumes:
+      - uptime-data:/app/data
+    networks:
+      - hostamar-net
+    restart: unless-stopped

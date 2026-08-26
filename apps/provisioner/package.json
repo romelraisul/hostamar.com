@@ -1,0 +1,9 @@
+{
+  "name": "hostamar-provisioner",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "prisma": "^8.0.0-rc.10"
+  }
+}

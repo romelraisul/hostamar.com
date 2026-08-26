@@ -62,7 +62,7 @@ model Customer {
   stage            String?   @default("lead")
   source           String?   @default("website")
   score            Int?      @default(0)
-  credits          Int       @default(0)
+  credits          Float     @default(0)
   notes            String?
   referralCode     String?   @unique
   referredBy       String?
@@ -77,6 +77,7 @@ model Customer {
   payments          Payment[]
   transactions      Transaction[]
   creditTransactions CreditTransaction[]
+  hostingRequests    HostingRequest[]
   orders            Order[]
   paymentVerifications PaymentVerification[]
   affiliateEarnings AffiliateCommission[] @relation("AffiliateEarnings")
@@ -1376,4 +1377,33 @@ model TvVideoStats {
 
   @@index([isViral])
   @@index([viralScore])
+}
+
+// Hosting provisioning queue — Vercel frontend enqueues, local podman
+// provisioner worker claims and runs. Replaces direct docker calls that 503.
+model HostingRequest {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name     String
+  image    String
+  plan     String? // starter | basic | pro | premium
+  cpu      Int     @default(1)
+  ram      Int     @default(1)
+  storage  Int     @default(25)
+  os       String?
+  ports    String[]
+  domain   String?
+  ssl      Boolean @default(false)
+
+  status     String   @default("queued") // queued | provisioning | running | failed | cancelled
+  error      String?
+  containerId String?
+  ip         String?
+
+  creditsCharged Int @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

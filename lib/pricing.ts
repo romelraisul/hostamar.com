@@ -62,3 +62,59 @@ export const PLANS: Plan[] = [
 ]
 
 export const CURRENCY = 'BDT'
+
+
+// ============================================================================
+// Credit pricing (single source of truth for API + dashboard hints)
+// ============================================================================
+
+/** Hosting creation cost in credits. */
+export function HOSTING_PRICE(cpu = 1, ram = 1, storage = 10): number {
+  return Math.ceil(cpu) * 10 + Math.ceil(ram) * 5 + Math.ceil(storage / 2)
+}
+
+/** Welcome credits granted at signup (2026-08-26). */
+export const WELCOME_CREDITS = 6000
+
+// ============================================================================
+// Production hosting plans — 1 credit = 1 Taka, market-based (2026-08)
+// Sources: Hetzner CX22 €3.79-5.83/mo, DO $12/mo, Vultr $10/mo
+// ============================================================================
+
+export type HostingPlanKey = 'starter' | 'basic' | 'pro' | 'premium'
+
+export const HOSTING_PLANS: Record<HostingPlanKey, {
+  cpu: number; ram: number; storage: number; price: number; hourly: number; label: string
+}> = {
+  starter: { cpu: 1, ram: 1, storage: 25, price: 599, hourly: 1, label: 'Starter' },
+  basic:   { cpu: 2, ram: 2, storage: 50, price: 1199, hourly: 2, label: 'Basic' },
+  pro:     { cpu: 2, ram: 4, storage: 80, price: 2499, hourly: 4, label: 'Pro' },
+  premium: { cpu: 4, ram: 8, storage: 160, price: 4999, hourly: 8, label: 'Premium' },
+}
+
+/** Per-token chat rates (Taka per 1k tokens) by model class. */
+export const CHAT_RATES: { match: RegExp; takaPer1k: number }[] = [
+  { match: /(opus|o1)/i, takaPer1k: 10 },
+  { match: /(gpt-4o($|[-.])|sonnet|gemini-2\.0-pro)/i, takaPer1k: 3 },
+  { match: /(mini|haiku|flash|glm|kimi|deepseek|qwen|llama)/i, takaPer1k: 0.5 },
+  { match: /llama-?3\.[12]-(8b|7b)|gemma/i, takaPer1k: 0.1 },
+]
+
+export function chatRateFor(modelId: string): number {
+  for (const r of CHAT_RATES) if (r.match.test(modelId)) return r.takaPer1k
+  return 0.5 // safe default
+}
+
+/** Video generation — market: Kling $0.05/s, Luma Ray 2 $0.10/5s. */
+export const VIDEO_PRICE_PER_5S = 150 // credits (Taka)
+
+/** Browser proxy usage. */
+export const BROWSER_PRICE_PER_10_PAGES = 1
+
+/** Resolve a hosting request to its plan + monthly price in Taka. */
+export function resolveHostingPlan(cpu: number, ram: number, storage: number): HostingPlanKey | null {
+  for (const [key, p] of Object.entries(HOSTING_PLANS)) {
+    if (cpu <= p.cpu && ram <= p.ram && storage <= p.storage) return key as HostingPlanKey
+  }
+  return null // bigger than premium → custom quote
+}
