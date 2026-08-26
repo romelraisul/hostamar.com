@@ -82,3 +82,30 @@ Nothing breaks: the model gateway (/v1/*) runs entirely on Vercel.
 Your computer only hosts openwebui/code-server/uptime via Cloudflare Tunnel
 and the provisioner worker. Chat, pricing, credits, hosting queue all keep
 working; queued HostingRequests simply wait until the computer is back online.
+
+
+## R2 + Worker deployment (pending user action)
+
+The CLOUDFLARE_API_TOKEN in .env is DNS-edit scoped only — R2 bucket creation
+and Worker deploys return auth error 10000. To deploy R2+Worker:
+
+1. dash.cloudflare.com/profile/api-tokens → Create Custom Token
+   - Account / Workers Scripts / Edit
+   - Account / Workers Routes / Edit
+   - Account / Account Resources / Read
+   - Account / R2 / Edit
+   - Zone / Zone / Read + DNS / Edit (zone: hostamar.com)
+2. Update CLOUDFLARE_API_TOKEN secret on GitHub repo + Vercel env
+3. Then: wrangler r2 bucket create hostamar-models && upload catalog files,
+   write ai-gateway-worker per docs and `wrangler deploy`
+
+NOTE: this is OPTIONAL for availability — ai.hostamar.com/v1/* already serves
+124 models from Vercel (always-on). R2+Worker adds infra independence only.
+
+## GitHub Action self-heal — LIVE ✓
+
+`.github/workflows/model-heal.yml` verified 2026-08-26:
+run 32945267776 success — regenerated 120 models from live upstreams, wrote
+docs/MODEL_CONTEXT_TABLE.md (120 rows), pong-tested flagships, committed when
+drift detected. Secrets set: KILO_API_KEY, OPENCODE_ZEN_API_KEY,
+CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
