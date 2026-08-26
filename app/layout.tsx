@@ -2,6 +2,7 @@ import './globals.css'
 import localFont from 'next/font/local'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import { defaultSeo } from '@/lib/seo'
 import ThemeToggle from '@/components/ThemeToggle'
 import SupportWidget from '@/components/SupportWidget'
@@ -200,6 +201,9 @@ export default async function RootLayout({
             `,
           }}
         />
+        {/* Google Preferred Sources publisher bridge (official spec 2025-08-20) —
+            loaded once globally; the badge component renders the button. */}
+        <Script async src="https://news.google.com/swg/js/v1/publisher.js" strategy="lazyOnload" />
       </body>
     </html>
   )
