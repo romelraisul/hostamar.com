@@ -26,6 +26,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
 
+  const [allModels, setAllModels] = useState<Model[]>([])
   useEffect(() => {
     fetch('/api/credits/balance').then(r => r.json()).then(d => {
       if (d?.balance) {
@@ -35,6 +36,22 @@ export default function ChatPage() {
         })
       }
     })
+    // Fetch the full 124-model catalog from the always-on gateway
+    fetch('https://ai.hostamar.com/v1/models')
+      .then(r => r.json())
+      .then((d: any) => {
+        const list: Model[] = (d.data || [])
+          .filter((m: any) => m.free === true || String(m.id).includes(':free') || String(m.id).startsWith('opencode/'))
+          .slice(0, 130)
+          .map((m: any) => ({
+            id: m.id,
+            name: m.display_name || m.id,
+            per1k: 0.5,
+            cls: 'cheap',
+          }))
+        setAllModels(list)
+      })
+      .catch(() => {})
   }, [])
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs, busy])
 
@@ -90,13 +107,20 @@ export default function ChatPage() {
         <label className="text-xs font-semibold text-slate-500">Model</label>
         <select
           value={model.id}
-          onChange={e => setModel(PRESET.find(m => m.id === e.target.value) || PRESET[0])}
+          onChange={e => setModel([...PRESET, ...allModels].find(m => m.id === e.target.value) || PRESET[0])}
           className="rounded-lg border bg-white px-2 py-1.5 text-sm font-semibold">
-          {PRESET.map(m => (
-            <option key={m.id} value={m.id}>
-              {m.name} — {m.per1k} Taka/1k
-            </option>
-          ))}
+          <optgroup label="Proven">
+            {PRESET.map(m => (
+              <option key={`p-${m.id}`} value={m.id}>{m.name} — {m.per1k} Taka/1k</option>
+            ))}
+          </optgroup>
+          {allModels.length > 0 && (
+            <optgroup label="All free models (gateway)">
+              {allModels.filter(m => !PRESET.some(p => p.id === m.id)).map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </optgroup>
+          )}
         </select>
         {model.cls === 'premium' && (
           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
