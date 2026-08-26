@@ -1,0 +1,63 @@
+name: Model Catalog Self-Heal
+
+on:
+  schedule:
+    - cron: '0 * * * *' # hourly
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  heal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Regenerate catalog from live upstreams
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          KILOCODE_API_KEY: ${{ secrets.KILOCODE_API_KEY }}
+          OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: node scripts/gen-model-catalog.mjs
+
+      - name: Fix context lengths from live docs
+        run: node scripts/gen-context-table.mjs
+
+      - name: Pong-test flagship free models
+        if: env.OPENCODE_ZEN_API_KEY != ''
+        run: |
+          cat > /tmp/pong.mjs <<'PONG'
+          const key = process.env.OPENCODE_ZEN_API_KEY
+          for (const model of ['opencode/x-preview-f-free', 'opencode/hy3-free']) {
+            try {
+              const r = await fetch('https://opencode.ai/zen/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+                body: JSON.stringify({ model, messages: [{ role: 'user', content: 'say pong' }], max_tokens: 5 }),
+                signal: AbortSignal.timeout(15000),
+              })
+              const d = await r.json().catch(() => ({}))
+              const reply = d?.choices?.[0]?.message?.content || ''
+              console.log(`${model}: ${r.ok && reply ? 'PONG ✓' : `FAIL (${r.status})`}`)
+            } catch (e) { console.log(`${model}: FAIL (${e.message})`) }
+          }
+          PONG
+          OPENCODE_ZEN_API_KEY="$OPENCODE_ZEN_API_KEY" node /tmp/pong.mjs
+
+      - name: Commit + push regenerated catalog
+        run: |
+          git config user.name "model-heal-bot"
+          git config user.email "bot@hostamar.com"
+          git add lib/gateway/model-catalog.generated.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: model catalog self-heal $(date -u +%FT%TZ)"
+            git push
+          else
+            echo "no changes"
+          fi
