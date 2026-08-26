@@ -1,0 +1,11 @@
+name = "hostamar-ai-gateway"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+account_id = "e00717304c1139751214b8cda5078a8d"
+
+routes = [
+  { pattern = "ai.hostamar.com/*", zone_name = "hostamar.com" }
+]
+
+[vars]
+KILO_API_BASE = "https://api.kilo.ai/api/gateway"
