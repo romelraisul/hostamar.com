@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     const rate = chatRateFor(model)
 
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 8000)
+    const timer = setTimeout(() => controller.abort(), 20000)
     const isEdge = prov.provider === 'kilo-edge'
     const upRes = await fetch(`${prov.base}/chat/completions`, {
       method: 'POST',
