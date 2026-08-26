@@ -71,10 +71,10 @@ Generated at repo root by `/tmp/gen_route_map.sh` logic (inline node script):
 - ROUTE_MAP.json — id → { upstream, realId, stripPrefix, free, context_length }
 - MODEL_CATALOG.json — full 120-model snapshot with generatedAt timestamp
 
-These are the source-of-truth exports for external consumers (R2 upload,
-Worker deploy) when a Cloudflare token with R2/Workers permissions is added.
-Current CLOUDFLARE_API_TOKEN is DNS-edit scoped only — R2 bucket creation and
-Worker deploys return auth error 10000 until a scoped token is provided.
+These are the source-of-truth exports for external consumers (GitHub raw is
+Tier-2, KV cache Tier-1 — see docs/NO_CARD_R2_ALTERNATIVE.md). The old R2 plan
+was dropped 2026-08-26: Cloudflare R2 needs a card on the account (err 10042),
+so the Worker reads KV -> GitHub raw -> embedded snapshot instead. No card.
 
 ## Always-on behavior when your computer is OFF
 
@@ -84,23 +84,12 @@ and the provisioner worker. Chat, pricing, credits, hosting queue all keep
 working; queued HostingRequests simply wait until the computer is back online.
 
 
-## R2 + Worker deployment (pending user action)
+## R2 — REPLACED by no-card tiers (2026-08-26)
 
-The CLOUDFLARE_API_TOKEN in .env is DNS-edit scoped only — R2 bucket creation
-and Worker deploys return auth error 10000. To deploy R2+Worker:
-
-1. dash.cloudflare.com/profile/api-tokens → Create Custom Token
-   - Account / Workers Scripts / Edit
-   - Account / Workers Routes / Edit
-   - Account / Account Resources / Read
-   - Account / R2 / Edit
-   - Zone / Zone / Read + DNS / Edit (zone: hostamar.com)
-2. Update CLOUDFLARE_API_TOKEN secret on GitHub repo + Vercel env
-3. Then: wrangler r2 bucket create hostamar-models && upload catalog files,
-   write ai-gateway-worker per docs and `wrangler deploy`
-
-NOTE: this is OPTIONAL for availability — ai.hostamar.com/v1/* already serves
-124 models from Vercel (always-on). R2+Worker adds infra independence only.
+R2 bucket creation returns err 10042 (account has no card/billing). Superseded
+by the 4-tier no-card architecture in docs/NO_CARD_R2_ALTERNATIVE.md:
+KV (primary) -> GitHub raw (source of truth) -> MinIO on your computer (bulk)
+-> Neon Postgres (backup). The Worker already reads KV + GitHub; nothing pending.
 
 ## GitHub Action self-heal — LIVE ✓
 
