@@ -11,13 +11,8 @@ export const runtime = 'nodejs'
  * Writes to Neon market_adjustment { suggestedPrice, currentPrice, diff%, status: pending_approval }
  */
 export async function GET(req: NextRequest) {
-  const isVercelCron = req.headers.get('x-vercel-cron') === '1'
-  const CRON_SECRET = process.env.CRON_SECRET || ''
-  if (!isVercelCron && CRON_SECRET) {
-    const auth = req.headers.get('authorization') || ''
-    const q = req.nextUrl.searchParams.get('secret') || ''
-    if (auth !== `Bearer ${CRON_SECRET}` && q !== CRON_SECRET) return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // Public read for customer /pricing + admin /admin/market; write still gated via /api/admin/market-approve.
+  // Cron (x-vercel-cron) persists to Neon; direct public GET just computes live Binance+$HOSTA.
 
   const binance = await getBinanceRate().catch(()=>({ usdtBdt: 126.24, source:'fallback', updatedAt: new Date().toISOString() }))
   // Dexscreener $HOSTA (placeholder token address — fallback to mock if not found)
