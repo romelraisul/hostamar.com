@@ -83,6 +83,9 @@ export async function middleware(request: NextRequest) {
   const publicApiPaths = [
     '/api/auth/login',
     '/api/auth/register',
+    '/api/auth/sso/start',
+    '/api/auth/sso/callback',
+    '/api/auth/sso/verify',
     '/api/health',
     '/api/auth/signup',
     '/api/auth/forgot-password',
