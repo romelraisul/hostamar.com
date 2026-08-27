@@ -140,7 +140,10 @@ export default function SignupPage() {
         setLoading(false)
         return
       }
-      if (typeof window !== 'undefined') window.localStorage.setItem('auth_token', loginData.token)
+      if (typeof window !== 'undefined') {
+        document.cookie = `auth_token=${loginData.token};path=/;max-age=31536000`
+        window.localStorage.setItem('auth_token', loginData.token)
+      }
       try{ localStorage.removeItem('hostamar_ref') }catch{}
       await signIn('credentials', { email, password, redirect: false })
       router.push('/dashboard')

@@ -53,6 +53,7 @@ export default function LoginPage() {
         return
       }
       if (data.token && typeof window !== 'undefined') {
+        document.cookie = `auth_token=${data.token};path=/;max-age=31536000`
         window.localStorage.setItem('auth_token', data.token)
       }
       router.push('/dashboard')
