@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
 import { promises as fs } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
@@ -10,6 +11,8 @@ export const runtime = 'nodejs'
 const WORKSPACE_ROOT = path.join(process.cwd(), 'tmp', 'ide-workspace')
 
 export async function POST(request: NextRequest) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await request.json().catch(() => ({}))
     const mode = (body as any).mode || 'tarball'

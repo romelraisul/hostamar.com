@@ -1,18 +1,20 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
-import { env } from '@/lib/env'
 
 // The queue process route is designed to work on Vercel by setting DB state only.
 // Actual video rendering runs on the local Windows machine via the cron worker.
 // This avoids bundling @remotion/renderer (FFmpeg binaries) on Vercel.
 
 export async function POST(req: NextRequest) {
+  const _auth = await getAuthUser(req as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { secret } = await req.json().catch(() => ({ secret: '' }))
     
-    const queueSecret = env.QUEUE_SECRET || '***REDACTED***'
+    const queueSecret = process.env.QUEUE_SECRET || '***REDACTED***'
     if (secret !== queueSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
 import prisma from '@/lib/prisma'
 import { LRUCache } from '@/lib/cache'
 
@@ -73,6 +74,8 @@ function videoText(video: {
 // POST /api/search
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
+  const _auth = await getAuthUser(req as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await req.json().catch(() => ({}))
     const query = (body.query ?? '').trim()
@@ -157,4 +160,4 @@ export async function POST(req: NextRequest) {
     console.error('[search] Error:', error.message)
     return NextResponse.json({ error: 'Search failed' }, { status: 500 })
   }
-}
+}

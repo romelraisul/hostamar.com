@@ -43,13 +43,8 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
     }
   }
 
-  // Method 4: Headers set by middleware (after Edge JWT verification)
-  const headerId = req.headers.get('x-user-id')
-  const headerEmail = req.headers.get('x-user-email')
-  const headerName = req.headers.get('x-user-name')
-  if (headerId) {
-    return { id: headerId, email: headerEmail || '', name: headerName || '' }
-  }
-
+  // NOTE: x-user-* headers are NOT trusted — client can forge them.
+  // Middleware sets them after verifying JWT, but we must not trust them
+  // in Node. All auth is via verifyToken above. Headers removed to close forgery.
   return null
 }

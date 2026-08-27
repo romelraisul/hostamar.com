@@ -1,9 +1,23 @@
 export const dynamic = 'force-dynamic'
 
-import { NextRequest, NextResponse } from 'next/server';
-import { env } from '@/lib/env'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
+
+function isBlockedHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || h.endsWith('.localhost')) return true;
+  if (h === '169.254.169.254' || h === 'metadata.google.internal') return true;
+  if (h.startsWith('10.')) return true;
+  if (h.startsWith('192.168.')) return true;
+  if (h.match(/^172\.(1[6-9]|2\d|3[0-1])\./)) return true;
+  if (h === '0.0.0.0') return true;
+  return false;
+}
+;
 
 export async function POST(request: NextRequest) {
+  const _auth = await getAuthUser(request);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await request.json();
     const { url } = body;
@@ -13,8 +27,9 @@ export async function POST(request: NextRequest) {
     }
 
     const target = new URL(url);
+    if (isBlockedHost(target.hostname)) return NextResponse.json({ error: 'Blocked host' }, { status: 403 });
 
-    const canvasServer = `${env.CAMOFOX_HOST || 'http://localhost:4000'}/api/canvas`;
+    const canvasServer = `${process.env.CAMOFOX_HOST || 'http://localhost:4000'}/api/canvas`;
     const canvasRes = await fetch(canvasServer, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -29,7 +44,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const screenshotServer = `${env.CAMOFOX_HOST || 'http://localhost:4000'}/api/screenshot`;
+    const screenshotServer = `${process.env.CAMOFOX_HOST || 'http://localhost:4000'}/api/screenshot`;
     const screenshotRes = await fetch(screenshotServer, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

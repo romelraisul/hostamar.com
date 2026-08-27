@@ -1,10 +1,13 @@
 export const dynamic = 'force-dynamic'
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user';
 import { getLogFiles, readLogFile, searchLogs } from '@/lib/logger';
 import type { LogLevel } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
+  const _auth = await getAuthUser(request);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
   const level = searchParams.get('level') as LogLevel | null;
@@ -82,4 +85,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+}

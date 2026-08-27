@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user';
 import { execSync } from 'child_process';
 
 interface ServiceHealth {
@@ -173,4 +174,4 @@ export async function GET() {
     // Prometheus-compatible numeric status values
     metrics,
   });
-}
+}

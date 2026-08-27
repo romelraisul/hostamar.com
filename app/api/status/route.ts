@@ -1,6 +1,7 @@
 // /api/status — PUBLIC status summary (no auth). Returns green/yellow/red per
 // product derived from the Tier1 checks. Cached 30s at the route layer.
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
 import { runAllChecks } from '@/lib/support/checks'
 import { getUserHealthSummary } from '@/lib/support/userHealth'
 

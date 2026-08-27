@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
 import { promises as fs } from 'fs'
 import path from 'path'
 
@@ -24,6 +25,8 @@ function sanitizeFileName(name: string) {
 }
 
 export async function GET(request: NextRequest) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     await ensureRoot()
     const { searchParams } = new URL(request.url)
@@ -62,6 +65,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     await ensureRoot()
     const body = await request.json()
@@ -111,6 +116,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     await ensureRoot()
     const { searchParams } = new URL(request.url)

@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import PromptSuggestions from '@/components/PromptSuggestions'
 
 const MODELS = [
-  { id: 'qwen3.8:latest', label: 'Qwen 3.8' },
+  { id: 'qwen3.6:latest', label: 'Qwen 3.6' },
   { id: 'hermes3:latest', label: 'Hermes 3' },
   { id: 'granite4.1:8b', label: 'Granite 4.1' },
 ]
@@ -246,13 +245,13 @@ export default function AiChatClient() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+    <div className="flex h-[calc(100vh-120px)] bg-white/5 border border-white/10 rounded-xl overflow-hidden relative">
       {/* Mobile sidebar toggle */}
       <button
         onClick={() => setSidebarOpen((prev) => !prev)}
         className="lg:hidden absolute top-4 left-4 z-20 bg-white/10 border border-white/20 rounded-lg p-2"
       >
-        {sidebarOpen ? 'Close' : 'Chats'}
+        {sidebarOpen ? 'বন্ধ করুন' : 'চ্যাট'}
       </button>
 
       {/* Sidebar */}
@@ -263,14 +262,14 @@ export default function AiChatClient() {
       >
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-white">Conversations</h2>
-            <p className="text-xs text-gray-400">Sign in to sync chats</p>
+            <h2 className="text-sm font-semibold text-white">কথোপকথন</h2>
+            <p className="text-xs text-gray-400">চ্যাট সিঙ্ক করতে লগইন করুন</p>
           </div>
           <button
             onClick={createConversation}
-            className="px-3 py-1.5 bg-[#0E7C3A] hover:bg-[#0E7C3A]/100 text-white text-xs rounded-lg transition"
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition"
           >
-            New chat
+            নতুন চ্যাট
           </button>
         </div>
 
@@ -284,7 +283,7 @@ export default function AiChatClient() {
               }}
               className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition ${
                 activeConversationId === c.id
-                  ? 'bg-[#0E7C3A]/100/10 text-[#0E7C3A] border border-#0E7C3A/40'
+                  ? 'bg-blue-500/10 text-blue-300 border border-blue-400/40'
                   : 'text-gray-300 hover:bg-white/5'
               }`}
             >
@@ -302,9 +301,9 @@ export default function AiChatClient() {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-white/10">
           <div>
-            <h1 className="text-sm font-semibold text-white">AI Chat</h1>
+            <h1 className="text-sm font-semibold text-white">এআই চ্যাট</h1>
             <p className="text-xs text-gray-400">
-              Model: <span className="text-yellow-300">{model}</span>
+              মডেল: <span className="text-yellow-300">{model}</span>
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -326,12 +325,12 @@ export default function AiChatClient() {
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {!activeConversationId && (
             <div className="py-20 text-center text-gray-500 text-sm">
-              Create or select a conversation to start chatting.
+              চ্যাট শুরু করতে একটি কথোপকথন তৈরি বা নির্বাচন করুন।
             </div>
           )}
           {activeConversationId && messages.length === 0 && !thinking && (
             <div className="py-20 text-center text-gray-500 text-sm">
-              Start the conversation by typing a message below.
+              নিচে মেসেজ লিখে কথোপকথন শুরু করুন।
             </div>
           )}
 
@@ -348,14 +347,14 @@ export default function AiChatClient() {
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
                   msg.role === 'user'
-                    ? 'bg-[#0E7C3A] text-white rounded-br-sm'
+                    ? 'bg-blue-600 text-white rounded-br-sm'
                     : 'bg-white/10 text-gray-200 rounded-bl-sm'
                 }`}
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
               </div>
               {msg.role === 'user' && (
-                <div className="w-7 h-7 rounded-full bg-[#0E7C3A] flex items-center justify-center shrink-0 mt-1">
+                <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center shrink-0 mt-1">
                   <span className="text-[10px] font-bold text-white">You</span>
                 </div>
               )}
@@ -368,7 +367,7 @@ export default function AiChatClient() {
                 <span className="text-[10px] font-bold text-white">AI</span>
               </div>
               <div className="bg-white/10 text-gray-300 rounded-2xl rounded-bl-sm px-4 py-3 text-xs space-x-1">
-                <span className="animate-pulse">Thinking</span>
+                <span className="animate-pulse">চিন্তা করছে</span>
                 <span className="animate-pulse delay-75">.</span>
                 <span className="animate-pulse delay-150">.</span>
                 <span className="animate-pulse delay-300">.</span>
@@ -382,7 +381,7 @@ export default function AiChatClient() {
                 <span className="text-[10px] text-gray-300">...</span>
               </div>
               <div className="bg-white/10 text-gray-300 rounded-2xl rounded-bl-sm px-4 py-3 text-xs">
-                Generating response...
+                উত্তর তৈরি হচ্ছে...
               </div>
             </div>
           )}
@@ -395,24 +394,23 @@ export default function AiChatClient() {
 
         {/* Input */}
         <div className="p-3 border-t border-white/10">
-          <PromptSuggestions category="chat" onPick={setInput} />
-          <div className="flex gap-2 items-end mt-2">
+          <div className="flex gap-2 items-end">
             <textarea
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={!activeConversationId}
-              placeholder={activeConversationId ? 'Type your message...' : 'Select a conversation first'}
+              placeholder={activeConversationId ? 'আপনার মেসেজ লিখুন...' : 'প্রথমে একটি কথোপকথন নির্বাচন করুন'}
               rows={1}
-              className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/50 resize-none max-h-[120px] disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none max-h-[120px] disabled:opacity-50"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || loading || thinking || !activeConversationId}
-              className="px-4 py-2.5 bg-gradient-to-r from-#0E7C3A to-#0A5A2B rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed hover:from-#0A5A2B hover:to-#0A5A2B transition-all shrink-0"
+              className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white disabled:opacity-40 disabled:cursor-not-allowed hover:from-blue-700 hover:to-blue-800 transition-all shrink-0"
             >
-              Send
+              পাঠান
             </button>
           </div>
         </div>

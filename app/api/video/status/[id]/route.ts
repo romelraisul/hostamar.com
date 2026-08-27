@@ -1,12 +1,15 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const _auth = await getAuthUser(_req as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const previewId = params.id
 
@@ -103,4 +106,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+}

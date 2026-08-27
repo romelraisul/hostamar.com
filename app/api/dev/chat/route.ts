@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { chat as kilocodeChat, chatWithFallback } from '@/lib/kilocode-client'
-import { env } from '@/lib/env'
+import { getAuthUser } from '@/lib/get-auth-user'
+import { chat as kilocodeChat } from '@/lib/kilocode-client'
 
-const OLLAMA_HOST = env.OLLAMA_HOST || 'http://localhost:11434'
-const OLLAMA_MODEL = env.OLLAMA_MODEL || 'qwen3.6:latest'
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6:latest'
 
 async function callOllama(messages: any[], model: string) {
   const response = await fetch(`${OLLAMA_HOST}/v1/chat/completions`, {
@@ -32,14 +32,6 @@ async function callKiloCode(messages: any[]) {
   )
   if ('error' in result) throw new Error(`KiloCode failed: ${result.error}`)
   return { reply: result.text, provider: 'kilocode-free', model: 'kilo-auto/free' }
-}
-
-async function callFallback(messages: any[]) {
-  const user = messages.findLast?.((m: any) => m.role === 'user')?.content || [...messages].reverse().find((m: any) => m.role === 'user')?.content || ''
-  const system = messages.find((m: any) => m.role === 'system')?.content
-  const result = await chatWithFallback(user, system)
-  if ('error' in result) throw new Error(`Fallback chain failed: ${result.error}`)
-  return { reply: result.text, provider: result.provider, model: result.model }
 }
 
 function fallbackReply(tool: string | undefined, message: string): string {
@@ -71,6 +63,8 @@ function fallbackReply(tool: string | undefined, message: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { tool, message, history } = await request.json()
     if (!message || typeof message !== 'string') {
@@ -93,13 +87,8 @@ export async function POST(request: NextRequest) {
       try {
         result = await callKiloCode(messages)
       } catch (kcError: any) {
-        console.warn('[chat] KiloCode free down, trying fallback chain (TokenRouter/NVIDIA/OpenCode):', kcError?.message)
-        try {
-          result = await callFallback(messages)
-        } catch (fbError: any) {
-          console.warn('[chat] Fallback chain down, using shim:', fbError?.message)
-          result = { reply: fallbackReply(tool, message), provider: 'shim', model: 'hostamar-fallback-shim' }
-        }
+        console.warn('[chat] KiloCode free down, using shim:', kcError?.message)
+        result = { reply: fallbackReply(tool, message), provider: 'shim', model: 'hostamar-fallback-shim' }
       }
     }
 

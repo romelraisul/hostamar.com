@@ -1,8 +1,8 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
-import { env } from '@/lib/env'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user';
 
 export async function GET() {
   return NextResponse.json({
@@ -12,6 +12,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await request.json();
     const { serverId, domain, autoSsl } = body || {};
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
     // Persist domain mapping if Redis is available.
     try {
       const RedisClient = (await import('ioredis')).default;
-      const redis = new RedisClient(env.REDIS_URL || 'redis://localhost:6379');
+      const redis = new RedisClient(process.env.REDIS_URL || 'redis://localhost:6379');
       await redis.hset(`hosting:domain:${serverId}`, { domain, autoSsl: autoSsl ? '1' : '0', updatedAt: new Date().toISOString() });
       await redis.sadd('hosting:domains', domain);
     } catch (redisError) {

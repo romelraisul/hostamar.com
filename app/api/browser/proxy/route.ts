@@ -1,28 +1,21 @@
 export const dynamic = 'force-dynamic'
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user';
 
 const ALLOWED_PROTOCOLS = new Set(['https:', 'http:']);
 
-// Hosts/IPs that must never be proxied (SSRF guard).
-const BLOCKED_HOSTS = new Set([
-  'localhost', '127.0.0.1', '0.0.0.0', '::1', '[::1]',
-  '169.254.169.254', // cloud metadata
-  'metadata.google.internal',
-]);
-
-function isPrivateIp(hostname: string): boolean {
-  const m = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (!m) return false;
-  const a = parseInt(m[1], 10);
-  const b = parseInt(m[2], 10);
-  if (a === 10 || a === 127) return true; // 10.0.0.0/8, loopback
-  if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
-  if (a === 192 && b === 168) return true; // 192.168.0.0/16
-  if (a === 169 && b === 254) return true; // link-local incl. metadata
-  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+function isBlockedHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || h.endsWith('.localhost')) return true;
+  if (h === '169.254.169.254' || h === 'metadata.google.internal') return true;
+  if (h.startsWith('10.')) return true;
+  if (h.startsWith('192.168.')) return true;
+  if (h.match(/^172\.(1[6-9]|2\d|3[0-1])\./)) return true;
+  if (h === '0.0.0.0') return true;
   return false;
 }
+
 
 function sanitizeRedirectUrl(raw: string): { url: string; error?: string } {
   const trimmed = raw.trim();
@@ -37,19 +30,12 @@ function sanitizeRedirectUrl(raw: string): { url: string; error?: string } {
   if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
     return { url: '', error: 'Unsupported protocol' };
   }
-
-  const host = parsed.hostname.toLowerCase();
-  if (BLOCKED_HOSTS.has(host) || host.endsWith('.internal') || host.endsWith('.local')) {
-    return { url: '', error: 'Blocked host' };
-  }
-  if (isPrivateIp(host)) {
-    return { url: '', error: 'Blocked host' };
-  }
-
   return { url: parsed.href };
 }
 
 export async function GET(request: NextRequest) {
+  const _auth = await getAuthUser(request);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const searchParams = request.nextUrl.searchParams;
     const raw = searchParams.get('url') || '';
@@ -60,6 +46,7 @@ export async function GET(request: NextRequest) {
     }
 
     const targetUrl = sanitized.url;
+    try { const u = new URL(targetUrl); if (isBlockedHost(u.hostname)) return NextResponse.json({ error: 'Blocked host' }, { status: 403 }); } catch {}
 
     const fetchPromise = fetch(targetUrl, {
       method: 'GET',

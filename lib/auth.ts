@@ -4,9 +4,8 @@ import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import type { NextRequest } from 'next/server'
-import { env } from '@/lib/env'
 
-const JWT_SECRET=env.JWT_SECRET || 'hostamar-jwt-secret-change-in-production'
+const JWT_SECRET=(process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || (process.env.NODE_ENV==='production' ? (()=>{throw new Error('JWT_SECRET/NEXTAUTH_SECRET missing')})() : 'hostamar-jwt-secret-change-in-production')) as string
 
 export async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword)
@@ -134,31 +133,7 @@ export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
       }
     }
 
-    const headerId = req.headers.get('x-user-id') ?? undefined
-    const headerEmail = req.headers.get('x-user-email')
-    const headerName = req.headers.get('x-user-name') ?? undefined
-    if (headerEmail) {
-      const customer = headerId ? await findCustomerById(headerId) : null
-      if (customer) {
-        candidate = {
-          id: customer.id,
-          name: customer.name,
-          email: customer.email,
-          phone: customer.phone ?? undefined,
-          role: (customer.role || 'customer').toLowerCase(),
-          customer,
-        }
-        return candidate
-      }
-      candidate = {
-        id: headerId || '',
-        name: headerName || '',
-        email: headerEmail,
-        role: 'customer',
-        customer: null,
-      }
-      return candidate
-    }
+    // x-user-* headers NOT trusted — must verify JWT. Removed header forgery path.
   }
 
   return null

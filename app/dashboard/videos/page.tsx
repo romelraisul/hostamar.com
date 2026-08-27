@@ -296,12 +296,12 @@ export default function VideosPage() {
                 <thead>
                   <tr className="border-b bg-gray-50">
                     <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">{t('dashVideos.title')}</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Duration</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Views</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Downloads</th>
-                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Created</th>
-                    <th className="text-right px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">স্ট্যাটাস</th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">সময়কাল</th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">ভিউ</th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">ডাউনলোড</th>
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">তৈরি হয়েছে</th>
+                    <th className="text-right px-6 py-4 text-sm font-semibold text-gray-600">ক্রিয়া</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
