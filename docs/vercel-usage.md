@@ -4,10 +4,11 @@ Date: 2026-08-27 (Thursday) UTC+6
 Project: hostamar-build (romelraisul-8939s-projects) — alias hostamar.com + ai.hostamar.com
 Build: 87.7kB first load, Middleware 26kB, Ready r38ps1pc1 (64d3962 Bearer fix) — latest Ready njfbsi6yd superseded, new 20fa804 pending 100/day reset ~02:00 UTC+6
 
-## Today (2026-08-27 (Thursday) UTC+6)
-- Deployments: **~12 today** / 100 limit → **88 left today** (quota resets ~02:00 UTC+6). `vercel ls --prod | wc -l` = 48 total listed (paginated, first page 20), first-page prod 20. Daily `deploy_failed free-per-day` hit once (proc_a9ff65), r38ps1pc1 still succeeded.
-- Builds: ~3m each, hobby tier, `npm run build` 87.7kB green
-- Why many today: pushes 5dfce8a→8ab2552→64d3962→20fa804 + CLI retries + auto GitHub deploys
+## Today (2026-08-27 UTC+6)
+- Deployments: **19 today** / 100 limit → **81 left today** (quota resets 00:00 UTC = 06:00 AM BST). `bash scripts/check-vercel-quota.sh` = 18/100 visible first page, `vercel ls --prod` = 3mkrtzlls Ready + ivalcwl10 Ready (6m). Guard active — no vercel --prod double, git push only.
+- Latest prod: `ivalcwl10 ● Ready` (6m, 798e178 AI_GATEWAY_API_KEY injected, 39aac6e ওভারভিউ x2) replaces `3mkrtzlls`
+- Builds: ~3m each, 87.7kB 114p Middleware 26kB green
+
 
 ## This Month (Aug 2026)
 - Deployments total: 48 in `vercel ls` first page + next page (`--next 1787759482675`) → ~60-70 this month (free-tier, $0)
