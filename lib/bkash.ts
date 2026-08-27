@@ -196,8 +196,9 @@ export async function verifyBkashTransaction(input: VerifyInput): Promise<Verify
 
       // CreditTransaction +6000/13000/30000
       // Prod DB uses CreditAccount (accountId) not customerId — resolve account
-      const acct = await (tx as any).creditAccount.findUnique({ where: { customerId: userId } })
-      const acctId = acct?.id || (await (tx as any).creditAccount.create({ data: { customerId: userId, credits: 0, consumed: 0, updatedAt: new Date() } })).id
+      // Use prisma (not tx) for CreditAccount as tx may not expose it
+      const acct = await (prisma as any).creditAccount.findUnique({ where: { customerId: userId } })
+      const acctId = acct?.id || (await (prisma as any).creditAccount.create({ data: { customerId: userId, credits: 0, consumed: 0, updatedAt: new Date() } })).id
       // Ensure balanceAfter reflects acct.credits + credits (acct may be stale, use customer prev + credits)
       await (tx as any).creditTransaction.create({
         data: {
@@ -211,7 +212,7 @@ export async function verifyBkashTransaction(input: VerifyInput): Promise<Verify
       })
 
       // Update CreditAccount.credits increment (prod flow) + Customer.credits for dual ledger
-      await (tx as any).creditAccount.update({
+      await (prisma as any).creditAccount.update({
         where: { id: acctId },
         data: { credits: { increment: credits } } as any,
       })
