@@ -141,32 +141,29 @@ export async function GET(req: NextRequest) {
           where: { id: sub.id },
           data: { nextBillingDate: next, status: 'active' },
         })
-        // Add credits to Customer.credits + CreditTransaction (hostamar-build schema)
-        const creditsToAdd = sub.creditsPerMonth || 6000
-        const cust = await prisma.customer.findUnique({ where: { id: sub.customerId } })
-        if (cust) {
-          const newCredits = (cust.credits || 0) + creditsToAdd
-          await prisma.customer.update({ where: { id: sub.customerId }, data: { credits: newCredits } })
-          await prisma.creditTransaction.create({
-            data: {
-              customerId: sub.customerId,
-              amount: creditsToAdd,
-              type: 'purchase',
-              balanceAfter: newCredits,
-              description: `${sub.plan} নবায়ন — ${creditsToAdd} ক্রেডিট যোগ`,
-            },
-          }).catch(()=>{})
-        } else {
-          await prisma.creditTransaction.create({
-            data: {
-              customerId: sub.customerId,
-              amount: creditsToAdd,
-              type: 'purchase',
-              balanceAfter: creditsToAdd,
-              description: `${sub.plan} নবায়ন — ${creditsToAdd} ক্রেডিট যোগ`,
-            },
-          }).catch(()=>{})
+        // Add credits to CreditAccount + CreditTransaction (prod DB uses CreditAccount)
+        const creditsToAdd = (sub as any).creditsPerMonth || 6000
+        const acct = await (prisma as any).creditAccount.findUnique({ where: { customerId: sub.customerId } })
+        let acctId = acct?.id
+        let prevCredits = Number(acct?.credits || 0)
+        if (!acctId) {
+          const created = await (prisma as any).creditAccount.create({ data: { customerId: sub.customerId, credits: 0, consumed: 0, updatedAt: new Date() } })
+          acctId = created.id
+          prevCredits = 0
         }
+        const newCredits = prevCredits + creditsToAdd
+        await (prisma as any).creditAccount.update({ where: { id: acctId }, data: { credits: newCredits } })
+        await (prisma as any).creditTransaction.create({
+          data: {
+            accountId: acctId,
+            amount: creditsToAdd,
+            product: 'purchase',
+            balanceAfter: newCredits,
+            description: `${sub.plan} নবায়ন — ${creditsToAdd} ক্রেডিট যোগ`,
+          },
+        }).catch(()=>{})
+        // also keep Customer.credits in sync
+        await prisma.customer.update({ where: { id: sub.customerId }, data: { credits: { increment: creditsToAdd } } as any }).catch(()=>{})
         await sendBanglaRenewalEmail(sub.customer.email, sub.customer.name || 'গ্রাহক', sub.plan, sub.price, next)
         // Also notification
         await prisma.notification.create({
