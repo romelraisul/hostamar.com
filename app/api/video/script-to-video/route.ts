@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { deductCredits, getCreditAccount, CREDIT_COSTS } from '@/lib/credits'
-import { buildHunyuanScriptWorkflow, buildWanT2VWorkflow } from '@/lib/comfyWorkflow'
+import { buildHunyuanScriptWorkflow } from '@/lib/comfyWorkflow'
 
 const COMFYUI_INTERNAL = process.env.COMFYUI_URL || 'http://localhost:8188'
 
@@ -62,6 +62,31 @@ async function generateScript(prompt: string): Promise<any> {
   }
 }
 
+// Post-process a finished ComfyUI render into the final deliverable:
+// TTS voiceover (edge-tts) + synthesized music + burned-in Bangla subtitles, then mux.
+// Runs only on Windows where ffmpeg/edge-tts/ComfyUI live.
+async function postProcessLocally(promptId: string, subtitle: string, voiceover: string): Promise<string | null> {
+  if (process.platform !== 'win32') return null
+  const { spawn } = await import('child_process')
+  const script = 'C:\\Users\\User\\video_postprocess.py'
+  const outName = `hostamar_final_${promptId}.mp4`
+  return new Promise((resolve) => {
+    const child = spawn(
+      'C:\\Users\\User\\qwen\\python_embeded\\python.exe',
+      [script, '--prompt_id', promptId, '--subtitle', subtitle, '--voiceover', voiceover, '--out', outName],
+      { windowsHide: true },
+    )
+    let out = ''
+    child.stdout?.on('data', (d) => (out += d.toString()))
+    child.stderr?.on('data', (d) => (out += d.toString()))
+    child.on('close', () => {
+      const m = out.match(/FINAL_PATH=(.+)/)
+      resolve(m ? m[1].trim() : null)
+    })
+    child.on('error', () => resolve(null))
+  })
+}
+
 async function tryComfyUI(body: any): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
     const response = await fetch(`${COMFYUI_INTERNAL}/prompt`, {
@@ -90,7 +115,7 @@ export async function POST(request: NextRequest) {
     const user = await getAuthUser(request)
     const customerId = user?.id
 
-    const { prompt, duration = 30 } = await request.json()
+    const { prompt, duration = 30, width, height } = await request.json()
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
@@ -108,49 +133,55 @@ export async function POST(request: NextRequest) {
     // Step 1: Generate script from simple prompt
     const script = await generateScript(prompt)
 
-    // Step 2: Try Hunyuan first, fallback to Wan2.1
-    let body = buildHunyuanScriptWorkflow({
+    // Step 2: Use HunyuanVideo native workflow only
+    const body = buildHunyuanScriptWorkflow({
       prompt: script.combinedPrompt,
-      numFrames: duration <= 5 ? 49 : duration <= 10 ? 81 : 121,
+      numFrames: duration <= 5 ? 53 : duration <= 10 ? 249 : 729,
       steps: 30,
       filenamePrefix: `hostamar_script_${Date.now()}`,
+      ...(width ? { width: Number(width) } : {}),
+      ...(height ? { height: Number(height) } : {}),
     })
 
-    let result = await tryComfyUI(body)
-    let modelUsed = 'hunyuan1.5'
-    let productBucket: 'video_hunyuan_5s' | 'video_wan_5s' = 'video_hunyuan_5s'
+    const result = await tryComfyUI(body)
 
-    // If Hunyuan fails (e.g., GGUF node not loaded), fallback to Wan2.1
     if (!result.success) {
-      console.log('Hunyuan failed, falling back to Wan2.1:', result.error)
-      body = buildWanT2VWorkflow({
-        prompt: script.combinedPrompt,
-        numFrames: duration <= 5 ? 49 : 81,
-        steps: 30,
-        filenamePrefix: `hostamar_script_${Date.now()}`,
-      })
-      result = await tryComfyUI(body)
-      modelUsed = 'wan2.1'
-      productBucket = 'video_wan_5s'
-
-      if (!result.success) {
-        return NextResponse.json({ error: 'All video models unavailable', detail: result.error }, { status: 503 })
-      }
+      return NextResponse.json({ error: 'Video model unavailable', detail: result.error }, { status: 503 })
     }
 
     const data = result.data!
+    const promptId = data.prompt_id as string
+
+    // Step 3 (Windows host only): fire-and-forget the post-process once ComfyUI finishes.
+    // On Vercel (Linux) this is a no-op — the Windows orchestrator handles final assembly.
+    if (process.platform === 'win32') {
+      ;(async () => {
+        const SUBTITLE = 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও মেকার, মাত্র ৩০ সেকেন্ডে, bKash পেমেন্টে'
+        const VOICEOVER = 'Meet Hostamar - The AI video maker built for Bangladeshi businesses. Just upload your product photo and get a professional marketing video with Bengali voiceover and subtitles in 30 seconds. No editing skills, no credit card. Pay with bKash.'
+        for (let i = 0; i < 90; i++) {
+          await new Promise((r) => setTimeout(r, 6000))
+          const h = await fetch(`${COMFYUI_INTERNAL}/history/${promptId}`).then((r) => r.json()).catch(() => null)
+          let status = null
+          for (const k of Object.keys(h || {})) status = h[k]?.status?.status_str
+          if (status === 'success' || status === 'error') break
+        }
+        await postProcessLocally(promptId, SUBTITLE, VOICEOVER)
+      })().catch(() => {})
+    }
 
     if (customerId) {
-      await deductCredits(customerId, cost, productBucket, `Script-to-video: ${prompt.slice(0, 50)}...`)
+      await deductCredits(customerId, cost, 'video_hunyuan_5s', `Script-to-video: ${prompt.slice(0, 50)}...`)
     }
 
     return NextResponse.json({
       success: true,
       prompt_id: data.prompt_id,
-      model: modelUsed,
+      model: 'hunyuan1.5',
       duration,
       credits_cost: cost,
-      message: `Script-to-video generation started (${modelUsed})`,
+      final_video: `hostamar_final_${promptId}.mp4`,
+      video_url: `${process.env.COMFYUI_PUBLIC || ''}/api/video/file/${promptId}?f=${encodeURIComponent(`hostamar_final_${promptId}.mp4`)}&t=output`,
+      message: 'Script-to-video started (hunyuan1.5) — voiceover + Bangla subtitles added on render completion',
       script: {
         title: script.title,
         scenes: script.scenes.length,
@@ -167,8 +198,8 @@ export async function GET() {
   return NextResponse.json({
     available: true,
     comfyui_url: COMFYUI_INTERNAL,
-    models: ['hunyuan1.5', 'wan2.1'],
-    description: 'Script-to-video: simple prompt → LLM script → Hunyuan 1.5 (fallback Wan2.1) video',
+    models: ['hunyuan1.5'],
+    description: 'Script-to-video: simple prompt → LLM script → Hunyuan 1.5 video',
     cost: CREDIT_COSTS.video_hunyuan_5s,
   })
 }

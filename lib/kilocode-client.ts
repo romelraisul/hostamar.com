@@ -66,6 +66,7 @@ export async function chatCompletion(
   timeoutMs = 60_000,
 ): Promise<ChatResult> {
   const token = getToken()
+  const _logStart = Date.now()
   if (!token) {
     return { ok: false, status: 503, error: 'KILOCODE_API_KEY not configured', retryable: false }
   }
@@ -106,10 +107,13 @@ export async function chatCompletion(
         errMsg = errJson.error?.message || errJson.message || errMsg
       } catch {}
       const retryable = res.status >= 500 || res.status === 429 || res.status === 408
+      try { const { logApiRequest } = await import('@/lib/logger'); const duration = Date.now() - _logStart; logApiRequest({ ip: 'internal', ua: 'kilocode-client', path: '/v1/chat/completions', method: 'POST', status: res.status, duration }).catch(()=>{}); } catch {}
       return { ok: false, status: res.status, error: errMsg, retryable }
     }
 
     const parsed = JSON.parse(text) as ChatCompletionResponse
+    // Fire-and-forget ApiRequestLog
+    try { const { logApiRequest } = await import('@/lib/logger'); const ip = 'internal'; const ua = 'kilocode-client'; const duration = Date.now() - _logStart; logApiRequest({ ip, ua, path: '/v1/chat/completions', method: 'POST', status: res.status, duration }).catch(()=>{}); } catch {}
     return { ok: true, data: parsed }
   } catch (e: unknown) {
     const msg = e instanceof Error && e.name === 'AbortError'

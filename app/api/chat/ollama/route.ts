@@ -67,6 +67,7 @@ async function callGemini(messages: any[]) {
 // Helper: call OmniRoute (free AI gateway, 90+ providers)
 async function callOmniRoute(messages: any[]) {
   if (!OMNIROUTE_URL || !OMNIROUTE_KEY) throw new Error('OmniRoute not configured')
+  const _start = Date.now()
   const resp = await fetch(`${OMNIROUTE_URL}/v1/chat/completions`, {
     method: 'POST',
     headers: {
@@ -81,6 +82,8 @@ async function callOmniRoute(messages: any[]) {
       max_tokens: 1200,
     }),
   })
+  const duration = Date.now() - _start
+  try { const { logApiRequest } = await import('@/lib/logger'); logApiRequest({ ip: 'internal', ua: 'ollama-route', path: '/v1/chat/completions', method: 'POST', status: resp.status, duration }).catch(()=>{});} catch {}
   if (!resp.ok) throw new Error(`OmniRoute error: ${resp.status}`)
   const data = await resp.json()
   return {
@@ -91,6 +94,7 @@ async function callOmniRoute(messages: any[]) {
 
 // Helper: call local Ollama via tunnel (only works when PC is on)
 async function callOllama(messages: any[]) {
+  const _start2 = Date.now()
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 5000) // 3s timeout — fail fast on Vercel
   try {
@@ -106,6 +110,8 @@ async function callOllama(messages: any[]) {
       }),
       signal: controller.signal,
     })
+    const duration2 = Date.now() - _start2
+    try { const { logApiRequest } = await import('@/lib/logger'); logApiRequest({ ip: 'internal', ua: 'ollama-route', path: '/v1/chat/completions', method: 'POST', status: resp.status, duration: duration2 }).catch(()=>{});} catch {}
     if (!resp.ok) throw new Error('Ollama unreachable')
     const data = await resp.json()
     return {

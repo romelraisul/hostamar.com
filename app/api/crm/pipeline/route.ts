@@ -18,8 +18,11 @@ export async function GET(request: NextRequest) {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    const isAdminPipeline = (session.user as any).role === 'admin' || (session.user as any).role === 'superadmin';
+    const leadWhere: any = isAdminPipeline ? {} : { customerId: (session.user as any).id };
     // Get all leads grouped by status
     const allLeads = await prisma.lead.findMany({
+      where: leadWhere,
       select: {
         id: true,
         status: true,
@@ -39,7 +42,7 @@ export async function GET(request: NextRequest) {
       dead: allLeads.filter((l) => l.status === 'dead').length,
 
       // Customer counts
-      totalCustomers: await prisma.customer.count(),
+      totalCustomers: isAdminPipeline ? await prisma.customer.count() : 1,
       activeCustomers: await prisma.customer.count({
         where: { stage: { in: ['trial', 'paid'] } },
       }),

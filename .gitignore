@@ -127,3 +127,4 @@ voice-call-test_*.json
 .env.migrate
 .vercel.env
 .env*
+*.bak

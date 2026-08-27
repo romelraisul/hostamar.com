@@ -21,6 +21,8 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const where: any = {};
+    const isAdmin = (session.user as any).role === 'admin' || (session.user as any).role === 'superadmin';
+    if (!isAdmin) where.customerId = (session.user as any).id;
     if (status) where.status = status;
     if (source) where.source = source;
 

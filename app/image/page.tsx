@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import PromptSuggestions from '@/components/PromptSuggestions'
 
 const GREEN = '#0E7C3A'
 
@@ -87,6 +88,7 @@ export default function ImageGeneratePage() {
         <form onSubmit={generate} className="mt-6 space-y-4 rounded-2xl border border-zinc-200 bg-white p-6">
           <div>
             <label className="block text-[13px] font-medium mb-1">Prompt (English works best)</label>
+            <PromptSuggestions category="image" onPick={setPrompt} />
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}

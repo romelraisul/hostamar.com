@@ -155,6 +155,27 @@ export async function middleware(request: NextRequest) {
     '/api/keys',
   ]
   if (pathname.startsWith('/api/')) {
+    // Protected agent / v1 endpoints - require specific keys before publicApi check
+    if (pathname.startsWith('/api/tv/agent/')) {
+      const agentKey = request.headers.get('x-agent-key') || ''
+      const expected = process.env.AGENT_SECRET || ''
+      if (!expected || agentKey !== expected) {
+        return NextResponse.json({ error: 'Unauthorized - invalid agent key' }, { status: 401 })
+      }
+    }
+    if (pathname.startsWith('/v1/')) {
+      const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim() || request.headers.get('x-api-key') || ''
+      const expected = process.env.API_PUBLIC_KEY || ''
+      if (!expected || bearer !== expected) {
+        return NextResponse.json({ error: 'Unauthorized - invalid API key' }, { status: 401 })
+      }
+      // Fire-and-forget file log for abuse tracking (edge - no prisma)
+      try {
+        const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || request.headers.get('cf-connecting-ip') || 'unknown'
+        const ua = request.headers.get('user-agent') || 'unknown'
+        console.log(`[v1-abuse] ${new Date().toISOString()} ${ip} ${request.method} ${pathname} ${ua}`)
+      } catch {}
+    }
     const isPublicApi = publicApiPaths.some((p) => pathname === p || pathname.startsWith(p))
     if (isPublicApi) {
       return NextResponse.next()

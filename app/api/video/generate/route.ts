@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildWanT2VWorkflow, buildHunyuanT2VWorkflow } from '@/lib/comfyWorkflow'
+import { buildHunyuanT2VWorkflow } from '@/lib/comfyWorkflow'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { getCreditAccount, deductCredits, CREDIT_COSTS } from '@/lib/credits'
 
@@ -7,8 +7,7 @@ const COMFYUI_BASE = process.env.COMFYUI_PUBLIC_URL || 'https://comfy.hostamar.c
 const COMFYUI_INTERNAL = process.env.COMFYUI_URL || 'http://localhost:8188'
 
 const AVAILABLE_MODELS = [
-  { id: 'hunyuan1.5', name: 'HunyuanVideo 1.5 8B GGUF', provider: 'local-comfyui', creditsPer5s: CREDIT_COSTS.video_hunyuan_5s },
-  { id: 'wan2.1', name: 'Wan2.1 T2V 1.3B', provider: 'local-comfyui', creditsPer5s: CREDIT_COSTS.video_wan_5s },
+  { id: 'hunyuan1.5', name: 'HunyuanVideo 1.5 8B', provider: 'local-comfyui', creditsPer5s: CREDIT_COSTS.video_hunyuan_5s },
 ]
 
 export async function POST(request: NextRequest) {
@@ -22,12 +21,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
     }
 
-    const selected = AVAILABLE_MODELS.find((m) => m.id === model)
-    if (!selected) {
-      return NextResponse.json({ error: 'Unsupported model', available: AVAILABLE_MODELS.map((m) => m.id) }, { status: 400 })
+    if (model !== 'hunyuan1.5') {
+      return NextResponse.json({ error: 'Only hunyuan1.5 model available', available: ['hunyuan1.5'] }, { status: 400 })
     }
 
-    const cost = selected.creditsPer5s * Math.max(1, Math.ceil(duration / 5))
+    const cost = CREDIT_COSTS.video_hunyuan_5s * Math.max(1, Math.ceil(duration / 5))
 
     if (customerId) {
       const account = await getCreditAccount(customerId)
@@ -36,24 +34,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    let body: any
-    if (model === 'hunyuan1.5') {
-      const frames = duration <= 5 ? 49 : duration <= 10 ? 81 : 121
-      body = buildHunyuanT2VWorkflow({
-        prompt,
-        numFrames: frames,
-        steps: 30,
-        filenamePrefix: `hostamar_${Date.now()}`,
-      })
-    } else {
-      const frames = duration <= 5 ? 49 : 81
-      body = buildWanT2VWorkflow({
-        prompt,
-        numFrames: frames,
-        steps: 30,
-        filenamePrefix: `hostamar_${Date.now()}`,
-      })
-    }
+    const frames = duration <= 5 ? 49 : duration <= 10 ? 81 : 121
+    const body = buildHunyuanT2VWorkflow({
+      prompt,
+      numFrames: frames,
+      steps: 30,
+      filenamePrefix: `hostamar_${Date.now()}`,
+    })
 
     const target = COMFYUI_INTERNAL
     const response = await fetch(`${target}/prompt`, {
@@ -73,13 +60,13 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
 
     if (customerId) {
-      await deductCredits(customerId, cost, model === 'hunyuan1.5' ? 'video_hunyuan_5s' : 'video_wan_5s', `Video generation (${model}, ${duration}s)`)
+      await deductCredits(customerId, cost, 'video_hunyuan_5s', `Video generation (hunyuan1.5, ${duration}s)`)
     }
 
     return NextResponse.json({
       success: true,
       prompt_id: data.prompt_id,
-      model: selected.id,
+      model: 'hunyuan1.5',
       duration,
       credits_cost: cost,
       message: 'Video generation started',
@@ -94,6 +81,6 @@ export async function GET() {
     available: true,
     comfyui_url: COMFYUI_BASE,
     models: AVAILABLE_MODELS.map((m) => ({ id: m.id, name: m.name, creditsPer5s: m.creditsPer5s })),
-    note: 'Video generation via ComfyUI (Wan2.1 / HunyuanVideo 1.5 GGUF)',
+    note: 'Video generation via ComfyUI (HunyuanVideo 1.5 native)',
   })
 }

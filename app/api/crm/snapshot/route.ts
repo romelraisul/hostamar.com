@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
       where: { createdAt: { gte: since } },
       orderBy: { createdAt: 'desc' },
     });
-    const leads = await prisma.lead.findMany({ orderBy: { createdAt: 'desc' } });
+    const isAdminSnap = (session.user as any).role === 'admin' || (session.user as any).role === 'superadmin';
+    const leads = await prisma.lead.findMany({ where: isAdminSnap ? {} : { customerId: (session.user as any).id }, orderBy: { createdAt: 'desc' } });
     const totalCustomers = await prisma.customer.count();
     const activeSubs = await prisma.subscription.count({ where: { status: 'active' } });
     const totalRevenue = await prisma.payment.aggregate({
@@ -42,4 +43,4 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+}

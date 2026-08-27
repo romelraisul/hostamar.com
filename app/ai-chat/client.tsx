@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import PromptSuggestions from '@/components/PromptSuggestions'
 
 const MODELS = [
   { id: 'qwen3.8:latest', label: 'Qwen 3.8' },
@@ -394,7 +395,8 @@ export default function AiChatClient() {
 
         {/* Input */}
         <div className="p-3 border-t border-white/10">
-          <div className="flex gap-2 items-end">
+          <PromptSuggestions category="chat" onPick={setInput} />
+          <div className="flex gap-2 items-end mt-2">
             <textarea
               ref={inputRef}
               value={input}

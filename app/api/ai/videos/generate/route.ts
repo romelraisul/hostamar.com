@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { enqueueVideoGeneration, type VideoGenerationJobData, initRedis } from '@/lib/queue'
 import { getAuthUser } from '@/lib/get-auth-user'
 
+import { logApiRequest } from '@/lib/logger'
 export async function POST(req: NextRequest) {
   try {
     // Initialize Redis failover

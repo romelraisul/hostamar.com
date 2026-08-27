@@ -135,3 +135,38 @@ export function searchLogs(query: string, level?: LogLevel, startDate?: string, 
 
   return results.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 }
+
+// --- ApiRequestLog wiring (dead model -> live) ---
+export async function logApiRequest(data: {
+  keyId?: string | null
+  ip: string
+  ua: string
+  path: string
+  method: string
+  status: number
+  duration: number
+}) {
+  try {
+    const { prisma } = await import('@/lib/prisma')
+    await prisma.apiRequestLog.create({
+      data: {
+        apiKeyId: data.keyId || null,
+        ipAddress: data.ip,
+        userAgent: data.ua,
+        endpoint: data.path,
+        method: data.method,
+        statusCode: data.status,
+        responseTime: data.duration,
+      } as any,
+    })
+    // Also increment totalRequests if apiKeyId present
+    if (data.keyId) {
+      await prisma.apiKey.update({
+        where: { id: data.keyId },
+        data: { totalRequests: { increment: 1 }, lastUsedAt: new Date() },
+      }).catch(() => {})
+    }
+  } catch (e) {
+    console.error('[logApiRequest]', e)
+  }
+}

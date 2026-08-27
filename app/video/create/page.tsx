@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import PromptSuggestions from '@/components/PromptSuggestions'
 
 const GREEN = '#0E7C3A'
 
@@ -145,6 +146,7 @@ export default function CreateVideoPage() {
         {/* Prompt Input */}
         <div className="mt-6">
           <label className="text-sm font-medium text-zinc-300">ভিডিওর বর্ণনা</label>
+          <PromptSuggestions category="video" onPick={setPrompt} />
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

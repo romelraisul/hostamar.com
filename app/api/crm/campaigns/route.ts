@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
 
     const where: any = {};
+    const isAdmin = (session.user as any).role === 'admin' || (session.user as any).role === 'superadmin';
+    if (!isAdmin) where.customerId = (session.user as any).id;
     if (status) where.status = status;
 
     const campaigns = await prisma.campaign.findMany({

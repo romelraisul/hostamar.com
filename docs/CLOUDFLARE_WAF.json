@@ -1,0 +1,25 @@
+{
+  "rules": [
+    {
+      "id": "block-env-probing",
+      "description": "Block .env probing (110 hits to /.env.staging.override)",
+      "expression": "(http.request.uri.path contains \".env\")",
+      "action": "block",
+      "priority": 1
+    },
+    {
+      "id": "rate-limit-v1-chat",
+      "description": "Rate limit /v1/chat/completions abuse (913 requests, open AI abuse)",
+      "expression": "(http.request.uri.path eq \"/v1/chat/completions\")",
+      "action": "managed_challenge",
+      "priority": 2,
+      "ratelimit": {
+        "characteristics": ["ip.src"],
+        "period": 60,
+        "requests_per_period": 10,
+        "mitigation_timeout": 600
+      }
+    }
+  ],
+  "notes": "Import via Cloudflare Dashboard > Security > WAF > Custom Rules > Import. Top waste: /api/tv/agent/commands 8.59k is now fixed via 30s poll + jitter; but keep monitoring."
+}

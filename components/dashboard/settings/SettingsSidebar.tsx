@@ -1,5 +1,7 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+
 interface Props {
   activeTab: string
   onTabChange: (tab: string) => void
@@ -11,9 +13,21 @@ const tabs = [
   { id: 'password', label: 'Password' },
   { id: 'notifications', label: 'Notifications' },
   { id: 'twitter', label: 'Twitter' },
+  { id: 'api-keys', label: 'API Keys' },
 ]
 
 export default function SettingsSidebar({ activeTab, onTabChange }: Props) {
+  const router = useRouter()
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
   return (
     <nav className="flex lg:flex-col gap-1 lg:w-48">
       {tabs.map((tab) => (
@@ -29,6 +43,13 @@ export default function SettingsSidebar({ activeTab, onTabChange }: Props) {
           {tab.label}
         </button>
       ))}
+
+      <button
+        onClick={handleLogout}
+        className="text-left px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors lg:mt-4"
+      >
+        Logout
+      </button>
     </nav>
   )
 }

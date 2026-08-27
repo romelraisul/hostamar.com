@@ -1,6 +1,6 @@
 // Shared ComfyUI video workflow builders.
 // Wan2.1-T2V-1.3B uses WanVideoWrapper nodes.
-// HunyuanVideo 1.5 8B GGUF uses UnetLoaderGGUF + ComfyUI native nodes (requires ComfyUI-GGUF).
+// HunyuanVideo 1.5 uses native safetensors model with HyVideoModelLoader + DownloadAndLoadHyVideoTextEncoder (auto-downloads from HF).
 
 export interface WanWorkflowOptions {
   prompt: string
@@ -45,7 +45,7 @@ export function buildWanT2VWorkflow(opts: WanWorkflowOptions): any {
       '1': {
         class_type: 'LoadWanVideoT5TextEncoder',
         inputs: {
-          model_name: 'umt5-xxl-enc-bf16.safetensors',
+          model_name: 't5xxl_fp8_e4m3fn.safetensors',
           precision: 'bf16',
           load_device: 'offload_device',
           quantization: 'disabled',
@@ -133,127 +133,125 @@ export function buildHunyuanT2VWorkflow(opts: HunyuanWorkflowOptions): any {
   const {
     prompt,
     negativePrompt = 'blurry, low quality, distorted, watermark, text overlay, static, ugly, deformed, jittery motion',
-    width = 720,
-    height = 720,
-    numFrames = 49,
+    width = 384,
+    height = 216,
+    numFrames = 85,
     steps = 30,
-    cfg = 7,
+    cfg = 6,
     seed = Math.floor(Math.random() * 2147483647),
     filenamePrefix = `hostamar_${Date.now()}`,
   } = opts
 
-  // GGUF model file on disk.
-  const ggufModel = 'hunyuan-video-t2v-720p-Q4_K_S.gguf'
+  // Native safetensors model file on disk (Windows backslash path as expected by ComfyUI node).
+    // '\\' in TS source = 1 backslash at runtime = '\\' in JSON wire = 1 backslash after JSON decode.
+  const modelFile = ['split_files', 'diffusion_models', 'hunyuan_video_720_fp8_e4m3fn.safetensors'].join(String.fromCharCode(92))
 
   return {
     prompt: {
-      // 1. Load UNet via ComfyUI-GGUF loader.
+      // 1. Load model via HunyuanVideo native loader. fp8 quantization + block-swap fits 8GB VRAM.
       '1': {
-        class_type: 'UnetLoaderGGUF',
+        class_type: 'HyVideoModelLoader',
         inputs: {
-          gguf_name: ggufModel,
-          unet_name: ggufModel,
+          model: modelFile,
+          base_precision: 'bf16',
+          quantization: 'fp8_e4m3fn',
+          load_device: 'offload_device',
+          attention_mode: 'sdpa',
+          block_swap_args: ['9', 0],
         },
       },
-      // 2. Load CLIP vision encoder for Hunyuan 1.5.
+      // 9. Block-swapping to keep peak VRAM under 8GB: stream transformer blocks to CPU.
+      '9': {
+        class_type: 'HyVideoBlockSwap',
+        inputs: {
+          double_blocks_to_swap: 20,
+          single_blocks_to_swap: 40,
+          offload_txt_in: true,
+          offload_img_in: true,
+        },
+      },
+      // 2. Load Hunyuan text encoder. fp8 to save RAM. The node resolves llm_model to models/LLM/<name>.
       '2': {
-        class_type: 'DualCLIPLoader',
+        class_type: 'DownloadAndLoadHyVideoTextEncoder',
         inputs: {
-          clip_name1: 'clip_l.safetensors',
-          clip_name2: 'llava_llama3_vision.safetensors',
-          type: 'hunyuan',
+          llm_model: 'Kijai/llava-llama-3-8b-text-encoder-tokenizer',
+          clip_model: 'openai/clip-vit-large-patch14',
+          precision: 'bf16',
+          apply_final_norm: false,
+          hidden_state_skip_layer: 2,
+          quantization: 'disabled',
+          load_device: 'offload_device',
         },
       },
-      // 3. Load VAE.
+      // 3. Load VAE via wrapper's loader (HyVideoDecode expects this format, not comfy-core VAELoader).
       '3': {
-        class_type: 'VAELoader',
-        inputs: { vae_name: 'hunyuan_video_vae_bf16.safetensors' },
+        class_type: 'HyVideoVAELoader',
+        inputs: { model_name: 'hunyuan_video_vae_bf16.safetensors', precision: 'fp16' },
       },
-      // 4. Encode positive prompt.
+      // 4. Encode positive + negative prompt.
       '4': {
-        class_type: 'CLIPTextEncode',
+        class_type: 'HyVideoTextEncode',
         inputs: {
-          text: prompt,
-          clip: ['2', 0],
+          text_encoders: ['2', 0],
+          prompt: prompt,
+          prompt_template: 'video',
+          force_offload: true,
         },
       },
-      // 5. Encode negative prompt.
-      '5': {
-        class_type: 'CLIPTextEncode',
-        inputs: {
-          text: negativePrompt,
-          clip: ['2', 0],
-        },
-      },
-      // 6. Empty latent video.
+      // 6. Sampler (HyVideoSampler) — builds its own latent from width/height/num_frames
+      //    (matches the official t2v example; using a separate EmptyHunyuanLatentVideo
+      //     causes a 1-frame latent/embed length mismatch).
       '6': {
-        class_type: 'EmptyHunyuanLatentVideo',
-        inputs: { width, height, length: numFrames, batch_size: 1 },
-      },
-      // 7. Sampler.
-      '7': {
-        class_type: 'SamplerCustomAdvanced',
-        inputs: {
-          noise: ['6', 0],
-          guider: [
-            '8',
-            0,
-          ],
-          sampler: [
-            '9',
-            0,
-          ],
-          sigmas: ['10', 0],
-        },
-      },
-      // 8. Guider.
-      '8': {
-        class_type: 'CFGGuider',
+        class_type: 'HyVideoSampler',
         inputs: {
           model: ['1', 0],
-          positive: ['4', 0],
-          negative: ['5', 0],
-          cfg: cfg,
-        },
-      },
-      // 9. Sampler.
-      '9': {
-        class_type: 'KSampler',
-        inputs: {
-          seed,
+          hyvid_embeds: ['4', 0],
+          width,
+          height,
+          num_frames: numFrames,
           steps,
-          cfg,
-          sampler_name: 'euler',
-          scheduler: 'normal',
-          denoise: 1,
+          embedded_guidance_scale: cfg,
+          flow_shift: 9.0,
+          seed,
+          force_offload: true,
+          scheduler: 'FlowMatchDiscreteScheduler',
+          riflex_freq_index: 0,
         },
       },
-      // 10. Decode with tiling for 8GB VRAM.
-      '10': {
-        class_type: 'VAEDecodeTiled',
+      // 7. Decode with tiling for 8GB VRAM.
+      '7': {
+        class_type: 'HyVideoDecode',
         inputs: {
           vae: ['3', 0],
-          samples: ['7', 0],
-          tile_size: 512,
-          overlap: 64,
+          samples: ['6', 0],
+          enable_vae_tiling: true,
+          temporal_tiling_sample_size: 64,
+          spatial_tile_sample_min_size: 256,
+          auto_tile_size: true,
+          force_offload: true,
         },
       },
-      // 11. Save video.
-      '11': {
-        class_type: 'SaveVideo',
+      // 8. Save video using VHS_VideoCombine.
+      '8': {
+        class_type: 'VHS_VideoCombine',
         inputs: {
-          video: ['10', 0],
+          images: ['7', 0],
+          frame_rate: 24,
           filename_prefix: filenamePrefix,
-          codec: 'vp9',
-          fps: 24,
+          format: 'video/h264-mp4',
+          pix_fmt: 'yuv420p',
           crf: 19,
+          loop_count: 0,
+          save_metadata: true,
+          pingpong: false,
+          save_output: true,
         },
       },
     },
   }
 }
 
-// Script-to-video uses the same Hunyuan GGUF workflow but with detailed prompt
+// Script-to-video uses the same Hunyuan native workflow but with detailed prompt
 export function buildHunyuanScriptWorkflow(opts: HunyuanWorkflowOptions): any {
   return buildHunyuanT2VWorkflow({
     ...opts,

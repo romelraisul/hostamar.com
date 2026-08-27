@@ -91,8 +91,14 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const where: any = {};
+    const isAdmin = (session.user as any).role === 'admin' || (session.user as any).role === 'superadmin';
+    if (!isAdmin) {
+      // Non-admin: force filter to own customerId, ignore query param
+      where.customerId = (session.user as any).id;
+    } else {
+      if (customerId) where.customerId = customerId;
+    }
     if (leadId) where.leadId = leadId;
-    if (customerId) where.customerId = customerId;
     if (channel) where.channel = channel;
     if (since) where.createdAt = { gte: new Date(since) };
 

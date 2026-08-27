@@ -91,6 +91,7 @@ model Customer {
   gameBalances      GameBalance[]
   gameSpins         GameSpin[]
   trial             Trial?
+  seoEvents         SeoEvent[]
 
   // Twitter OAuth 2.0
   twitterAccessToken       String?
@@ -153,8 +154,17 @@ model Subscription {
   billingCycle    String   @default("monthly")
   nextBillingDate DateTime
 
+  // Stripe / PayPal billing extensions + Bangla credits renewal
+  stripeSubscriptionId String?  @unique
+  paypalSubscriptionId String?  @unique
+  autoRenew            Boolean @default(true)
+  creditsPerMonth      Int     @default(6000)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([nextBillingDate])
+  @@index([status, nextBillingDate])
 }
 
 model Video {
@@ -1032,8 +1042,8 @@ model ApiKey {
 
 model ApiRequestLog {
   id          String   @id @default(cuid())
-  apiKeyId    String
-  apiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  apiKeyId    String?
+  apiKey      ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
   endpoint    String
   method      String
   statusCode  Int
@@ -1086,4 +1096,24 @@ model VideoScene {
 
   @@unique([jobId, index])
   @@index([jobId, status])
+}
+
+// SeoEvent — payment_success + other SEO/analytics events (bangla invoice + marketing)
+model SeoEvent {
+  id         String   @id @default(cuid())
+  event      String
+  properties Json?
+  type       String?
+  payload    Json?
+  email      String?
+  tier       String?
+  amount     Float?
+  trxId      String?
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+
+  @@index([event])
+  @@index([createdAt])
+  @@index([customerId])
 }

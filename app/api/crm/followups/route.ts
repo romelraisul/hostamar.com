@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
     const pendingOnly = searchParams.get('pending');
 
     const where: any = {};
+    const isAdmin = (session.user as any).role === 'admin' || (session.user as any).role === 'superadmin';
+    if (!isAdmin) where.customerId = (session.user as any).id;
     if (leadId) where.leadId = leadId;
     if (status) where.status = status;
     if (pendingOnly) {

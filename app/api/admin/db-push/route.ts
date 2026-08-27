@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
   try {
-    const secret = req.nextUrl.searchParams.get('secret')
-    if (secret !== process.env.BOOTSTRAP_SECRET) {
+    const secret = req.headers.get('x-bootstrap-secret') || req.nextUrl.searchParams.get('secret')
+    if (!secret || secret !== process.env.BOOTSTRAP_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

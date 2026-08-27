@@ -177,6 +177,39 @@ export default function PricingPage() {
           </div>
         </section>
 
+        {/* Premium IPTV - Monetization */}
+        <section className="mt-16 rounded-2xl border-2 border-[#0E7C3A] bg-white p-8">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-[#0E7C3A] text-white text-xs font-bold rounded-full mb-3">NEW • IPTV</span>
+            <h2 className="text-2xl font-bold">Premium IPTV</h2>
+            <p className="mt-2 text-zinc-600">Live TV streaming • bKash enabled • 2 free channels, 6 premium</p>
+          </div>
+          <div className="mt-8 grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="rounded-2xl border border-zinc-200 p-6 text-center">
+              <h3 className="text-lg font-semibold">Free</h3>
+              <div className="mt-2"><span className="text-3xl font-bold">৳0</span><span className="text-zinc-500">/mo</span></div>
+              <ul className="mt-4 text-sm text-zinc-600 space-y-1">
+                <li>✓ 2 channels (Channel 1 & 2)</li>
+                <li>✓ 720p HLS</li>
+                <li>✓ m3u: /api/tv/iptv.m3u</li>
+              </ul>
+              <a href="/api/tv/iptv.m3u" className="mt-6 block py-3 rounded-full bg-zinc-100 font-medium hover:bg-zinc-200">Get Free m3u</a>
+            </div>
+            <div className="rounded-2xl border-2 border-[#0E7C3A] p-6 text-center bg-[#F0FDF4]">
+              <h3 className="text-lg font-semibold">Premium</h3>
+              <div className="mt-2"><span className="text-3xl font-bold">৳199</span><span className="text-zinc-500">/mo</span></div>
+              <ul className="mt-4 text-sm text-zinc-600 space-y-1">
+                <li>✓ 6 channels (all + premium)</li>
+                <li>✓ 1080p HLS</li>
+                <li>✓ Full m3u via API key</li>
+                <li>✓ bKash: 01822417463</li>
+              </ul>
+              <button onClick={() => window.location.href='/api/billing/premium-iptv?key='+prompt('Enter bKash trxId after payment to 01822417463 (199 BDT)') || ''} className="mt-6 block w-full py-3 rounded-full bg-[#0E7C3A] text-white font-medium hover:bg-[#0c6a32]">bKash Pay 199 BDT</button>
+              <p className="mt-2 text-xs text-zinc-500">Or send bKash to 01822417463 and contact support</p>
+            </div>
+          </div>
+        </section>
+
         {/* API Catalog */}
         <section className="mt-16">
           <h2 className="text-2xl font-bold">API Catalog</h2>

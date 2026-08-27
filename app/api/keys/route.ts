@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     const apiKey = await createApiKey(user.id, name, permissions)
+    try { const { logApiRequest } = await import('@/lib/logger'); const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown'; const ua = req.headers.get('user-agent') || 'unknown'; logApiRequest({ keyId: apiKey.id, ip, ua, path: '/api/keys', method: 'POST', status: 201, duration: 0 }).catch(()=>{});} catch {}
 
     return NextResponse.json({
       success: true,

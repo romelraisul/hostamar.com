@@ -23,6 +23,26 @@ const nextConfig = {
   async headers() {
     return [
       {
+        source: '/manifest.json',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=600' }],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
+        source: '/hls/tv/index.m3u8',
+        headers: [{ key: 'Cache-Control', value: 'public, s-maxage=30, stale-while-revalidate=10' }],
+      },
+      {
+        source: '/api/tv/playlist',
+        headers: [{ key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=60' }],
+      },
+      {
+        source: '/api/tv/iptv.m3u',
+        headers: [{ key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=600' }],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -34,6 +54,12 @@ const nextConfig = {
           { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com; frame-ancestors 'none'" },
         ],
       },
+    ]
+  },
+  async redirects() {
+    return [
+      { source: '/.env', destination: '/404', permanent: false },
+      { source: '/.env:params*', destination: '/404', permanent: false },
     ]
   },
   typescript: {

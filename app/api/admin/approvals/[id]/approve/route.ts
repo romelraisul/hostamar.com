@@ -1,6 +1,6 @@
 // POST /api/admin/approvals/:id/approve | /deny — decide a pending approval.
 import { NextRequest, NextResponse } from 'next/server'
-import { guardInternal } from '@/lib/harness/guard'
+import { guardInternal, guardWithAdminFallback } from '@/lib/harness/guard'
 import { prisma } from '@/lib/prisma'
 import { ensureHarnessSchema } from '@/lib/harness/ensure-harness-schema'
 
@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const denied = guardInternal(req)
+  const denied = await guardWithAdminFallback(req)
   if (denied) return denied
   const decision = req.nextUrl.pathname.endsWith('/deny') ? 'denied' : 'approved'
   await ensureHarnessSchema().catch(() => undefined)

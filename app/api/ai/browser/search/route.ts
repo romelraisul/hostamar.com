@@ -102,6 +102,7 @@ export async function GET(request: NextRequest) {
   return runQuery(request)
 }
 
+import { logApiRequest } from '@/lib/logger'
 export async function POST(request: NextRequest) {
   const result = await requireCredits(request, {
     product: 'browser_search',

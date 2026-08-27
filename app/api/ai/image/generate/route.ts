@@ -100,6 +100,7 @@ export async function GET() {
   })
 }
 
+import { logApiRequest } from '@/lib/logger'
 export async function POST(req: NextRequest) {
   try {
     // Check for API key first (Bearer token or X-API-Key header)

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-
+import { requireAdmin } from '@/lib/auth'
 function envOn(name: string) {
   const value = (process.env[name] || '').trim()
   return value !== '' && value.toLowerCase() !== 'false' && value !== '0'
@@ -100,8 +100,9 @@ async function pingOllama() {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    await requireAdmin(req)
     return failoverState()
   } catch (error) {
     console.error('Admin ecosystem error:', error)
