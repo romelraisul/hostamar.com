@@ -1116,6 +1116,8 @@ model SeoEvent {
   @@index([event])
   @@index([createdAt])
   @@index([customerId])
+}
+
 model TvChannel {
   id          String   @id @default(cuid())
   name        String
