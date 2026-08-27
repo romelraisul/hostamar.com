@@ -153,6 +153,11 @@ export default function TvPage() {
       // YouTube live id comes from status destinations (platform=youtube) if present
       const yt = sRes?.destinations?.find?.((d: any) => d.platform === 'youtube' && d.isActive);
       if (yt?.label) setYoutubeLiveId(yt.label);
+      // Facebook LIVE override (set by admin or PC cron via data/live.json)
+      if (sRes?.platform === 'FACEBOOK' && sRes?.videoId) {
+        setYoutubeLiveId(sRes.videoId);
+        setSource('facebook');
+      }
     } catch (e: any) { setError(e.message); }
   };
   useEffect(() => { load(); registerTvSw(); const t = setInterval(load, 10000); return () => clearInterval(t); }, []);
@@ -268,12 +273,19 @@ export default function TvPage() {
               </div>
             ) : source !== 'iptv' ? (
               <div className="absolute inset-0 bg-black">
-                {youtubeLiveId || source === 'youtube' ? (
+                {source === 'youtube' && youtubeLiveId ? (
                   <iframe
-                    src={`https://www.youtube.com/embed/${youtubeLiveId || 'dQw4w9WgXcQ'}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0`}
+                    src={`https://www.youtube.com/embed/${youtubeLiveId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0`}
                     className="w-full h-full"
                     allow="autoplay; fullscreen"
                     title="Hostamar Live"
+                  />
+                ) : source === 'facebook' && youtubeLiveId ? (
+                  <iframe
+                    src={`https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/videos/${youtubeLiveId}/&autoplay=1&mute=${muted ? 1 : 0}&show_text=0&width=800`}
+                    className="w-full h-full"
+                    allow="autoplay; fullscreen"
+                    title="Hostamar Facebook Live"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-zinc-900"><p className="mono text-sm text-zinc-500">Connect Facebook Live in /admin/tv</p></div>

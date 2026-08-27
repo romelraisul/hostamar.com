@@ -125,6 +125,10 @@ export interface StreamStatus {
   tunnelConfigured: boolean
   hlsReachable: boolean
   agentLastSeen: string | null
+  // Facebook LIVE override (set by admin or PC cron)
+  platform?: 'FACEBOOK' | 'YOUTUBE'
+  videoId?: string
+  title?: string
 }
 
 /** Aggregate live status for the dashboard + /tv. */

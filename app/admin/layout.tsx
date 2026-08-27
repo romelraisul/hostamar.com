@@ -15,6 +15,8 @@ import {
   Menu,
   X,
   User,
+  Tv,
+  BarChart3,
 } from 'lucide-react'
 
 const navItems = [
@@ -25,6 +27,8 @@ const navItems = [
   { id: 'models', href: '/admin?tab=models', icon: Cpu, label: 'Models' },
   { id: 'products', href: '/admin?tab=products', icon: Package, label: 'Products' },
   { id: 'hosting', href: '/admin?tab=hosting', icon: Server, label: 'Hosting' },
+  { id: 'tv', href: '/admin/tv', icon: Tv, label: 'TV Station' },
+  { id: 'tv-analytics', href: '/admin/tv-analytics', icon: BarChart3, label: 'TV Analytics' },
   { id: 'nodes', href: '/admin/nodes', icon: Server, label: 'Nodes' },
 ]
 

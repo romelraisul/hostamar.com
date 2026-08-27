@@ -28,6 +28,7 @@ import {
   HardDrive,
   Clock,
   ChevronRight,
+  Tv,
 } from 'lucide-react'
 import { PRODUCT_NAV } from '@/lib/products'
 import { DASHBOARD_ROUTES } from '@/lib/dashboard-routes'
@@ -122,6 +123,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const secondaryNav = [
     { href: '/dashboard/analytics', icon: BarChart3, label: t('nav.analytics') || 'Analytics' },
+    { href: '/dashboard/tv', icon: Tv, label: 'My TV' },
     { href: '/dashboard/payment', icon: CreditCard, label: t('nav.payment') || 'Billing' },
     { href: '/dashboard/referral', icon: Gift, label: t('nav.referral') || 'Referral' },
     { href: '/dashboard/settings', icon: Settings, label: t('nav.settings') || 'Settings' },
