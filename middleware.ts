@@ -134,12 +134,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // API routes — validate token
+  // API routes — validate token (cookie or Authorization Bearer)
   if (pathname.startsWith('/api/')) {
-    if (!authToken) {
+    const authHeader = request.headers.get('authorization') || ''
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
+    const tokenToVerify = authToken || bearerToken
+    if (!tokenToVerify) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
-    const payload = await verifyTokenEdge(authToken)
+    const payload = await verifyTokenEdge(tokenToVerify)
     if (!payload) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
