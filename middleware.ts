@@ -115,6 +115,7 @@ export async function middleware(request: NextRequest) {
     '/api/tv/epg.xml',
     '/api/tv/now-playing',
     '/api/tv/agent',
+    '/api/admin/seed-tv-channels',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
