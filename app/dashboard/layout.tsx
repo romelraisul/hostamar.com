@@ -127,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ]
 
   const allCommands = [
-    { label: 'Overview', href: '/dashboard', icon: LayoutDashboard, kbd: 'G D' },
+    { label: 'ওভারভিউ', href: '/dashboard', icon: LayoutDashboard, kbd: 'G D' },
     ...navProducts.map((p) => ({ label: p.nameEn, href: p.href, icon: p.icon, kbd: '' })),
     ...secondaryNav.map((s) => ({ label: s.label, href: s.href, icon: s.icon, kbd: '' })),
     { label: 'Create Video', href: '/dashboard/videos/new', icon: Video, kbd: 'C V' },
