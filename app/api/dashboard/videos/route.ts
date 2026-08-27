@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser } from '@/lib/auth'
+import { getAuthUser } from '@/lib/get-auth-user'
 import { withTenant, getOrgFromRequest } from '@/lib/tenancy/tenant'
 import prisma from '@/lib/prisma'
 
@@ -12,27 +11,22 @@ export async function GET(request: NextRequest) {
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
+    const customerId = authUser.id
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')))
     const skip = (page - 1) * limit
 
-    // Admins may list all videos (?all=1); everyone else sees only their own.
-    const isAdmin = authUser.role === 'admin'
-    const listAll = isAdmin && searchParams.get('all') === '1'
-    const customerId = authUser.id
-
-    // Tenant-scoped — resolve org, then scope by both customerId AND organizationId.
+    // PR d: tenant-scoped — resolve org, then scope by both customerId AND organizationId.
     let orgId: string | undefined
     try {
       orgId = await getOrgFromRequest(request, { customerId })
     } catch {
-      orgId = undefined // no membership: do not over-scope
+      orgId = undefined // fallbackCustomerId path / no membership: do not over-scope
     }
 
-    const baseWhere = listAll ? {} : { customerId }
-    const scopedWhere = orgId && !listAll ? withTenant(orgId, { where: baseWhere }).where : baseWhere
+    const baseWhere = { customerId }
+    const scopedWhere = orgId ? withTenant(orgId, { where: baseWhere }).where : baseWhere
 
     const [videos, videoCount] = await Promise.all([
       prisma.video.findMany({

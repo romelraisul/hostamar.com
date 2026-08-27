@@ -177,7 +177,7 @@ export default function IDEPage() {
 
       {/* Comparison */}
       <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
-        <h2 className="text-[24px] md:text-[28px] font-bold mb-6">Replit / CodeSandbox / StackBlitz vs Hostamar</h2>
+        <h2 className="text-[24px] md:text-[28px] font-bold mb-6">Replit / CodeSandbox / StackBlitz বনাম Hostamar</h2>
         <div className="rounded-2xl bg-white border border-zinc-200 overflow-hidden">
           <div className="grid grid-cols-3 bg-zinc-50 border-b border-zinc-200 text-[13px] font-semibold">
             <div className="p-3">ফিচার</div>

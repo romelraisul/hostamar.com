@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user';
 
 const DOCKER_SOCK = 'http://localhost';
 
@@ -41,6 +42,8 @@ function mapStatus(state: string) {
 }
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const id = params.id;
     const name = await findContainerName(id);
@@ -84,6 +87,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const id = params.id;
     const body = await request.json();
@@ -123,6 +128,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const _auth = await getAuthUser(request as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const id = params.id;
     const name = await findContainerName(id);

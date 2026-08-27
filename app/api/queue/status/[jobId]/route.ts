@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/get-auth-user';
 import { getQueue, QUEUE_NAMES } from '@/lib/queue';
 
 /**
@@ -13,6 +14,8 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { jobId: string } }
 ) {
+  const _auth = await getAuthUser(_req as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { jobId } = params;
 
@@ -87,6 +90,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { jobId: string } }
 ) {
+  const _auth = await getAuthUser(_req as any);
+  if (!_auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { jobId } = params;
 
@@ -150,4 +155,4 @@ function mapStateToStatus(state: string): string {
     default:
       return 'unknown';
   }
-}
+}

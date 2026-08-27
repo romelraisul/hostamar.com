@@ -1,136 +1,72 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { comparePassword, signToken } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
-import { validateBody, toErrorResponse, zEmail } from '@/lib/api/validator'
-import { z } from 'zod'
-import bcrypt from 'bcryptjs'
-import { env } from '@/lib/env'
 
-const loginSchema = z.object({
-  email: zEmail,
-  password: z.string().min(8).max(128),
-  tenant: z.string().regex(/^[a-z0-9-]+$/).optional(),
-})
+const BACKEND_URL = process.env.API_BACKEND_URL || 'https://api.hostamar.com'
+
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+function validatePassword(password: string): string | null {
+  if (!password || password.length < 6) return 'Password must be at least 6 characters'
+  if (password.length > 128) return 'Password too long'
+  return null
+}
 
 export async function POST(request: NextRequest) {
-  try {
-    const ip = getClientIp(request)
-    const rl = await checkRateLimit(ip, RATE_LIMITS.login, '/api/auth/login', 'POST')
-    if (!rl.allowed) {
-      return NextResponse.json(
-        { error: 'Too many login attempts. Please try again later.' },
-        { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
-      )
-    }
+  const hasLocalDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgresql://')
 
-    let body: { email: string; password: string; tenant?: string }
+  if (hasLocalDb) {
     try {
-      body = await validateBody(request, loginSchema)
-    } catch (e) {
-      return toErrorResponse(e)
-    }
+      const { comparePassword, signToken } = await import('@/lib/auth-utils')
+      const { prisma } = await import('@/lib/prisma')
 
-    const { email, password } = body
+      const body = await request.json()
+      const { email, password } = body
 
-    // SSO enforcement (procurement line 1): if the email domain belongs to an
-    // org that enforces SAML/OIDC SSO, password login is disabled — redirect to IdP.
-    const domain = email.split('@')[1]?.toLowerCase()
-    if (domain) {
-      const ssoOrg = await prisma.organization.findFirst({
-        where: { domain, OR: [{ ssoEnforced: true }, { oidcEnforced: true }] },
-        include: { samlConnection: true, oidcConnection: true },
-      })
-      if (ssoOrg) {
-        // Prefer OIDC if it's the enforced method, else SAML.
-        const useOidc = ssoOrg.oidcEnforced && ssoOrg.oidcConnection
-        const loginUrl = useOidc
-          ? `/api/auth/oidc/login?tenant=${encodeURIComponent(ssoOrg.slug)}`
-          : `/api/auth/saml/login?tenant=${encodeURIComponent(ssoOrg.slug)}`
-        return NextResponse.json(
-          {
-            error: 'sso_required',
-            message: `Your organization enforces SSO. Please sign in with ${ssoOrg.name}.`,
-            ssoTenant: ssoOrg.slug,
-            ssoLoginUrl: loginUrl,
-          },
-          { status: 403 }
-        )
+      const pwErr = validatePassword(password)
+      if (!email || !validateEmail(email)) {
+        return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
       }
-    }
+      if (pwErr) {
+        return NextResponse.json({ error: pwErr }, { status: 400 })
+      }
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      )
-    }
+      const customer = await prisma.customer.findUnique({ where: { email: email.toLowerCase() } })
+      if (!customer) {
+        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+      }
 
-    let userRow: any = null
-    try {
-      userRow = await prisma.$queryRaw<any[]>`
-        SELECT id, email, name, password, "role"
-        FROM "Customer"
-        WHERE email = ${email}
-        LIMIT 1;
-      `
-    } catch (rawError) {
-      console.error('Login raw query failed:', rawError)
-    }
+      const valid = await comparePassword(password, customer.password!)
+      if (!valid) {
+        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+      }
 
-    if (!userRow?.[0]) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
-    }
+      const token = signToken({ id: customer.id, email: customer.email, name: customer.name, role: customer.role })
 
-    const user = userRow[0]
-    let isValid = false
-    try {
-      isValid = await comparePassword(password, user.password)
-    } catch (compareError) {
-      console.error('Password compare failed:', compareError)
-      isValid = bcrypt.compareSync(password, user.password)
-    }
-
-    if (!isValid) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
-    }
-
-    const token = signToken({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role || 'customer',
-    })
-
-    const response = NextResponse.json(
-      {
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      return NextResponse.json({
         token,
-      }
-    )
+        user: { id: customer.id, email: customer.email, name: customer.name, role: customer.role }
+      })
+    } catch (e: any) {
+      console.error('Local login error, falling back to proxy:', e)
+      // Fall through to proxy below
+    }
+  }
 
-    response.cookies.set('auth_token', token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
+  // Proxy to local backend via Cloudflare tunnel
+  try {
+    const body = await request.json()
+    const resp = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     })
-
-    return response
-  } catch (error) {
-    console.error('Login error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    const data = await resp.json()
+    return NextResponse.json(data, { status: resp.status })
+  } catch (e: any) {
+    console.error('Proxy login error:', e)
+    return NextResponse.json({ error: 'Backend unavailable' }, { status: 502 })
   }
 }

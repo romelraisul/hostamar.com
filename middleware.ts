@@ -1,48 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server'
+// BUILD-CACHE-BUSTER: this file is deliberately clean (no @/lib/metrics-store
+// import) so the Edge bundle has zero Node-only deps. Do not re-add it here.
 
-const PRODUCT_SUBDOMAIN_PATHS: Record<string, string> = {
-  'studio.hostamar.com': '/studio',
-  'video.hostamar.com': '/video',
-  'voice.hostamar.com': '/chat',
-  'chat.hostamar.com': '/chat',
-  'browser.hostamar.com': '/browser',
-  'ide.hostamar.com': '/ide',
-  'game.hostamar.com': '/game',
-  'hosting.hostamar.com': '/hosting',
+
+
+function b64urlToBytes(b64url: string): Uint8Array {
+  const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = b64.padEnd(b64.length + (4 - (b64.length % 4)) % 4, '=')
+  const bin = atob(padded)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return bytes
+}
+
+async function hmacVerify(message: string, signatureB64Url: string, secret: string): Promise<boolean> {
+  try {
+    const enc = new TextEncoder()
+    const key = await crypto.subtle.importKey('raw', enc.encode(secret) as BufferSource, { name: 'HMAC', hash: 'SHA-256' }, false, ['verify'])
+    const sigBytes = b64urlToBytes(signatureB64Url) as BufferSource
+    const msgBytes = enc.encode(message) as BufferSource
+    return await crypto.subtle.verify('HMAC', key, sigBytes, msgBytes)
+  } catch { return false }
 }
 
 async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string; orgId?: string } | null> {
   try {
-    const secret = process.env.JWT_SECRET
-    if (!secret || !token) return null
+    const secrets: string[] = []
+    if (process.env.JWT_SECRET) secrets.push(process.env.JWT_SECRET)
+    if (process.env.NEXTAUTH_SECRET) secrets.push(process.env.NEXTAUTH_SECRET)
+    if (process.env.AUTH_SECRET) secrets.push(process.env.AUTH_SECRET)
+    if (secrets.length === 0) return null
+    if (!token) return null
 
     const parts = token.split('.')
     if (parts.length !== 3) return null
+    const [hB64, pB64, sB64] = parts
 
-    const header = JSON.parse(decodeBase64Url(parts[0]))
-    if (header.alg !== 'HS256') return null
-
-    const key = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['verify']
-    )
-    const signature = base64UrlToBytes(parts[2])
-    const data = new TextEncoder().encode(`${parts[0]}.${parts[1]}`)
-    const verified = await crypto.subtle.verify(
-      'HMAC',
-      key,
-      signature.buffer as ArrayBuffer,
-      data
-    )
+    // try each secret — JWT may have been signed with JWT_SECRET or NEXTAUTH_SECRET
+    let verified = false
+    for (const sec of secrets) {
+      if (await hmacVerify(`${hB64}.${pB64}`, sB64, sec)) { verified = true; break }
+    }
     if (!verified) return null
 
-    const payload = JSON.parse(decodeBase64Url(parts[1]))
+    const payloadBytes = b64urlToBytes(pB64)
+    const json = new TextDecoder().decode(payloadBytes)
+    const payload = JSON.parse(json)
 
     if (payload.exp && Date.now() >= payload.exp * 1000) return null
-
+    if (payload.nbf && Date.now() < payload.nbf * 1000) return null
     if (payload.id && payload.email) {
       return {
         id: String(payload.id),
@@ -57,38 +63,10 @@ async function verifyTokenEdge(token: string): Promise<{ id: string; email: stri
     return null
   }
 }
-
-function decodeBase64Url(value: string): string {
-  return new TextDecoder().decode(base64UrlToBytes(value))
-}
-
-function base64UrlToBytes(value: string): Uint8Array {
-  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
-  const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=')
-  const binary = atob(padded)
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i)
-  }
-  return bytes
-}
-
 export async function middleware(request: NextRequest) {
+  // Check for custom JWT auth token (set by /api/auth/login)
   const authToken = request.cookies.get('auth_token')?.value
-  const requestedPathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
-  const hostname = (request.headers.get('host') || '').split(':')[0].toLowerCase()
-  const subdomainPath = PRODUCT_SUBDOMAIN_PATHS[hostname]
-  const pathname = requestedPathname === '/' && subdomainPath ? subdomainPath : requestedPathname
-
-  const continueRequest = (requestHeaders?: Headers) => {
-    const init = requestHeaders ? { request: { headers: requestHeaders } } : undefined
-    if (pathname !== requestedPathname) {
-      const destination = request.nextUrl.clone()
-      destination.pathname = pathname
-      return NextResponse.rewrite(destination, init)
-    }
-    return NextResponse.next(init)
-  }
+  const pathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
 
   // Static assets — always allow
   if (
@@ -101,123 +79,67 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Public pages — no auth needed (marketing + auth pages + MINIMAL product landing pages)
-  // NOTE: /generate + /hosting marketing views stay public — real product dashboards remain protected
-  // so pricing/banners/SEO (P0) never hit a 307 login wall. Remove /chat /browser /game /dev /hosting
-  // from protectedPages below and keep them public ONLY for landing view — API still 401-guarded.
-  const publicPages = [
-    '/', '/login', '/signup', '/pricing', '/about', '/contact',
-    '/privacy', '/terms', '/blog', '/forgot-password', '/reset-password',
-    '/verify-email', '/signin', '/developers',
-    '/dev', '/products',
-    '/generate', '/ai-browser', '/ide',
-    // 6-product production-grade: marketing landing views public (no login wall for 200)
-    // Dashboard/IDE editing behind auth still enforced inside page via 'withAuth' client guard
-    '/generate', '/hosting', '/chat', '/browser', '/game', '/dev',
-    '/tv',
+  // Public API paths — no auth needed (include all NextAuth endpoints + custom auth + video public APIs)
+  const publicApiPaths = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/health',
+    '/api/auth/signup',
+    '/api/auth/forgot-password',
+    '/api/auth/forgot',
+    '/api/auth/reset',
+    '/api/auth/reset-password',
+    '/api/bootstrap-admin',
+    '/api/storage',
+    '/api/auth/providers',
+    '/api/auth/callback',
+    '/api/auth/signin',
+    '/api/auth/signout',
+    '/api/auth/csrf',
+    '/api/auth/session',
+    '/api/support-chat',   // public Ollama L1 support
+    '/api/payment/verify',   // payment gateway callback — must be reachable without a session
+    '/api/binance-price',
+    '/api/market-adjust',
+    '/api/services/catalog',
   ]
-  for (const p of publicPages) {
+  if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    return NextResponse.next()
+  }
+
+  // Self-guarded server-to-server / webhook paths (no cookie auth possible):
+  // guarded by INTERNAL_API_KEY at the route, exactly like /api/internal/provision.
+  const selfGuardedPaths = [
+    '/api/harness/run',       // harness plan/execute — x-internal-api-key
+    '/api/telegram/webhook',  // Telegram bot callback (cannot carry our session cookie)
+    '/api/inngest',           // Inngest serve endpoint (dev server self-validates its handshake)
+    '/api/webhooks/call-ended', // voice post-call webhook (server-to-server, no session cookie)
+    '/api/auth/saml/metadata', // SAML SP metadata (IdP fetch, no session cookie)
+    '/api/auth/saml/acs',     // SAML ACS — IdP POST, cannot carry our session cookie
+    '/api/auth/saml/callback', // SAML OAuth code exchange (cross-site redirect from IdP)
+    '/api/auth/oidc/authorize', // OIDC SP-initiated redirect (no session needed)
+    '/api/auth/oidc/login',     // OIDC IdP-initiated entry
+    '/api/auth/oidc/callback',  // OIDC code exchange (cross-site redirect from IdP)
+    '/api/scim/v2',             // SCIM 2.0 — Bearer-token server-to-server (no session cookie)
+  ]
+  if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    return NextResponse.next()
+  }
+
+  // Public page paths — no auth needed
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide']
+  for (const p of publicPaths) {
     if (pathname === p || pathname.startsWith(p + '/')) {
-      return continueRequest()
+      return NextResponse.next()
     }
   }
 
-  // Public API paths — auth, health, webhooks, payment (NO AI generation here)
-  const publicApiPaths = [
-    '/api/auth/',
-    '/api/health',
-    '/api/products',
-    '/api/pricing',
-    '/api/seo/track',
-    '/api/payments/sms-webhook',
-    '/api/tv/status',
-    '/api/tv/heartbeat',
-    '/api/tv/r2',
-    '/api/tv/now-playing',
-    '/api/tv/playlist',
-    '/api/tv/hls-url',
-    '/v1/',
-    '/api/v1/',
-    '/api/tv/generate-loop',
-    '/api/tv/agent/',
-    '/api/tv/viral/',
-    '/api/tv/view',
-    '/api/tv/iptv.m3u',
-    '/api/tv/epg.xml',
-    '/api/iptv',
-    '/api/hosting/status',
-    '/api/generate/history',
-    '/api/chat/ai-assist',
-    '/api/test-or',
-    '/api/test-chat',
-    '/api/browser/summarize',
-    '/api/game/credits',
-    '/api/bootstrap-admin',
-    '/api/auth/saml/',
-    '/api/auth/oidc/',
-    '/api/auth/sso/',
-    '/api/auth/twitter/',
-    '/api/webhooks/',
-    '/api/telegram/',
-    '/api/inngest',
-    '/api/harness/',
-    '/api/scim/',
-    '/api/internal/',
-    '/api/cron/',
-    '/api/binance-price',
-    '/api/market-adjust',
-    '/api/services/',
-    '/api/services/catalog',
-    '/api/video/render/process',
-    '/api/queue/process',
-    '/api/payment/verify',
-    '/api/payment/personal',
-    '/api/payment/webhook',
-    '/api/payments/bkash/verify',
-    '/api/payments/bkash/create',
-    '/api/payments/stripe/create-checkout',
-    '/api/payments/stripe/webhook',
-    '/api/payments/paypal/create-order',
-    '/api/payments/paypal/capture',
-    '/api/payments/paypal/webhook',
-    '/api/payment/ipn',
-    '/api/payment/bkash-verify',
-    '/api/video/status',
-    '/api/billing/',
-    '/api/dashboard/videos',
-    '/api/storage',
-    '/api/metrics',
-    '/api/invoices',
-    '/api/support-chat',
-    '/api/debug/env',
-    '/api/test-signup',
-    '/api/test-redis',
-    '/api/test-video-gen',
-    '/api/test-bullmq',
-    '/api/email/setup-brevo',
-    '/api/browser/',
-    '/api/ai-gateway/',
-    '/api/videos/generate',
-    '/api/showcase',
-    '/api/comfy',
-    '/api/ai/videos/generate',
-    '/api/keys',
-  ]
+  // API routes — validate token
   if (pathname.startsWith('/api/')) {
-    const isPublicApi = publicApiPaths.some((p) => pathname === p || pathname.startsWith(p))
-    if (isPublicApi) {
-      return NextResponse.next()
+    if (!authToken) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
-    // Protected API — require auth (cookie auth_token OR Authorization Bearer header)
-    let authTokenEff = authToken
-    if (!authTokenEff) {
-      const hdr = request.headers.get('authorization') || ''
-      if (hdr.toLowerCase().startsWith('bearer ')) authTokenEff = hdr.slice(7).trim()
-    }
-    if (!authTokenEff) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const payload = await verifyTokenEdge(authTokenEff)
+    const payload = await verifyTokenEdge(authToken)
     if (!payload) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
@@ -225,50 +147,36 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-user-id', payload.id)
     requestHeaders.set('x-user-email', payload.email)
     requestHeaders.set('x-user-name', payload.name)
-    requestHeaders.set('x-user-role', payload.role || 'customer')
     if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
     return NextResponse.next({
       request: { headers: requestHeaders },
     })
   }
 
-  // Protected pages — require auth (internal/dashboard/admin tools)
-  // Pages that REQUIRE login: /dashboard, /admin, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
-  // NOTE: /voice /chat /browser /game /hosting marketing landings are PUBLIC (see publicPages) — only dashboard-prefixed variants need auth
-  const protectedPages = [
-    '/dashboard', '/admin', '/studio', '/video', '/image',
-    '/voice',
-    '/ltx-studio', '/gallery', '/prompts', '/ossu', '/subscription',
-    '/payment', '/profile', '/collab', '/crm',
-    '/editor', '/setup',
-  ]
-  for (const p of protectedPages) {
-    if (pathname === p || pathname.startsWith(p + '/')) {
-      if (!authToken) {
-        return NextResponse.redirect(new URL('/login', request.url))
-      }
-      const payload = await verifyTokenEdge(authToken)
-      if (!payload) {
-        return NextResponse.redirect(new URL('/login', request.url))
-      }
-      // Admin pages require admin role
-      if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
-      }
-      const requestHeaders = new Headers(request.headers)
-      requestHeaders.set('x-user-id', payload.id)
-      requestHeaders.set('x-user-email', payload.email)
-      requestHeaders.set('x-user-name', payload.name)
-      requestHeaders.set('x-user-role', payload.role || 'customer')
-      if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
-      return continueRequest(requestHeaders)
+  // Protected pages — redirect to login
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+    if (!authToken) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    const payload = await verifyTokenEdge(authToken)
+    if (!payload) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    // /admin area requires elevated role
+    if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
 
-  // Default: allow (for any unmatched paths)
-  return continueRequest()
+  // Force Bangla for dashboard — 100% Bangla requirement
+  if (pathname.startsWith('/dashboard')) {
+    const res = NextResponse.next()
+    res.cookies.set('locale', 'bn', { path: '/', maxAge: 31536000 })
+    return res
+  }
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image).*)'],
+  matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image).*)']
 }

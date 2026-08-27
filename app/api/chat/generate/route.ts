@@ -3,9 +3,8 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
-import { env } from '@/lib/env'
 
-const OLLAMA_BASE = env.OLLAMA_BASE_URL || env.OLLAMA_HOST || 'http://localhost:11435'
+const OLLAMA_BASE = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || 'http://localhost:11435'
 const DEFAULT_MODEL = 'qwen3.6:latest'
 
 type ChatRole = 'user' | 'assistant'
@@ -88,32 +87,61 @@ export async function POST(request: NextRequest) {
       } as any,
     })
 
-    // Request streaming from local Ollama
-    const ollamaRes = await fetch(`${OLLAMA_BASE}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model,
-        messages: messagesPayload,
-        stream: true,
-        options: { temperature: 0.7 },
-      }),
-    }).catch(() => undefined)
-
+    // Try Ollama first (local dev), then KiloCode fallback (prod Vercel)
+    let ollamaRes: Response | undefined
+    try {
+      ollamaRes = await fetch(`${OLLAMA_BASE}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          messages: messagesPayload,
+          stream: true,
+          options: { temperature: 0.7 },
+        }),
+        signal: AbortSignal.timeout(5000),
+      })
+      if (!ollamaRes.ok) throw new Error('ollama not ok')
+    } catch {}
     if (!ollamaRes || !ollamaRes.ok) {
-      // Save assistant fallback inline to keep schema consistent
+      // KiloCode fallback - free model
+      try {
+        const { chat: kiloChat } = await import('@/lib/kilocode-client')
+        const kiloRes = await kiloChat(messagesPayload[messagesPayload.length-1]?.content || message, messagesPayload[0]?.content || '', 'kilo-auto/free')
+        if (!('error' in kiloRes)) {
+          const fallbackContent = kiloRes.text
+          await prisma.message.create({
+            data: { conversationId: activeConversationId, userId: authUser.id as any, role: 'assistant', content: fallbackContent, model: 'kilo-auto/free' } as any,
+          })
+          const encoder = new TextEncoder()
+          const stream = new ReadableStream({
+            async start(controller) {
+              // stream fallback as SSE token by token
+              for (const tok of fallbackContent.split(/(\s+)/)) {
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token: tok, conversationId: activeConversationId })}\n\n`))
+                await new Promise(r=>setTimeout(r, 8))
+              }
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+              controller.close()
+            }
+          })
+          return new Response(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Conversation-Id': activeConversationId } })
+        }
+      } catch {}
+    }
+    if (!ollamaRes || !ollamaRes.ok) {
       await prisma.message.create({
         data: {
           conversationId: activeConversationId,
           userId: authUser.id as any,
           role: 'assistant',
-          content: 'AI service unavailable right now.',
+          content: 'AI সেবা এখন ব্যস্ত আছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
           model,
         } as any,
       })
       return NextResponse.json(
-        { error: 'AI service unavailable', conversationId: activeConversationId },
-        { status: 502 }
+        { error: 'AI সেবা ব্যস্ত', conversationId: activeConversationId },
+        { status: 503 }
       )
     }
 
