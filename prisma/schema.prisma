@@ -1164,6 +1164,37 @@ model TvPlaylistItem {
   @@index([played])
 }
 
+// ════════════════════════════════════════════════════════════════
+// TV monetization — view tracking + iptv-org channel catalog
+// ════════════════════════════════════════════════════════════════
+
+model TvIptvChannel {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  logo        String?
+  category    String   @default("General")
+  country     String   @default("bd")
+  tvgId       String?
+  isLive      Boolean  @default(false)
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category, country])
+}
+
+model TvView {
+  id         String   @id @default(cuid())
+  channelId  String
+  ip         String?
+  userAgent  String?
+  referer    String?
+  createdAt  DateTime @default(now())
+
+  @@index([channelId, createdAt])
+}
+
 model TvStreamDestination {
   id        String   @id @default(cuid())
   channelId String

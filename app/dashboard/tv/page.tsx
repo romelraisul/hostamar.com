@@ -1,256 +1,183 @@
 'use client';
-
-import { useEffect, useState, useCallback } from 'react';
-import { Tv, Play, Square, Radio, RefreshCw, Loader2, Plus, Globe, Zap } from 'lucide-react';
-
-type TvStatus = {
-  isLive: boolean;
-  liveSince: string | null;
-  channelName: string;
-  playlistLength: number;
-  destinations: { platform: string; label: string | null; isActive: boolean; lastError: string | null }[];
-  autoGenerateEnabled: boolean;
-};
+import { useEffect, useRef, useState } from 'react';
+import { Tv, Radio, Volume2, VolumeX, Maximize2, RefreshCw } from 'lucide-react';
+import Hls from 'hls.js';
+import { registerTvSw, TV_LEVEL_KEY } from '@/lib/tv/useHlsSaveData';
 
 type PlaylistItem = { id: string; title: string; url: string; source: string; position: number };
 
-export default function TvDashboard() {
-  const [status, setStatus] = useState<TvStatus | null>(null);
+// Customer's personal TV — simplified player with their watch history
+export default function CustomerTv() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
+
   const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const [muted, setMuted] = useState(false);
+  const [power, setPower] = useState(true);
+  const [hlsUrl, setHlsUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
+  const channels = playlist;
+  const current = channels[currentIdx] || channels[0];
+
+  const load = async () => {
     try {
-      const [sRes, pRes] = await Promise.all([
-        fetch('/api/tv/status', { credentials: 'include' }),
-        fetch('/api/tv/playlist', { credentials: 'include' }),
+      const [sRes, hRes, pRes] = await Promise.all([
+        fetch('/api/tv/status', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).catch(() => null),
+        fetch('/api/tv/hls-url', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).catch(() => null),
+        fetch('/api/tv/playlist', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).catch(() => null),
       ]);
-      if (sRes.ok) setStatus(await sRes.json());
-      if (pRes.ok) {
-        const p = await pRes.json();
-        setPlaylist(p.items || []);
-      }
-    } catch {
-      /* keep last state */
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      setHlsUrl(sRes?.hlsUrl || hRes?.hlsUrl || null);
+      if (pRes?.items?.length) setPlaylist(pRes.items.filter((i: any) => i.url));
+    } catch (e: any) { setError(e.message); } finally { setLoading(false); }
+  };
 
+  useEffect(() => { load(); registerTvSw(); const t = setInterval(load, 10000); return () => clearInterval(t); }, []);
+
+  const isLive = hlsUrl && power;
+
+  // HLS attach with slow-BD profile
   useEffect(() => {
-    load();
-    const t = setInterval(load, 15000);
-    return () => clearInterval(t);
-  }, [load]);
+    const video = videoRef.current;
+    if (!video || !isLive || !hlsUrl) return;
 
-  const startStream = async () => {
-    setBusy(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const res = await fetch('/api/tv/stream/start', { method: 'POST', credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage(`Stream started → ${data.destinations?.join(', ')}. Run the ffmpeg command in the tv-station container.`);
-      } else {
-        setError(data.message || data.error || 'Failed to start stream');
+    const VP9_URL = 'https://vp9.hostamar.com/master.m3u8';
+    let usingVp9 = false;
+    const goVp9 = () => {
+      if (usingVp9) return;
+      usingVp9 = true;
+      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+      attach(VP9_URL);
+    };
+
+    const attach = (src: string) => {
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = src; video.play().catch(() => {}); return;
       }
-      await load();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
+      if (!Hls.isSupported()) { setError('HLS not supported'); return; }
+      if (hlsRef.current) hlsRef.current.destroy();
+      let savedLevel = -1;
+      try { savedLevel = Number(localStorage.getItem(TV_LEVEL_KEY) ?? '-1'); } catch {}
+      const hls = new Hls({
+        enableWorker: true, lowLatencyMode: false,
+        backBufferLength: 30, maxBufferLength: 30, maxMaxBufferLength: 60,
+        maxBufferSize: 20 * 1000 * 1000, maxBufferHole: 0.5,
+        highBufferWatchdogPeriod: 2, nudgeOffset: 0.1, nudgeMaxRetry: 5,
+        maxFragLookUpTolerance: 0.25, liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 10, liveDurationInfinity: false,
+        startLevel: Number.isFinite(savedLevel) && savedLevel >= 0 ? savedLevel : -1,
+        capLevelToPlayerSize: true, autoStartLoad: true, testBandwidth: true, progressive: false,
+      });
+      hls.loadSource(src); hls.attachMedia(video);
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        if (!data.fatal) return;
+        if (!usingVp9) { goVp9(); return; }
+        setError(`HLS ${data.details}`); hls.destroy();
+      });
+      hls.on(Hls.Events.LEVEL_SWITCHED, (_e, d) => {
+        try { localStorage.setItem(TV_LEVEL_KEY, String(d.level)); } catch {}
+      });
+      hlsRef.current = hls;
+    };
+
+    attach(hlsUrl);
+    return () => { if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; } };
+  }, [isLive, hlsUrl, power]);
+
+  const handleEnded = () => { if (channels.length > 0) setCurrentIdx((i) => (i + 1) % channels.length); };
+
+  const changeChannel = (delta: number) => {
+    setCurrentIdx((i) => (i + delta + channels.length) % channels.length);
   };
 
-  const stopStream = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/tv/stream/stop', { method: 'POST', credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) setMessage('Stream stopped.');
-      else setError(data.message || data.error || 'Failed to stop');
-      await load();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
+  const changeVolume = (delta: number) => {
+    setVolume((v) => {
+      const nv = Math.min(1, Math.max(0, v + delta));
+      if (videoRef.current) videoRef.current.volume = nv;
+      return nv;
+    });
   };
 
-  const generateNow = async () => {
-    setBusy(true);
-    setError(null);
-    setMessage(null);
-    try {
-      // Direct generate (admin) — bypasses cron for manual top-up
-      const res = await fetch('/api/tv/generate', { method: 'POST', credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) setMessage(`Generated video: ${data.topic || data.videoId}`);
-      else setError(data.message || data.error || 'Generation failed');
-      await load();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-      </div>
-    );
-  }
-
-  const live = status?.isLive ?? false;
+  if (loading) return <div className="p-6 text-zinc-400">Loading your TV...</div>;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <main className="container mx-auto px-4 py-10 max-w-5xl">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Tv className="w-7 h-7 text-emerald-400" /> {status?.channelName || 'Hostamar TV'}
-            </h1>
-            <p className="text-zinc-400 mt-1">24/7 AI TV Station — auto-generated content, streamed live.</p>
-          </div>
-          <div
-            className={
-              'flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ' +
-              (live
-                ? 'border-red-500/40 bg-red-500/10 text-red-400'
-                : 'border-zinc-700 bg-zinc-900 text-zinc-400')
-            }
-          >
-            <Radio className={'w-4 h-4 ' + (live ? 'animate-pulse' : '')} />
-            {live ? 'LIVE' : 'OFFLINE'}
-          </div>
-        </div>
-
-        {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
-        {message && <div className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{message}</div>}
-
-        {/* Controls */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <button
-            onClick={startStream}
-            disabled={busy || live}
-            className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-40 p-5 text-left transition flex items-center gap-3"
-          >
-            <Play className="w-6 h-6 text-emerald-400" />
-            <div>
-              <div className="font-semibold">Start Stream</div>
-              <div className="text-xs text-zinc-500">Go live to all destinations</div>
-            </div>
+    <div className="p-4 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold flex items-center gap-2"><Tv className="w-5 h-5 text-emerald-400" /> My TV</h2>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setPower((p) => !p)} className={`p-2 rounded-lg ${power ? 'bg-emerald-600' : 'bg-zinc-700'}`}>
+            <Tv className="w-4 h-4" />
           </button>
-          <button
-            onClick={stopStream}
-            disabled={busy || !live}
-            className="rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-40 p-5 text-left transition flex items-center gap-3"
-          >
-            <Square className="w-6 h-6 text-red-400" />
-            <div>
-              <div className="font-semibold">Stop Stream</div>
-              <div className="text-xs text-zinc-500">Take the channel offline</div>
-            </div>
-          </button>
-          <button
-            onClick={generateNow}
-            disabled={busy}
-            className="rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 disabled:opacity-40 p-5 text-left transition flex items-center gap-3"
-          >
-            <Zap className="w-6 h-6 text-blue-400" />
-            <div>
-              <div className="font-semibold">Generate Video</div>
-              <div className="text-xs text-zinc-500">New AI video from trending topic</div>
-            </div>
-          </button>
+          <button onClick={load} className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700"><RefreshCw className="w-4 h-4" /></button>
         </div>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-zinc-400 text-sm mb-1">Playlist</div>
-            <div className="text-2xl font-bold">{status?.playlistLength ?? 0} videos</div>
+      <div ref={containerRef} className="relative rounded-xl bg-black border border-zinc-800 overflow-hidden aspect-video">
+        {!power ? (
+          <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center">
+            <p className="text-zinc-500 text-sm">TV is off</p>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-zinc-400 text-sm mb-1">Destinations</div>
-            <div className="text-2xl font-bold">{status?.destinations?.filter((d) => d.isActive).length ?? 0} active</div>
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-zinc-400 text-sm mb-1">Auto-Generate</div>
-            <div className="text-2xl font-bold">{status?.autoGenerateEnabled ? 'ON' : 'OFF'}</div>
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-zinc-400 text-sm mb-1">Live Since</div>
-            <div className="text-lg font-bold">{status?.liveSince ? new Date(status.liveSince).toLocaleTimeString() : '—'}</div>
-          </div>
-        </div>
+        ) : (
+          <video ref={videoRef} controls={false} autoPlay muted={muted} playsInline onEnded={handleEnded} className="w-full h-full object-contain" poster="/og-image.png" />
+        )}
 
-        {/* Destinations */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden mb-8">
-          <div className="px-6 py-4 border-b border-zinc-800 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-emerald-400" />
-            <h2 className="font-semibold">Stream Destinations</h2>
+        {/* Controls overlay */}
+        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between bg-black/60 backdrop-blur rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2">
+            <button onClick={() => changeChannel(-1)} className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-xs">CH -</button>
+            <span className="text-xs mono">{currentIdx + 1}/{channels.length}</span>
+            <button onClick={() => changeChannel(1)} className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-xs">CH +</button>
           </div>
-          {(status?.destinations?.length ?? 0) === 0 ? (
-            <div className="px-6 py-8 text-center text-zinc-500 text-sm">
-              No destinations configured. Add YouTube/Facebook/Twitch RTMP keys via /api/tv/destinations or env vars.
+          <div className="flex items-center gap-2">
+            <button onClick={() => setMuted((m) => !m)} className="p-1 rounded bg-white/10">
+              {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
+            <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
+              <div className="h-full bg-white" style={{ width: `${muted ? 0 : volume * 100}%` }} />
             </div>
-          ) : (
-            <div className="divide-y divide-zinc-800/50">
-              {status!.destinations.map((d, i) => (
-                <div key={i} className="px-6 py-3 flex items-center justify-between">
-                  <div>
-                    <span className="font-medium text-white">{d.platform}</span>
-                    {d.label && <span className="ml-2 text-xs text-zinc-500">{d.label}</span>}
-                  </div>
-                  <span
-                    className={
-                      'text-xs px-2 py-1 rounded-full ' +
-                      (d.isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-zinc-700 text-zinc-400')
-                    }
-                  >
-                    {d.isActive ? 'active' : 'inactive'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Playlist */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
-          <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
-            <h2 className="font-semibold">Playlist ({playlist.length})</h2>
-            <button onClick={load} className="p-1.5 rounded-lg hover:bg-zinc-800 transition" title="Refresh">
-              <RefreshCw className="w-4 h-4 text-zinc-400" />
+            <button onClick={() => containerRef.current?.requestFullscreen()} className="p-1 rounded bg-white/10">
+              <Maximize2 className="w-3.5 h-3.5" />
             </button>
           </div>
-          {playlist.length === 0 ? (
-            <div className="px-6 py-8 text-center text-zinc-500 text-sm">
-              Playlist is empty. Generate videos to fill it.
-            </div>
+        </div>
+
+        {/* LIVE badge */}
+        {isLive && (
+          <div className="absolute top-3 left-3 flex items-center gap-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+          </div>
+        )}
+      </div>
+
+      {error && <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+
+      {/* Channel list */}
+      <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+        <div className="px-4 py-3 border-b border-zinc-800">
+          <h3 className="font-semibold text-sm flex items-center gap-2"><Radio className="w-4 h-4 text-emerald-400" /> Channels</h3>
+        </div>
+        <div className="max-h-[200px] overflow-auto divide-y divide-zinc-800">
+          {channels.length === 0 ? (
+            <div className="p-4 text-center text-zinc-500 text-sm">No channels yet. Admin needs to seed channels.</div>
           ) : (
-            <div className="divide-y divide-zinc-800/50 max-h-96 overflow-y-auto">
-              {playlist.map((item) => (
-                <div key={item.id} className="px-6 py-3 flex items-center justify-between">
-                  <div className="min-w-0">
-                    <div className="text-sm text-white truncate">{item.title}</div>
-                    <div className="text-xs text-zinc-500">{item.source} · #{item.position}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            channels.slice(0, 20).map((ch, idx) => (
+              <button
+                key={ch.id}
+                onClick={() => setCurrentIdx(idx)}
+                className={`w-full px-4 py-2 flex items-center gap-3 text-left hover:bg-white/[0.04] ${idx === currentIdx ? 'bg-emerald-500/10' : ''}`}
+              >
+                <span className="text-xs w-6 h-6 rounded bg-white/10 flex items-center justify-center">{idx + 1}</span>
+                <span className="text-sm truncate">{ch.title}</span>
+                {idx === currentIdx && <Radio className="w-3 h-3 text-emerald-400 ml-auto" />}
+              </button>
+            ))
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
