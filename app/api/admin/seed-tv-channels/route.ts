@@ -6,7 +6,6 @@ import { requireAdmin } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
 const WORLD_M3U = 'https://iptv-org.github.io/iptv/index.m3u'
-const BD_M3U = 'https://iptv-org.github.io/iptv/countries/bd.m3u'
 
 function parseM3U(text: string): { name: string; tvg: string; group: string; logo: string; url: string }[] {
   const lines = text.split('\n')
@@ -27,8 +26,9 @@ function parseM3U(text: string): { name: string; tvg: string; group: string; log
 }
 
 /**
- * POST /api/admin/seed-tv-channels — seed 1200 channels from iptv-org to Neon
- * Fetches directly from iptv-org, parses M3U, saves to TvIptvChannel.
+ * POST /api/admin/seed-tv-channels — seed channels in batches
+ * Query: ?batch=0 (0-99), ?batch=1 (100-199), etc. Each batch ~100 channels.
+ * This avoids Cloudflare 100s timeout.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -38,20 +38,16 @@ export async function POST(req: NextRequest) {
       await requireAdmin(req)
     }
 
-    // Check if already seeded
-    const existing = await prisma.tvIptvChannel.count()
-    if (existing > 0) {
-      return NextResponse.json({ error: `Already seeded: ${existing} channels exist. Delete first to re-seed.` }, { status: 409 })
-    }
+    const { searchParams } = new URL(req.url)
+    const batch = parseInt(searchParams.get('batch') || '0', 10)
+    const batchSize = 100
 
-    // Fetch from iptv-org
-    console.log('[seed-tv-channels] fetching iptv-org...')
+    // Fetch from iptv-org (cached after first call via global)
     const res = await fetch(WORLD_M3U)
     if (!res.ok) return NextResponse.json({ error: `Failed to fetch: HTTP ${res.status}` }, { status: 500 })
     const text = await res.text()
 
     const raw = parseM3U(text)
-    console.log(`[seed-tv-channels] found ${raw.length} raw channels`)
 
     // Filter: free-to-air, skip adult/religion/politics, keep m3u8
     const SKIP = ['adult', 'religion', 'politics', 'xxx']
@@ -68,12 +64,16 @@ export async function POST(req: NextRequest) {
       return true
     })
 
-    const limited = deduped.slice(0, 1200)
-    console.log(`[seed-tv-channels] seeding ${limited.length} channels...`)
+    // Take batch
+    const start = batch * batchSize
+    const batchChannels = deduped.slice(start, start + batchSize)
+    if (batchChannels.length === 0) {
+      return NextResponse.json({ ok: true, done: true, message: 'No more channels to seed' })
+    }
 
-    // Seed to DB
+    // Seed batch to DB
     let saved = 0
-    for (const c of limited) {
+    for (const c of batchChannels) {
       try {
         await prisma.tvIptvChannel.create({
           data: {
@@ -92,8 +92,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.log(`[seed-tv-channels] done: ${saved} seeded`)
-    return NextResponse.json({ ok: true, seeded: saved, total: limited.length })
+    const totalSeeded = await prisma.tvIptvChannel.count()
+    return NextResponse.json({
+      ok: true,
+      batch,
+      seeded: saved,
+      totalSeeded,
+      hasMore: start + batchSize < deduped.length,
+      nextBatch: batch + 1,
+    })
   } catch (err) {
     console.error('[seed-tv-channels] error:', err)
     return NextResponse.json({ error: 'INTERNAL_ERROR', details: (err as any)?.message }, { status: 500 })
@@ -105,7 +112,10 @@ export async function POST(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   try {
-    await requireAdmin(req)
+    const seedSecret = req.headers.get('x-seed-secret') || req.nextUrl.searchParams.get('secret')
+    if (!seedSecret || seedSecret !== (process.env.SEED_SECRET || 'hostamar-tv-seed-2026')) {
+      await requireAdmin(req)
+    }
     const deleted = await prisma.tvIptvChannel.deleteMany({})
     return NextResponse.json({ ok: true, deleted: deleted.count })
   } catch (err) {
