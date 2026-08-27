@@ -291,7 +291,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 }`}
               >
                 <LayoutDashboard className="h-4 w-4" />
-                Overview
+                ওভারভিউ
               </Link>
               {navProducts.map((p) => {
                 const active = pathname === p.href || pathname.startsWith(p.href + '/')

@@ -1,5 +1,8 @@
 #!/bin/bash
-COUNT=$(vercel ls --limit 100 2>/dev/null | grep -c "Ready\|Building\|Error" || echo 0)
+COUNT=$(vercel ls 2>&1 | grep -c -E "Ready|Building|Error" || echo 0)
+# strip non-digits (handle wc style)
+COUNT=$(echo "$COUNT" | tr -d ' ' | head -n1 | grep -o '[0-9]*' | head -n1)
+COUNT=${COUNT:-0}
 echo "Deployments today visible: $COUNT/100"
 if [ "$COUNT" -gt 95 ]; then
   echo "🛑 95% quota - STOP all deploys until 06:00 AM BST reset"
