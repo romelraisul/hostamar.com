@@ -110,6 +110,7 @@ export async function middleware(request: NextRequest) {
     '/api/tv/status',
     '/api/tv/hls-url',
     '/api/tv/playlist',
+    '/api/tv/channels',
     '/api/tv/iptv.m3u',
     '/api/tv/epg.xml',
     '/api/tv/now-playing',

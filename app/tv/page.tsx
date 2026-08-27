@@ -144,12 +144,19 @@ export default function TvPage() {
       const [sRes, hRes, pRes] = await Promise.all([
         fetch('/api/tv/status', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
         fetch('/api/tv/hls-url', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
-        fetch('/api/tv/playlist', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
+        fetch('/api/tv/channels?limit=50', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
       ]);
       if (sRes) setStatus(sRes);
       const resolved = sRes?.hlsUrl || hRes?.hlsUrl || null;
       setHlsUrl(resolved);
       if (pRes?.items?.length) setPlaylist(pRes.items.filter((i: any) => i.url));
+      else if (pRes?.items === undefined) {
+        // Fallback: load from channels API
+        try {
+          const chRes = await fetch('/api/tv/channels?limit=50', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+          if (chRes?.items?.length) setPlaylist(chRes.items.filter((i: any) => i.url));
+        } catch {}
+      }
       // YouTube live id comes from status destinations (platform=youtube) if present
       const yt = sRes?.destinations?.find?.((d: any) => d.platform === 'youtube' && d.isActive);
       if (yt?.label) setYoutubeLiveId(yt.label);
@@ -259,6 +266,7 @@ export default function TvPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden md:inline mono text-[11px] px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-zinc-300">OLED • 4K • HDR</span>
+          <a href="/contact" className="hidden md:inline-flex px-3 py-1 rounded-full bg-[#0e7c3a] text-white text-[11px] font-bold hover:bg-[#0c6a32]">Advertise Here — ৳500/wk</a>
           <button onClick={load} className="p-2 rounded-lg bg-white/[0.06] hover:bg-white/10"><RefreshCw className="w-4 h-4" /></button>
         </div>
       </header>
