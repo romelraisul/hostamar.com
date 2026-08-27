@@ -187,7 +187,13 @@ export default function TvPage() {
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (data.fatal) { setError(`HLS ${data.details}`); hls.destroy(); }
+        if (data.fatal) {
+          console.warn(`[tv] HLS error for ${current?.title}:`, data.details);
+          // Auto-skip dead channel to next
+          setTimeout(() => {
+            setCurrentIdx((i) => (i + 1) % channels.length);
+          }, 2000);
+        }
       });
       hls.on(Hls.Events.LEVEL_SWITCHED, (_e, d) => {
         try { localStorage.setItem(TV_LEVEL_KEY, String(d.level)); } catch {}

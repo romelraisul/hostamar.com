@@ -41,7 +41,10 @@ export async function GET(req: NextRequest) {
       const [items, total] = await Promise.all([
         prisma.tvIptvChannel.findMany({
           where,
-          orderBy: { views: 'desc' },
+          orderBy: [
+            { country: 'asc' }, // bd first (if filtered) then global
+            { views: 'desc' },
+          ],
           take: limit,
           skip,
           select: { id: true, name: true, url: true, logo: true, category: true, country: true, views: true },
