@@ -107,6 +107,8 @@ export async function middleware(request: NextRequest) {
     '/privacy', '/terms', '/blog', '/forgot-password', '/reset-password',
     '/verify-email', '/signin', '/developers',
     '/dev', '/products',
+    '/generate', '/ai-browser', '/ide',
+    '/tv',
   ]
   for (const p of publicPages) {
     if (pathname === p || pathname.startsWith(p + '/')) {
@@ -118,6 +120,12 @@ export async function middleware(request: NextRequest) {
   const publicApiPaths = [
     '/api/auth/',
     '/api/health',
+    '/api/payments/sms-webhook',
+    '/api/tv/status',
+    '/api/tv/playlist',
+    '/api/tv/hls-url',
+    '/api/tv/generate-loop',
+    '/api/tv/agent/',
     '/api/bootstrap-admin',
     '/api/auth/saml/',
     '/api/auth/oidc/',
@@ -200,12 +208,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected pages — require auth (internal/dashboard/admin tools)
-  // Pages that REQUIRE login: /dashboard, /admin, /generate, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
+  // Pages that REQUIRE login: /dashboard, /admin, /studio, /ltx-studio, /gallery, /prompts, /ossu, /subscription, /payment, /profile
   const protectedPages = [
-    '/dashboard', '/admin', '/generate', '/studio', '/video', '/image',
-    '/voice', '/chat', '/browser', '/game', '/ide', '/hosting',
+    '/dashboard', '/admin', '/studio', '/video', '/image',
+    '/voice', '/chat', '/browser', '/game', '/hosting',
     '/ltx-studio', '/gallery', '/prompts', '/ossu', '/subscription',
-    '/payment', '/profile', '/ai-browser', '/collab', '/crm',
+    '/payment', '/profile', '/collab', '/crm',
     '/editor', '/setup',
   ]
   for (const p of protectedPages) {

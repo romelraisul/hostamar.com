@@ -36,6 +36,7 @@
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.77.3",
     "fluent-ffmpeg": "^2.1.3",
+    "hls.js": "^1.7.1",
     "inngest": "^4.12.1",
     "ioredis": "^5.10.1",
     "isomorphic-dompurify": "^3.18.0",
