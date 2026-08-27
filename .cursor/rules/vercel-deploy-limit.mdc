@@ -1,0 +1,37 @@
+---
+description: Vercel Free Tier 100/day Deploy Guard
+alwaysApply: true
+---
+
+# VERCEL DEPLOY RULE - MUST FOLLOW - FREE TIER 100/DAY
+
+## 1. NEVER double deploy
+- DO NOT run `vercel --prod --yes` if you already did `git push origin main` for same commit
+- GitHub auto-deploy = 1 deploy. CLI vercel --prod = 1 deploy. Doing both = 2x waste.
+- RULE: Use ONLY `git push origin main` - NEVER use `vercel --prod --yes` unless user says "deploy via CLI only" and quota <80
+
+## 2. Check quota BEFORE any deploy
+Before any git push or vercel deploy, run:
+```
+vercel ls --limit 100 | grep -c "2026-08-27\|Today"
+```
+If count >80: STOP, warn user "80/100 used, batch remaining fixes into 1 commit, wait until 06:00 AM BST reset"
+If count >95: DO NOT DEPLOY AT ALL, only local `npm run build`
+
+## 3. Batch fixes into 1 commit
+- DO NOT create 3 commits 8ab2552, 64d3962, 20fa804 for same task
+- Combine security + Bangla + functional into ONE commit: `git add . && git commit -m "fix: ..."`
+- Use `git commit --amend` if last commit not pushed yet
+- NEVER `git push --force` with rebase - it cancels + recreates deploys = counts double
+
+## 4. Local verify, not prod verify
+- Always `npm run build` locally -> 87.7kB green before push
+- Curl verify on local `http://localhost:3000` not on hostamar.com prod
+- Prod curl only AFTER Ready, not as deploy trigger
+
+## 5. Daily limit reset
+- Reset is 00:00 UTC = 06:00 AM BST Bangladesh
+- If hit `api-deployments-free-per-day`, tell user wait until tomorrow 06:00 AM BST, do NOT retry vercel --prod loop
+
+## 6. Guard script
+Run `bash scripts/check-vercel-quota.sh` before push - script returns exit 1 if >90

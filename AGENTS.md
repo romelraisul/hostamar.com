@@ -49,3 +49,12 @@ The DEPLOYED repo is THIS directory: `/home/romel/hostamar-build` (branch `main`
 - Never commit `.env*` with real secrets (use `.env.example`).
 - Never modify `/mnt/c/Users/User/hostamar.com` expecting it to affect production —
   this repo (`hostamar-build`) is the deploy target.
+
+
+## VERCEL DEPLOY RULE - FREE TIER 100/DAY (always apply)
+
+- NEVER `git push + vercel --prod --yes` double deploy (1 push = 1 deploy). Use ONLY `git push`.
+- Check quota BEFORE push: `vercel ls --limit 100 | grep -c "Ready|Building"` — if >80 batch, >95 stop until 06:00 AM BST (00:00 UTC) reset.
+- Batch fixes into 1 commit, use `git commit --amend` if not pushed, never --force rebase.
+- Local `npm run build` 87.7kB green before push, curl local not prod.
+- Guard: `bash scripts/check-vercel-quota.sh` (exit 1 if >80)

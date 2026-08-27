@@ -17,7 +17,9 @@
     "typecheck": "npx tsc --noEmit --skipLibCheck",
     "test": "vitest run",
     "test:watch": "vitest",
-    "make": "make"
+    "make": "make",
+    "prepush": "bash scripts/check-vercel-quota.sh && npm run build",
+    "check:vercel-quota": "bash scripts/check-vercel-quota.sh"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
