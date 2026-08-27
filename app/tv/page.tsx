@@ -15,7 +15,7 @@ type TvStatus = {
   destinations?: { platform: string; label: string | null; isActive: boolean; lastError: string | null }[];
 };
 
-type PlaylistItem = { id: string; title: string; url: string; source: string; position: number };
+type PlaylistItem = { id: string; title: string; url: string; source: string; position: number; category?: string; country?: string; logo?: string };
 
 type SourceMode = 'iptv' | 'youtube' | 'facebook';
 
