@@ -11,24 +11,11 @@ type TvStatus = {
   playlistLength: number;
   hlsReachable: boolean;
   agentLastSeen: string | null;
+  iptvChannels?: number;
   destinations?: { platform: string; label: string | null; isActive: boolean; lastError: string | null }[];
 };
 
 type PlaylistItem = { id: string; title: string; url: string; source: string; position: number };
-
-// Bangladesh IPTV fallback — from iptv-org bd.m3u (free-to-air, update via /scripts/fetch-channels.js)
-const BD_CHANNELS: PlaylistItem[] = [
-  { id: 'bd1', title: 'Somoy TV', url: 'https://live1.somoynews.tv/live/somoynews.stream/chunklist.m3u8', source: 'iptv', position: 1 },
-  { id: 'bd2', title: 'Jamuna TV', url: 'https://live.jamuna.tv/live/jamunatv.stream/playlist.m3u8', source: 'iptv', position: 2 },
-  { id: 'bd3', title: 'Channel i', url: 'https://live1.channeli.com.bd/live/channeli.stream/playlist.m3u8', source: 'iptv', position: 3 },
-  { id: 'bd4', title: 'Ekattor TV', url: 'https://live.ekattor.tv/live/ekattor.stream/playlist.m3u8', source: 'iptv', position: 4 },
-  { id: 'bd5', title: 'Independent TV', url: 'https://live.independent-bd.com/live/independent.stream/playlist.m3u8', source: 'iptv', position: 5 },
-  { id: 'bd6', title: 'DBC News', url: 'https://live.dbcnews.tv/live/dbcnews.stream/playlist.m3u8', source: 'iptv', position: 6 },
-  { id: 'bd7', title: 'ATN Bangla', url: 'https://live.atnbangla.tv/live/atnbangla.stream/playlist.m3u8', source: 'iptv', position: 7 },
-  { id: 'bd8', title: 'MY TV', url: 'https://live.mytvbd.tv/live/mytv.stream/playlist.m3u8', source: 'iptv', position: 8 },
-  { id: 'bd9', title: 'RTV', url: 'https://live.rtv.com.bd/live/rtv.stream/playlist.m3u8', source: 'iptv', position: 9 },
-  { id: 'bd10', title: 'NTV', url: 'https://live.ntvbd.com/live/ntv.stream/playlist.m3u8', source: 'iptv', position: 10 },
-];
 
 type SourceMode = 'iptv' | 'youtube' | 'facebook';
 
@@ -38,19 +25,19 @@ export default function TvPage() {
   const hlsRef = useRef<Hls | null>(null);
 
   const [status, setStatus] = useState<TvStatus | null>(null);
-  const [hlsUrl, setHlsUrl] = useState<string | null>(null);
-  const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
+  const [channels, setChannels] = useState<PlaylistItem[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [volume, setVolume] = useState(0.7);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(true);
   const [power, setPower] = useState(true);
   const [source, setSource] = useState<SourceMode>('iptv');
   const [osd, setOsd] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [youtubeLiveId, setYoutubeLiveId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [totalChannels, setTotalChannels] = useState(0);
   const osdTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const channels = playlist.length > 0 ? playlist : BD_CHANNELS;
   const current = channels[currentIdx] || channels[0];
 
   const showOSD = useCallback((text: string) => {
@@ -138,110 +125,87 @@ export default function TvPage() {
     }
   }, [volume, muted, currentIdx, source]);
 
-  // Load live status + playlist
+  // Load live status + channels from API
   const load = async () => {
     try {
-      const [sRes, hRes, pRes] = await Promise.all([
+      setError(null);
+      const [sRes, chRes] = await Promise.all([
         fetch('/api/tv/status', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
-        fetch('/api/tv/hls-url', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
         fetch('/api/tv/channels?limit=50', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
       ]);
       if (sRes) setStatus(sRes);
-      const resolved = sRes?.hlsUrl || hRes?.hlsUrl || null;
-      setHlsUrl(resolved);
-      if (pRes?.items?.length) setPlaylist(pRes.items.filter((i: any) => i.url));
-      else if (pRes?.items === undefined) {
-        // Fallback: load from channels API
-        try {
-          const chRes = await fetch('/api/tv/channels?limit=50', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
-          if (chRes?.items?.length) setPlaylist(chRes.items.filter((i: any) => i.url));
-        } catch {}
+      if (chRes?.items?.length) {
+        const items = chRes.items.filter((i: any) => i.url);
+        setChannels(items);
+        setTotalChannels(chRes.total || items.length);
+      } else {
+        setError('No channels available. Please seed the channel database.');
       }
-      // YouTube live id comes from status destinations (platform=youtube) if present
-      const yt = sRes?.destinations?.find?.((d: any) => d.platform === 'youtube' && d.isActive);
-      if (yt?.label) setYoutubeLiveId(yt.label);
-      // Facebook LIVE override (set by admin or PC cron via data/live.json)
+      // Facebook LIVE override
       if (sRes?.platform === 'FACEBOOK' && sRes?.videoId) {
         setYoutubeLiveId(sRes.videoId);
         setSource('facebook');
       }
-    } catch (e: any) { setError(e.message); }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => { load(); registerTvSw(); const t = setInterval(load, 10000); return () => clearInterval(t); }, []);
 
-  const isLive = status?.isLive && hlsUrl && status?.hlsReachable !== false;
+  useEffect(() => { load(); registerTvSw(); const t = setInterval(load, 30000); return () => clearInterval(t); }, []);
 
-  // HLS attach when live & source iptv, power on.
-  // Slow-BD profile: deep buffer + remembered start level + VP9 fallback on
-  // decode failure (see lib/tv/useHlsSaveData.ts).
+  const isLive = status?.isLive && status?.hlsReachable !== false;
+
+  // HLS attach when live & source iptv, power on
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !power || source !== 'iptv') return;
-    const url = isLive && hlsUrl ? hlsUrl : current?.url;
+    if (!video || !power || source !== 'iptv' || !current) return;
+    const url = current.url;
     if (!url) return;
 
-    const VP9_URL = 'https://vp9.hostamar.com/master.m3u8';
-    let usingVp9 = false;
-    const goVp9 = () => {
-      if (usingVp9) return;
-      usingVp9 = true;
-      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-      attach(VP9_URL);
-    };
-
-    const attach = (src: string) => {
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = src;
-        video.play().catch(() => {});
-        return;
-      }
-      if (!Hls.isSupported()) { setError('HLS not supported'); return; }
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url;
+      video.play().catch(() => {});
+      return;
+    }
+    if (Hls.isSupported()) {
       if (hlsRef.current) hlsRef.current.destroy();
       let savedLevel = -1;
       try { savedLevel = Number(localStorage.getItem(TV_LEVEL_KEY) ?? '-1'); } catch {}
       const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: false,
-        backBufferLength: 30,
-        maxBufferLength: 30,
-        maxMaxBufferLength: 60,
-        maxBufferSize: 20 * 1000 * 1000,
-        maxBufferHole: 0.5,
-        highBufferWatchdogPeriod: 2,
-        nudgeOffset: 0.1,
-        nudgeMaxRetry: 5,
-        maxFragLookUpTolerance: 0.25,
-        liveSyncDurationCount: 3,
-        liveMaxLatencyDurationCount: 10,
-        liveDurationInfinity: false,
+        enableWorker: true, lowLatencyMode: false,
+        backBufferLength: 30, maxBufferLength: 30, maxMaxBufferLength: 60,
+        maxBufferSize: 20 * 1000 * 1000, maxBufferHole: 0.5,
+        highBufferWatchdogPeriod: 2, nudgeOffset: 0.1, nudgeMaxRetry: 5,
+        maxFragLookUpTolerance: 0.25, liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 10, liveDurationInfinity: false,
         startLevel: Number.isFinite(savedLevel) && savedLevel >= 0 ? savedLevel : -1,
-        capLevelToPlayerSize: true,
-        autoStartLoad: true,
-        testBandwidth: true,
-        progressive: false,
+        capLevelToPlayerSize: true, autoStartLoad: true, testBandwidth: true, progressive: false,
       });
-      hls.loadSource(src);
+      hls.loadSource(url);
       hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (!data.fatal) return;
-        if (!usingVp9) { goVp9(); return; }
-        setError(`HLS ${data.details}`);
-        hls.destroy();
+        if (data.fatal) { setError(`HLS ${data.details}`); hls.destroy(); }
       });
       hls.on(Hls.Events.LEVEL_SWITCHED, (_e, d) => {
         try { localStorage.setItem(TV_LEVEL_KEY, String(d.level)); } catch {}
       });
-      const onMediaErr = () => { if (!usingVp9) goVp9(); };
-      video.addEventListener('error', onMediaErr);
       hlsRef.current = hls;
-    };
+      return () => { hls.destroy(); hlsRef.current = null; };
+    } else {
+      setError('HLS not supported in this browser');
+    }
+  }, [current, power, source]);
 
-    attach(url);
-    return () => { if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; } };
-  }, [isLive, hlsUrl, current, power, source]);
-
-  // Fallback sequential when not live and no HLS
-  const handleEnded = () => { if (!isLive && source === 'iptv') setCurrentIdx((i) => (i + 1) % channels.length); };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#080a0c] text-white flex items-center justify-center">
+        <div className="text-center"><Tv className="w-12 h-12 text-emerald-400 mx-auto mb-3 animate-pulse" /><p className="mono text-sm text-zinc-400">Loading 3700 channels...</p></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#080a0c] text-white selection:bg-emerald-500/30">
@@ -282,27 +246,21 @@ export default function TvPage() {
             ) : source !== 'iptv' ? (
               <div className="absolute inset-0 bg-black">
                 {source === 'youtube' && youtubeLiveId ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${youtubeLiveId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0`}
-                    className="w-full h-full"
-                    allow="autoplay; fullscreen"
-                    title="Hostamar Live"
-                  />
+                  <iframe src={`https://www.youtube.com/embed/${youtubeLiveId}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0`} className="w-full h-full" allow="autoplay; fullscreen" title="Hostamar Live" />
                 ) : source === 'facebook' && youtubeLiveId ? (
-                  <iframe
-                    src={`https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/videos/${youtubeLiveId}/&autoplay=1&mute=${muted ? 1 : 0}&show_text=0&width=800`}
-                    className="w-full h-full"
-                    allow="autoplay; fullscreen"
-                    title="Hostamar Facebook Live"
-                  />
+                  <iframe src={`https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/videos/${youtubeLiveId}/&autoplay=1&mute=${muted ? 1 : 0}&show_text=0&width=800`} className="w-full h-full" allow="autoplay; fullscreen" title="Hostamar Facebook Live" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-zinc-900"><p className="mono text-sm text-zinc-500">Connect Facebook Live in /admin/tv</p></div>
                 )}
                 <div className="absolute top-3 left-3 flex items-center gap-2 bg-white text-black px-3 py-1 rounded-full text-xs font-bold"><Tv className="w-4 h-4" /> hostamar.com/tv — LIVE</div>
                 <div className="absolute bottom-14 left-1/2 -translate-x-1/2 bg-[#0e7c3a] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg">Your Ad — 300×90 — bKash • Nagad • Hostamar</div>
               </div>
+            ) : error ? (
+              <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center">
+                <div className="text-center p-6"><Tv className="w-12 h-12 text-zinc-600 mx-auto mb-3" /><p className="mono text-xs text-zinc-400">{error}</p><button onClick={load} className="mt-3 px-4 py-2 rounded-lg bg-white/10 text-xs">Retry</button></div>
+              </div>
             ) : (
-              <video ref={videoRef} controls={false} autoPlay muted={muted} playsInline onEnded={handleEnded} className="w-full h-full object-contain" poster="/og-image.png" />
+              <video ref={videoRef} controls={false} autoPlay muted playsInline className="w-full h-full object-contain" poster="/og-image.png" />
             )}
 
             {/* OSD */}
@@ -350,24 +308,28 @@ export default function TvPage() {
           {/* Channels */}
           <div className="rounded-2xl border border-white/[0.06] bg-[#0f1113] overflow-hidden">
             <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
-              <h3 className="mono text-xs font-bold tracking-widest text-zinc-300 flex items-center gap-2"><ListVideo className="w-4 h-4 text-emerald-400" /> CHANNELS • {channels.length}</h3>
-              <span className="mono text-[10px] px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300">BD • FREE-TO-AIR</span>
+              <h3 className="mono text-xs font-bold tracking-widest text-zinc-300 flex items-center gap-2"><ListVideo className="w-4 h-4 text-emerald-400" /> CHANNELS • {totalChannels || channels.length}</h3>
+              <span className="mono text-[10px] px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300">LIVE • FREE-TO-AIR</span>
             </div>
             <div className="max-h-[260px] overflow-auto divide-y divide-white/[0.04] scroll-thin">
-              {channels.map((ch, idx) => (
-                <button
-                  key={ch.id}
-                  onClick={() => { setCurrentIdx(idx); showOSD(`CH ${idx + 1} — ${ch.title}`); }}
-                  className={`w-full px-4 py-2.5 flex items-center gap-3 text-left hover:bg-white/[0.04] transition ${idx === currentIdx ? 'bg-emerald-500/10' : ''}`}
-                >
-                  <span className={`mono text-xs w-7 h-7 rounded-lg flex items-center justify-center border ${idx === currentIdx ? 'bg-emerald-500 text-black border-emerald-400' : 'bg-white/[0.06] border-white/10 text-zinc-400'}`}>{idx + 1}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm truncate text-white">{ch.title}</div>
-                    <div className="mono text-[10px] text-zinc-500 uppercase">{ch.source} • {isLive && idx === 0 ? 'LIVE' : 'IPTV'}</div>
-                  </div>
-                  {idx === currentIdx && <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-                </button>
-              ))}
+              {channels.length === 0 ? (
+                <div className="p-6 text-center text-zinc-500 text-sm">No channels loaded.</div>
+              ) : (
+                channels.map((ch, idx) => (
+                  <button
+                    key={ch.id}
+                    onClick={() => { setCurrentIdx(idx); showOSD(`CH ${idx + 1} — ${ch.title}`); }}
+                    className={`w-full px-4 py-2.5 flex items-center gap-3 text-left hover:bg-white/[0.04] transition ${idx === currentIdx ? 'bg-emerald-500/10' : ''}`}
+                  >
+                    <span className={`mono text-xs w-7 h-7 rounded-lg flex items-center justify-center border ${idx === currentIdx ? 'bg-emerald-500 text-black border-emerald-400' : 'bg-white/[0.06] border-white/10 text-zinc-400'}`}>{idx + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm truncate text-white">{ch.title}</div>
+                      <div className="mono text-[10px] text-zinc-500 uppercase">{ch.category || ch.source}{ch.country ? ` • ${ch.country.toUpperCase()}` : ''}</div>
+                    </div>
+                    {idx === currentIdx && <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                  </button>
+                ))
+              )}
             </div>
             <div className="px-4 py-2 bg-black/30 border-t border-white/[0.06] flex items-center justify-between mono text-[10px] text-zinc-500">
               <span>Up/Down = Channel • Left/Right = Volume</span>
@@ -381,13 +343,11 @@ export default function TvPage() {
               <h3 className="mono text-xs font-bold tracking-widest text-zinc-400">REMOTE</h3>
               <span className="mono text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">INFRARED</span>
             </div>
-            {/* Power + Source */}
             <div className="grid grid-cols-3 gap-2 mb-3">
               <button onClick={togglePower} className={`h-10 rounded-xl font-bold text-xs flex items-center justify-center gap-1 ${power ? 'bg-red-600 text-white' : 'bg-zinc-800 text-zinc-300'}`}><Power className="w-4 h-4" /> POWER</button>
               <button onClick={toggleSource} className="h-10 rounded-xl bg-white text-black font-bold text-xs flex items-center justify-center gap-1"><MonitorUp className="w-4 h-4" /> SOURCE</button>
               <button onClick={toggleMute} className={`h-10 rounded-xl font-bold text-xs flex items-center justify-center gap-1 ${muted ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-white'}`}>{muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />} MUTE</button>
             </div>
-            {/* CH / VOL */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div className="rounded-xl bg-zinc-900 border border-white/5 p-2">
                 <div className="mono text-[10px] text-zinc-500 text-center mb-1 tracking-widest">CHANNEL</div>
@@ -404,7 +364,6 @@ export default function TvPage() {
                 </div>
               </div>
             </div>
-            {/* Numpad */}
             <div className="grid grid-cols-3 gap-1.5 mb-3">
               {[1,2,3,4,5,6,7,8,9].map((n) => (
                 <button key={n} onClick={() => jumpChannel(n)} className="h-9 rounded-xl bg-zinc-900 border border-white/[0.06] mono text-sm font-bold hover:bg-white hover:text-black transition">{n}</button>
@@ -426,7 +385,6 @@ export default function TvPage() {
             </div>
           </div>
 
-          {/* Branded Live note */}
           <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 mono text-[11px] leading-relaxed text-zinc-400">
             <span className="text-white font-bold">How it works:</span> Vercel kills streams after 10s → your PC (port 3001) via Cloudflare Tunnel tv.hostamar.com proxies HLS to bypass CORS. Viewers stay on <span className="text-emerald-400">hostamar.com/tv</span> with our ads even when you go Live on YouTube/Facebook — auto SOURCE switches to branded LIVE.
             <div className="mt-2 text-[10px]">IPTV: <span className="text-zinc-300">iptv-org/iptv countries/bd.m3u 8000+ free-to-air</span> — parse via <span className="text-zinc-300">scripts/fetch-channels.js</span> on YOUR PC.</div>
