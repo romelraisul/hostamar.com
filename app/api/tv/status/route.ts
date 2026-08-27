@@ -7,13 +7,19 @@ import { getStreamStatus } from '@/lib/tv/streamer'
 /**
  * GET /api/tv/status (public)
  * Returns live status for the dashboard + /tv public page.
- * Merges HLS stream status + Facebook LIVE (from data/live.json set by admin or PC cron).
+ * Merges HLS stream status + Facebook LIVE (from data/live.json) + iptv channel count.
  */
 export async function GET() {
   try {
     const status = await getStreamStatus()
 
-    // Check for Facebook LIVE override (set by /api/admin/tv-analytics or PC cron)
+    // Add iptv channel count (from TvIptvChannel table)
+    try {
+      const { prisma } = await import('@/lib/prisma')
+      status.iptvChannels = await prisma.tvIptvChannel.count()
+    } catch {}
+
+    // Check for Facebook LIVE override (set by admin or PC cron)
     try {
       const fs = await import('fs')
       const live = JSON.parse(fs.readFileSync('data/live.json', 'utf-8'))
