@@ -194,28 +194,36 @@ export async function verifyBkashTransaction(input: VerifyInput): Promise<Verify
         },
       })
 
-      // CreditTransaction +6000/13000/30000
-      // Prod DB uses CreditAccount (accountId) not customerId — resolve account
-      // Use prisma (not tx) for CreditAccount as tx may not expose it
-      const acct = await (prisma as any).creditAccount.findUnique({ where: { customerId: userId } })
-      const acctId = acct?.id || (await (prisma as any).creditAccount.create({ data: { customerId: userId, credits: 0, consumed: 0, updatedAt: new Date() } })).id
-      // Ensure balanceAfter reflects acct.credits + credits (acct may be stale, use customer prev + credits)
-      await (tx as any).creditTransaction.create({
-        data: {
-          accountId: acctId,
-          amount: credits,
-          // prod schema: product + balanceAfter + description; type is 'product' not 'type'
-          product: 'purchase',
-          balanceAfter,
-          description: `bKash ${plan} ${amount} BDT TrxID ${trxId}`,
-        } as any,
-      })
-
-      // Update CreditAccount.credits increment (prod flow) + Customer.credits for dual ledger
-      await (prisma as any).creditAccount.update({
-        where: { id: acctId },
-        data: { credits: { increment: credits } } as any,
-      })
+      // CreditTransaction +6000/13000/30000 — uses real schema: CreditTransaction(customerId, amount, type, balanceAfter)
+      // Explicit handling: if creditTransaction model missing, log error but do not fail payment (Customer.credits is source of truth)
+      try {
+        if ((tx as any).creditTransaction) {
+          await (tx as any).creditTransaction.create({
+            data: {
+              customerId: userId,
+              amount: credits,
+              type: 'purchase',
+              description: `bKash ${plan} ${amount} BDT TrxID ${trxId}`,
+              balanceAfter,
+            } as any,
+          })
+        } else if ((prisma as any).creditTransaction) {
+          await (prisma as any).creditTransaction.create({
+            data: {
+              customerId: userId,
+              amount: credits,
+              type: 'purchase',
+              description: `bKash ${plan} ${amount} BDT TrxID ${trxId}`,
+              balanceAfter,
+            } as any,
+          })
+        } else {
+          console.error('[bkash] creditTransaction model missing in Prisma client — credits only on Customer')
+        }
+      } catch (e: any) {
+        console.error('[bkash] CreditTransaction create failed:', e?.message, e?.code || '')
+        // Explicit: do not throw — payment stays approved, Customer.credits below is authoritative
+      }
       await tx.customer.update({
         where: { id: userId },
         data: { credits: { increment: credits } } as any,
@@ -263,18 +271,19 @@ export async function verifyBkashTransaction(input: VerifyInput): Promise<Verify
           walletAddress: phone || null,
         },
       })
-      const acct2 = await (prisma as any).creditAccount.findUnique({ where: { customerId: userId } })
-      const acctId2 = acct2?.id || (await (prisma as any).creditAccount.create({ data: { customerId: userId, credits: 0, consumed: 0, updatedAt: new Date() } })).id
-      await (prisma as any).creditTransaction.create({
-        data: {
-          accountId: acctId2,
-          amount: credits,
-          product: 'purchase',
-          balanceAfter,
-          description: `bKash ${plan} ${amount} BDT TrxID ${trxId}`,
-        } as any,
-      })
-      await (prisma as any).creditAccount.update({ where: { id: acctId2 }, data: { credits: { increment: credits } } as any })
+      try {
+        await (prisma as any).creditTransaction.create({
+          data: {
+            customerId: userId,
+            amount: credits,
+            type: 'purchase',
+            description: `bKash ${plan} ${amount} BDT TrxID ${trxId}`,
+            balanceAfter,
+          } as any,
+        })
+      } catch (e: any) {
+        console.error('[bkash] CreditTransaction fallback create failed:', e?.message, e?.code || '')
+      }
       await prisma.customer.update({ where: { id: userId }, data: { credits: { increment: credits } } as any })
       try {
         await (prisma as any).seoEvent.create({ data: { type: 'payment_success', url: `/payments/bkash/${trxId}`, userAgent: `bkash:${plan}:${amount}` } })
