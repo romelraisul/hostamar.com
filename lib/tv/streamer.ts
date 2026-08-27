@@ -129,6 +129,7 @@ export interface StreamStatus {
   platform?: 'FACEBOOK' | 'YOUTUBE'
   videoId?: string
   title?: string
+  iptvChannels?: number
 }
 
 /** Aggregate live status for the dashboard + /tv. */
