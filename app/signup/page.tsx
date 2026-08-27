@@ -109,7 +109,10 @@ export default function SignupPage() {
         setLoading(false)
         return
       }
-      if (typeof window !== 'undefined') window.localStorage.setItem('auth_token', loginData.token)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('auth_token', loginData.token)
+        document.cookie = `auth_token=${loginData.token}; path=/; max-age=604800; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`
+      }
       await signIn('credentials', { email, password, redirect: false })
       router.push('/dashboard')
     } catch {

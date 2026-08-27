@@ -50,6 +50,7 @@ export default function LoginPage() {
       }
 
       window.localStorage.setItem('auth_token', data.token)
+      document.cookie = `auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`
       router.push('/dashboard')
     } catch {
       setError('সার্ভার সমস্যা। পুনরায় চেষ্টা করুন।')
