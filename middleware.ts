@@ -105,6 +105,15 @@ export async function middleware(request: NextRequest) {
     '/api/binance-price',
     '/api/market-adjust',
     '/api/services/catalog',
+    // Hostamar TV — public read-only endpoints for the /tv player.
+    // (agent/* + stream/* + destinations self-guard with TV_AGENT_SECRET / admin cookie at the route.)
+    '/api/tv/status',
+    '/api/tv/hls-url',
+    '/api/tv/playlist',
+    '/api/tv/iptv.m3u',
+    '/api/tv/epg.xml',
+    '/api/tv/now-playing',
+    '/api/tv/agent',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
