@@ -175,6 +175,11 @@ export async function middleware(request: NextRequest) {
     '/api/payment/webhook',
     '/api/payments/bkash/verify',
     '/api/payments/bkash/create',
+    '/api/payments/stripe/create-checkout',
+    '/api/payments/stripe/webhook',
+    '/api/payments/paypal/create-order',
+    '/api/payments/paypal/capture',
+    '/api/payments/paypal/webhook',
     '/api/payment/ipn',
     '/api/payment/bkash-verify',
     '/api/video/status',
@@ -203,11 +208,16 @@ export async function middleware(request: NextRequest) {
     if (isPublicApi) {
       return NextResponse.next()
     }
-    // Protected API — require auth
-    if (!authToken) {
+    // Protected API — require auth (cookie auth_token OR Authorization Bearer header)
+    let authTokenEff = authToken
+    if (!authTokenEff) {
+      const hdr = request.headers.get('authorization') || ''
+      if (hdr.toLowerCase().startsWith('bearer ')) authTokenEff = hdr.slice(7).trim()
+    }
+    if (!authTokenEff) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const payload = await verifyTokenEdge(authToken)
+    const payload = await verifyTokenEdge(authTokenEff)
     if (!payload) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
