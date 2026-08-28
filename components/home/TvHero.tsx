@@ -16,32 +16,47 @@ type Channel = {
 export default function TvHero() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const hlsRef = useRef<Hls | null>(null)
-  const audioCtxRef = useRef<AudioContext | null>(null)
-  const skipTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const skipRef = useRef<NodeJS.Timeout | null>(null)
 
   const [channels, setChannels] = useState<Channel[]>([])
   const [idx, setIdx] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [phase, setPhase] = useState<'loading'|'ready'|'error'>('loading')
   const [logoError, setLogoError] = useState(false)
   const [showSoundBadge, setShowSoundBadge] = useState(true)
 
   const current = channels[idx]
 
+  // Fetch channels on client only
   useEffect(() => {
+    let cancelled = false
+    setPhase('loading')
+
     fetch('/api/tv/channels?limit=20')
-      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
       .then((d) => {
-        const items = Array.isArray(d.items) ? d.items : Array.isArray(d) ? d : []
+        if (cancelled) return
+        const items: Channel[] = Array.isArray(d.items) ? d.items : Array.isArray(d) ? d : []
         if (items.length > 0) {
           setChannels(items)
-          const bdIdx = items.findIndex((c: Channel) => c.country === 'bd')
+          const bdIdx = items.findIndex((c) => c.country === 'bd')
           setIdx(bdIdx >= 0 ? bdIdx : 0)
+          setPhase('ready')
+        } else {
+          setPhase('error')
         }
       })
-      .catch((e) => console.error('[TvHero] fetch failed:', e))
-      .finally(() => setLoading(false))
+      .catch((e) => {
+        if (cancelled) return
+        setPhase('error')
+      })
+
+    return () => { cancelled = true }
   }, [])
 
+  // Auto-rotate every 10s
   useEffect(() => {
     if (channels.length <= 1) return
     const t = setInterval(() => {
@@ -51,25 +66,26 @@ export default function TvHero() {
     return () => clearInterval(t)
   }, [channels.length])
 
-  // HLS player with aggressive dead-channel skip
+  // HLS player
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !current) return
+    if (!video || !current || phase !== 'ready') return
 
-    if (skipTimerRef.current) { clearTimeout(skipTimerRef.current); skipTimerRef.current = null }
+    if (skipRef.current) clearTimeout(skipRef.current)
     if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null }
 
-    // If no data in 6s, skip to next channel
-    skipTimerRef.current = setTimeout(() => {
+    const url = current.url
+    if (!url) return
+
+    skipRef.current = setTimeout(() => {
       if (video.readyState < 1) {
-        console.warn(`[TvHero] no data for "${current.title}", skipping`)
         setIdx((i) => (i + 1) % channels.length)
         setLogoError(false)
       }
-    }, 6000)
+    }, 5000)
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = current.url
+      video.src = url
       video.play().catch(() => {})
       return
     }
@@ -81,34 +97,32 @@ export default function TvHero() {
         startLevel: -1, capLevelToPlayerSize: true,
         autoStartLoad: true, testBandwidth: true, progressive: false,
       })
-      hls.loadSource(current.url)
+      hls.loadSource(url)
       hls.attachMedia(video)
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        if (skipTimerRef.current) { clearTimeout(skipTimerRef.current); skipTimerRef.current = null }
+        if (skipRef.current) { clearTimeout(skipRef.current); skipRef.current = null }
         video.play().catch(() => {})
       })
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (data.fatal) {
-          if (skipTimerRef.current) { clearTimeout(skipTimerRef.current); skipTimerRef.current = null }
-          setTimeout(() => { setIdx((i) => (i + 1) % channels.length); setLogoError(false) }, 1500)
+        if (data.fatal && skipRef.current) {
+          clearTimeout(skipRef.current); skipRef.current = null
+          setTimeout(() => { setIdx((i) => (i + 1) % channels.length); setLogoError(false) }, 1000)
         }
       })
       hlsRef.current = hls
       return () => {
-        if (skipTimerRef.current) clearTimeout(skipTimerRef.current)
+        if (skipRef.current) clearTimeout(skipRef.current)
         hls.destroy(); hlsRef.current = null
       }
     }
-  }, [current, channels.length])
+  }, [current, channels.length, phase])
 
   const enableSound = useCallback(() => {
     if (videoRef.current) { videoRef.current.muted = false; videoRef.current.volume = 1 }
-    if (!audioCtxRef.current) { try { audioCtxRef.current = new AudioContext() } catch {} }
-    audioCtxRef.current?.resume()
     setShowSoundBadge(false)
   }, [])
 
-  if (loading) {
+  if (phase === 'loading') {
     return (
       <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black flex items-center justify-center">
         <div className="text-center">
@@ -119,10 +133,14 @@ export default function TvHero() {
     )
   }
 
-  if (channels.length === 0) {
+  if (phase === 'error' || channels.length === 0) {
     return (
       <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black flex items-center justify-center">
-        <div className="text-center"><Tv className="w-12 h-12 text-zinc-600 mx-auto mb-2" /><p className="mono text-xs text-zinc-400">No channels available</p></div>
+        <div className="text-center p-4">
+          <Tv className="w-10 h-10 text-zinc-600 mx-auto mb-2" />
+          <p className="mono text-xs text-zinc-400 mb-2">No channels available</p>
+          <Link href="/tv" className="text-emerald-400 text-xs font-bold hover:underline">Go to TV →</Link>
+        </div>
       </div>
     )
   }
@@ -130,8 +148,10 @@ export default function TvHero() {
   return (
     <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black" onClick={enableSound}>
       <video ref={videoRef} className="w-full h-full object-cover" muted autoPlay playsInline controls={false} poster="/og-image.png" />
+
       <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1 text-xs font-bold tracking-wider z-10 pointer-events-none">HOSTAMAR.COM/TV</div>
       <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse z-10"><span className="w-2 h-2 bg-white rounded-full" /> LIVE</div>
+
       {current && (
         <div className="absolute top-2 left-16 flex items-center gap-2 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
           {current.logo && !logoError ? (
@@ -142,8 +162,13 @@ export default function TvHero() {
           {current.title}
         </div>
       )}
+
       {showSoundBadge && <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white/90 text-[#0E7C3A] text-xs px-3 py-1 rounded-full font-bold shadow animate-pulse z-10 pointer-events-none">🔊 Tap for Sound</div>}
-      <Link href={current ? `/tv?channel=${current.id}` : '/tv'} className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block">🎬 {current?.title || 'Hostamar TV'} • {channels.length} channels • 10s rotation ▶</Link>
+
+      <Link href={current ? `/tv?channel=${current.id}` : '/tv'} className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block">
+        🎬 {current?.title || 'Hostamar TV'} • {channels.length} channels • 10s rotation ▶
+      </Link>
+
       {channels.length > 1 && (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10">
           {channels.slice(0, 20).map((_, i) => (
@@ -151,6 +176,7 @@ export default function TvHero() {
           ))}
         </div>
       )}
+
       <Link href="/tv" className="absolute -bottom-7 left-0 text-[11px] text-[#0E7C3A] font-semibold hover:underline z-10">📺 IPTV: hostamar.com/api/tv/iptv.m3u → VLC / Smart TV</Link>
     </div>
   )
