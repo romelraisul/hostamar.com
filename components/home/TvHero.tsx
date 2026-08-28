@@ -5,18 +5,19 @@ import Link from 'next/link';
 import Hls from 'hls.js';
 
 type Channel = {
-  id: string;
-  title: string;
-  url: string;
-  logo?: string;
-  category?: string;
-  country?: string;
+  id: string
+  title: string
+  url: string
+  logo?: string
+  category?: string
+  country?: string
 }
 
 export default function TvHero() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const hlsRef = useRef<Hls | null>(null)
   const audioCtxRef = useRef<AudioContext | null>(null)
+  const skipTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const [channels, setChannels] = useState<Channel[]>([])
   const [idx, setIdx] = useState(0)
@@ -28,10 +29,7 @@ export default function TvHero() {
 
   useEffect(() => {
     fetch('/api/tv/channels?limit=20')
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
       .then((d) => {
         const items = Array.isArray(d.items) ? d.items : Array.isArray(d) ? d : []
         if (items.length > 0) {
@@ -53,10 +51,22 @@ export default function TvHero() {
     return () => clearInterval(t)
   }, [channels.length])
 
+  // HLS player with aggressive dead-channel skip
   useEffect(() => {
     const video = videoRef.current
     if (!video || !current) return
+
+    if (skipTimerRef.current) { clearTimeout(skipTimerRef.current); skipTimerRef.current = null }
     if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null }
+
+    // If no data in 6s, skip to next channel
+    skipTimerRef.current = setTimeout(() => {
+      if (video.readyState < 1) {
+        console.warn(`[TvHero] no data for "${current.title}", skipping`)
+        setIdx((i) => (i + 1) % channels.length)
+        setLogoError(false)
+      }
+    }, 6000)
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = current.url
@@ -73,12 +83,21 @@ export default function TvHero() {
       })
       hls.loadSource(current.url)
       hls.attachMedia(video)
-      hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}) })
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (skipTimerRef.current) { clearTimeout(skipTimerRef.current); skipTimerRef.current = null }
+        video.play().catch(() => {})
+      })
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (data.fatal) setTimeout(() => setIdx((i) => (i + 1) % channels.length), 1500)
+        if (data.fatal) {
+          if (skipTimerRef.current) { clearTimeout(skipTimerRef.current); skipTimerRef.current = null }
+          setTimeout(() => { setIdx((i) => (i + 1) % channels.length); setLogoError(false) }, 1500)
+        }
       })
       hlsRef.current = hls
-      return () => { hls.destroy(); hlsRef.current = null }
+      return () => {
+        if (skipTimerRef.current) clearTimeout(skipTimerRef.current)
+        hls.destroy(); hlsRef.current = null
+      }
     }
   }, [current, channels.length])
 
