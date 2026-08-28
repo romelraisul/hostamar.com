@@ -1195,6 +1195,22 @@ model TvView {
   @@index([channelId, createdAt])
 }
 
+// Stability score for iptv channels — feeds "most stable" default on homepage + /tv
+// Cron /api/cron/tv-stability HEAD-probes each channel daily and updates scores.
+model TvChannelStability {
+  id             String   @id @default(cuid())
+  channelId      String   @unique
+  stabilityScore Int      @default(0) // 0-100
+  popularityScore Int     @default(0) // 7-day view count
+  successCount   Int      @default(0)
+  failCount      Int      @default(0)
+  avgLoadTimeMs  Int      @default(9999)
+  lastSuccessAt  DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([stabilityScore(sort: Desc), popularityScore(sort: Desc)])
+}
+
 model TvStreamDestination {
   id        String   @id @default(cuid())
   channelId String

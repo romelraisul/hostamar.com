@@ -99,7 +99,7 @@ function RecentCard({ videos }: { videos: RecentVideo[] }) {
 }
 
 export default function DashboardPage() {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const [data, setData] = useState<ApiData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -179,7 +179,9 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3">
           <span className="w-9 h-9 rounded-xl bg-[#0E7C3A] text-white grid place-items-center font-black">H</span>
           <div>
-            <h1 className="text-xl font-bold text-[#0F172A] leading-none">Dashboard • 6 products • 6000 credit</h1>
+            <h1 className="text-xl font-bold text-[#0F172A] leading-none">
+              {locale === 'bn' ? 'ওভারভিউ • Dashboard' : locale === 'ur' ? 'جائزہ • Dashboard' : 'Dashboard • 6 products • 6000 credit'}
+            </h1>
             <p className="text-xs text-[#64748B] mt-1">Hostamar • Video 100 • Hosting 0 • Chat 1 • Browser 5 • IDE 10 • Game 20</p>
           </div>
         </div>
