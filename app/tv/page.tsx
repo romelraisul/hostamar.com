@@ -130,10 +130,17 @@ export default function TvPage() {
   const load = async () => {
     try {
       setError(null);
-      const [sRes, chRes] = await Promise.all([
-        fetch('/api/tv/status', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
-        fetch('/api/tv/stable-channels?limit=50', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
-      ]);
+      const sRes = await fetch('/api/tv/status', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
+
+      // Fallback chain: stable-channels -> /api/tv/channels
+      let chRes: any = null;
+      for (const url of ['/api/tv/stable-channels?limit=50', '/api/tv/channels?country=bd&limit=50']) {
+        try {
+          const r = await fetch(url, { cache: 'no-store' });
+          if (r.ok) { chRes = await r.json(); break; }
+        } catch {}
+      }
+
       if (sRes) setStatus(sRes);
       if (chRes?.items?.length) {
         const items = chRes.items.filter((i: any) => i.url);
