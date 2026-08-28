@@ -269,6 +269,15 @@ export default function TvPage() {
               <video ref={videoRef} controls={false} autoPlay muted playsInline className="w-full h-full object-contain" poster="/og-image.png" />
             )}
 
+            {/* Top-right branding — always visible */}
+            {power && (
+              <div className="absolute top-3 right-3 z-50 flex items-center gap-2 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full border border-white/20 cursor-pointer hover:bg-black/80" onClick={() => window.location.href = '/tv'}>
+                <img src="/logo.png" alt="Hostamar" className="w-5 h-5" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                <span className="text-white text-xs font-bold tracking-widest mono">HOSTAMAR.COM/TV</span>
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              </div>
+            )}
+
             {/* OSD */}
             {osd && power && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur px-4 py-1.5 rounded-full border border-white/10 mono text-xs font-bold tracking-widest">{osd}</div>
