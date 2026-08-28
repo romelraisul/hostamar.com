@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Hls from 'hls.js';
+import AdTicker from '@/components/tv/AdTicker';
 
 type Channel = {
   id: string
@@ -31,7 +32,7 @@ export default function TvHero() {
     let cancelled = false
     setPhase('loading')
 
-    fetch('/api/tv/channels?limit=20')
+    fetch('/api/tv/stable-channels?limit=20')
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
@@ -41,8 +42,22 @@ export default function TvHero() {
         const items: Channel[] = Array.isArray(d.items) ? d.items : Array.isArray(d) ? d : []
         if (items.length > 0) {
           setChannels(items)
-          const bdIdx = items.findIndex((c) => c.country === 'bd')
-          setIdx(bdIdx >= 0 ? bdIdx : 0)
+          // Try saved most-stable channelId, fallback to BD-first
+          let startIdx = 0
+          try {
+            const saved = localStorage.getItem('hostamar_stable_default')
+            if (saved) {
+              const found = items.findIndex((c) => c.id === saved)
+              if (found >= 0) startIdx = found
+            }
+            if (startIdx === 0) {
+              const bdIdx = items.findIndex((c) => c.country === 'bd')
+              if (bdIdx >= 0) startIdx = bdIdx
+            }
+            // Save the top stable channel as default
+            if (items[0]?.id) localStorage.setItem('hostamar_stable_default', items[0].id)
+          } catch {}
+          setIdx(startIdx)
           setPhase('ready')
         } else {
           setPhase('error')
@@ -146,38 +161,40 @@ export default function TvHero() {
   }
 
   return (
-    <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black" onClick={enableSound}>
-      <video ref={videoRef} className="w-full h-full object-cover" muted autoPlay playsInline controls={false} poster="/og-image.png" />
+    <div className="rounded-2xl overflow-hidden border-2 border-[#0E7C3A]">
+      <div className="relative aspect-video bg-black" onClick={enableSound}>
+        <video ref={videoRef} className="w-full h-full object-cover" muted autoPlay playsInline controls={false} poster="/og-image.png" />
 
-      <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1 text-xs font-bold tracking-wider z-10 pointer-events-none">HOSTAMAR.COM/TV</div>
-      <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse z-10"><span className="w-2 h-2 bg-white rounded-full" /> LIVE</div>
+        <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1 text-xs font-bold tracking-wider z-10 pointer-events-none">HOSTAMAR.COM/TV</div>
+        <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse z-10"><span className="w-2 h-2 bg-white rounded-full" /> LIVE</div>
 
-      {current && (
-        <div className="absolute top-2 left-16 flex items-center gap-2 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-          {current.logo && !logoError ? (
-            <img src={current.logo} alt="" className="w-5 h-5 rounded" onError={() => setLogoError(true)} />
-          ) : (
-            <div className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-[10px] font-black">{current.title.charAt(0)}</div>
-          )}
-          {current.title}
-        </div>
-      )}
+        {current && (
+          <div className="absolute top-2 left-16 flex items-center gap-2 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
+            {current.logo && !logoError ? (
+              <img src={current.logo} alt="" className="w-5 h-5 rounded" onError={() => setLogoError(true)} />
+            ) : (
+              <div className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-[10px] font-black">{current.title.charAt(0)}</div>
+            )}
+            {current.title}
+          </div>
+        )}
 
-      {showSoundBadge && <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white/90 text-[#0E7C3A] text-xs px-3 py-1 rounded-full font-bold shadow animate-pulse z-10 pointer-events-none">🔊 Tap for Sound</div>}
+        {showSoundBadge && <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white/90 text-[#0E7C3A] text-xs px-3 py-1 rounded-full font-bold shadow animate-pulse z-10 pointer-events-none">🔊 Tap for Sound</div>}
 
-      <Link href={current ? `/tv?channel=${current.id}` : '/tv'} className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block">
-        🎬 {current?.title || 'Hostamar TV'} • {channels.length} channels • 10s rotation ▶
-      </Link>
+        <Link href={current ? `/tv?channel=${current.id}` : '/tv'} className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block">
+          🎬 {current?.title || 'Hostamar TV'} • {channels.length} stable • 10s rotation ▶
+        </Link>
 
-      {channels.length > 1 && (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-          {channels.slice(0, 20).map((_, i) => (
-            <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); setLogoError(false); }} className={`w-1.5 h-1.5 rounded-full transition ${i === idx ? 'bg-white scale-125' : 'bg-white/40'}`} />
-          ))}
-        </div>
-      )}
-
-      <Link href="/tv" className="absolute -bottom-7 left-0 text-[11px] text-[#0E7C3A] font-semibold hover:underline z-10">📺 IPTV: hostamar.com/api/tv/iptv.m3u → VLC / Smart TV</Link>
+        {channels.length > 1 && (
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+            {channels.slice(0, 20).map((_, i) => (
+              <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); setLogoError(false); }} className={`w-1.5 h-1.5 rounded-full transition ${i === idx ? 'bg-white scale-125' : 'bg-white/40'}`} />
+            ))}
+          </div>
+        )}
+      </div>
+      <AdTicker variant="marquee" />
+      <Link href="/tv" className="block text-[11px] text-[#0E7C3A] font-semibold hover:underline px-2 py-1">📺 IPTV: hostamar.com/api/tv/iptv.m3u → VLC / Smart TV</Link>
     </div>
   )
 }

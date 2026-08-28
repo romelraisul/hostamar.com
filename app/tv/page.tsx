@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Tv, Radio, Volume2, VolumeX, Power, Maximize2, RefreshCw, ListVideo, MonitorUp } from 'lucide-react';
 import Hls from 'hls.js';
 import { registerTvSw, TV_LEVEL_KEY } from '@/lib/tv/useHlsSaveData';
+import AdTicker from '@/components/tv/AdTicker';
 
 type TvStatus = {
   isLive: boolean;
@@ -131,13 +132,15 @@ export default function TvPage() {
       setError(null);
       const [sRes, chRes] = await Promise.all([
         fetch('/api/tv/status', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
-        fetch('/api/tv/channels?limit=50', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
+        fetch('/api/tv/stable-channels?limit=50', { cache: 'no-store' }).then((r) => r.json()).catch(() => null),
       ]);
       if (sRes) setStatus(sRes);
       if (chRes?.items?.length) {
         const items = chRes.items.filter((i: any) => i.url);
         setChannels(items);
         setTotalChannels(chRes.total || items.length);
+        // Save the top stable channelId as default
+        try { if (items[0]?.id) localStorage.setItem('hostamar_stable_default', items[0].id); } catch {}
       } else {
         setError('No channels available. Please seed the channel database.');
       }
@@ -390,15 +393,11 @@ export default function TvPage() {
             <p className="mono text-[10px] text-zinc-600 text-center">hostamar.com/tv • Keyboard: ↑↓ CH • ←→ VOL • M • F • 0-9</p>
           </div>
 
-          {/* Ad slot */}
-          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-            <div className="mono text-[10px] tracking-widest text-emerald-300 mb-2">SPONSORED</div>
-            <div className="rounded-xl bg-white text-black p-3 text-center">
-              <div className="text-sm font-bold">Hostamar — 6000 credits FREE</div>
-              <div className="text-xs text-zinc-600">bKash / Nagad / Rocket • No dollar card</div>
-              <a href="/pricing" className="mt-2 inline-block px-4 py-1.5 rounded-full bg-[#0e7c3a] text-white text-xs font-bold">Get Started</a>
-            </div>
-          </div>
+          {/* Marquee ad ticker below player */}
+          <AdTicker variant="marquee" />
+
+          {/* Ad slot — dynamic text ads */}
+          <AdTicker variant="sidebar" />
 
           <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 mono text-[11px] leading-relaxed text-zinc-400">
             <span className="text-white font-bold">How it works:</span> Vercel kills streams after 10s → your PC (port 3001) via Cloudflare Tunnel tv.hostamar.com proxies HLS to bypass CORS. Viewers stay on <span className="text-emerald-400">hostamar.com/tv</span> with our ads even when you go Live on YouTube/Facebook — auto SOURCE switches to branded LIVE.
