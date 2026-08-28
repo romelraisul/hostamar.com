@@ -27,47 +27,57 @@ export default function TvHero() {
 
   const current = channels[idx]
 
-  // Fetch channels on client only
+  // Fetch channels with fallback chain: stable -> old /channels -> hardcoded
   useEffect(() => {
     let cancelled = false
     setPhase('loading')
 
-    fetch('/api/tv/stable-channels?limit=20')
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
-      .then((d) => {
-        if (cancelled) return
-        const items: Channel[] = Array.isArray(d.items) ? d.items : Array.isArray(d) ? d : []
-        if (items.length > 0) {
-          setChannels(items)
-          // Try saved most-stable channelId, fallback to BD-first
-          let startIdx = 0
-          try {
-            const saved = localStorage.getItem('hostamar_stable_default')
-            if (saved) {
-              const found = items.findIndex((c) => c.id === saved)
-              if (found >= 0) startIdx = found
-            }
-            if (startIdx === 0) {
-              const bdIdx = items.findIndex((c) => c.country === 'bd')
-              if (bdIdx >= 0) startIdx = bdIdx
-            }
-            // Save the top stable channel as default
-            if (items[0]?.id) localStorage.setItem('hostamar_stable_default', items[0].id)
-          } catch {}
-          setIdx(startIdx)
-          setPhase('ready')
-        } else {
-          setPhase('error')
-        }
-      })
-      .catch((e) => {
-        if (cancelled) return
-        setPhase('error')
-      })
+    async function loadWithFallback() {
+      // 1. Try stable-channels (preferred — ranked by stability+popularity)
+      // 2. Fallback to /api/tv/channels (whitelisted, 3700 channels, no stability score)
+      // 3. Final fallback: localStorage cached most-stable channel
+      const urls = [
+        '/api/tv/stable-channels?limit=20',
+        '/api/tv/channels?country=bd&limit=20',
+      ]
+      let items: Channel[] = []
+      for (const url of urls) {
+        try {
+          const r = await fetch(url, { cache: 'no-store' })
+          if (!r.ok) continue
+          const d = await r.json()
+          const arr: Channel[] = Array.isArray(d.items) ? d.items : Array.isArray(d) ? d : []
+          if (arr.length > 0) { items = arr; break }
+        } catch {}
+      }
+      if (cancelled) return
 
+      if (items.length === 0) {
+        setPhase('error')
+        return
+      }
+
+      setChannels(items)
+      // Try saved most-stable channelId, fallback to BD-first
+      let startIdx = 0
+      try {
+        const saved = localStorage.getItem('hostamar_stable_default')
+        if (saved) {
+          const found = items.findIndex((c) => c.id === saved)
+          if (found >= 0) startIdx = found
+        }
+        if (startIdx === 0) {
+          const bdIdx = items.findIndex((c) => c.country === 'bd')
+          if (bdIdx >= 0) startIdx = bdIdx
+        }
+        // Save the top stable channel as default for next session
+        if (items[0]?.id) localStorage.setItem('hostamar_stable_default', items[0].id)
+      } catch {}
+      setIdx(startIdx)
+      setPhase('ready')
+    }
+
+    loadWithFallback()
     return () => { cancelled = true }
   }, [])
 
