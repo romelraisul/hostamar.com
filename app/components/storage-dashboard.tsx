@@ -10,7 +10,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { Buffer } from 'buffer'
 
 // Types
 interface FileEntry {
