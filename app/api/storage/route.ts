@@ -28,12 +28,11 @@
 
 // Node.js runtime imports (these work on Vercel Node.js runtime)
 import { NextRequest, NextResponse } from 'next/server'
-import { readdir, stat, mkdir, writeFile, unlink, access } from 'fs/promises'
-import { join, extname, basename } from 'path'
-import { execSync } from 'child_process'
+import * as s3mod from '@aws-sdk/client-s3'
 import { randomUUID } from 'crypto'
+import { extname, basename } from 'path'
 
-// Force Node.js runtime (this route uses fs, child_process - not Edge compatible)
+// Force Node.js runtime (this route uses S3 - not Edge compatible)
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
@@ -42,40 +41,43 @@ export const dynamic = 'force-dynamic'
 // ============================================================================
 
 const env = {
-  storageRoot: process.env.STORAGE_ROOT ?? '/mnt/c/hostamar/customer-storage',
   b2AccountId: process.env.B2_ACCOUNT_ID ?? '',
   b2ApplicationKey: process.env.B2_APPLICATION_KEY ?? '',
   b2Bucket: process.env.B2_BUCKET ?? 'hostamar-prod',
-  b2Endpoint: process.env.B2_ENDPOINT ?? '',
+  b2Endpoint: process.env.B2_ENDPOINT ?? 'https://s3.us-west-004.backblazeb2.com',
   b2Region: process.env.B2_REGION ?? 'us-west-004',
   quotaFreeGb: Number(process.env.QUOTA_FREE_GB ?? 5),
   maxFileSize: Number(process.env.MAX_FILE_SIZE ?? 52428800), // 50MB default
 }
 
-// ============================================================================
-// Helper: ensure directory exists
-// ============================================================================
+const S3Client = (s3mod as any).S3Client
+const PutObjectCommand = (s3mod as any).PutObjectCommand
+const ListObjectsV2Command = (s3mod as any).ListObjectsV2Command
+const DeleteObjectCommand = (s3mod as any).DeleteObjectCommand
+const HeadObjectCommand = (s3mod as any).HeadObjectCommand
 
-async function ensureDir(dirPath: string): Promise<void> {
-  try {
-    await access(dirPath)
-  } catch {
-    await mkdir(dirPath, { recursive: true })
-  }
+// B2 S3 client (initialized lazily)
+let _s3: any = null
+function getS3(): any {
+  if (_s3) return _s3
+  _s3 = new S3Client({
+    endpoint: env.b2Endpoint,
+    region: env.b2Region,
+    credentials: {
+      accessKeyId: env.b2AccountId,
+      secretAccessKey: env.b2ApplicationKey,
+    },
+    forcePathStyle: true, // B2 requires path-style URLs
+  })
+  return _s3
+}
+
+function userKey(userId: string, filename: string): string {
+  return `customers/${userId}/${filename}`
 }
 
 // ============================================================================
-// Helper: get customer storage directory
-// ============================================================================
-
-async function getCustomerDir(userId: string): Promise<string> {
-  const dir = join(env.storageRoot, 'customers', userId)
-  await ensureDir(dir)
-  return dir
-}
-
-// ============================================================================
-// Helper: list files for a user
+// Helper: list files for a user (from B2 S3)
 // ============================================================================
 
 async function listUserFiles(userId: string): Promise<
@@ -86,30 +88,30 @@ async function listUserFiles(userId: string): Promise<
     path: string
   }>
 > {
-  const dir = await getCustomerDir(userId)
-  const entries = await readdir(dir, { withFileTypes: true })
+  const s3 = getS3()
+  const files: Array<{ filename: string; size: number; createdAt: string; path: string }> = []
+  let continuationToken: string | undefined = undefined
 
-  const files: Array<{
-    filename: string
-    size: number
-    createdAt: string
-    path: string
-  }> = []
-
-  for (const entry of entries) {
-    if (!entry.isFile()) continue
-    if (entry.name.startsWith('.')) continue
-
-    const filePath = join(dir, entry.name)
-    const fileStat = await stat(filePath)
-
-    files.push({
-      filename: entry.name,
-      size: fileStat.size,
-      createdAt: fileStat.mtime.toISOString(),
-      path: filePath,
-    })
-  }
+  do {
+    const resp = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: env.b2Bucket,
+        Prefix: `customers/${userId}/`,
+        ContinuationToken: continuationToken,
+      })
+    )
+    for (const obj of resp.Contents ?? []) {
+      if (!obj.Key) continue
+      const filename = obj.Key.split('/').pop() || obj.Key
+      files.push({
+        filename,
+        size: obj.Size ?? 0,
+        createdAt: (obj.LastModified ?? new Date()).toISOString(),
+        path: obj.Key,
+      })
+    }
+    continuationToken = resp.NextContinuationToken
+  } while (continuationToken)
 
   // Sort by creation time, newest first
   files.sort((a, b) => {
@@ -131,56 +133,33 @@ async function getStorageUsage(userId: string): Promise<number> {
 }
 
 // ============================================================================
-// Helper: write file locally
+// Helper: write file to B2 S3
 // ============================================================================
 
-async function writeFileLocally(filePath: string, content: Uint8Array): Promise<void> {
-  await writeFile(filePath, content, { flag: 'w' })
-}
-
-// ============================================================================
-// Helper: delete file locally
-// ============================================================================
-
-async function deleteFileLocally(filePath: string): Promise<void> {
-  try {
-    await unlink(filePath)
-  } catch (err) {
-    const errMsg = err instanceof Error ? err.message : String(err)
-    if (!errMsg.includes('ENOENT')) {
-      throw err
-    }
-  }
-}
-
-// ============================================================================
-// Helper: sync to B2 via rclone
-// ============================================================================
-
-async function syncToB2(userId: string): Promise<boolean> {
-  // Only attempt if B2 credentials are configured
-  if (!env.b2AccountId || !env.b2ApplicationKey) {
-    return false
-  }
-
-  try {
-    const customerDir = await getCustomerDir(userId)
-    const remotePath = `${env.b2Bucket}:customers/${userId}`
-
-    const cmd = `rclone sync "${customerDir}" "${remotePath}" --progress=false 2>&1`
-
-    execSync(cmd, {
-      stdio: 'pipe',
-      timeout: 30000,
+async function writeFileToB2(key: string, content: Uint8Array, contentType: string): Promise<void> {
+  const s3 = getS3()
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: env.b2Bucket,
+      Key: key,
+      Body: content,
+      ContentType: contentType,
     })
+  )
+}
 
-    return true
-  } catch (err) {
-    // Log but don't throw — sync failures shouldn't break API
-    const errMsg = err instanceof Error ? err.message : String(err)
-    console.warn(`B2 sync failed for user ${userId}: ${errMsg}`)
-    return false
-  }
+// ============================================================================
+// Helper: delete file from B2 S3
+// ============================================================================
+
+async function deleteFileFromB2(key: string): Promise<void> {
+  const s3 = getS3()
+  await s3.send(
+    new DeleteObjectCommand({
+      Bucket: env.b2Bucket,
+      Key: key,
+    })
+  )
 }
 
 // ============================================================================
@@ -278,19 +257,11 @@ export async function POST(request: NextRequest) {
       filename = `${Date.now()}-${randomUUID().slice(0, 8)}${ext}`
     }
 
-    // Ensure customer directory exists
-    const customerDir = await getCustomerDir(userId)
-    const filePath = join(customerDir, filename)
-
-    // Write file using Uint8Array directly (Buffer removed, using native TypedArray)
+    // Write file directly to B2 S3
     const uint8Array = await file.arrayBuffer()
     const buffer = new Uint8Array(uint8Array)
-    await writeFileLocally(filePath, buffer)
-
-    // Sync to B2 in background (non-blocking)
-    syncToB2(userId).catch(() => {
-      /* ignore */
-    })
+    const fileKey = userKey(userId, filename)
+    await writeFileToB2(fileKey, buffer, file.type ?? 'application/octet-stream')
 
     // Calculate remaining quota
     const remaining = quotaBytes - newTotal
@@ -393,13 +364,10 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Get customer directory and file path
-    const customerDir = await getCustomerDir(userId)
-    const filePath = join(customerDir, filename)
-
-    // Check file exists
+    // Check file exists in B2
+    const fileKey = userKey(userId, filename)
     try {
-      await access(filePath)
+      await getS3().send(new HeadObjectCommand({ Bucket: env.b2Bucket, Key: fileKey }))
     } catch {
       return NextResponse.json(
         { error: 'File not found' },
@@ -407,13 +375,8 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Delete local file
-    await deleteFileLocally(filePath)
-
-    // Sync deletion to B2 in background
-    syncToB2(userId).catch(() => {
-      /* ignore */
-    })
+    // Delete file from B2
+    await deleteFileFromB2(fileKey)
 
     // Get updated usage
     const newUsage = await getStorageUsage(userId)
