@@ -1,207 +1,204 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Hls from 'hls.js'
 import { registerTvSw, TV_LEVEL_KEY } from '@/lib/tv/useHlsSaveData'
 
-/**
- * TvHero — Hostamar TV live player for the homepage 70% HERO cell.
- * Same playback contract as app/tv/page.tsx:
- *   - hls.js (MSE) FIRST, native HLS fallback
- *   - error-driven + 2s-watchdog fallback to the codec-free VP9/Opus variant,
- *     remounting a FRESH <video> element (key=variant) because a poisoned
- *     MSE element cannot be reused after MEDIA_ERR_SRC_NOT_SUPPORTED.
- * Muted autoplay, controls, pulsing LIVE badge, now-playing title.
- */
-
-type NowPlaying = {
-  ok?: boolean
-  isLive?: boolean
-  hlsReachable?: boolean
-  hlsUrl?: string | null
-  title?: string | null
-  channelName?: string
-  gender?: string | null
-  voiceUsed?: string | null
-  credit?: number | null
-  isViral?: boolean
-  viralScore?: number | null
-  slug?: string | null
-  isPure?: boolean
-  language?: string | null
-  place?: string | null
-  product?: string | null
+type Channel = {
+  id: string
+  title: string
+  url: string
+  logo?: string
+  category?: string
+  country?: string
 }
 
-const VP9_URL = 'https://vp9.hostamar.com/master.m3u8'
-const FALLBACK_TITLE = '[TV] রাষ্ট্রপতি মির্জা ফখরুলকে মালদ্বীপের প্রেসিডেন্টের অভিনন্দন'
-
+/**
+ * TvHero — Hostamar TV live player for the homepage.
+ * Fetches 20 channels, auto-rotates every 10s, dots indicator, click → /tv.
+ * Muted autoplay + "Tap for Sound" overlay (browser policy compliant).
+ */
 export default function TvHero() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const hlsRef = useRef<Hls | null>(null)
-  const [np, setNp] = useState<NowPlaying | null>(null)
-  const [variant, setVariant] = useState<'h264' | 'vp9'>('h264')
-  const [unsupported, setUnsupported] = useState(false)
+  const audioCtxRef = useRef<AudioContext | null>(null)
 
-  // Poll now-playing (title + live status) every 30s
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [idx, setIdx] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [logoError, setLogoError] = useState(false)
+  const [showSoundBadge, setShowSoundBadge] = useState(true)
+
+  const current = channels[idx]
+
+  // Load channels from API
   useEffect(() => {
-    let alive = true
-    const load = () =>
-      fetch('/api/tv/now-playing', { cache: 'no-store' })
-        .then((r) => r.json())
-        .then((j) => { if (alive) setNp(j) })
-        .catch(() => {})
-    load()
-    const t = setInterval(load, 30000)
-    return () => { alive = false; clearInterval(t) }
+    fetch('/api/tv/channels?limit=20', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        const items = d.items || d.channels || []
+        if (items.length > 0) {
+          setChannels(items)
+          // Default = first BD channel sorted by views, else first
+          const bdIdx = items.findIndex((c: Channel) => c.country === 'bd')
+          setIdx(bdIdx >= 0 ? bdIdx : 0)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
-  const isLive = !!(np?.isLive && np?.hlsReachable !== false)
-
-  // View heartbeat — every 30s while LIVE, for viral repeat scoring
+  // Auto-rotate every 10s
   useEffect(() => {
-    if (!isLive) return
-    const beat = () => fetch('/api/tv/view', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ watchSec: 30, watchPercent: 85 }) }).catch(() => {})
-    const t = setInterval(beat, 30000)
+    if (channels.length <= 1) return
+    const t = setInterval(() => {
+      setIdx((i) => (i + 1) % channels.length)
+      setLogoError(false)
+    }, 10000)
     return () => clearInterval(t)
-  }, [isLive])
+  }, [channels.length])
 
-  // Register the save-data service worker (caches .ts segments; enables
-  // background prefetch so slow connections never stall).
-  useEffect(() => {
-    registerTvSw()
-  }, [])
-
-  // Player — identical error-driven fallback chain as /tv
+  // HLS player
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !isLive) return
-    const source = variant === 'vp9' ? VP9_URL : (np?.hlsUrl || '')
-    if (!source) return
+    if (!video || !current) return
+    if (hlsRef.current) {
+      hlsRef.current.destroy()
+      hlsRef.current = null
+    }
+    const url = current.url
+    if (!url) return
 
-    const goVp9 = () => setVariant((v) => (v === 'h264' ? 'vp9' : v))
-
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url
+      video.play().catch(() => {})
+      return
+    }
     if (Hls.isSupported()) {
-      if (hlsRef.current) hlsRef.current.destroy()
-      // Slow-net profile: deep buffer + capped level + remembered floor.
-      // (Set at CONSTRUCTION — hls.config is read-only afterwards.)
       let savedLevel = -1
       try { savedLevel = Number(localStorage.getItem(TV_LEVEL_KEY) ?? '-1') } catch {}
       const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: false,
-        backBufferLength: 30,
-        maxBufferLength: 30,
-        maxMaxBufferLength: 60,
-        maxBufferSize: 20 * 1000 * 1000,
-        maxBufferHole: 0.5,
-        highBufferWatchdogPeriod: 2,
-        nudgeOffset: 0.1,
-        nudgeMaxRetry: 5,
-        maxFragLookUpTolerance: 0.25,
-        liveSyncDurationCount: 3,
-        liveMaxLatencyDurationCount: 10,
-        liveDurationInfinity: false,
+        enableWorker: true, lowLatencyMode: false,
+        backBufferLength: 30, maxBufferLength: 30, maxMaxBufferLength: 60,
+        maxBufferSize: 20 * 1000 * 1000, maxBufferHole: 0.5,
+        highBufferWatchdogPeriod: 2, nudgeOffset: 0.1, nudgeMaxRetry: 5,
+        maxFragLookUpTolerance: 0.25, liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 10, liveDurationInfinity: false,
         startLevel: Number.isFinite(savedLevel) && savedLevel >= 0 ? savedLevel : -1,
-        capLevelToPlayerSize: true,
-        autoStartLoad: true,
-        testBandwidth: true,
-        progressive: false,
+        capLevelToPlayerSize: true, autoStartLoad: true, testBandwidth: true, progressive: false,
       })
-      try {
-        localStorage.setItem(TV_LEVEL_KEY, '-1') // re-probe each session; stall memory only for start
-      } catch {}
-      hls.loadSource(source)
+      hls.loadSource(url)
       hls.attachMedia(video)
+      hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}) })
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (!data.fatal) return
-        if (variant === 'h264') { goVp9(); return }
-        hls.destroy()
+        if (data.fatal) {
+          // Auto-skip dead channel
+          setTimeout(() => {
+            setIdx((i) => (i + 1) % channels.length)
+            setLogoError(false)
+          }, 1500)
+        }
       })
-      const onMediaErr = () => { if (variant === 'h264') goVp9() }
-      video.addEventListener('error', onMediaErr)
-      const watchdog = setInterval(() => {
-        if (variant === 'h264' && video.error) goVp9()
-      }, 2000)
+      hls.on(Hls.Events.LEVEL_SWITCHED, (_e, d) => {
+        try { localStorage.setItem(TV_LEVEL_KEY, String(d.level)) } catch {}
+      })
       hlsRef.current = hls
-      return () => {
-        clearInterval(watchdog)
-        video.removeEventListener('error', onMediaErr)
-        hls.destroy()
-      }
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = source
-      video.play().catch(() => {})
-    } else {
-      setUnsupported(true)
+      return () => { hls.destroy(); hlsRef.current = null }
     }
-  }, [isLive, variant, np?.hlsUrl])
+  }, [current, channels.length])
 
-  const title = np?.title || FALLBACK_TITLE
-  const credit = np?.credit ?? 6000
-  const isFemale = np?.gender === 'female'
-  const genderIcon = isFemale ? '👩' : '👨'
-  const voiceName = np?.voiceUsed
-    ? (np.voiceUsed.includes('Nabanita') ? 'Nabanita' : np.voiceUsed.includes('Pradeep') ? 'Pradeep' : np.voiceUsed)
-    : ''
+  // Service worker
+  useEffect(() => { registerTvSw() }, [])
+
+  // First interaction → enable sound
+  const enableSound = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = false
+      videoRef.current.volume = 1
+    }
+    if (!audioCtxRef.current) {
+      try { audioCtxRef.current = new AudioContext() } catch {}
+    }
+    audioCtxRef.current?.resume()
+    setShowSoundBadge(false)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          <p className="mono text-xs text-zinc-400">Loading live channels...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black">
+    <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-[#0E7C3A] bg-black" onClick={enableSound}>
       <video
-        key={variant}
         ref={videoRef}
         className="w-full h-full object-cover"
         muted
         autoPlay
         playsInline
-        controls
+        controls={false}
         poster="/og-image.png"
       />
 
-      {/* Channel watermark — top RIGHT corner */}
+      {/* Watermark */}
       <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1 text-xs font-bold tracking-wider z-10 pointer-events-none">
         HOSTAMAR.COM/TV
       </div>
 
       {/* LIVE badge */}
-      {isLive ? (
-        <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse z-10">
-          <span className="w-2 h-2 bg-white rounded-full" /> LIVE
+      <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse z-10">
+        <span className="w-2 h-2 bg-white rounded-full" /> LIVE
+      </div>
+
+      {/* Channel name + logo */}
+      {current && (
+        <div className="absolute top-2 left-16 flex items-center gap-2 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
+          {current.logo && !logoError ? (
+            <img src={current.logo} alt="" className="w-5 h-5 rounded" onError={() => setLogoError(true)} />
+          ) : (
+            <div className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-[10px] font-black">
+              {current.title.charAt(0)}
+            </div>
+          )}
+          {current.title}
         </div>
-      ) : (
-        <div className="absolute top-2 left-2 bg-zinc-700 text-white text-xs px-2 py-1 rounded-full font-bold z-10">OFFLINE</div>
       )}
 
-      {/* Watch Live — below watermark so both fit in the top-right stack.
-          When the on-air video has an SEO page, deep-link to it. */}
+      {/* Tap for Sound badge */}
+      {showSoundBadge && (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white/90 text-[#0E7C3A] text-xs px-3 py-1 rounded-full font-bold shadow animate-pulse z-10 pointer-events-none">
+          🔊 Tap for Sound
+        </div>
+      )}
+
+      {/* Bottom bar */}
       <Link
-        href={np?.slug ? `/tv/watch/${np.slug}` : '/tv'}
-        className="absolute top-11 right-3 bg-white/90 hover:bg-white text-[#0E7C3A] text-xs px-2.5 py-1 rounded-full font-bold shadow z-10"
-      >
-        LIVE দেখুন →
-      </Link>
-
-      {/* Gender + voice indicator — bottom right, above the title bar */}
-      {(isFemale || voiceName) && (
-        <div className="absolute bottom-9 right-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded z-10">
-          {genderIcon} {voiceName}
-        </div>
-      )}
-
-      {/* Pure CC0 slow-net badge — shows when on-air file is from the pure library */}
-      {isLive && np?.isPure && (
-        <div className="absolute top-11 left-2 flex items-center gap-1 bg-[#0E7C3A] text-white text-[10px] px-2 py-0.5 rounded-full font-bold z-10">
-          🔵 CC0 Public Domain • 480p Slow Net{np.product ? ` • ${np.product}` : ''}
-        </div>
-      )}
-
-      <Link
-        href={np?.slug ? `/tv/watch/${np.slug}` : '/tv'}
+        href={current ? `/tv?channel=${current.id}` : '/tv'}
         className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block"
       >
-        🎬 [TV] {title} • credit {credit}{np?.isViral ? ` • 🔥 Viral ${np?.viralScore ?? ''}` : ''} • 70% HERO ▶{unsupported ? ' • browser HLS unsupported' : ''}
+        🎬 {current?.title || 'Hostamar TV'} • {channels.length} channels • 10s rotation ▶
       </Link>
+
+      {/* Dots indicator */}
+      {channels.length > 1 && (
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+          {channels.slice(0, 20).map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); setIdx(i); setLogoError(false); }}
+              className={`w-1.5 h-1.5 rounded-full transition ${i === idx ? 'bg-white scale-125' : 'bg-white/40'}`}
+            />
+          ))}
+        </div>
+      )}
+
       {/* IPTV link */}
       <Link href="/tv" className="absolute -bottom-7 left-0 text-[11px] text-[#0E7C3A] font-semibold hover:underline z-10">📺 IPTV: hostamar.com/api/tv/iptv.m3u → VLC / Smart TV</Link>
     </div>
