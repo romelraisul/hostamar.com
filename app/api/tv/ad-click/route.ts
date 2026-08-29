@@ -7,6 +7,20 @@ import { prisma } from '@/lib/prisma'
 // POST /api/tv/ad-click — no auth, beacon from AdTicker
 export async function POST(req: NextRequest) {
   try {
+    // Ensure table exists at runtime
+    try {
+      await (prisma as any).$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "TvAdClick" (
+          "id" TEXT PRIMARY KEY,
+          "adKey" TEXT NOT NULL,
+          "adText" TEXT NOT NULL,
+          "channelId" TEXT,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS "TvAdClick_adKey_createdAt_idx" ON "TvAdClick"("adKey", "createdAt");
+      `)
+    } catch {}
+
     const body = await req.json().catch(() => ({}))
     const adKey = String(body.adKey || '').trim()
     const adText = String(body.adText || body.text || '').trim()
