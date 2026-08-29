@@ -82,7 +82,7 @@ export default function ChatOsClient({ user }: { user: any }) {
           <button onClick={send} disabled={loading} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg text-sm flex items-center gap-1"><Send size={14}/>Send</button>
         </div>
         <div className="px-3 py-1.5 text-[10px] text-zinc-600 border-t border-zinc-900 flex gap-3">
-          <span>⛓️ Conductor: hostamar-build 15b27glmj → next (one-push)</span><span>•</span><span>B2 005a26c99e410200000000001 s3.us-east-005 ✅</span><span>•</span><span>TV 20 ✅ Storage 0/5GB</span>
+          <span>⛓️ Conductor: hostamar-build dt8njidv3 → next (one-push)</span><span>•</span><span>B2 005a26c99e410200000000001 s3.us-east-005 ✅</span><span>•</span><span>TV 20 ✅ Storage 0/5GB</span>
         </div>
       </div>
 
