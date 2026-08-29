@@ -112,12 +112,22 @@ export async function activateService(
   const missingFields = findMissingFields(service, inputs)
   const provided = Object.keys(inputs || {}).filter(k => String(inputs[k] ?? '').trim() !== '')
 
+  // If nothing is missing → go straight to generating + first message is the
+  // deliverable itself (best UX); otherwise collecting_material + ask.
+  let firstMsg = ''
+  let status: string
+  if (missingFields.length === 0) {
+    status = 'generating'
+  } else {
+    status = 'collecting_material'
+  }
+
   const order = await prisma.serviceOrder.create({
     data: {
       userId: user.id,
       serviceId: service.id,
       creditCost,
-      status: 'collecting_material',
+      status,
       inputs: (inputs || {}) as any,
       missingFields,
       isPinned: true,
@@ -133,7 +143,11 @@ export async function activateService(
     },
   }).catch(() => null)
 
-  const firstMsg = await materialAskMessage(service.name, missingFields, provided)
+  if (status === 'collecting_material') {
+    firstMsg = await materialAskMessage(service.name, missingFields, provided)
+  } else {
+    firstMsg = await generateDeliverable(user.id, chat?.id || '', order.id, service, inputs || {})
+  }
   if (chat) {
     await prisma.serviceChatMessage.create({
       data: { chatId: chat.id, role: 'ai', content: firstMsg },
@@ -208,12 +222,13 @@ export async function pinnedChatMessage(
     if (stillMissing.length === 0) {
       status = 'generating'
       aiMessage = await generateDeliverable(user.id, chatId, chat.orderId, service, inputs)
+      status = 'delivered' // generateDeliverable already persisted 'delivered'
     } else {
       aiMessage = `ধন্যবাদ! এখনও দরকার: ${stillMissing.join(', ')}। এগুলো দিলেই শুরু করছি।`
     }
     await prisma.serviceOrder.update({
       where: { id: order.id },
-      data: { inputs: inputs as any, missingFields: stillMissing, status },
+      data: { inputs: inputs as any, missingFields: stillMissing, status: status === 'delivered' ? 'delivered' : 'collecting_material' },
     }).catch(() => {})
   } else if (status === 'delivered') {
     // REVISION: -5cr, same thread forever
