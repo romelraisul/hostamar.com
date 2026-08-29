@@ -123,6 +123,11 @@ export async function middleware(request: NextRequest) {
     '/api/chat/support',
     '/api/chat',
     '/api/support',
+    // Customer OpenAI-compatible base URL (hostamar.com/api/v1) — public:
+    // models list + chat completions via unlimited free-fallback chain.
+    // CLIs set OPENAI_BASE_URL=https://hostamar.com/api/v1.
+    '/api/v1/models',
+    '/api/v1/chat/completions',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
