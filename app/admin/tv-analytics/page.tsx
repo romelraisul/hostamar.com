@@ -12,6 +12,9 @@ type Analytics = {
   externalEmbeds: number;
   liveNow: { platform: string; title: string; viewers: number } | null;
   cpm: number;
+  topStable?: { id: string; name: string; stabilityScore: number; popularityScore: number; successCount: number; failCount: number; avgLoadTimeMs: number }[];
+  adClicks?: { today: number; week: number; month: number; revenue30d: number; topAds: { adKey: string; adText: string; count: number }[] };
+  storageB2?: { count: number; usedLabel: string };
 };
 
 const DEFAULT_CPM = 2.5;
@@ -81,6 +84,43 @@ export default function TvAnalytics() {
           <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1"><DollarSign className="w-4 h-4" /> Est. Earnings</div>
           <div className="text-2xl font-bold text-emerald-400">${earnings.toFixed(2)}</div>
           <div className="text-xs text-zinc-500">@ ${data.cpm}/1000 views</div>
+        </div>
+      </div>
+
+      {/* New: Top Stable + Ad Clicks + Storage B2 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+          <h3 className="font-semibold mb-3 text-sm flex items-center gap-2">🏆 Top Stable Channels</h3>
+          {data.topStable?.length ? (
+            <div className="space-y-1 max-h-[220px] overflow-auto">
+              {data.topStable.slice(0, 10).map((ch: any) => (
+                <div key={ch.id} className="flex justify-between text-xs py-1 border-b border-white/5">
+                  <span className="truncate pr-2">{ch.name}</span>
+                  <span className="font-mono text-emerald-400">{ch.stabilityScore}</span>
+                </div>
+              ))}
+            </div>
+          ) : (<div className="text-xs text-zinc-500">No stable data yet — will seed on /api/tv/stable-channels</div>)}
+        </div>
+        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+          <h3 className="font-semibold mb-3 text-sm">📢 Ad Clicks</h3>
+          <div className="text-xs space-y-1">
+            <div className="flex justify-between"><span className="text-zinc-400">Today</span><span className="font-bold">{data.adClicks?.today ?? 0}</span></div>
+            <div className="flex justify-between"><span className="text-zinc-400">7 days</span><span className="font-bold">{data.adClicks?.week ?? 0}</span></div>
+            <div className="flex justify-between"><span className="text-zinc-400">30 days</span><span className="font-bold">{data.adClicks?.month ?? 0}</span></div>
+            <div className="flex justify-between border-t border-white/10 pt-2 mt-2"><span className="text-emerald-400 font-semibold">Revenue 30d</span><span className="font-bold text-emerald-400">${(data.adClicks?.revenue30d ?? 0).toFixed(2)}</span></div>
+            <div className="text-[11px] text-zinc-500 mt-2">Top: {(data.adClicks?.topAds || []).slice(0,3).map((a:any)=>a.adKey).join(', ') || '—'}</div>
+          </div>
+        </div>
+        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+          <h3 className="font-semibold mb-3 text-sm">💾 Storage B2</h3>
+          <div className="text-xs space-y-1">
+            <div className="flex justify-between"><span className="text-zinc-400">Objects</span><span className="font-bold">{data.storageB2?.count ?? '—'}</span></div>
+            <div className="flex justify-between"><span className="text-zinc-400">Used</span><span className="font-bold">{data.storageB2?.usedLabel ?? '—'}</span></div>
+            <div className="flex justify-between"><span className="text-zinc-400">Bucket</span><span className="font-mono">hostamar-prod</span></div>
+            <div className="text-[11px] text-zinc-500 mt-2">Endpoint s3.us-east-005.backblazeb2.com</div>
+            <a href="/dashboard/storage" className="text-[11px] text-emerald-400 hover:underline block mt-1">→ /dashboard/storage</a>
+          </div>
         </div>
       </div>
 
