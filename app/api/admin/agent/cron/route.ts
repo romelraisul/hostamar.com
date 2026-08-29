@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { runAutonomousLoop } from '@/lib/autonomous-agent'
+import { callBestModel } from '@/lib/ai-fallback'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-
 export async function POST(req: NextRequest){
   const secret = req.headers.get('x-cron-secret')
   const expected = process.env.CRON_SECRET || 'hostamar-cron-2026'
@@ -14,14 +15,40 @@ export async function POST(req: NextRequest){
   const type = body.type || 'daily-health'
 
   try{ await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "AgentChat" (id TEXT PRIMARY KEY, role TEXT NOT NULL, content TEXT NOT NULL, "toolCalls" JSONB, "customerId" TEXT NOT NULL, "createdAt" TIMESTAMP DEFAULT NOW())`) }catch{}
+  try{ await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "AgentTask" (id TEXT PRIMARY KEY, type TEXT NOT NULL, status TEXT DEFAULT 'pending', input JSONB NOT NULL, output JSONB, "createdAt" TIMESTAMP DEFAULT NOW())`) }catch{}
 
   if(type === 'daily-health'){
-    let health:any={}, db:any={}
-    try{ const r=await fetch('https://hostamar.com/api/health',{signal:AbortSignal.timeout(8000)}); health=await r.json().catch(()=>({})) }catch(e:any){ health={error:e.message} }
-    try{ db = { customers: await prisma.customer.count().catch(()=>0), payments: await prisma.payment.count().catch(()=>0), transactions: await prisma.transaction.count().catch(()=>0) } }catch{}
-    const content = `📅 Daily Health ${new Date().toISOString()}\nHealth: ${JSON.stringify(health).slice(0,800)}\nDB: ${JSON.stringify(db)}\nTunnel: pgrep cloudflared (local check skipped in prod)\nNext: /check in /admin/chat for full report.`
-    try{ await prisma.$executeRawUnsafe(`INSERT INTO "AgentChat" (id, role, content, "customerId", "createdAt") VALUES ($1,$2,$3,$4,NOW())`, `cron_${Date.now()}`, 'assistant', content.slice(0,8000), 'cron') }catch{}
-    return NextResponse.json({ ok:true, type, health, db })
+    const out = await runAutonomousLoop()
+    return NextResponse.json({ ok:true, type, ...out })
+  }
+
+  if(type === 'auto-support'){
+    // check support-widget chats last 24h without assistant reply within 5m
+    try{
+      const rows:any = await prisma.$queryRawUnsafe(`SELECT id, content, "createdAt" FROM "AgentChat" WHERE "customerId"='support-widget' AND role='user' ORDER BY "createdAt" DESC LIMIT 20`)
+      let fixed=0
+      for(const r of rows){
+        const hasReply:any = await prisma.$queryRawUnsafe(`SELECT 1 FROM "AgentChat" WHERE "customerId"='support-widget' AND role='assistant' AND "createdAt" > $1 LIMIT 1`, r.createdAt).catch(()=>[])
+        if(Array.isArray(hasReply) && hasReply.length===0){
+          const { text, model, provider } = await callBestModel([{role:'user', content: r.content}], 'You are Hostamar Support — Bangla+English, 50 services, pricing 599/1299/2999, bKash 01822417463, storage 5GB s3.us-east-005, TV 3700/20')
+          await prisma.$executeRawUnsafe(`INSERT INTO "AgentChat" (id, role, content, "toolCalls", "customerId", "createdAt") VALUES ($1,$2,$3,$4::jsonb,$5,NOW())`, `auto_${Date.now()}_${fixed}`, 'assistant', text.slice(0,4000), JSON.stringify({model, provider, auto:true}), 'support-widget')
+          fixed++
+          if(fixed>=5) break
+        }
+      }
+      return NextResponse.json({ ok:true, type, fixed })
+    }catch(e:any){ return NextResponse.json({ ok:false, error:e.message },{status:500}) }
+  }
+
+  if(type === 'auto-payments'){
+    try{
+      const pendings:any = await prisma.$queryRawUnsafe(`SELECT id, "gatewayTrxId", amount FROM "Transaction" WHERE status='pending_verification' ORDER BY "createdAt" DESC LIMIT 20`).catch(()=>[])
+      const valid = Array.isArray(pendings) ? pendings.filter((t:any)=> /^[A-Za-z0-9]{8,15}$/.test(String(t.gatewayTrxId||''))) : []
+      for(const t of valid){
+        try{ await prisma.$executeRawUnsafe(`INSERT INTO "AgentTask" (id, type, status, input, output, "createdAt") VALUES ($1,$2,$3,$4::jsonb,$5::jsonb,NOW())`, `pay_${t.id}_${Date.now()}`, 'payment-review', 'pending', JSON.stringify({transactionId:t.id, trxId:t.gatewayTrxId, amount:t.amount}), JSON.stringify({needsReview:true})) }catch{}
+      }
+      return NextResponse.json({ ok:true, type, pending: pendings.length, valid: valid.length })
+    }catch(e:any){ return NextResponse.json({ ok:false, error:e.message },{status:500}) }
   }
 
   if(type === 'weekly-growth'){
@@ -36,5 +63,5 @@ export async function POST(req: NextRequest){
 }
 
 export async function GET(){
-  return NextResponse.json({ ok:true, hint:'POST with x-cron-secret header', types:['daily-health','weekly-growth'] })
+  return NextResponse.json({ ok:true, hint:'POST with x-cron-secret header', types:['daily-health','auto-support','auto-payments','weekly-growth'] })
 }
