@@ -17,10 +17,12 @@ import {
   User,
   Tv,
   BarChart3,
+  MessageSquare,
 } from 'lucide-react'
 
 const navItems = [
   { id: 'overview', href: '/admin?tab=overview', icon: LayoutDashboard, label: 'Overview' },
+  { id: 'chat', href: '/admin/chat', icon: MessageSquare, label: 'Chat OS' },
   { id: 'users', href: '/admin?tab=users', icon: Users, label: 'Users' },
   { id: 'credits', href: '/admin?tab=credits', icon: Coins, label: 'Credits' },
   { id: 'transactions', href: '/admin?tab=transactions', icon: Receipt, label: 'Transactions' },

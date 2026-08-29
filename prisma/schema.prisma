@@ -1524,3 +1524,26 @@ model SeoEvent {
 
   @@index([type, createdAt])
 }
+
+// ── Admin Chat OS — Founder OS memory (Neon zero cost, self-heals via runtime CREATE TABLE) ──
+model AgentChat {
+  id        String   @id @default(cuid())
+  role      String // user | assistant | tool
+  content   String   @db.Text
+  toolCalls Json?
+  customerId String   // founder customerId (owner)
+  createdAt DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+model AgentTask {
+  id        String   @id @default(cuid())
+  type      String // health | seo_audit | bkash_plan | build
+  status    String   @default("pending") // pending | running | done | failed
+  input     Json
+  output    Json?
+  createdAt DateTime @default(now())
+
+  @@index([type, status])
+}
