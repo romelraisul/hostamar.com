@@ -1,0 +1,1189 @@
+{
+  "base": "https://hostamar.com/api/v1",
+  "at": "2026-08-29T10:54:36.708Z",
+  "total": 120,
+  "tested": 120,
+  "working": 112,
+  "results": [
+    {
+      "id": "meituan/longcat-2.0-free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 574,
+      "tokens": 167,
+      "ms": 20540
+    },
+    {
+      "id": "hostamar-1m-a",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 430,
+      "tokens": 131,
+      "ms": 27617
+    },
+    {
+      "id": "hostamar-1m-b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 290,
+      "tokens": 96,
+      "ms": 32948
+    },
+    {
+      "id": "opencode/hy3-free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 615,
+      "tokens": 177,
+      "ms": 26904
+    },
+    {
+      "id": "minimax/minimax-m3:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 392,
+      "tokens": 121,
+      "ms": 49430
+    },
+    {
+      "id": "opencode/mimo-v2.5-free",
+      "ok": false,
+      "error": "The operation was aborted due to timeout",
+      "ms": 50002
+    },
+    {
+      "id": "opencode/nemotron-3-ultra-free",
+      "ok": false,
+      "error": "The operation was aborted due to timeout",
+      "ms": 50001
+    },
+    {
+      "id": "opencode/nemotron-3.5-lightning-free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 757,
+      "tokens": 213,
+      "ms": 42468
+    },
+    {
+      "id": "opencode/x-preview-f-free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 597,
+      "tokens": 173,
+      "ms": 44313
+    },
+    {
+      "id": "stealth/ox-alpha",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 388,
+      "tokens": 120,
+      "ms": 27367
+    },
+    {
+      "id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 424,
+      "tokens": 129,
+      "ms": 25431
+    },
+    {
+      "id": "thinkingmachines/inkling-small:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 599,
+      "tokens": 173,
+      "ms": 42848
+    },
+    {
+      "id": "thinkingmachines/inkling:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 651,
+      "tokens": 186,
+      "ms": 38102
+    },
+    {
+      "id": "nvidia/nemotron-3.5-lightning:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 402,
+      "tokens": 124,
+      "ms": 27446
+    },
+    {
+      "id": "dots-studio/dots-3-note-preview:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 822,
+      "tokens": 229,
+      "ms": 22940
+    },
+    {
+      "id": "google/gemma-4-26b-a4b-it:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 631,
+      "tokens": 181,
+      "ms": 21688
+    },
+    {
+      "id": "google/gemma-4-31b-it:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 673,
+      "tokens": 192,
+      "ms": 19622
+    },
+    {
+      "id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 629,
+      "tokens": 181,
+      "ms": 16333
+    },
+    {
+      "id": "opencode/laguna-s-2.1-free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 683,
+      "tokens": 194,
+      "ms": 32620
+    },
+    {
+      "id": "poolside/laguna-s-2.1:free",
+      "ok": false,
+      "error": "The operation was aborted due to timeout",
+      "ms": 50001
+    },
+    {
+      "id": "poolside/laguna-xs-2.1:free",
+      "ok": false,
+      "error": "The operation was aborted due to timeout",
+      "ms": 50001
+    },
+    {
+      "id": "stepfun/step-3.7-flash:free",
+      "ok": false,
+      "error": "The operation was aborted due to timeout",
+      "ms": 50001
+    },
+    {
+      "id": "cohere/north-mini-code:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 549,
+      "tokens": 161,
+      "ms": 18042
+    },
+    {
+      "id": "kilo-auto/free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 647,
+      "tokens": 185,
+      "ms": 18629
+    },
+    {
+      "id": "tencent/hy3:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 421,
+      "tokens": 129,
+      "ms": 42027
+    },
+    {
+      "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 603,
+      "tokens": 174,
+      "ms": 21709
+    },
+    {
+      "id": "openrouter/free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 598,
+      "tokens": 173,
+      "ms": 17723
+    },
+    {
+      "id": "z-ai/glm-5.2:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 627,
+      "tokens": 180,
+      "ms": 20746
+    },
+    {
+      "id": "nvidia/nemotron-3.5-content-safety:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilo-edge",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 531,
+      "tokens": 156,
+      "ms": 16883
+    },
+    {
+      "id": "minimax/minimax-m2.7:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 629,
+      "tokens": 181,
+      "ms": 21740
+    },
+    {
+      "id": "meta/muse-spark-1.2",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 229,
+      "tokens": 81,
+      "ms": 10421
+    },
+    {
+      "id": "liquid/lfm-2.5-2.6b:free",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 621,
+      "tokens": 179,
+      "ms": 22687
+    },
+    {
+      "id": "minimaxai/minimax-m3",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 526,
+      "tokens": 155,
+      "ms": 19004
+    },
+    {
+      "id": "deepseek/deepseek-v4-flash-0731",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 389,
+      "tokens": 121,
+      "ms": 24831
+    },
+    {
+      "id": "poolside/laguna-s-2.1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 627,
+      "tokens": 180,
+      "ms": 17047
+    },
+    {
+      "id": "moonshotai/kimi-k3",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 418,
+      "tokens": 128,
+      "ms": 29470
+    },
+    {
+      "id": "thinkingmachines/inkling",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 683,
+      "tokens": 194,
+      "ms": 21109
+    },
+    {
+      "id": "thinkingmachines/inkling-small",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 485,
+      "tokens": 145,
+      "ms": 19402
+    },
+    {
+      "id": "nvidia/nemotron-3-super-120b-a12b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 531,
+      "tokens": 156,
+      "ms": 15992
+    },
+    {
+      "id": "z-ai/glm-5.3",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 617,
+      "tokens": 178,
+      "ms": 21995
+    },
+    {
+      "id": "qwen/qwen3.7-flash",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 794,
+      "tokens": 222,
+      "ms": 17102
+    },
+    {
+      "id": "minimax/minimax-m1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 791,
+      "tokens": 221,
+      "ms": 22282
+    },
+    {
+      "id": "qwen/qwen3.8-max",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 724,
+      "tokens": 204,
+      "ms": 9962
+    },
+    {
+      "id": "nvidia/nemotron-3-ultra-550b-a55b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 647,
+      "tokens": 185,
+      "ms": 30528
+    },
+    {
+      "id": "google/gemma-4-31b-it",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 568,
+      "tokens": 165,
+      "ms": 27053
+    },
+    {
+      "id": "x-ai/grok-4.6",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 596,
+      "tokens": 172,
+      "ms": 29385
+    },
+    {
+      "id": "moonshotai/kimi-k2.6",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 537,
+      "tokens": 158,
+      "ms": 24437
+    },
+    {
+      "id": "poolside/laguna-xs-2.1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 653,
+      "tokens": 187,
+      "ms": 19483
+    },
+    {
+      "id": "ai21labs/jamba-1.5-large-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 629,
+      "tokens": 181,
+      "ms": 20181
+    },
+    {
+      "id": "nvidia/nemotron-3-nano-30b-a3b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 633,
+      "tokens": 182,
+      "ms": 23714
+    },
+    {
+      "id": "google/gemma-3-12b-it",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 721,
+      "tokens": 204,
+      "ms": 10239
+    },
+    {
+      "id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 632,
+      "tokens": 181,
+      "ms": 28928
+    },
+    {
+      "id": "meta/muse-glimmer-30b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 780,
+      "tokens": 218,
+      "ms": 7535
+    },
+    {
+      "id": "google/gemma-3-4b-it",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 475,
+      "tokens": 142,
+      "ms": 17543
+    },
+    {
+      "id": "deepseek-ai/deepseek-v4-flash-0731",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 375,
+      "tokens": 117,
+      "ms": 30560
+    },
+    {
+      "id": "openai/gpt-oss-120b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 373,
+      "tokens": 117,
+      "ms": 24131
+    },
+    {
+      "id": "openai/gpt-oss-20b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 437,
+      "tokens": 133,
+      "ms": 21408
+    },
+    {
+      "id": "ibm/granite-3.0-8b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 603,
+      "tokens": 174,
+      "ms": 21383
+    },
+    {
+      "id": "ibm/granite-8b-code-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 603,
+      "tokens": 174,
+      "ms": 21556
+    },
+    {
+      "id": "meta/llama-3.2-1b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 142,
+      "tokens": 59,
+      "ms": 5891
+    },
+    {
+      "id": "meta/llama-3.1-70b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 639,
+      "tokens": 183,
+      "ms": 22301
+    },
+    {
+      "id": "meta/llama-3.2-11b-vision-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 172,
+      "tokens": 66,
+      "ms": 17392
+    },
+    {
+      "id": "meta/llama-3.1-8b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 350,
+      "tokens": 111,
+      "ms": 28318
+    },
+    {
+      "id": "meta/llama-3.3-70b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 516,
+      "tokens": 152,
+      "ms": 18502
+    },
+    {
+      "id": "meta/llama-3.2-3b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 660,
+      "tokens": 188,
+      "ms": 21162
+    },
+    {
+      "id": "meta/llama-3.2-90b-vision-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 545,
+      "tokens": 160,
+      "ms": 26561
+    },
+    {
+      "id": "microsoft/phi-3-vision-128k-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 586,
+      "tokens": 170,
+      "ms": 22574
+    },
+    {
+      "id": "mistralai/mistral-large-2-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 632,
+      "tokens": 181,
+      "ms": 10335
+    },
+    {
+      "id": "microsoft/phi-3.5-moe-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 576,
+      "tokens": 167,
+      "ms": 20871
+    },
+    {
+      "id": "mistralai/mistral-large",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 696,
+      "tokens": 197,
+      "ms": 20841
+    },
+    {
+      "id": "nv-mistralai/mistral-nemo-12b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 629,
+      "tokens": 181,
+      "ms": 14515
+    },
+    {
+      "id": "nvidia/llama-3.1-nemotron-51b-instruct",
+      "ok": false,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 83,
+      "tokens": 44,
+      "ms": 12473
+    },
+    {
+      "id": "mistralai/mistral-nemotron",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 813,
+      "tokens": 227,
+      "ms": 23310
+    },
+    {
+      "id": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 660,
+      "tokens": 188,
+      "ms": 20834
+    },
+    {
+      "id": "nvidia/llama-3.1-nemotron-nano-8b-v1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 640,
+      "tokens": 183,
+      "ms": 25898
+    },
+    {
+      "id": "nvidia/llama-3.1-nemotron-nano-vl-8b-v1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 733,
+      "tokens": 207,
+      "ms": 25002
+    },
+    {
+      "id": "nvidia/cosmos-reason2-8b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 468,
+      "tokens": 140,
+      "ms": 40925
+    },
+    {
+      "id": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 559,
+      "tokens": 163,
+      "ms": 19692
+    },
+    {
+      "id": "nvidia/llama-3.3-nemotron-super-49b-v1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 800,
+      "tokens": 223,
+      "ms": 21695
+    },
+    {
+      "id": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 479,
+      "tokens": 143,
+      "ms": 20247
+    },
+    {
+      "id": "nvidia/llama-3.3-nemotron-super-49b-v1.5",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 614,
+      "tokens": 177,
+      "ms": 21718
+    },
+    {
+      "id": "nvidia/nemotron-nano-12b-v2-vl",
+      "ok": false,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 79,
+      "tokens": 43,
+      "ms": 13096
+    },
+    {
+      "id": "nvidia/vila",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 609,
+      "tokens": 176,
+      "ms": 9477
+    },
+    {
+      "id": "nvidia/nemotron-nano-3-30b-a3b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 542,
+      "tokens": 159,
+      "ms": 35128
+    },
+    {
+      "id": "writer/palmyra-med-70b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 603,
+      "tokens": 174,
+      "ms": 25173
+    },
+    {
+      "id": "writer/palmyra-creative-122b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 783,
+      "tokens": 219,
+      "ms": 35613
+    },
+    {
+      "id": "nvidia/nvidia-nemotron-nano-9b-v2",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 386,
+      "tokens": 120,
+      "ms": 40915
+    },
+    {
+      "id": "minimax-m3",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 897,
+      "tokens": 248,
+      "ms": 12461
+    },
+    {
+      "id": "mistralai/mixtral-8x22b-v0.1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 683,
+      "tokens": 194,
+      "ms": 21401
+    },
+    {
+      "id": "zyphra/zamba2-7b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 677,
+      "tokens": 193,
+      "ms": 22526
+    },
+    {
+      "id": "hostamar-own",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 637,
+      "tokens": 183,
+      "ms": 19275
+    },
+    {
+      "id": "mistralai/codestral-22b-instruct-v0.1",
+      "ok": false,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 44,
+      "tokens": 34,
+      "ms": 12567
+    },
+    {
+      "id": "databricks/dbrx-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 521,
+      "tokens": 154,
+      "ms": 16305
+    },
+    {
+      "id": "01-ai/yi-large",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 597,
+      "tokens": 173,
+      "ms": 23341
+    },
+    {
+      "id": "mistralai/mistral-7b-instruct-v0.3",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 396,
+      "tokens": 122,
+      "ms": 26285
+    },
+    {
+      "id": "stepfun-ai/step-3.7-flash",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 653,
+      "tokens": 187,
+      "ms": 20038
+    },
+    {
+      "id": "writer/palmyra-fin-70b-32k",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 431,
+      "tokens": 131,
+      "ms": 17747
+    },
+    {
+      "id": "writer/palmyra-med-70b-32k",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 634,
+      "tokens": 182,
+      "ms": 22592
+    },
+    {
+      "id": "bigcode/starcoder2-15b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 639,
+      "tokens": 183,
+      "ms": 24144
+    },
+    {
+      "id": "deepseek-ai/deepseek-coder-6.7b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 461,
+      "tokens": 139,
+      "ms": 20770
+    },
+    {
+      "id": "google/codegemma-7b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 732,
+      "tokens": 206,
+      "ms": 11064
+    },
+    {
+      "id": "meta/codellama-70b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 442,
+      "tokens": 134,
+      "ms": 28669
+    },
+    {
+      "id": "google/codegemma-1.1-7b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 627,
+      "tokens": 180,
+      "ms": 28373
+    },
+    {
+      "id": "google/recurrentgemma-2b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 764,
+      "tokens": 214,
+      "ms": 12962
+    },
+    {
+      "id": "ibm/granite-34b-code-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 596,
+      "tokens": 172,
+      "ms": 16589
+    },
+    {
+      "id": "google/gemma-2b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 327,
+      "tokens": 105,
+      "ms": 25811
+    },
+    {
+      "id": "nvidia/llama3-chatqa-1.5-70b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 521,
+      "tokens": 154,
+      "ms": 12711
+    },
+    {
+      "id": "nvidia/nemotron-parse",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 329,
+      "tokens": 106,
+      "ms": 9376
+    },
+    {
+      "id": "microsoft/kosmos-2",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 530,
+      "tokens": 156,
+      "ms": 9509
+    },
+    {
+      "id": "meta/llama2-70b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 705,
+      "tokens": 200,
+      "ms": 25346
+    },
+    {
+      "id": "aisingapore/sea-lion-7b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 657,
+      "tokens": 188,
+      "ms": 21687
+    },
+    {
+      "id": "nvidia/mistral-nemo-minitron-8b-8k-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 380,
+      "tokens": 118,
+      "ms": 35935
+    },
+    {
+      "id": "ibm/granite-3.0-3b-a800m-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 643,
+      "tokens": 184,
+      "ms": 19740
+    },
+    {
+      "id": "nvidia/nemotron-4-340b-reward",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 630,
+      "tokens": 181,
+      "ms": 21747
+    },
+    {
+      "id": "nvidia/nemotron-4-340b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 697,
+      "tokens": 198,
+      "ms": 27672
+    },
+    {
+      "id": "nvidia/nemotron-mini-4b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 578,
+      "tokens": 168,
+      "ms": 21637
+    },
+    {
+      "id": "nvidia/neva-22b",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 429,
+      "tokens": 131,
+      "ms": 26759
+    },
+    {
+      "id": "nvidia/riva-translate-4b-instruct-v2",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "kilo-auto/free",
+      "chars": 698,
+      "tokens": 198,
+      "ms": 10852
+    },
+    {
+      "id": "nvidia/riva-translate-4b-instruct",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 628,
+      "tokens": 180,
+      "ms": 31917
+    },
+    {
+      "id": "nvidia/riva-translate-4b-instruct-v1.1",
+      "ok": true,
+      "status": 200,
+      "provider": "kilocode",
+      "model": "meituan/longcat-2.0-free",
+      "chars": 622,
+      "tokens": 179,
+      "ms": 32163
+    }
+  ]
+}
