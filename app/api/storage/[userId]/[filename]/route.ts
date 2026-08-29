@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
+import { getAuthUser } from '@/lib/auth'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
@@ -75,9 +76,10 @@ export async function GET(
     const { userId, filename } = await params
     const decodedFilename = decodeURIComponent(filename)
 
-    // SECURITY (IDOR fix): the {userId} in the URL path must match the
-    // middleware-verified identity — nobody can download another user's file.
-    const authedUser = request.headers.get('x-user-id')
+    // SECURITY (IDOR fix): verify JWT directly; {userId} in the URL path must
+    // match the verified identity — nobody can download another user's file.
+    const authUser = await getAuthUser(request).catch(() => null)
+    const authedUser = authUser?.id || request.headers.get('x-user-id') || ''
     if (!authedUser || authedUser === 'anonymous') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

@@ -15,6 +15,16 @@ function validatePassword(password: string): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT (edge layer, ALWAYS enforced): 10 logins / 15 min per IP
+  const { slidingWindow, getClientIpEdge } = await import('@/lib/rate-limit-edge')
+  const rlLogin = slidingWindow(`login:${getClientIpEdge(request)}`, 10, 15 * 60 * 1000)
+  if (!rlLogin.ok) {
+    return NextResponse.json(
+      { error: 'Too many login attempts. Try again in 15 minutes. (অনেক চেষ্টা — ১৫ মিনিট পরে)' },
+      { status: 429 },
+    )
+  }
+
   const hasLocalDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgresql://')
 
   if (hasLocalDb) {
@@ -45,10 +55,41 @@ export async function POST(request: NextRequest) {
 
       const token = signToken({ id: customer.id, email: customer.email, name: customer.name, role: customer.role })
 
-      return NextResponse.json({
+      // MFA gate (optional TOTP): if enabled, require a valid 6-digit code
+      // before issuing the session cookie.
+      let mfaRow: any = null
+      try {
+        mfaRow = await prisma.$queryRawUnsafe(
+          `SELECT "mfaSecret", "mfaEnabled" FROM "Customer" WHERE id = $1 LIMIT 1`, customer.id,
+        )
+      } catch { /* columns not present yet → no MFA configured */ }
+      const mfa = Array.isArray(mfaRow) ? mfaRow[0] : null
+      if (mfa?.mfaEnabled) {
+        const { totpVerify } = await import('@/lib/totp')
+        const supplied = String((body as any)?.mfaToken || (request.headers.get('x-mfa-token') || ''))
+        if (!totpVerify(mfa.mfaSecret, supplied)) {
+          return NextResponse.json(
+            { mfaRequired: true, error: 'MFA কোড লাগবে (6-digit, Google Authenticator)' },
+            { status: 401 },
+          )
+        }
+      }
+
+      // SECURITY: server-set HttpOnly cookie — XSS cannot read the token.
+      // Client keeps receiving `token` in JSON for Bearer/CLI use, but the
+      // browser session rides on this cookie exclusively.
+      const res = NextResponse.json({
         token,
         user: { id: customer.id, email: customer.email, name: customer.name, role: customer.role }
       })
+      res.cookies.set('auth_token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      })
+      return res
     } catch (e: any) {
       console.error('Local login error, falling back to proxy:', e)
       // Fall through to proxy below

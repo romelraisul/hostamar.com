@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { ideTemplate } from '@/lib/model-in-every-point'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,6 +55,8 @@ export async function POST(req: NextRequest) {
   if (!anchor) return NextResponse.json({ error: 'CATALOG_MISSING' }, { status: 500 })
 
   const serverId = `ide-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  // MODEL IN EVERY POINT: starter file template (non-blocking)
+  const starter = await ideTemplate(type).catch(() => '')
   // Filesystem root reserved on B2: ide/{userId}/{serverId}/ — files save via /api/storage
   const session = await prisma.serviceOrder.create({
     data: {
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
       serviceId: 's01',
       creditCost,
       status: 'processing',
-      inputs: { ideType: type, serverId, fsRoot: `ide/${user.id}/${serverId}/` },
+      inputs: { ideType: type, serverId, fsRoot: `ide/${user.id}/${serverId}/`, starterCode: starter || null },
       resultUrl: `/ide/preview?serverId=${serverId}`,
     },
   }).catch(() => null)

@@ -7,6 +7,7 @@ import ProfileTab from '@/components/dashboard/settings/ProfileTab'
 import BusinessTab from '@/components/dashboard/settings/BusinessTab'
 import PasswordTab from '@/components/dashboard/settings/PasswordTab'
 import NotificationsTab from '@/components/dashboard/settings/NotificationsTab'
+import MfaPanel from './mfa-panel'
 import TwitterTab from '@/components/dashboard/settings/TwitterTab'
 import ModelsTab from '@/components/dashboard/settings/ModelsTab'
 import ApiKeysTab from '@/components/dashboard/settings/ApiKeysTab'
@@ -125,6 +126,9 @@ export default function SettingsPage() {
             {activeTab === 'password' && (
               <PasswordTab passwords={passwords} setPasswords={setPasswords} />
             )}
+            {activeTab === 'security' && (
+              <MfaPanel />
+            )}
             {activeTab === 'notifications' && (
                           <NotificationsTab notifications={notifications} setNotifications={setNotifications} />
                         )}
@@ -132,7 +136,7 @@ export default function SettingsPage() {
                         {activeTab === 'models' && <ModelsTab />}
                         {activeTab === 'keys' && <ApiKeysTab />}
 
-                        {activeTab !== 'models' && activeTab !== 'keys' && (
+                        {activeTab !== 'models' && activeTab !== 'keys' && activeTab !== 'security' && (
                           <SaveButton saving={saving} onSave={handleSave} />
                         )}
           </div>

@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { explainAnalytics } from '@/lib/model-in-every-point'
 
 /**
  * GET /api/dashboard/stats — overview stats + recent videos for /dashboard
@@ -39,7 +40,11 @@ export async function GET(req: NextRequest) {
       select: { credits: true },
     }).catch(() => null)
 
+    // MODEL IN EVERY POINT: Bangla explanation of the numbers (non-blocking)
+    const insight = await explainAnalytics({ videos: videoCount, recent: recentVideos.length, credits: customer?.credits ?? 0 }).catch(() => '')
+
     return NextResponse.json({
+      insight: insight || null,
       totalVideos: videoCount,
       creditsBalance: customer?.credits ?? 6000,
       stats: {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { gameConfig } from '@/lib/model-in-every-point'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,13 +79,16 @@ export async function POST(req: NextRequest) {
   const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${user.id} LIMIT 1`
   const balanceAfter = Number(after?.[0]?.credits ?? balance - creditCost)
 
+  // MODEL IN EVERY POINT: LLM-generated server config (non-blocking)
+  const config = await gameConfig(gameId, game.name)
+
   const server = await prisma.serviceOrder.create({
     data: {
       userId: user.id,
       serviceId: 's01', // FK anchor; real product context is in inputs.gameId
       creditCost,
       status: 'processing',
-      inputs: { gameId, action, gameName: game.name, price: game.price },
+      inputs: { gameId, action, gameName: game.name, price: game.price, serverConfig: config || null },
       resultUrl: `/game/${gameId}`,
     },
   }).catch(() => null)

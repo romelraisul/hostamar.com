@@ -168,3 +168,8 @@ state/*.db-shm
 docker/tv-station/videos/free/
 
 .env*
+.env.docker
+.env.prod2
+.env.vercel.backup
+.env.backup.json
+.env.bak*

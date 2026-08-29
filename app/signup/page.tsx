@@ -140,11 +140,8 @@ export default function SignupPage() {
         setLoading(false)
         return
       }
-      if (typeof window !== 'undefined') {
-        // SECURITY: Secure + SameSite=Strict — matches login page hardening.
-        document.cookie = `auth_token=${loginData.token};path=/;max-age=604800;Secure;SameSite=Strict`
-        window.localStorage.setItem('auth_token', loginData.token)
-      }
+      // SECURITY: cookie set SERVER-side by /api/auth/login (HttpOnly, Secure,
+      // SameSite=Strict) — no client-side persistence at all.
       try{ localStorage.removeItem('hostamar_ref') }catch{}
       await signIn('credentials', { email, password, redirect: false })
       router.push('/dashboard')
