@@ -11,6 +11,7 @@ import {
 import { useLocale } from '@/lib/locale-context'
 import { PRODUCT_NAV } from '@/lib/products'
 import NodeStatus from '@/components/dashboard/NodeStatus'
+import { fetchCatalog, decodeIcon, type CatalogService } from '@/lib/services'
 
 interface DashboardStats {
   videos: { total: number; thisMonth: number }
@@ -93,6 +94,66 @@ function RecentCard({ videos }: { videos: RecentVideo[] }) {
           <p className="text-sm text-[#64748B] mt-2">{t('dashboard.noVideos') || 'No videos yet'}</p>
           <Link href="/dashboard/videos/new" className="text-sm font-medium text-[#0E7C3A] hover:underline">Create first →</Link>
         </div>
+      )}
+    </div>
+  )
+}
+
+function ServicesStrip() {
+  const [services, setServices] = useState<CatalogService[]>([])
+  const [q, setQ] = useState('')
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    fetchCatalog().then(d => setServices(d.services || [])).catch(() => {})
+  }, [])
+  const shown = (() => {
+    const needle = q.trim().toLowerCase()
+    const list = needle
+      ? services.filter(s => s.name.toLowerCase().includes(needle) || s.nameBn.includes(q.trim()) || s.category.toLowerCase().includes(needle))
+      : services
+    return open ? list : list.slice(0, 6)
+  })()
+  return (
+    <div className="rounded-2xl border bg-white p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-semibold text-[#0F172A] flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#0E7C3A]" />
+          ৫০+ AI সার্ভিস <span className="text-xs font-normal text-[#64748B]">({services.length} live • 15–100 cr)</span>
+        </h2>
+        <div className="flex items-center gap-2">
+          <input
+            value={q}
+            onChange={e => { setQ(e.target.value); setOpen(true) }}
+            placeholder="সার্চ — carousel, reel, logo..."
+            className="rounded-full border bg-[#F8FAFC] px-3 py-1.5 text-xs outline-none focus:border-[#0E7C3A] w-40 sm:w-56"
+            style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}
+          />
+          <Link href="/dashboard/ai-services" className="rounded-full bg-[#0E7C3A] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#0c6a32] whitespace-nowrap">
+            সব দেখুন →
+          </Link>
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {shown.map(s => (
+          <Link key={s.id} href={`/generate?serviceId=${s.id}`} className="group rounded-xl border p-3 hover:border-[#0E7C3A]/40 hover:bg-[#ECFDF5]/30 transition">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-lg bg-[#F8FAFC] border grid place-items-center text-lg shrink-0">{decodeIcon(s.icon)}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-[#0F172A] truncate" style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>{s.nameBn}</p>
+                <p className="text-[11px] text-[#64748B] truncate">{s.category} • {s.creditCost} cr</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#0E7C3A] shrink-0" />
+            </div>
+          </Link>
+        ))}
+        {!services.length && (
+          <div className="col-span-full h-16 grid place-items-center text-xs text-[#64748B]">সার্ভিস লোড হচ্ছে...</div>
+        )}
+      </div>
+      {!open && services.length > 6 && (
+        <button onClick={() => setOpen(true)} className="mt-3 w-full rounded-xl border border-dashed py-2 text-xs font-semibold text-[#0E7C3A] hover:bg-[#ECFDF5]/40" style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>
+          আরও {services.length - 6} সার্ভিস দেখুন ↓
+        </button>
       )}
     </div>
   )
@@ -247,6 +308,9 @@ export default function DashboardPage() {
               })}
             </div>
           </div>
+
+          {/* 50+ AI Services catalog */}
+          <ServicesStrip />
 
           {/* Per-tab main */}
           <div className="rounded-2xl border bg-white p-5 sm:p-6">

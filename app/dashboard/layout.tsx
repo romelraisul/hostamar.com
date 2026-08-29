@@ -122,6 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }))
 
   const secondaryNav = [
+    { href: '/dashboard/ai-services', icon: Sparkles, label: '৫০+ AI সার্ভিস' },
     { href: '/dashboard/analytics', icon: BarChart3, label: t('nav.analytics') || 'Analytics' },
     { href: '/dashboard/tv', icon: Tv, label: 'My TV' },
     { href: '/dashboard/payment', icon: CreditCard, label: t('nav.payment') || 'Billing' },
