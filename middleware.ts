@@ -112,11 +112,13 @@ export async function middleware(request: NextRequest) {
     '/api/tv/playlist',
     '/api/tv/channels',
     '/api/tv/stable-channels',
+    '/api/tv/ad-click',
     '/api/tv/iptv.m3u',
     '/api/tv/epg.xml',
     '/api/tv/now-playing',
     '/api/tv/agent',
     '/api/admin/seed-tv-channels',
+    '/api/cron/tv-stability',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()

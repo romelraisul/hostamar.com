@@ -1211,6 +1211,16 @@ model TvChannelStability {
   @@index([stabilityScore(sort: Desc), popularityScore(sort: Desc)])
 }
 
+model TvAdClick {
+  id        String   @id @default(cuid())
+  adKey     String
+  adText    String
+  channelId String?
+  createdAt DateTime @default(now())
+
+  @@index([adKey, createdAt])
+}
+
 model TvStreamDestination {
   id        String   @id @default(cuid())
   channelId String
