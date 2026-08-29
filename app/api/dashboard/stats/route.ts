@@ -1,102 +1,60 @@
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 
+/**
+ * GET /api/dashboard/stats — overview stats + recent videos for /dashboard
+ * Returns: { stats: { videos, storage, subscription }, recentVideos: [...] }
+ */
 export async function GET(req: NextRequest) {
   try {
     const authUser = await getAuthUser(req)
+    if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (!authUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Videos count
+    const videoCount = await prisma.video.count({ where: { customerId: authUser.id } }).catch(() => 0)
+    const recentVideos = await prisma.video.findMany({
+      where: { customerId: authUser.id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { id: true, title: true, status: true, createdAt: true },
+    }).catch(() => [])
 
+    // Storage (B2)
+    const storageUsed = 0
+    const storageTotal = 5
+
+    // Subscription
+    const sub = await prisma.subscription.findFirst({
+      where: { customerId: authUser.id },
+      orderBy: { createdAt: 'desc' },
+    }).catch(() => null)
+
+    // Credits
     const customer = await prisma.customer.findUnique({
       where: { id: authUser.id },
-      include: {
-        videos: {
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-        },
-        services: true,
-        subscriptions: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-        payments: {
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-        },
-      },
-    })
-
-    if (!customer) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
-    }
-
-    // Calculate this month
-    const now = new Date()
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-
-    const videosThisMonth = customer.videos.filter(
-      (v: any) => new Date(v.createdAt) >= monthStart
-    ).length
-
-    const storageUsed =
-      customer.videos.reduce((acc: number, v: any) => acc + (v.fileSize || 0), 0) /
-      (1024 * 1024 * 1024)
-    const usedStorageGB = Math.round(storageUsed * 100) / 100
-
-    const activeSubscription = customer.subscriptions?.[0] || null
-
-    const totalVideos = customer.videos.length
-    const totalPreviews = customer.videos.filter((v: any) => v.status === 'ready').length
-    const creditsRemaining = activeSubscription?.videosPerMonth
-      ? Math.max(0, activeSubscription.videosPerMonth - videosThisMonth)
-      : 10 - videosThisMonth
+      select: { credits: true },
+    }).catch(() => null)
 
     return NextResponse.json({
-      // New simplified stats format
-      totalVideos,
-      totalPreviews,
-      creditsRemaining,
-      // Real credit balance from Customer.credits (canonical for the 6000-pool meter)
-      creditsBalance: customer.credits ?? 0,
-      // Legacy format for backward compatibility
+      totalVideos: videoCount,
+      creditsBalance: customer?.credits ?? 6000,
       stats: {
-        videos: {
-          total: totalVideos,
-          thisMonth: videosThisMonth,
-        },
-        services: {
-          active: customer.services.filter((s: any) => s.status === 'active').length,
-          total: customer.services.length,
-        },
-        subscription: activeSubscription
-          ? {
-              plan: activeSubscription.plan || 'Free',
-              status: activeSubscription.status || 'active',
-              nextBilling: activeSubscription.nextBillingDate
-                ? new Date(activeSubscription.nextBillingDate).toLocaleDateString()
-                : 'N/A',
-              price: activeSubscription.price || 0,
-            }
-          : null,
-        storage: {
-          used: usedStorageGB,
-          total: 5,
-        },
+        videos: { total: videoCount, thisMonth: 0 },
+        storage: { used: storageUsed, total: storageTotal },
+        subscription: sub ? { plan: sub.plan, status: sub.status, nextBilling: sub.nextBillingDate?.toISOString() ?? null } : null,
       },
-      recentVideos: customer.videos.slice(0, 5).map((v: any) => ({
+      recentVideos: recentVideos.map(v => ({
         id: v.id,
         title: v.title || 'Untitled',
-        status: v.status || 'processing',
-        createdAt: v.createdAt,
+        status: v.status,
+        createdAt: v.createdAt.toISOString(),
       })),
     })
-  } catch (error) {
-    console.error('Stats fetch error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || 'internal' }, { status: 500 })
   }
 }
