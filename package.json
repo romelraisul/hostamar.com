@@ -33,6 +33,7 @@
     "@prisma/client": "^5.7.0",
     "@sentry/nextjs": "^10.53.1",
     "ai": "^7.0.83",
+    "@ai-sdk/openai": "^4.0.51",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.77.3",
     "fluent-ffmpeg": "^2.1.3",
