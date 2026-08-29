@@ -57,7 +57,18 @@ export async function GET(req: NextRequest) {
     })
 
     if (rows.length === 0) {
-      return NextResponse.json({ ok: true, total: 0, items: [], source: 'empty' })
+      // Fallback: return top tvIptvChannel directly if stability table empty
+      const fallback = await prisma.tvIptvChannel.findMany({
+        where: { country, url: { contains: '.m3u8' }, logo: { not: null } },
+        orderBy: [{ views: 'desc' }],
+        take: limit,
+        select: { id: true, name: true, url: true, logo: true, category: true, country: true, views: true },
+      })
+      const items = fallback.map((c) => ({
+        id: c.id, title: c.name, url: c.url, logo: c.logo, category: c.category,
+        country: c.country, source: 'iptv-fallback', stabilityScore: 50, popularityScore: c.views,
+      }))
+      return NextResponse.json({ ok: true, total: items.length, items })
     }
 
     // Join with channel data
