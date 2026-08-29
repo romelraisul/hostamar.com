@@ -119,6 +119,10 @@ export async function middleware(request: NextRequest) {
     '/api/tv/agent',
     '/api/admin/seed-tv-channels',
     '/api/cron/tv-stability',
+    '/api/support/chat',
+    '/api/chat/support',
+    '/api/chat',
+    '/api/support',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
