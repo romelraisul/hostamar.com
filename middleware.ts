@@ -138,6 +138,7 @@ export async function middleware(request: NextRequest) {
     '/api/auth/oidc/login',     // OIDC IdP-initiated entry
     '/api/auth/oidc/callback',  // OIDC code exchange (cross-site redirect from IdP)
     '/api/scim/v2',             // SCIM 2.0 — Bearer-token server-to-server (no session cookie)
+    '/api/admin/agent/cron',    // Founder OS cron — x-cron-secret (hostamar-cron-2026)
   ]
   if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
