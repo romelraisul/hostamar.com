@@ -1503,15 +1503,42 @@ model ServiceOrder {
   serviceId  String
   service    ServiceCatalog @relation(fields: [serviceId], references: [id])
   creditCost Int
-  status     String   @default("queued") // queued | processing | delivered | failed
+  status     String   @default("queued") // queued | collecting_material | processing | generating | delivered | failed | revising
   inputs     Json     @default("{}")
+  missingFields Json?
   resultUrl  String?
   resultJson Json?
+  isPinned   Boolean  @default(true)
   createdAt  DateTime @default(now())
 
   @@index([userId, createdAt])
   @@index([serviceId])
   @@index([status])
+}
+
+// ── Pinned Chat operation (Fiverr-style): permanent per-order chat ──
+model ServiceChat {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  userId    String
+  isPinned  Boolean  @default(true)
+  title     String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isPinned])
+}
+
+model ServiceChatMessage {
+  id         String   @id @default(cuid())
+  chatId     String
+  role       String   // user | ai | system
+  content    String   @db.Text
+  attachments Json?
+  creditCost  Int?
+  createdAt  DateTime @default(now())
+
+  @@index([chatId])
 }
 
 // ── SEO: Preferred Sources / submit tracking ──
