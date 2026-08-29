@@ -28,7 +28,6 @@ export async function GET(req: NextRequest) {
       const seed = await prisma.tvIptvChannel.findMany({
         where: {
           country,
-          isLive: true,
           url: { contains: '.m3u8' },
           logo: { not: null },
         },
