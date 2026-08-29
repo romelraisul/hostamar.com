@@ -168,12 +168,11 @@ async function deleteFileFromB2(key: string): Promise<void> {
 
 export async function POST(request: NextRequest) {
   try {
-    // Determine user identity
-    // In production, get from session/cookies. For now, use header.
-    const userId =
-      request.headers.get('x-user-id') ??
-      request.headers.get('x-user-email') ??
-      'anonymous'
+    // SECURITY (IDOR fix): verified identity from middleware only — see GET.
+    const userId = request.headers.get('x-user-id') ?? 'anonymous'
+    if (userId === 'anonymous') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Parse form data
     const formData = await request.formData()
@@ -310,10 +309,14 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const userId =
-      request.headers.get('x-user-id') ??
-      request.headers.get('x-user-email') ??
-      'anonymous'
+    // SECURITY (IDOR fix, defense-in-depth): identity comes ONLY from the
+    // middleware-injected verified JWT header (middleware overwrites any
+    // client-forged x-user-id). If middleware didn't inject it → treat as
+    // anonymous/unauthenticated. Client-forged values never reach us.
+    const userId = request.headers.get('x-user-id') ?? 'anonymous'
+    if (userId === 'anonymous') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const files = await listUserFiles(userId)
     const usage = await getStorageUsage(userId)
@@ -341,10 +344,11 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const userId =
-      request.headers.get('x-user-id') ??
-      request.headers.get('x-user-email') ??
-      'anonymous'
+    // SECURITY (IDOR fix): verified identity from middleware only — see GET.
+    const userId = request.headers.get('x-user-id') ?? 'anonymous'
+    if (userId === 'anonymous') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const searchParams = request.nextUrl.searchParams
     const filename = searchParams.get('filename')

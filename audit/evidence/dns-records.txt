@@ -1,0 +1,8 @@
+A hostamar.com: ['104.21.33.14', '172.67.139.164']
+MX hostamar.com: ['10 route1.mx.cloudflare.net', '20 route2.3']
+TXT hostamar.com: ['v=spf1 include:_spf.mx.cloudflare.net ~all']
+NS hostamar.com: ['maeve.ns.cloudflare.com', 'rodney.ns.cloudflare.com']
+CNAME www.hostamar.com: []
+TXT _dmarc.hostamar.com: ['v=DMARC1; p=quarantine; rua=mailto:dmarc@hostamar.com; ruf=mailto:dmarc@hostamar.com; fo=1; pct=100']
+CNAME s3.hostamar.com: []
+CNAME ai.hostamar.com: ['cname.vercel-dns.com']

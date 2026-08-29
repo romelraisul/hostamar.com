@@ -1,0 +1,24 @@
+HTTP/2 200 
+date: Sat, 29 Aug 2026 15:12:37 GMT
+content-type: text/html; charset=utf-8
+age: 0
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'
+permissions-policy: camera=(), microphone=(), geolocation=()
+referrer-policy: strict-origin-when-cross-origin
+server: cloudflare
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-matched-path: /
+x-vercel-cache: MISS
+x-vercel-id: bom1::iad1::gbcp8-1788016357143-7a5915da762c
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+speculation-rules: "/cdn-cgi/speculation"
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=5iFsFvxsZXaLnlg3EwNOkkKmQdc3oSol4vJh%2B5mvAhzLO4TW%2F3GYLJNosNGrb6cItIUta6ElIBFiGv5pJaaK8bUxlmOKMqiNFI7DoPsp6Gq3g%2F3vnGwPN0ABIbbhdYo%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+cf-ray: a32c7eb7fdddba4d-DAC
+alt-svc: h3=":443"; ma=86400
+

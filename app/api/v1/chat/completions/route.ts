@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { callBestModel } from '@/lib/ai-fallback'
 import { getAuthUser } from '@/lib/auth'
 import { deductCredits } from '@/lib/credits'
+import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 55
@@ -24,6 +25,15 @@ const SYSTEM_PROMPT =
   'You are Hostamar AI — an assistant for Bangladeshi businesses. Reply in Bangla or English matching the user. Hostamar offers 50+ AI services (video, logo, ads, social), 6000 FREE credits, bKash personal payment 01822417463, plans Starter ৳599 / Pro ৳1299 / Business ৳2999. Be concise and helpful.'
 
 export async function POST(req: NextRequest) {
+  // RATE LIMIT (audit HIGH fix): 100 req/min/IP zero-cost in-process window.
+  const rl = slidingWindow(`chat:${getClientIpEdge(req)}`, 100, 60_000)
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: { message: 'Rate limit exceeded — 100 req/min. Try again shortly.', code: 429 } },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetInMs / 1000)) } },
+    )
+  }
+
   let body: any
   try {
     body = await req.json()

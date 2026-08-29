@@ -1,0 +1,35 @@
+name: MLOps — build, type-check, quality gates (free tier)
+# Zero-cost CI/CD: GitHub Actions free minutes + git push = Vercel deploy.
+# Model changes: model-test-results.json is the eval artifact; regression gate
+# = /api/v1/models returns ≥110 working + chat smoke test via kilocode.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts || npm install --ignore-scripts
+      - name: Prisma generate
+        run: npx prisma generate
+      - name: Type check
+        run: npx tsc --noEmit --skipLibCheck
+      - name: Build
+        run: npm run build
+        env:
+          JWT_SECRET: dummy
+          NEXTAUTH_SECRET: dummy
+          NEXTAUTH_URL: https://hostamar.com
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+      # Canary/rollback: Vercel dashboard promote (never `vercel --prod` from repo —
+      # the CLI recreates the duplicate project and burns quota).
+      # Model eval: run scripts/model-smoke.mjs against a PR preview when a
+      # model-test-results.json diff is present (next step, needs preview URL).

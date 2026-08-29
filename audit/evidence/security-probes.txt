@@ -1,0 +1,67 @@
+=== /dashboard headers (307) ===
+HTTP/2 307 
+cache-control: public, max-age=0, must-revalidate
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'
+location: /login
+permissions-policy: camera=(), microphone=(), geolocation=()
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-vercel-id: sin1::xgb9t-1788016710779-fb388108009f
+x-xss-protection: 1; mode=block
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=QoDTNDxkjpJUZ5eCn0mhJw5ZB15c3hAcV16dulsTvUWljT0oat6xpZC7Hi%2B3tlGYtZuMCaFJo0qbqQ84ZZmuWJS996gJYSHZP5uSYvNKK9It6J%2BkbViGT%2BKd0QRy%2Be0%3D"}]}
+
+=== POST /api/auth/login set-cookie flags ===
+HTTP/2 401 
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=2FMhlNeq8JsYHY6dSXZWc1sQ0s%2F3rx9qGnnnMdx%2Ff9ERnM6OeOe8TnviDdHc9ldioi7fugLf%2FY%2Fh4TwQGgrDinNpzl6U1DBFPt%2FnqrcvJzm1yfgeqgQfYP09xIfzNsg%3D"}]}
+
+=== /api/dashboard/stats 401 ===
+HTTP/2 401 
+cache-control: public, max-age=0, must-revalidate
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-vercel-id: sin1::49rsg-1788016731770-70c96c87c641
+x-xss-protection: 1; mode=block
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=lNuI6A2dmmiEojFtTpj8BhsHVSPCsivhwfp2Csrmtl1C0rPb8xG2dE7BCGf6jjakN5NblHu3I470v%2FzlMZdzfHi60UAisnEGot1ze87oPj9Kd1O5J2X%2Fsknm8MhjGAU%3D"}]}
+
+=== /api/admin/agent/cron no secret → 401 ===
+401
+=== /api/admin/agent/cron with secret → 200 ===
+{"ok":true,"type":"daily-health","health":{"ok":true,"b2Count":1},"db":{"customers":105,"payments":3,"transactions":3,"tvStable":50},"pending":[]}
+
+=== /api/storage (public leak check) ===
+{"files":[],"storage":{"used":0,"quota":5368709120,"remaining":5368709120,"files":0}}
+
+=== CORS check /api/v1/chat/completions ===
+HTTP/2 204 
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=g%2Fsf8JNafyWyKsyKoDXSnY0CSlbU1X7WVZZse%2B1ny%2BFZJ9pVBjty33Kpbw%2BAY1E3ab9mqbBgFhUhBmEmK4n77rSTTMeF45XCuFcXPDP6PNdOwY0nXvy5XE4rhBjvNgI%3D"}]}
+
+=== robots.txt ===
+# As a condition of accessing this website, you agree to abide by the following
+# content signals:
+
+# (a)  If a Content-Signal = yes, you may collect content for the corresponding
+#      use.
+# (b)  If a Content-Signal = no, you may not collect content for the
+#      corresponding use.
+# (c)  If the website operator does not include a Content-Signal for a
+#      corresponding use, the website operator neither grants nor restricts
+#      permission via Content-Signal with respect to the corresponding use.
+
+# The content signals and their meanings are:
+
+# search:   building a search index and providing search results (e.g., returning
+#           hyperlinks and short excerpts from your website's contents). Search does not
+#           include providing AI-generated search summaries.
+# ai-input: inputting content into one or more AI models (e.g., retrieval
+#           augmented generation, grounding, or other real-time taking of content for
+#           generative AI search answers).
+# ai-train: training or fine-tuning AI models.
+
+=== sitemap.xml status ===
+200

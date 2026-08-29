@@ -5,11 +5,8 @@ import Link from 'next/link'
 
 const PRIMARY = '#0E7C3A'
 const ACCENT = '#F59E0B'
-const API = process.env.NEXT_PUBLIC_VIDEO_API_URL || 'http://localhost:8000'
-const API_KEY = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_VIDEO_API_KEY) || 'local-dev-key'
-const AUTH_HEADER_VALUE = 'Bearer ' + API_KEY
 
-type Status = 'idle' | 'queued' | 'running' | 'completed' | 'failed'
+type Status = 'idle' | 'processing' | 'completed' | 'failed'
 
 const DEMOS = [
   { tag: 'Eid', title: 'ঈদ কালেকশন — ৫০% ছাড়', desc: 'জামা/পাঞ্জাবি রিলস 9:16', grad: 'from-[#0E7C3A] to-[#0c6a32]', icon: '🌙' },
@@ -42,34 +39,27 @@ export default function VideoGeneratePage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const pollStatus = async (id: string) => {
-    for (let i = 0; i < 240; i++) {
-      await new Promise((r) => setTimeout(r, 5000))
-      try {
-        const res = await fetch(`${API}/v1/status/${id}`, { headers: { Authorization: AUTH_HEADER_VALUE } })
-        if (!res.ok) continue
-        const data = await res.json()
-        setStatus(data.status)
-        setProgress(Number(data.progress || 0))
-        if (data.status === 'completed') { setVideoUrl(data.video_url); setLoading(false); return }
-        if (data.status === 'failed') { setError(data.error || 'render failed'); setLoading(false); return }
-      } catch {}
-    }
-    setError('timeout: job did not finish in 20 min'); setLoading(false)
-  }
-
   const start = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true); setError(''); setVideoUrl(''); setProgress(0); setStatus('queued')
+    setLoading(true); setError(''); setVideoUrl(''); setProgress(0); setStatus('processing')
     try {
-      const res = await fetch(`${API}/v1/generate`, {
+      // Same-origin wired generate — auth cookie, credits, creditTransaction, B2-ready
+      const params = new URLSearchParams(window.location.search)
+      const serviceId = params.get('serviceId') || 's01'
+      const res = await fetch('/api/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: AUTH_HEADER_VALUE },
-        body: JSON.stringify({ prompt_bn: promptBn, style, aspect_ratio: aspect, with_bgm: withBgm, avatar_image_url: avatarUrl || null }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ serviceId, prompt: promptBn }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.detail || 'generate failed'); setLoading(false); return }
-      setJobId(data.job_id); pollStatus(data.job_id)
+      if (res.status === 401) { window.location.href = '/login'; return }
+      if (res.status === 402) { setError(`ক্রেডিট লাগবে ${data.needed}cr — ব্যালেন্স ${data.balance}cr। টপ-আপ: bKash ${data.bkash}`); setLoading(false); return }
+      if (!res.ok || !data.success) { setError(data.error || 'generate failed'); setLoading(false); return }
+      setStatus('completed'); setProgress(1)
+      setVideoUrl(data.video.url)
+      setJobId(data.video.id)
+      setLoading(false)
     } catch { setError('network error'); setLoading(false) }
   }
 

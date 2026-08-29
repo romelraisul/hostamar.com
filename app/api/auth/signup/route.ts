@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
       const bcrypt = (await import('bcryptjs')).default
       const { checkRateLimit, getClientIp, RATE_LIMITS } = await import('@/lib/rate-limit')
       const { sendWelcomeEmail } = await import('@/lib/email')
+      const { WELCOME_CREDITS } = await import('@/lib/pricing')
 
       const ip = getClientIp(request)
       const rl = await checkRateLimit(ip, RATE_LIMITS.signup, '/api/auth/signup', 'POST')
@@ -43,6 +44,15 @@ export async function POST(request: NextRequest) {
           email,
           password: hashedPassword,
           name,
+          credits: WELCOME_CREDITS, // 6000 FREE credits on signup — enables all dashboard products
+          creditTransactions: {
+            create: {
+              amount: WELCOME_CREDITS,
+              type: 'welcome_bonus',
+              description: 'Signup welcome credits',
+              balanceAfter: WELCOME_CREDITS,
+            },
+          },
           business: businessName ? {
             create: { name: businessName, industry: industry || 'Other' }
           } : undefined

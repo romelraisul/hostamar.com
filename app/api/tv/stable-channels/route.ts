@@ -4,6 +4,18 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// PERF: DDL self-heal only once per serverless instance (was every request,
+// adding ~3s across 4 CREATE TABLE roundtrips). Tables already exist in prod.
+let schemaEnsured = false
+async function ensureSchemaOnce() {
+  if (schemaEnsured) return
+  try { await (prisma as any).$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TvChannelStability" ("id" TEXT PRIMARY KEY, "channelId" TEXT UNIQUE NOT NULL, "stabilityScore" INTEGER NOT NULL DEFAULT 0, "popularityScore" INTEGER NOT NULL DEFAULT 0, "successCount" INTEGER NOT NULL DEFAULT 0, "failCount" INTEGER NOT NULL DEFAULT 0, "avgLoadTimeMs" INTEGER NOT NULL DEFAULT 9999, "lastSuccessAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`) } catch {}
+  try { await (prisma as any).$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "TvChannelStability_stabilityScore_popularityScore_idx" ON "TvChannelStability"("stabilityScore" DESC, "popularityScore" DESC)`) } catch {}
+  try { await (prisma as any).$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TvAdClick" ("id" TEXT PRIMARY KEY, "adKey" TEXT NOT NULL, "adText" TEXT NOT NULL, "channelId" TEXT, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`) } catch {}
+  try { await (prisma as any).$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "TvAdClick_adKey_createdAt_idx" ON "TvAdClick"("adKey", "createdAt")`) } catch {}
+  schemaEnsured = true
+}
+
 /**
  * GET /api/tv/stable-channels (public)
  * Returns top N channels by (stabilityScore DESC, popularityScore DESC).
@@ -16,11 +28,8 @@ export async function GET(req: NextRequest) {
   const country = searchParams.get('country') || 'bd'
 
   try {
-    // Ensure tables exist (no prisma db push needed — runtime self-heal, single statements)
-    try { await (prisma as any).$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TvChannelStability" ("id" TEXT PRIMARY KEY, "channelId" TEXT UNIQUE NOT NULL, "stabilityScore" INTEGER NOT NULL DEFAULT 0, "popularityScore" INTEGER NOT NULL DEFAULT 0, "successCount" INTEGER NOT NULL DEFAULT 0, "failCount" INTEGER NOT NULL DEFAULT 0, "avgLoadTimeMs" INTEGER NOT NULL DEFAULT 9999, "lastSuccessAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`) } catch {}
-    try { await (prisma as any).$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "TvChannelStability_stabilityScore_popularityScore_idx" ON "TvChannelStability"("stabilityScore" DESC, "popularityScore" DESC)`) } catch {}
-    try { await (prisma as any).$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TvAdClick" ("id" TEXT PRIMARY KEY, "adKey" TEXT NOT NULL, "adText" TEXT NOT NULL, "channelId" TEXT, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)`) } catch {}
-    try { await (prisma as any).$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "TvAdClick_adKey_createdAt_idx" ON "TvAdClick"("adKey", "createdAt")`) } catch {}
+    // PERF: self-heal DDL once per instance, not per request
+    await ensureSchemaOnce()
 
     // Auto-seed on first call: 50 BD channels with .m3u8 + logo
     const count = await prisma.tvChannelStability.count()
