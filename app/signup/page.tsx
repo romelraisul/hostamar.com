@@ -141,7 +141,8 @@ export default function SignupPage() {
         return
       }
       if (typeof window !== 'undefined') {
-        document.cookie = `auth_token=${loginData.token};path=/;max-age=31536000`
+        // SECURITY: Secure + SameSite=Strict — matches login page hardening.
+        document.cookie = `auth_token=${loginData.token};path=/;max-age=604800;Secure;SameSite=Strict`
         window.localStorage.setItem('auth_token', loginData.token)
       }
       try{ localStorage.removeItem('hostamar_ref') }catch{}

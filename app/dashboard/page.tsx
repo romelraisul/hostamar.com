@@ -171,7 +171,7 @@ export default function DashboardPage() {
     let alive = true
     ;(async () => {
       try {
-        const r = await fetch('/api/dashboard/stats')
+        const r = await fetch('/api/dashboard/stats', { credentials: 'include' })
         if (!r.ok) throw new Error(String(r.status))
         const j = (await r.json()) as ApiData
         if (alive) setData(j)

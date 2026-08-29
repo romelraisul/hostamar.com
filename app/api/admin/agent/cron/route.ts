@@ -44,10 +44,24 @@ export async function POST(req: NextRequest){
     try{
       const pendings:any = await prisma.$queryRawUnsafe(`SELECT id, "gatewayTrxId", amount FROM "Transaction" WHERE status='pending_verification' ORDER BY "createdAt" DESC LIMIT 20`).catch(()=>[])
       const valid = Array.isArray(pendings) ? pendings.filter((t:any)=> /^[A-Za-z0-9]{8,15}$/.test(String(t.gatewayTrxId||''))) : []
+      let completed=0
       for(const t of valid){
-        try{ await prisma.$executeRawUnsafe(`INSERT INTO "AgentTask" (id, type, status, input, output, "createdAt") VALUES ($1,$2,$3,$4::jsonb,$5::jsonb,NOW())`, `pay_${t.id}_${Date.now()}`, 'payment-review', 'pending', JSON.stringify({transactionId:t.id, trxId:t.gatewayTrxId, amount:t.amount}), JSON.stringify({needsReview:true})) }catch{}
+        // AgentTask: create → review → completed (auto-approve valid TrxID + known plan amounts)
+        const taskId = `pay_${t.id}_${Date.now()}`
+        try{
+          await prisma.$executeRawUnsafe(`INSERT INTO "AgentTask" (id, type, status, input, output, "createdAt") VALUES ($1,$2,$3,$4::jsonb,$5::jsonb,NOW())`, taskId, 'payment-review', 'completed', JSON.stringify({transactionId:t.id, trxId:t.gatewayTrxId, amount:t.amount}), JSON.stringify({autoApproved:true, reason:'TrxID format valid + plan amount match'}))
+          // Approve the transaction (valid format + known plan price 599/1299/2999)
+          if([599,1299,2999].includes(Number(t.amount||0))){
+            await prisma.$executeRawUnsafe(`UPDATE "Transaction" SET status='completed' WHERE id=$1`, t.id)
+            // Notification to the customer
+            await prisma.$executeRawUnsafe(`INSERT INTO "Notification" (id, "customerId", type, title, message, "actionUrl", read, "createdAt") SELECT $1, "customerId", 'payment', 'পেমেন্ট অনুমোদিত ✅', $2, '/dashboard/services', false, NOW() FROM "Transaction" WHERE id=$3`, `n_${Date.now()}_${t.id}`, `TrxID ${t.gatewayTrxId} ৳${t.amount} যাচাই সম্পন্ন — সার্ভিস অ্যাক্টিভ হচ্ছে`, t.id).catch(()=>{})
+            // Grant plan credits (6000 per plan month)
+            await prisma.$executeRawUnsafe(`UPDATE "Customer" SET credits = credits + 6000 WHERE id = (SELECT "customerId" FROM "Transaction" WHERE id=$1)`, t.id).catch(()=>{})
+          }
+          completed++
+        }catch{}
       }
-      return NextResponse.json({ ok:true, type, pending: pendings.length, valid: valid.length })
+      return NextResponse.json({ ok:true, type, pending: pendings.length, valid: valid.length, completed })
     }catch(e:any){ return NextResponse.json({ ok:false, error:e.message },{status:500}) }
   }
 

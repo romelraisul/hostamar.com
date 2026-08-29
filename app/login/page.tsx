@@ -53,7 +53,10 @@ export default function LoginPage() {
         return
       }
       if (data.token && typeof window !== 'undefined') {
-        document.cookie = `auth_token=${data.token};path=/;max-age=31536000`
+        // SECURITY: Secure + SameSite=Strict (HttpOnly kept off only because
+        // the storage dashboard decodes the JWT client-side; cookie is
+        // HTTPS-only so Secure flag is safe on Vercel/Cloudflare).
+        document.cookie = `auth_token=${data.token};path=/;max-age=604800;Secure;SameSite=Strict`
         window.localStorage.setItem('auth_token', data.token)
       }
       router.push('/dashboard')

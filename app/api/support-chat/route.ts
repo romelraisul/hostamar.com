@@ -7,6 +7,7 @@ import {
 } from '@/lib/provisioning'
 import { ensureSchema } from '@/lib/ensure-schema'
 import { env } from '@/lib/env'
+import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 
 // ============================================================================
 // Live support chat — RAG-backed by Hostamar's SELF-HOSTED stack:
@@ -190,6 +191,14 @@ ${ragBlock}
 
 export async function POST(request: NextRequest) {
   try {
+    // RATE LIMIT: 30 req/min/IP — public endpoint, zero-cost window
+    const rl = slidingWindow(`support:${getClientIpEdge(request)}`, 30, 60_000)
+    if (!rl.ok) {
+      return NextResponse.json(
+        { reply: 'অনেক দ্রুত মেসেজ পাঠাচ্ছেন — এক মিনিট পর আবার চেষ্টা করুন।' },
+        { status: 429 },
+      )
+    }
     const { message, history } = (await request.json()) as {
       message?: string
       history?: { role: 'user' | 'assistant'; content: string }[]

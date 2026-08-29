@@ -93,7 +93,6 @@ export async function middleware(request: NextRequest) {
     '/api/auth/reset',
     '/api/auth/reset-password',
     '/api/bootstrap-admin',
-    '/api/storage',
     '/api/auth/providers',
     '/api/auth/callback',
     '/api/auth/signin',

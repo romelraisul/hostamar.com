@@ -75,6 +75,16 @@ export async function GET(
     const { userId, filename } = await params
     const decodedFilename = decodeURIComponent(filename)
 
+    // SECURITY (IDOR fix): the {userId} in the URL path must match the
+    // middleware-verified identity — nobody can download another user's file.
+    const authedUser = request.headers.get('x-user-id')
+    if (!authedUser || authedUser === 'anonymous') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (userId !== authedUser) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     if (!userId || !decodedFilename) {
       return NextResponse.json(
         { error: 'userId and filename are required' },
