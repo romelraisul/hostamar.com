@@ -128,6 +128,8 @@ export async function middleware(request: NextRequest) {
     // CLIs set OPENAI_BASE_URL=https://hostamar.com/api/v1.
     '/api/v1/models',
     '/api/v1/chat/completions',
+    '/api/showcase',
+    '/api/showcase/:path*',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
@@ -208,5 +210,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image).*)']
+  matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image|twitter-image|fonts/|showcase/).*)']
 }

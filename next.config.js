@@ -34,6 +34,48 @@ const nextConfig = {
           { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'" },
         ],
       },
+      {
+        source: '/opengraph-image',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        source: '/twitter-image',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        source: '/fonts/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/api/v1/models',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/api/services/catalog',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/api/tv/stable-channels',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=120' },
+        ],
+      },
+      {
+        source: '/api/health',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=30' },
+        ],
+      },
     ]
   },
   typescript: {
@@ -45,6 +87,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false,
     scrollRestoration: true,
+    optimizePackageImports: ['lucide-react'],
     serverComponentsExternalPackages: ['playwright-core'],
     // Trace the forked CodeAct worker into the standalone bundle (alongside the
     // Dockerfile safety COPY) so fork() finds it in both dev and prod.

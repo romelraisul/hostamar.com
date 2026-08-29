@@ -1,5 +1,4 @@
 import './globals.css'
-import localFont from 'next/font/local'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
@@ -18,15 +17,7 @@ import type { Locale } from '@/lib/i18n'
 // 'useContext')"). This is a rendering-strategy setting, not a logic change.
 export const dynamic = 'force-dynamic'
 
-// Self-hosted Bengali font (no build-time Google Fonts fetch — Vercel's
-// prerender subprocess can't reach fonts.googleapis.com, which previously
-// triggered a Pages-Router fallback error page that crashed on <Html>).
-const bengali = localFont({
-  src: './fonts/NotoSansBengali-Regular.woff2',
-  variable: '--font-bengali',
-  weight: '400',
-  display: 'swap',
-})
+// Bengali font loaded via Google Fonts <link> in head (Hind Siliguri) — no localFont needed
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 
@@ -158,7 +149,7 @@ export default async function RootLayout({
     locale = 'bn'
   }
     const isBengali = locale === 'bn'
-    const htmlFontClass = isBengali ? bengali.variable : ''
+    const htmlFontClass = isBengali ? 'bangla' : ''
 
     return (
       <html lang={locale} dir="ltr" className={htmlFontClass}>
