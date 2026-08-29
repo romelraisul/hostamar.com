@@ -1,5 +1,5 @@
 {
-  "at": "2026-08-29T12:30:13.763Z",
+  "at": "2026-08-29T13:10:03.845Z",
   "total": 14,
   "pass": 14,
   "results": [
@@ -7,98 +7,98 @@
       "name": "home",
       "status": 200,
       "passed": true,
-      "ms": 490,
+      "ms": 442,
       "detail": ""
     },
     {
       "name": "health",
       "status": 200,
       "passed": true,
-      "ms": 20796,
+      "ms": 143,
       "detail": true
     },
     {
       "name": "services-catalog",
       "status": 200,
       "passed": true,
-      "ms": 20567,
+      "ms": 1033,
       "detail": 50
     },
     {
       "name": "v1-models",
       "status": 200,
       "passed": true,
-      "ms": 1155,
+      "ms": 122,
       "detail": 120
     },
     {
       "name": "v1-chat",
       "status": 200,
       "passed": true,
-      "ms": 4673,
+      "ms": 4274,
       "detail": ""
     },
     {
       "name": "tv-stable",
       "status": 200,
       "passed": true,
-      "ms": 3506,
+      "ms": 97,
       "detail": true
     },
     {
       "name": "storage",
       "status": 200,
       "passed": true,
-      "ms": 648,
+      "ms": 345,
       "detail": 5368709120
     },
     {
       "name": "support-chat",
       "status": 200,
       "passed": true,
-      "ms": 25654,
-      "detail": "meituan/longcat-2.0-free"
+      "ms": 9898,
+      "detail": "kilo-auto/free"
     },
     {
       "name": "og-image",
       "status": 200,
       "passed": true,
-      "ms": 1397,
+      "ms": 84,
       "detail": "image/png nullB"
     },
     {
       "name": "og-meta",
       "status": 200,
       "passed": true,
-      "ms": 414,
+      "ms": 413,
       "detail": "found"
     },
     {
       "name": "dashboard",
       "status": 200,
       "passed": true,
-      "ms": 496,
+      "ms": 463,
       "detail": ""
     },
     {
       "name": "ai-services",
       "status": 200,
       "passed": true,
-      "ms": 399,
+      "ms": 410,
       "detail": ""
     },
     {
       "name": "chat",
       "status": 200,
       "passed": true,
-      "ms": 410,
+      "ms": 382,
       "detail": ""
     },
     {
       "name": "admin-agent",
       "status": 401,
       "passed": true,
-      "ms": 87,
+      "ms": 90,
       "detail": ""
     }
   ]

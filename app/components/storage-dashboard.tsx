@@ -85,16 +85,12 @@ export default function StorageDashboard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
 
-  // Fetch storage data
+  // Fetch storage data — credentials:'include' so middleware resolves the JWT
+  // and injects x-user-id server-side (client header is ignored/untrusted).
   const fetchStorage = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }))
     try {
-      const res = await fetch('/api/storage', {
-        headers: {
-          'x-user-id': userId,
-          'x-user-email': userId,
-        },
-      })
+      const res = await fetch('/api/storage', { credentials: 'include' })
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${await res.text()}`)
       }
@@ -123,10 +119,7 @@ export default function StorageDashboard({
     try {
       const res = await fetch(`/api/storage?filename=${encodeURIComponent(filename)}`, {
         method: 'DELETE',
-        headers: {
-          'x-user-id': userId,
-          'x-user-email': userId,
-        },
+        credentials: 'include',
       })
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${await res.text()}`)
@@ -165,6 +158,7 @@ export default function StorageDashboard({
       const res = await fetch('/api/storage', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       })
 
       setState(prev => ({ ...prev, uploadProgress: 90 }))
@@ -199,7 +193,7 @@ export default function StorageDashboard({
   // Download file
   const downloadFile = useCallback(async (file: FileEntry) => {
     // Get download URL
-    const url = `/api/storage/download/${userId}/${encodeURIComponent(file.filename)}`
+    const url = `/api/storage/${userId}/${encodeURIComponent(file.filename)}`
     setDownloadUrl(url)
 
     // Open in new tab or trigger download
