@@ -17,6 +17,7 @@ type Channel = {
 export default function TvHero() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const hlsRef = useRef<Hls | null>(null)
+  const retryCountRef = useRef(0)
   const skipRef = useRef<NodeJS.Timeout | null>(null)
 
   const [channels, setChannels] = useState<Channel[]>([])
@@ -26,6 +27,7 @@ export default function TvHero() {
   const [showSoundBadge, setShowSoundBadge] = useState(true)
 
   const current = channels[idx]
+  const MAX_RETRIES = 3
 
   // Fetch channels with fallback chain: stable -> old /channels -> hardcoded
   useEffect(() => {
@@ -33,12 +35,9 @@ export default function TvHero() {
     setPhase('loading')
 
     async function loadWithFallback() {
-      // 1. Try stable-channels (preferred — ranked by stability+popularity)
-      // 2. Fallback to /api/tv/channels (whitelisted, 3700 channels, no stability score)
-      // 3. Final fallback: localStorage cached most-stable channel
       const urls = [
-        '/api/tv/stable-channels?limit=20',
-        '/api/tv/channels?country=bd&limit=20',
+        '/api/tv/stable-channels?limit=50',
+        '/api/tv/channels?country=bd&limit=50',
       ]
       let items: Channel[] = []
       for (const url of urls) {
@@ -58,7 +57,6 @@ export default function TvHero() {
       }
 
       setChannels(items)
-      // Try saved most-stable channelId, fallback to BD-first
       let startIdx = 0
       try {
         const saved = localStorage.getItem('hostamar_stable_default')
@@ -70,7 +68,6 @@ export default function TvHero() {
           const bdIdx = items.findIndex((c) => c.country === 'bd')
           if (bdIdx >= 0) startIdx = bdIdx
         }
-        // Save the top stable channel as default for next session
         if (items[0]?.id) localStorage.setItem('hostamar_stable_default', items[0].id)
       } catch {}
       setIdx(startIdx)
@@ -81,33 +78,29 @@ export default function TvHero() {
     return () => { cancelled = true }
   }, [])
 
-  // Auto-rotate every 10s
-  useEffect(() => {
-    if (channels.length <= 1) return
-    const t = setInterval(() => {
-      setIdx((i) => (i + 1) % channels.length)
-      setLogoError(false)
-    }, 10000)
-    return () => clearInterval(t)
-  }, [channels.length])
-
-  // HLS player
+  // HLS player — NO auto-rotate, only change on user click or fatal error after MAX_RETRIES
   useEffect(() => {
     const video = videoRef.current
     if (!video || !current || phase !== 'ready') return
 
     if (skipRef.current) clearTimeout(skipRef.current)
     if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null }
+    retryCountRef.current = 0
+    setLogoError(false)
 
     const url = current.url
     if (!url) return
 
+    // Timeout: if video doesn't start playing in 15s, skip to next
     skipRef.current = setTimeout(() => {
-      if (video.readyState < 1) {
+      if (video.readyState < 1 && retryCountRef.current < MAX_RETRIES) {
+        retryCountRef.current++
+        // Try next channel only after MAX_RETRIES
+      } else if (video.readyState < 1) {
         setIdx((i) => (i + 1) % channels.length)
         setLogoError(false)
       }
-    }, 5000)
+    }, 15000)
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = url
@@ -129,9 +122,14 @@ export default function TvHero() {
         video.play().catch(() => {})
       })
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (data.fatal && skipRef.current) {
-          clearTimeout(skipRef.current); skipRef.current = null
-          setTimeout(() => { setIdx((i) => (i + 1) % channels.length); setLogoError(false) }, 1000)
+        if (!data.fatal) return
+        if (skipRef.current) { clearTimeout(skipRef.current); skipRef.current = null }
+        if (retryCountRef.current < MAX_RETRIES) {
+          retryCountRef.current++
+          hls.startLoad()
+        } else {
+          setIdx((i) => (i + 1) % channels.length)
+          setLogoError(false)
         }
       })
       hlsRef.current = hls
@@ -146,6 +144,16 @@ export default function TvHero() {
     if (videoRef.current) { videoRef.current.muted = false; videoRef.current.volume = 1 }
     setShowSoundBadge(false)
   }, [])
+
+  const goNext = useCallback(() => {
+    setIdx((i) => (i + 1) % channels.length)
+    setLogoError(false)
+  }, [channels.length])
+
+  const goPrev = useCallback(() => {
+    setIdx((i) => (i - 1 + channels.length) % channels.length)
+    setLogoError(false)
+  }, [channels.length])
 
   if (phase === 'loading') {
     return (
@@ -192,14 +200,16 @@ export default function TvHero() {
         {showSoundBadge && <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-white/90 text-[#0E7C3A] text-xs px-3 py-1 rounded-full font-bold shadow animate-pulse z-10 pointer-events-none">🔊 Tap for Sound</div>}
 
         <Link href={current ? `/tv?channel=${current.id}` : '/tv'} className="absolute bottom-2 left-2 right-2 bg-black/60 hover:bg-black/80 text-white text-xs px-2 py-1 rounded truncate z-10 block">
-          🎬 {current?.title || 'Hostamar TV'} • {channels.length} stable • 10s rotation ▶
+          🎬 {current?.title || 'Hostamar TV'} • {channels.length} stable ▶
         </Link>
 
         {channels.length > 1 && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10 items-center">
+            <button onClick={(e) => { e.stopPropagation(); goPrev(); }} className="bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-full text-xs">◀</button>
             {channels.slice(0, 20).map((_, i) => (
               <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); setLogoError(false); }} className={`w-1.5 h-1.5 rounded-full transition ${i === idx ? 'bg-white scale-125' : 'bg-white/40'}`} />
             ))}
+            <button onClick={(e) => { e.stopPropagation(); goNext(); }} className="bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-full text-xs">▶</button>
           </div>
         )}
       </div>
