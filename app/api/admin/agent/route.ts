@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { callBestModel } from '@/lib/ai-fallback'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -183,7 +184,7 @@ export async function POST(req: NextRequest){
   if(lower.startsWith('/check') || lower.startsWith('/health')){
     const [health, db, tunnel, containers, storageB2] = await Promise.all([getHostamarHealth(), getDbCounts(), getTunnelStatus(), getContainerStatus(), getStorageB2()])
     const seo = getOpenSeoAudit()
-    text = `✅ CHECK — ${new Date().toISOString()}\n\nHealth: ${health.hostamar} (${health.statusUrl})\n- /api/health: ${JSON.stringify(health.details['https://hostamar.com/api/health']||{}).slice(0,250)}\n- stable-channels: ${JSON.stringify(health.details['https://hostamar.com/api/tv/stable-channels?limit=5']||{}).slice(0,250)}\n\nDB: customers=${(db as any).customers} payments=${(db as any).payments} videos=${(db as any).videos} subs=${(db as any).subscriptions} TvStable=${(db as any).tvStable} AdClick=${(db as any).adClick}\nTunnel: ${tunnel.detail}\nContainers: ${containers.count}/9 — ${containers.summary}\nStorage B2: ${storageB2.count} objects ${storageB2.usedLabel} @ ${storageB2.endpoint} bucket ${storageB2.bucket}\nSEO: ${seo.status}\n\nConductor: hostamar-build 15b27glmj → next (one-push)\nB2 key 005a26c99e410200000000001 ✅ TV 20 ✅ Dashboard 100%`
+    text = `✅ CHECK — ${new Date().toISOString()}\n\nHealth: ${health.hostamar} (${health.statusUrl})\n- /api/health: ${JSON.stringify(health.details['https://hostamar.com/api/health']||{}).slice(0,250)}\n- stable-channels: ${JSON.stringify(health.details['https://hostamar.com/api/tv/stable-channels?limit=5']||{}).slice(0,250)}\n\nDB: customers=${(db as any).customers} payments=${(db as any).payments} videos=${(db as any).videos} subs=${(db as any).subscriptions} TvStable=${(db as any).tvStable} AdClick=${(db as any).adClick}\nTunnel: ${tunnel.detail}\nContainers: ${containers.count}/9 — ${containers.summary}\nStorage B2: ${storageB2.count} objects ${storageB2.usedLabel} @ ${storageB2.endpoint} bucket ${storageB2.bucket}\nSEO: ${seo.status}\n\nConductor: hostamar-build 4mirik2jm → next (one-push)\nB2 key 005a26c99e410200000000001 ✅ TV 20 ✅ Dashboard 100%`
     extra = { health, db, tunnel, containers, storageB2, seo, status:'ok' }
   } else if(lower.startsWith('/audit')){
     const seo = getOpenSeoAudit()
@@ -215,23 +216,16 @@ export async function POST(req: NextRequest){
   } else if(lower.startsWith('/help')){
     text = `Hostamar OS — commands:\n/check or /health — health+db+tunnel+containers+storage B2+stable 20\n/audit — SEO audit (needs DATAFORSEO_API_KEY for real)\n/build bKash — emergency cash plan (auto if keys else manual TrxID)\n/qa — gstack QA (needs browse binary)\n/ship — git status + sync preview\n/retro — git log last week\n\nChat also answers free-form via AI (if OPENAI_API_KEY set) else returns the CHECK summary.`
   } else {
-    // free-form — try AI if key else fallback to check summary
-    const openaiKey = process.env.OPENAI_API_KEY || process.env.LITELLM_API_KEY
-    if(openaiKey){
-      try{
-        const { generateText } = await import('ai')
-        const { createOpenAI } = await import('@ai-sdk/openai')
-        const baseURL = process.env.LITELLM_BASE_URL || process.env.OPENAI_BASE_URL || (process.env.LITELLM_API_KEY ? 'http://litellm:4000/v1' : undefined)
-        const openai = baseURL ? createOpenAI({ apiKey: openaiKey, baseURL }) : createOpenAI({ apiKey: openaiKey })
-        const model = openai(process.env.LITELLM_MODEL || 'gpt-4o-mini')
-        const result = await generateText({ model, system: SYSTEM_PROMPT, prompt: last, maxOutputTokens: 800 })
-        text = result.text
-      }catch(e:any){ text = `AI error: ${e.message}. Fallback: type /check for status.\n\n${buildBKAshPlan()}` }
-    } else {
+    // free-form — try best free chain no card
+    try{
+      const { text: aiText, model, provider } = await callBestModel(messages, SYSTEM_PROMPT)
+      text = aiText
+      extra = { aiModel: model, aiProvider: provider }
+    }catch(e:any){
       const health = await getHostamarHealth()
       const db = await getDbCounts()
-      text = `🤖 Hostamar OS (no OPENAI_API_KEY — mock mode). I am Hostamar OS for solo founder.\n\nYour message: "${last.slice(0,400)}"\n\nHostamar ${health.hostamar} • DB customers=${(db as any).customers} • ${buildBKAshPlan()}\n\nType /check for full health, /audit for SEO, /build bKash for payment wiring, /help for commands.\nSet OPENAI_API_KEY or LITELLM_API_KEY + LITELLM_BASE_URL=http://litellm:4000/v1 to enable real AI chat.`
-      extra = { health, db, mock:true }
+      text = `🤖 Hostamar OS fallback: ${e.message}\n\nYour message: "${last.slice(0,400)}"\n\nHostamar ${health.hostamar} • DB customers=${(db as any).customers} • ${buildBKAshPlan()}\nType /check for full health, /help for commands.`
+      extra = { health, db, fallback:true }
     }
   }
 
@@ -249,5 +243,23 @@ export async function POST(req: NextRequest){
 export async function GET(req: NextRequest){
   const authUser = await getAuthUser(req)
   if(!authUser) return NextResponse.json({ error:'Unauthorized' },{status:401})
-  return NextResponse.json({ ok:true, hint:'POST {messages:[{role,content}]}', system: SYSTEM_PROMPT })
+  await ensureTables()
+  const url = new URL(req.url)
+  if(url.searchParams.get('history')==='1' || url.searchParams.get('customerId')){
+    try{
+      const customerId = url.searchParams.get('customerId')
+      const where = customerId ? `WHERE "customerId"=$1` : `WHERE "customerId" IN ('founder-os','support-widget') OR "customerId"=$1`
+      const param = customerId || authUser.id
+      // For general history, return all founder + support, ordered
+      let rows:any
+      if(customerId){
+        rows = await prisma.$queryRawUnsafe(`SELECT id, role, content, "toolCalls", "customerId", "createdAt" FROM "AgentChat" WHERE "customerId"=$1 ORDER BY "createdAt" DESC LIMIT 100`, param)
+      } else {
+        // founder history + support-widget for sidebar tabs
+        rows = await prisma.$queryRawUnsafe(`SELECT id, role, content, "toolCalls", "customerId", "createdAt" FROM "AgentChat" WHERE "customerId" IN ('founder-os','support-widget',$1) OR "customerId"=$1 ORDER BY "createdAt" DESC LIMIT 100`, authUser.id)
+      }
+      return NextResponse.json({ ok:true, history: rows })
+    }catch(e:any){ return NextResponse.json({ history:[], error:e.message }) }
+  }
+  return NextResponse.json({ ok:true, hint:'POST {messages:[{role,content}]} GET ?history=1&customerId=founder-os', system: SYSTEM_PROMPT })
 }
