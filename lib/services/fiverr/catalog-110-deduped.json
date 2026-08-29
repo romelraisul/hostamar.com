@@ -1,0 +1,1182 @@
+[
+  {
+    "id": "packaging",
+    "name": "Packaging Design",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$25-150",
+    "creditCost": 75,
+    "model": "flux-dev",
+    "icon": "📦",
+    "benefit": "Product packaging mockup",
+    "perfectFor": "Product brands",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "size",
+        "label": "Pack Size",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "book-cover",
+    "name": "Book Cover",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$20-100",
+    "creditCost": 50,
+    "model": "flux-dev",
+    "icon": "📕",
+    "benefit": "Genre-perfect cover",
+    "perfectFor": "Authors",
+    "inputs": [
+      {
+        "name": "title",
+        "label": "Book Title",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "genre",
+        "label": "Genre",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "t-shirt-design",
+    "name": "T-Shirt Design",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$10-50",
+    "creditCost": 40,
+    "model": "flux-dev",
+    "icon": "👕",
+    "benefit": "Print-ready tee graphic",
+    "perfectFor": "Merch",
+    "inputs": [
+      {
+        "name": "concept",
+        "label": "Concept",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "text",
+        "label": "Text on shirt",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "product-mockup",
+    "name": "Product Mockup",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$10-40",
+    "creditCost": 25,
+    "model": "flux-dev",
+    "icon": "🏺",
+    "benefit": "3D realistic product shots",
+    "perfectFor": "E-commerce",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "setting",
+        "label": "Setting",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "instagram-shop",
+    "name": "Instagram Shop Set",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$15-70",
+    "creditCost": 50,
+    "model": "flux-dev",
+    "icon": "🛍️",
+    "benefit": "9-grid cohesive shop look",
+    "perfectFor": "IG shops",
+    "inputs": [
+      {
+        "name": "shopName",
+        "label": "Shop Name",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "products",
+        "label": "Product list",
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "sale-graphics",
+    "name": "Sale Graphics Pack",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$10-35",
+    "creditCost": 25,
+    "model": "flux-dev",
+    "icon": "🏷️",
+    "benefit": "Sale banner set (5 sizes)",
+    "perfectFor": "Campaigns",
+    "inputs": [
+      {
+        "name": "saleName",
+        "label": "Sale Name",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "discount",
+        "label": "Discount %",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "product-photoshoot",
+    "name": "AI Product Photoshoot",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$25-100",
+    "creditCost": 50,
+    "model": "flux-dev",
+    "icon": "📸",
+    "benefit": "Studio-quality AI product photos",
+    "perfectFor": "Brands",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "mood",
+        "label": "Mood",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "ad-copy",
+    "name": "Ad Copy",
+    "category": "Writing",
+    "fiverrPrice": "$10-50",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "📢",
+    "benefit": "3 ad variants + headlines",
+    "perfectFor": "Advertisers",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "email-newsletter",
+    "name": "Email Newsletter",
+    "category": "Writing",
+    "fiverrPrice": "$10-50",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "📧",
+    "benefit": "Engaging newsletter draft",
+    "perfectFor": "Email marketing",
+    "inputs": [
+      {
+        "name": "topic",
+        "label": "Newsletter Topic",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "translation",
+    "name": "Translation EN↔BN",
+    "category": "Writing",
+    "fiverrPrice": "$5-40",
+    "creditCost": 15,
+    "model": "llama-3-70b",
+    "icon": "🌍",
+    "benefit": "Human-quality translation",
+    "perfectFor": "Global reach",
+    "inputs": [
+      {
+        "name": "text",
+        "label": "Text to Translate",
+        "required": true,
+        "type": "textarea"
+      },
+      {
+        "name": "direction",
+        "label": "Direction",
+        "type": "select",
+        "options": [
+          "EN→BN",
+          "BN→EN"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "proofreading",
+    "name": "Proofreading",
+    "category": "Writing",
+    "fiverrPrice": "$5-30",
+    "creditCost": 15,
+    "model": "llama-3-70b",
+    "icon": "✅",
+    "benefit": "Grammar + style polish",
+    "perfectFor": "Writers",
+    "inputs": [
+      {
+        "name": "text",
+        "label": "Text",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "press-release",
+    "name": "Press Release",
+    "category": "Writing",
+    "fiverrPrice": "$20-100",
+    "creditCost": 50,
+    "model": "llama-3-70b",
+    "icon": "📰",
+    "benefit": "Media-ready press release",
+    "perfectFor": "Launches",
+    "inputs": [
+      {
+        "name": "announcement",
+        "label": "Announcement",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "seo-keyword",
+    "name": "SEO Keyword Research",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$10-80",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "🔑",
+    "benefit": "Keyword list + difficulty + intent",
+    "perfectFor": "SEO",
+    "inputs": [
+      {
+        "name": "niche",
+        "label": "Niche",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "market",
+        "label": "Market",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "seo-meta",
+    "name": "SEO Meta Tags",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$5-25",
+    "creditCost": 15,
+    "model": "llama-3-70b",
+    "icon": "🏷️",
+    "benefit": "Title + description + OG tags",
+    "perfectFor": "Websites",
+    "inputs": [
+      {
+        "name": "pageUrl",
+        "label": "Page URL or Topic",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "fb-ad",
+    "name": "Facebook Ad Set",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$15-90",
+    "creditCost": 40,
+    "model": "llama-3-70b",
+    "icon": "📘",
+    "benefit": "3 ad variants + targeting brief",
+    "perfectFor": "FB ads",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "budget",
+        "label": "Budget",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "google-ad",
+    "name": "Google Ads Copy",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$15-70",
+    "creditCost": 40,
+    "model": "llama-3-70b",
+    "icon": "🅶",
+    "benefit": "RSA headlines + descriptions",
+    "perfectFor": "Search ads",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "keywords",
+        "label": "Keywords",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "email-sequence",
+    "name": "Email Sequence",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$25-150",
+    "creditCost": 75,
+    "model": "llama-3-70b",
+    "icon": "📬",
+    "benefit": "5-email nurture sequence",
+    "perfectFor": "Funnels",
+    "inputs": [
+      {
+        "name": "goal",
+        "label": "Sequence Goal",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "landing-copy",
+    "name": "Landing Page Copy",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$30-200",
+    "creditCost": 75,
+    "model": "llama-3-70b",
+    "icon": "🚪",
+    "benefit": "Hero-to-CTA conversion copy",
+    "perfectFor": "Launches",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "competitor-analysis",
+    "name": "Competitor Analysis",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$20-120",
+    "creditCost": 50,
+    "model": "llama-3-70b",
+    "icon": "🕵️",
+    "benefit": "SWOT + positioning report",
+    "perfectFor": "Strategy",
+    "inputs": [
+      {
+        "name": "competitors",
+        "label": "Competitors",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "industry",
+        "label": "Industry",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "content-strategy",
+    "name": "Content Strategy",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$30-200",
+    "creditCost": 75,
+    "model": "llama-3-70b",
+    "icon": "♟️",
+    "benefit": "90-day content roadmap",
+    "perfectFor": "Brands",
+    "inputs": [
+      {
+        "name": "brand",
+        "label": "Brand",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "goal",
+        "label": "Goal",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "youtube-seo",
+    "name": "YouTube SEO",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$10-60",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "▶️",
+    "benefit": "Title + tags + description optimization",
+    "perfectFor": "Creators",
+    "inputs": [
+      {
+        "name": "videoUrl",
+        "label": "Video URL or Topic",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "linkedin-ideas",
+    "name": "LinkedIn Content Ideas",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$10-50",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "💡",
+    "benefit": "20 post ideas for your niche",
+    "perfectFor": "Personal brand",
+    "inputs": [
+      {
+        "name": "profession",
+        "label": "Profession",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "brand-name",
+    "name": "Brand Name Ideas",
+    "category": "Digital Marketing",
+    "fiverrPrice": "$10-60",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "🔤",
+    "benefit": "20 names + domain check list",
+    "perfectFor": "Startups",
+    "inputs": [
+      {
+        "name": "industry",
+        "label": "Industry",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "vibe",
+        "label": "Vibe",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "product-demo",
+    "name": "Product Demo Video",
+    "category": "Video",
+    "fiverrPrice": "$30-250",
+    "creditCost": 75,
+    "model": "veo-3",
+    "icon": "🎬",
+    "benefit": "60s demo with captions",
+    "perfectFor": "SaaS/products",
+    "inputs": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "features",
+        "label": "Key Features",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "podcast-clip",
+    "name": "Podcast Clips",
+    "category": "Video",
+    "fiverrPrice": "$15-80",
+    "creditCost": 40,
+    "model": "kling",
+    "icon": "🎯",
+    "benefit": "5 viral clips from episode",
+    "perfectFor": "Podcasters",
+    "inputs": [
+      {
+        "name": "episode",
+        "label": "Episode Topic",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "logo-animation",
+    "name": "Logo Animation",
+    "category": "Video",
+    "fiverrPrice": "$15-100",
+    "creditCost": 40,
+    "model": "kling",
+    "icon": "✨",
+    "benefit": "5s animated logo intro",
+    "perfectFor": "Branding",
+    "inputs": [
+      {
+        "name": "brandName",
+        "label": "Brand",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "video-upscale",
+    "name": "Video Upscale",
+    "category": "Video",
+    "fiverrPrice": "$10-50",
+    "creditCost": 25,
+    "model": "kling",
+    "icon": "🔍",
+    "benefit": "HD upscale + denoise",
+    "perfectFor": "Old footage",
+    "inputs": [
+      {
+        "name": "videoNote",
+        "label": "Video details",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "face-swap",
+    "name": "Face Swap",
+    "category": "Video",
+    "fiverrPrice": "$10-50",
+    "creditCost": 25,
+    "model": "kling",
+    "icon": "🔄",
+    "benefit": "Consent-required face swap",
+    "perfectFor": "Content teams",
+    "inputs": [
+      {
+        "name": "sourceNote",
+        "label": "Source description",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "subtitles",
+    "name": "Subtitles",
+    "category": "Video",
+    "fiverrPrice": "$5-30",
+    "creditCost": 15,
+    "model": "whisper",
+    "icon": "💬",
+    "benefit": "SRT + burned-in subs",
+    "perfectFor": "Accessibility",
+    "inputs": [
+      {
+        "name": "videoNote",
+        "label": "Video language/length",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "transcription",
+    "name": "Transcription",
+    "category": "Video",
+    "fiverrPrice": "$5-40",
+    "creditCost": 15,
+    "model": "whisper",
+    "icon": "🗒️",
+    "benefit": "Accurate text transcript",
+    "perfectFor": "Meetings",
+    "inputs": [
+      {
+        "name": "audioNote",
+        "label": "Audio details",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "voiceover",
+    "name": "Voiceover Bangla",
+    "category": "Music & Audio",
+    "fiverrPrice": "$10-100",
+    "creditCost": 40,
+    "model": "elevenlabs",
+    "icon": "🎙️",
+    "benefit": "Pro BN voiceover",
+    "perfectFor": "Videos",
+    "inputs": [
+      {
+        "name": "script",
+        "label": "Script",
+        "required": true,
+        "type": "textarea"
+      },
+      {
+        "name": "gender",
+        "label": "Voice",
+        "type": "select",
+        "options": [
+          "male",
+          "female"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tts-bn",
+    "name": "Bangla TTS",
+    "category": "Music & Audio",
+    "fiverrPrice": "$5-30",
+    "creditCost": 15,
+    "model": "elevenlabs",
+    "icon": "🗣️",
+    "benefit": "Natural BN speech from text",
+    "perfectFor": "Accessibility",
+    "inputs": [
+      {
+        "name": "text",
+        "label": "Text",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "meditation-audiobook",
+    "name": "Meditation Audio",
+    "category": "Music & Audio",
+    "fiverrPrice": "$15-90",
+    "creditCost": 40,
+    "model": "elevenlabs",
+    "icon": "🧘",
+    "benefit": "Calm guided meditation",
+    "perfectFor": "Wellness",
+    "inputs": [
+      {
+        "name": "theme",
+        "label": "Theme",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "minutes",
+        "label": "Minutes",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "audiobook-narration",
+    "name": "Audiobook Narration",
+    "category": "Music & Audio",
+    "fiverrPrice": "$50-500",
+    "creditCost": 100,
+    "model": "elevenlabs",
+    "icon": "🎧",
+    "benefit": "Chapter-by-chapter narration",
+    "perfectFor": "Authors",
+    "inputs": [
+      {
+        "name": "bookTitle",
+        "label": "Book Title",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "intro-music",
+    "name": "Intro Music",
+    "category": "Music & Audio",
+    "fiverrPrice": "$10-70",
+    "creditCost": 25,
+    "model": "suno",
+    "icon": "🎵",
+    "benefit": "Custom 10s intro jingle",
+    "perfectFor": "Channels",
+    "inputs": [
+      {
+        "name": "vibe",
+        "label": "Vibe",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "jingle",
+    "name": "Brand Jingle",
+    "category": "Music & Audio",
+    "fiverrPrice": "$25-200",
+    "creditCost": 75,
+    "model": "suno",
+    "icon": "🎶",
+    "benefit": "Memorable brand jingle",
+    "perfectFor": "Ads",
+    "inputs": [
+      {
+        "name": "brandName",
+        "label": "Brand",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "style",
+        "label": "Style",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "yt-music",
+    "name": "YouTube Background Music",
+    "category": "Music & Audio",
+    "fiverrPrice": "$10-60",
+    "creditCost": 25,
+    "model": "suno",
+    "icon": "🎼",
+    "benefit": "Royalty-free BG track",
+    "perfectFor": "Creators",
+    "inputs": [
+      {
+        "name": "mood",
+        "label": "Mood",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "sfx",
+    "name": "Sound Effects Pack",
+    "category": "Music & Audio",
+    "fiverrPrice": "$5-40",
+    "creditCost": 15,
+    "model": "suno",
+    "icon": "🔊",
+    "benefit": "10 custom SFX",
+    "perfectFor": "Games/videos",
+    "inputs": [
+      {
+        "name": "useCase",
+        "label": "Use Case",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "podcast-edit",
+    "name": "Podcast Editing",
+    "category": "Music & Audio",
+    "fiverrPrice": "$20-150",
+    "creditCost": 50,
+    "model": "whisper",
+    "icon": "🎚️",
+    "benefit": "Clean + leveled episode",
+    "perfectFor": "Podcasters",
+    "inputs": [
+      {
+        "name": "episode",
+        "label": "Episode details",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "wp-bug",
+    "name": "WordPress Bug Fix",
+    "category": "Programming",
+    "fiverrPrice": "$10-100",
+    "creditCost": 40,
+    "model": "claude-3.5",
+    "icon": "🔧",
+    "benefit": "Diagnose + fix guide",
+    "perfectFor": "Site owners",
+    "inputs": [
+      {
+        "name": "symptom",
+        "label": "Bug Symptom",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "chatbot-script",
+    "name": "Chatbot Script",
+    "category": "Programming",
+    "fiverrPrice": "$20-150",
+    "creditCost": 50,
+    "model": "claude-3.5",
+    "icon": "🤖",
+    "benefit": "Intent + flow bot script",
+    "perfectFor": "Support",
+    "inputs": [
+      {
+        "name": "useCase",
+        "label": "Bot Use Case",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "excel-formula",
+    "name": "Excel Formula Help",
+    "category": "Programming",
+    "fiverrPrice": "$5-40",
+    "creditCost": 15,
+    "model": "claude-3.5",
+    "icon": "📊",
+    "benefit": "Working formula + explanation",
+    "perfectFor": "Analysts",
+    "inputs": [
+      {
+        "name": "goal",
+        "label": "What should the formula do",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "sql-query",
+    "name": "SQL Query",
+    "category": "Programming",
+    "fiverrPrice": "$5-50",
+    "creditCost": 15,
+    "model": "claude-3.5",
+    "icon": "🗄️",
+    "benefit": "Optimized query + indexes",
+    "perfectFor": "Data",
+    "inputs": [
+      {
+        "name": "schema",
+        "label": "Schema",
+        "required": true,
+        "type": "textarea"
+      },
+      {
+        "name": "question",
+        "label": "Question",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "api-docs",
+    "name": "API Documentation",
+    "category": "Programming",
+    "fiverrPrice": "$30-200",
+    "creditCost": 75,
+    "model": "claude-3.5",
+    "icon": "📚",
+    "benefit": "Endpoints + examples doc",
+    "perfectFor": "Devs",
+    "inputs": [
+      {
+        "name": "apiName",
+        "label": "API Name",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "endpoints",
+        "label": "Endpoints",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "code-explain",
+    "name": "Code Explanation",
+    "category": "Programming",
+    "fiverrPrice": "$5-40",
+    "creditCost": 15,
+    "model": "claude-3.5",
+    "icon": "📖",
+    "benefit": "Line-by-line explanation",
+    "perfectFor": "Learners",
+    "inputs": [
+      {
+        "name": "code",
+        "label": "Code",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "website-to-app",
+    "name": "Website to App",
+    "category": "Programming",
+    "fiverrPrice": "$50-500",
+    "creditCost": 100,
+    "model": "claude-3.5",
+    "icon": "📱",
+    "benefit": "PWA wrapper plan + code",
+    "perfectFor": "Businesses",
+    "inputs": [
+      {
+        "name": "siteUrl",
+        "label": "Site URL",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "market-research",
+    "name": "Market Research",
+    "category": "Business",
+    "fiverrPrice": "$25-250",
+    "creditCost": 75,
+    "model": "llama-3-70b",
+    "icon": "🔬",
+    "benefit": "Market + TAM brief",
+    "perfectFor": "Founders",
+    "inputs": [
+      {
+        "name": "industry",
+        "label": "Industry",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "region",
+        "label": "Region",
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "job-description",
+    "name": "Job Description",
+    "category": "Business",
+    "fiverrPrice": "$10-60",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "🧑‍💼",
+    "benefit": "Attract the right candidates",
+    "perfectFor": "HR",
+    "inputs": [
+      {
+        "name": "role",
+        "label": "Role",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "requirements",
+        "label": "Requirements",
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "prompt-pack",
+    "name": "Prompt Pack",
+    "category": "Business",
+    "fiverrPrice": "$10-80",
+    "creditCost": 40,
+    "model": "llama-3-70b",
+    "icon": "🎴",
+    "benefit": "50 task-specific prompts",
+    "perfectFor": "AI users",
+    "inputs": [
+      {
+        "name": "profession",
+        "label": "Profession",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "custom-gpt-guide",
+    "name": "Custom GPT Guide",
+    "category": "Business",
+    "fiverrPrice": "$20-150",
+    "creditCost": 50,
+    "model": "llama-3-70b",
+    "icon": "🧠",
+    "benefit": "Build + publish your GPT",
+    "perfectFor": "AI products",
+    "inputs": [
+      {
+        "name": "purpose",
+        "label": "GPT Purpose",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "chatbot-training-data",
+    "name": "Chatbot Training Data",
+    "category": "Business",
+    "fiverrPrice": "$30-200",
+    "creditCost": 75,
+    "model": "llama-3-70b",
+    "icon": "🗃️",
+    "benefit": "200 Q&A pairs",
+    "perfectFor": "Bot owners",
+    "inputs": [
+      {
+        "name": "business",
+        "label": "Business",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "content-repurpose",
+    "name": "Content Repurposing",
+    "category": "Business",
+    "fiverrPrice": "$15-100",
+    "creditCost": 40,
+    "model": "llama-3-70b",
+    "icon": "♻️",
+    "benefit": "1 blog → 10 social posts",
+    "perfectFor": "Efficiency",
+    "inputs": [
+      {
+        "name": "sourceUrl",
+        "label": "Source content",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "seo-audit",
+    "name": "SEO Audit",
+    "category": "Business",
+    "fiverrPrice": "$30-300",
+    "creditCost": 75,
+    "model": "llama-3-70b",
+    "icon": "🩺",
+    "benefit": "On-page audit + fixes list",
+    "perfectFor": "Websites",
+    "inputs": [
+      {
+        "name": "siteUrl",
+        "label": "Site URL",
+        "required": true,
+        "type": "text"
+      }
+    ]
+  },
+  {
+    "id": "ats-optimizer",
+    "name": "ATS Resume Optimizer",
+    "category": "Business",
+    "fiverrPrice": "$10-70",
+    "creditCost": 25,
+    "model": "llama-3-70b",
+    "icon": "🤓",
+    "benefit": "Beat the ATS filters",
+    "perfectFor": "Applicants",
+    "inputs": [
+      {
+        "name": "jobPosting",
+        "label": "Job Posting",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  },
+  {
+    "id": "social-automation",
+    "name": "Social Automation Plan",
+    "category": "Business",
+    "fiverrPrice": "$25-200",
+    "creditCost": 75,
+    "model": "llama-3-70b",
+    "icon": "⚙️",
+    "benefit": "n8n/Zapier automation blueprint",
+    "perfectFor": "Solo founders",
+    "inputs": [
+      {
+        "name": "workflows",
+        "label": "Workflows to automate",
+        "required": true,
+        "type": "textarea"
+      }
+    ]
+  }
+]
