@@ -43,10 +43,15 @@ export const metadata: Metadata = {
     'hosting Bangladesh bKash',
   ],
   openGraph: {
-    title: 'AI দিয়ে মার্কেটিং ভিডিও 30 সেকেন্ডে',
-    description: 'হোস্টিং সহ, bKash পেমেন্ট',
-    images: ['/og-image-bn.jpg'],
+    title: 'Hostamar - বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার',
+    description: 'AI ভিডিও জেনারেটর — ৫০+ টেমপ্লেট, বাংলা ভয়েসওভার, bKash পেমেন্ট',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Hostamar - বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার' }],
     locale: 'bn_BD',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [{ url: '/twitter-image', width: 1200, height: 630, alt: 'Hostamar' }],
   },
   alternates: {
     canonical: 'https://hostamar.com',
