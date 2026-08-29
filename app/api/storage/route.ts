@@ -30,6 +30,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as s3mod from '@aws-sdk/client-s3'
 import { randomUUID } from 'crypto'
+import { getAuthUser } from '@/lib/auth'
 import { extname, basename } from 'path'
 
 // Force Node.js runtime (this route uses S3 - not Edge compatible)
@@ -168,9 +169,12 @@ async function deleteFileFromB2(key: string): Promise<void> {
 
 export async function POST(request: NextRequest) {
   try {
-    // SECURITY (IDOR fix): verified identity from middleware only — see GET.
-    const userId = request.headers.get('x-user-id') ?? 'anonymous'
-    if (userId === 'anonymous') {
+    // SECURITY (IDOR fix, defense-in-depth): verify the JWT directly via
+    // getAuthUser() (cookie/Bearer). Middleware already overwrites any forged
+    // x-user-id header; this second check makes the route self-sufficient.
+    const authUser = await getAuthUser(request).catch(() => null)
+    const userId = authUser?.id || request.headers.get('x-user-id') || ''
+    if (!userId || userId === 'anonymous') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -309,12 +313,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // SECURITY (IDOR fix, defense-in-depth): identity comes ONLY from the
-    // middleware-injected verified JWT header (middleware overwrites any
-    // client-forged x-user-id). If middleware didn't inject it → treat as
-    // anonymous/unauthenticated. Client-forged values never reach us.
-    const userId = request.headers.get('x-user-id') ?? 'anonymous'
-    if (userId === 'anonymous') {
+    // SECURITY (IDOR fix, defense-in-depth): verify the JWT directly via
+    // getAuthUser() (cookie/Bearer). Middleware already overwrites any forged
+    // x-user-id header; this second check makes the route self-sufficient.
+    const authUser = await getAuthUser(request).catch(() => null)
+    const userId = authUser?.id || request.headers.get('x-user-id') || ''
+    if (!userId || userId === 'anonymous') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -344,9 +348,12 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // SECURITY (IDOR fix): verified identity from middleware only — see GET.
-    const userId = request.headers.get('x-user-id') ?? 'anonymous'
-    if (userId === 'anonymous') {
+    // SECURITY (IDOR fix, defense-in-depth): verify the JWT directly via
+    // getAuthUser() (cookie/Bearer). Middleware already overwrites any forged
+    // x-user-id header; this second check makes the route self-sufficient.
+    const authUser = await getAuthUser(request).catch(() => null)
+    const userId = authUser?.id || request.headers.get('x-user-id') || ''
+    if (!userId || userId === 'anonymous') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

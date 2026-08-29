@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { enhanceVideoPrompt } from '@/lib/model-in-every-point'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 55
@@ -50,11 +51,16 @@ export async function POST(req: NextRequest) {
   const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${user.id} LIMIT 1`
   const balanceAfter = Number(after?.[0]?.credits ?? balance - creditCost)
 
+  // MODEL IN EVERY POINT: expand the customer prompt into a render brief
+  // (non-blocking: empty string if chain degraded — flow never breaks).
+  const enhancedPrompt = await enhanceVideoPrompt(service.name, prompt || service.nameBn)
+
   const video = await prisma.video.create({
     data: {
       customerId: user.id,
       title: (prompt || service.nameBn).slice(0, 60),
       prompt: prompt || null,
+      script: enhancedPrompt || null,
       templateId: service.id,
       status: 'processing',
       language: 'bn',

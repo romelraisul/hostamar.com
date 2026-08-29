@@ -3,45 +3,25 @@
 import { useState, useEffect } from 'react'
 import StorageDashboard from '@/app/components/storage-dashboard'
 
-function getUserIdFromCookie(): string | null {
-  if (typeof document === 'undefined') return null
-  const cookies = document.cookie.split(';')
-  for (const cookie of cookies) {
-    const [key, value] = cookie.trim().split('=')
-    if (key === 'auth_token' && value) {
-      try {
-        const payload = JSON.parse(atob(value.split('.')[1]))
-        if (payload?.id) return payload.id
-      } catch {
-        // ignore decode errors
-      }
-    }
-  }
-  return null
-}
-
 export default function StoragePage() {
-  const [userId, setUserId] = useState<string | null>(null)
+  const [me, setMe] = useState<{ id: string; email: string } | null>(null)
 
   useEffect(() => {
-    const id = getUserIdFromCookie()
-    setUserId(id ?? 'anonymous')
+    // SECURITY: identity comes from the SERVER (/api/auth/me reads the
+    // HttpOnly cookie) — no client-side JWT decode, no localStorage.
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => setMe(d?.user ?? d ?? null))
+      .catch(() => setMe(null))
   }, [])
 
-  if (!userId) {
+  if (!me) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-gray-500 animate-pulse">Loading...</p>
+      <div className="p-6 text-sm text-zinc-500">
+        স্টোরেজ লোড হচ্ছে… লগ ইন না থাকলে <a className="text-[#0E7C3A] underline" href="/login">লগ ইন করুন</a>।
       </div>
     )
   }
 
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-8 text-gray-900">
-        আমার স্টোরেজ / My Storage
-      </h1>
-      <StorageDashboard userId={userId} />
-    </div>
-  )
+  return <StorageDashboard userId={me.id} />
 }

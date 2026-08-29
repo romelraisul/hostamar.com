@@ -52,13 +52,9 @@ export default function LoginPage() {
         setLoading(false)
         return
       }
-      if (data.token && typeof window !== 'undefined') {
-        // SECURITY: Secure + SameSite=Strict (HttpOnly kept off only because
-        // the storage dashboard decodes the JWT client-side; cookie is
-        // HTTPS-only so Secure flag is safe on Vercel/Cloudflare).
-        document.cookie = `auth_token=${data.token};path=/;max-age=604800;Secure;SameSite=Strict`
-        window.localStorage.setItem('auth_token', data.token)
-      }
+      // SECURITY: cookie is now set SERVER-side by /api/auth/login (HttpOnly,
+      // Secure, SameSite=Strict) — nothing to do here. Token in JSON is for
+      // Bearer/CLI use only, never persisted to localStorage.
       router.push('/dashboard')
       router.refresh()
     } catch {
