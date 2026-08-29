@@ -3,6 +3,7 @@ import { callBestModel } from '@/lib/ai-fallback'
 import { getAuthUser } from '@/lib/auth'
 import { deductCredits } from '@/lib/credits'
 import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
+import prisma from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 55
@@ -56,17 +57,23 @@ export async function POST(req: NextRequest) {
     authUser = null
   }
 
-  // Pre-spend check for authed users (min 1 credit)
+  // Pre-spend check for authed users — REAL balance read (the old
+  // deductCredits(id, 0) noop returned ok:false 'Invalid amount' → spurious 402
+  // for every authed user with credits; public chat never hit it, hiding it).
   if (authUser) {
-    const precheck = await deductCredits(authUser.id, 0, 'spend', 'chat precheck noop')
-    if (!precheck.ok) {
+    const acct: any = await prisma.customer.findUnique({
+      where: { id: authUser.id },
+      select: { credits: true },
+    }).catch(() => null)
+    const balance = Number(acct?.credits ?? 0)
+    if (balance < 1) {
       return NextResponse.json(
         {
           error: {
             message: 'INSUFFICIENT_CREDITS',
             code: 402,
-            needed: precheck.needed,
-            balance: precheck.balance,
+            needed: 1,
+            balance,
             bkash: { number: '01822417463', link: 'https://hostamar.com/dashboard/payment' },
           },
         },
