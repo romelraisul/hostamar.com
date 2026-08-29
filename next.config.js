@@ -65,6 +65,12 @@ const nextConfig = {
         ],
       },
       {
+        source: '/api/ai-services/catalog',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
+      {
         source: '/api/tv/stable-channels',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=120' },
