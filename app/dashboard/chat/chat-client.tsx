@@ -40,14 +40,15 @@ export default function ChatClient() {
   const [copied, setCopied] = useState<number | null>(null)
 
   useEffect(() => {
-    // models catalog — own edge gateway first, local fallback
-    fetch('https://ai.hostamar.com/v1/models')
+    // models catalog — SAME-ORIGIN public endpoint (always-on serverless, no home-VPS dependency)
+    fetch('/api/v1/models')
       .then(r => r.json())
       .then(d => {
         const list: CatalogModel[] = (d.data || []).map((x: any) => ({ id: x.id, provider: x.owned_by || 'hostamar', context: x.context || '?', context_length: x.context_length || 0, free: !!x.free, displayName: x.display_name || x.id }))
-        setModels(list)
+        if (list.length) setModels(list)
+        else throw new Error('empty')
       })
-      .catch(() => fetch('/api/v1/models').then(r => r.json()).then(d => {
+      .catch(() => fetch('https://ai.hostamar.com/v1/models').then(r => r.json()).then(d => {
         const list: CatalogModel[] = (d.data || []).map((x: any) => ({ id: x.id, provider: x.owned_by || 'hostamar', context: x.context || '?', context_length: x.context_length || 0, free: !!x.free, displayName: x.display_name || x.id }))
         if (list.length) setModels(list)
       }).catch(() => {}))
@@ -82,17 +83,18 @@ export default function ChatClient() {
     setMsgs(next)
     setBusy(true)
     try {
-      const clean = modelId.replace(/\s*\[[^\]]*\]\s*$/, '').replace(/^opencode\//, '')
-      const res = await fetch('/api/chat', {
+      // Same-origin public endpoint — unlimited ai-fallback chain, works with any selected model
+      const res = await fetch('/api/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: clean, messages: next.map(m => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({ model: modelId, messages: next.map(m => ({ role: m.role, content: m.content })) }),
       })
       const data = await res.json()
       if (!res.ok) setError(data?.error?.message || data?.error || 'Chat failed')
       else {
-        setMsgs(m => [...m, { role: 'assistant', content: data.reply, model: data.model, cost: data.costTaka, tokens: data.tokens, provider: data.provider, fallbackFrom: data.fallbackFrom, creditsRemaining: data.creditsRemaining }])
-        if (typeof data.creditsRemaining === 'number') setBal(b => ({ credits: data.creditsRemaining, usd: (b?.usd ?? 0) && b ? data.creditsRemaining / (b.credits / (b.usd || 1)) : 0 }))
+        const content = data.choices?.[0]?.message?.content ?? data.reply ?? ''
+        setMsgs(m => [...m, { role: 'assistant', content, model: data.model, cost: data.credits?.charged, tokens: { p: data.usage?.prompt_tokens ?? 0, c: data.usage?.completion_tokens ?? 0 }, provider: data.provider, creditsRemaining: data.credits?.remaining }])
+        if (typeof data.credits?.remaining === 'number') setBal(b => b ? { credits: data.credits.remaining, usd: b.usd } : b)
       }
     } catch (e: any) {
       setError(e?.message || 'Network error')
@@ -147,7 +149,7 @@ export default function ChatClient() {
           ))}
         </div>
         <div className="border-t px-3 py-2.5 text-[10px] text-[#94A3B8] leading-relaxed">
-          Free tier — paid 402 blocked • source: ai.hostamar.com/v1
+          Free tier — unlimited fallback chain • source: /api/v1
         </div>
       </aside>
       {modelsOpen && <div className="lg:hidden fixed inset-0 z-10 bg-black/30" onClick={() => setModelsOpen(false)} />}
@@ -193,7 +195,7 @@ export default function ChatClient() {
               <div className={`group relative max-w-[78%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${m.role === 'user' ? 'bg-[#0E7C3A] text-white rounded-br-md' : 'bg-white border text-[#0F172A] shadow-sm rounded-bl-md'}`}>
                 <p style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>{m.content}</p>
                 <div className={`mt-1.5 flex items-center gap-2 text-[10px] ${m.role === 'user' ? 'text-white/70' : 'text-[#94A3B8]'}`}>
-                  {m.role === 'assistant' && m.model && <span className="truncate max-w-[240px]">{m.model?.split('/').pop()} • {m.provider || 'kilo-edge'}{m.fallbackFrom ? ` (fallback from ${m.fallbackFrom})` : ''}{m.cost != null ? ` • ${m.cost} Taka` : ''}</span>}
+                  {m.role === 'assistant' && m.model && <span className="truncate max-w-[240px]">{m.model?.split('/').pop()} • {m.provider || 'fallback-chain'}{m.fallbackFrom ? ` (fallback from ${m.fallbackFrom})` : ''}{m.cost != null ? ` • ${m.cost} cr` : ''}{m.creditsRemaining != null ? ` • bal ${m.creditsRemaining}` : ''}</span>}
                   {m.role === 'assistant' && (
                     <button onClick={() => copy(i, m.content)} className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
                       {copied === i ? <><Check className="w-3 h-3" /> copied</> : <Copy className="w-3 h-3" />}
