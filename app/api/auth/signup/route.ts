@@ -44,15 +44,11 @@ export async function POST(request: NextRequest) {
           email,
           password: hashedPassword,
           name,
-          credits: WELCOME_CREDITS, // 6000 FREE credits on signup — enables all dashboard products
-          creditTransactions: {
-            create: {
-              amount: WELCOME_CREDITS,
-              type: 'welcome_bonus',
-              description: 'Signup welcome credits',
-              balanceAfter: WELCOME_CREDITS,
-            },
-          },
+          // CRITICAL: 6000 FREE welcome credits at signup — enables all products.
+          // (Audit-row note: prod CreditTransaction requires accountId (old shape),
+          // so we skip the nested welcome_bonus row — same convention as
+          // lib/credits.ts deductCredits legacy Customer.credits path.)
+          credits: WELCOME_CREDITS,
           business: businessName ? {
             create: { name: businessName, industry: industry || 'Other' }
           } : undefined
