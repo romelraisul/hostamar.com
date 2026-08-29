@@ -64,16 +64,12 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  await prisma.creditTransaction.create({
-    data: {
-      customerId: user.id,
-      amount: -creditCost,
-      type: 'spend',
-      description: `${service.name} generate`,
-      balanceAfter: Math.round(balanceAfter),
-      videoId: video.id,
-    },
-  }).catch(() => null)
+  // Audit row — non-fatal: prod CreditTransaction is the OLD accountId shape,
+  // so a customerId-based Prisma insert may be rejected; log raw instead.
+  await prisma.$executeRaw`
+    INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter", "videoId")
+    VALUES (${'ctx_' + Date.now().toString(36)}, ${user.id}, ${-creditCost}, 'spend', ${`generate ${service.id}`}, ${Math.round(balanceAfter)}, ${video.id})
+  `.catch(() => null)
 
   // Simulated render → completed with placeholder MP4 (B2 upload hook point:
   // when GPU worker is live, replace this URL with the B2 object key).
