@@ -22,6 +22,7 @@ import {
   Globe,
   Code2,
   Gamepad2,
+  Plus,
   Search,
   Command,
   Sparkles,
@@ -122,7 +123,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }))
 
   const secondaryNav = [
-    { href: '/dashboard/ai-services', icon: Sparkles, label: '৫০+ AI সার্ভিস' },
+    { href: '/dashboard/ai-services', icon: Sparkles, label: 'AI Store', labelBn: 'AI স্টোর', badge: '50+', description: '50+ AI সার্ভিস — Instagram, FB Ads, YouTube' },
+    { href: '/dashboard/chat', icon: MessageCircle, label: 'AI Chat', labelBn: 'AI চ্যাট', badge: '120', description: '120 মডেল ফ্রি' },
+    { href: '/dashboard/videos', icon: Video, label: 'Videos', labelBn: 'ভিডিও', badge: '37', description: 'আমার ভিডিও' },
+    { href: '/dashboard/game', icon: Gamepad2, label: 'Game', labelBn: 'গেম', description: 'গেম হোস্টিং' },
+    { href: '/dashboard/ide', icon: Code2, label: 'IDE', labelBn: 'IDE', description: 'ব্রাউজার IDE' },
+    { href: '/dashboard/services', icon: Server, label: 'Services', labelBn: 'সার্ভিস', description: 'VPS/RDP' },
+    { href: '/dashboard/services/new', icon: Plus, label: 'New Service', labelBn: 'নতুন সার্ভিস', description: 'অর্ডার করুন' },
     { href: '/dashboard/analytics', icon: BarChart3, label: t('nav.analytics') || 'Analytics' },
     { href: '/dashboard/tv', icon: Tv, label: 'My TV' },
     { href: '/dashboard/payment', icon: CreditCard, label: t('nav.payment') || 'Billing' },
@@ -332,7 +339,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     }`}
                   >
                     <item.icon className="h-4 w-4" />
-                    {item.label}
+                    <span className="flex-1">{item.label}</span>
+                    {'badge' in item && item.badge ? (
+                      <span className="rounded-full bg-[#0E7C3A] px-1.5 py-0.5 text-[10px] font-bold text-white">{item.badge}</span>
+                    ) : null}
                   </Link>
                 )
               })}
