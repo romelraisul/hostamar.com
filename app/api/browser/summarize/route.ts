@@ -46,11 +46,21 @@ export async function POST(request: NextRequest) {
     });
 
     if (!ollamaResponse.ok) {
-      const detail = await ollamaResponse.text().catch(() => 'Ollama unavailable');
-      return NextResponse.json(
-        { error: 'AI service unavailable', detail },
-        { status: 502 }
-      );
+      // ZERO-COST DYNAMIC FALLBACK: home Ollama down (computer off) →
+      // always-on ai-fallback chain (kilocode → CF edge → ... → knowledge-base).
+      try {
+        const { callBestModel } = await import('@/lib/ai-fallback')
+        const r = await callBestModel(
+          [{ role: 'user', content: prompt }],
+          'You are a concise page summarizer. Be factual and structured.',
+        )
+        return NextResponse.json({ summary: r.text || 'No summary generated.', provider: r.provider, model: r.model })
+      } catch {
+        return NextResponse.json(
+          { error: 'AI service unavailable', detail: 'Ollama unavailable' },
+          { status: 502 }
+        )
+      }
     }
 
     const data = await ollamaResponse.json();

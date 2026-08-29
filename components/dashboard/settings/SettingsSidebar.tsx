@@ -9,6 +9,7 @@ const tabs = [
   { id: 'profile', label: 'Profile' },
   { id: 'business', label: 'Business' },
   { id: 'password', label: 'Password' },
+  { id: 'security', label: 'Security / MFA' },
   { id: 'notifications', label: 'Notifications' },
   { id: 'twitter', label: 'Twitter' },
   { id: 'models', label: 'Models' },

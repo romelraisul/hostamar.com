@@ -7,6 +7,20 @@ import { NextRequest } from 'next/server'
 const BACKEND_URL = process.env.API_BACKEND_URL || 'https://api.hostamar.com'
 
 export async function POST(request: NextRequest) {
+  // RATE LIMIT (edge layer, ALWAYS enforced — the DB limiter fails open when
+  // the RateLimitEvent table is missing; 20 rapid signups all passed before).
+  const { slidingWindow, getClientIpEdge } = await import('@/lib/rate-limit-edge')
+  const ip = getClientIpEdge(request)
+  const rlEdge = slidingWindow(`signup:${ip}`, 5, 60 * 60 * 1000) // 5/hour per IP
+  const bodyPeek = await request.clone().json().catch(() => ({} as any))
+  const rlEmail = slidingWindow(`signup:email:${String(bodyPeek?.email || '').toLowerCase()}`, 3, 60 * 60 * 1000) // 3/hour per email
+  if (!rlEdge.ok || !rlEmail.ok) {
+    return NextResponse.json(
+      { error: 'Too many signup attempts. Try again later. (সীমা ছাড়িয়ে গেছে — পরে চেষ্টা করুন)' },
+      { status: 429 },
+    )
+  }
+
   const hasLocalDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgresql://')
 
   if (hasLocalDb) {

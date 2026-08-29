@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { recommendPlan } from '@/lib/model-in-every-point'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,9 +63,18 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  // MODEL IN EVERY POINT: plan recommendation from the user's usage
+  const [videoCount, orderCount] = await Promise.all([
+    prisma.video.count({ where: { customerId: user.id } }).catch(() => 0),
+    prisma.serviceOrder.count({ where: { userId: user.id } }).catch(() => 0),
+  ])
+  const customer = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
+  const recommendation = await recommendPlan({ videos: videoCount, orders: orderCount, credits: Number(customer?.credits ?? 0) })
+
   return NextResponse.json({
     success: true,
     message: 'অর্ডার সফলভাবে জমা হয়েছে — যাচাইের পর অ্যাক্টিভ হবে',
+    recommendation: recommendation || null,
     transaction: { id: tx.id, amount: tx.amount, status: tx.status, gateway: tx.gateway },
   })
 }
