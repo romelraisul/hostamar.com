@@ -23,8 +23,8 @@ const env = {
   b2AccountId: process.env.B2_ACCOUNT_ID ?? '',
   b2ApplicationKey: process.env.B2_APPLICATION_KEY ?? '',
   b2Bucket: process.env.B2_BUCKET ?? 'hostamar-prod',
-  b2Endpoint: process.env.B2_ENDPOINT ?? 'https://s3.us-west-004.backblazeb2.com',
-  b2Region: process.env.B2_REGION ?? 'us-west-004',
+  b2Endpoint: process.env.B2_ENDPOINT ?? 'https://s3.us-east-005.backblazeb2.com',
+  b2Region: process.env.B2_REGION ?? 'us-east-005',
 }
 
 let _s3: S3Client | null = null

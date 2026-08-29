@@ -132,9 +132,9 @@ export default function TvPage() {
       setError(null);
       const sRes = await fetch('/api/tv/status', { cache: 'no-store' }).then((r) => r.json()).catch(() => null);
 
-      // Fallback chain: stable-channels -> /api/tv/channels
+      // Fallback chain: stable-channels -> /api/tv/channels -> localStorage
       let chRes: any = null;
-      for (const url of ['/api/tv/stable-channels?limit=50', '/api/tv/channels?country=bd&limit=50']) {
+      for (const url of ['/api/tv/stable-channels?limit=20', '/api/tv/channels?country=bd&limit=20']) {
         try {
           const r = await fetch(url, { cache: 'no-store' });
           if (r.ok) { chRes = await r.json(); break; }
@@ -164,6 +164,15 @@ export default function TvPage() {
   };
 
   useEffect(() => { load(); registerTvSw(); const t = setInterval(load, 30000); return () => clearInterval(t); }, []);
+
+  // Rotate among stable 20 every 10s (not 3700 scan) — saves bandwidth
+  useEffect(() => {
+    if (channels.length <= 1) return
+    const rot = setInterval(() => {
+      setCurrentIdx((i) => (i + 1) % channels.length)
+    }, 10000)
+    return () => clearInterval(rot)
+  }, [channels.length])
 
   const isLive = status?.isLive && status?.hlsReachable !== false;
 
@@ -277,6 +286,17 @@ export default function TvPage() {
               </div>
             ) : (
               <video ref={videoRef} controls={false} autoPlay muted playsInline className="w-full h-full object-contain" poster="/og-image.png" />
+            )}
+            {/* Tap for Sound badge — muted state */}
+            {muted && power && source === 'iptv' && !error && (
+              <button
+                onClick={toggleMute}
+                className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] z-30"
+              >
+                <span className="bg-white text-black px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-xl">
+                  <VolumeX className="w-4 h-4" /> Tap for Sound
+                </span>
+              </button>
             )}
 
             {/* Top-right branding — always visible */}
@@ -401,10 +421,10 @@ export default function TvPage() {
           </div>
 
           {/* Marquee ad ticker below player */}
-          <AdTicker variant="marquee" />
+          <AdTicker variant="marquee" channelId={current?.id} />
 
           {/* Ad slot — dynamic text ads */}
-          <AdTicker variant="sidebar" />
+          <AdTicker variant="sidebar" channelId={current?.id} />
 
           <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 mono text-[11px] leading-relaxed text-zinc-400">
             <span className="text-white font-bold">How it works:</span> Vercel kills streams after 10s → your PC (port 3001) via Cloudflare Tunnel tv.hostamar.com proxies HLS to bypass CORS. Viewers stay on <span className="text-emerald-400">hostamar.com/tv</span> with our ads even when you go Live on YouTube/Facebook — auto SOURCE switches to branded LIVE.

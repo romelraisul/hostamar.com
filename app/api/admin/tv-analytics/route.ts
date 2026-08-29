@@ -27,6 +27,78 @@ export async function GET(req: NextRequest) {
     // External embeds = views from outside hostamar.com
     const externalEmbeds = totalViews - apiCalls
 
+    // Top stable channels (from TvChannelStability table)
+    let topStable: any[] = []
+    try {
+      const prismaAny = prisma as any
+      const stableRows = await prismaAny.tvChannelStability.findMany({
+        orderBy: [{ stabilityScore: 'desc' }, { popularityScore: 'desc' }],
+        take: 10,
+        include: { channel: { select: { id: true, name: true, url: true, logo: true } } },
+      }).catch(async () => {
+        // Fallback if relation not yet pushed: manual join
+        const rows = await prismaAny.tvChannelStability.findMany({
+          orderBy: [{ stabilityScore: 'desc' }, { popularityScore: 'desc' }],
+          take: 10,
+        })
+        const byId = new Map((await prisma.tvIptvChannel.findMany({ where: { id: { in: rows.map((r: any) => r.channelId) } } })).map((c: any) => [c.id, c]))
+        return rows.map((r: any) => ({ ...r, channel: byId.get(r.channelId) || null }))
+      })
+      topStable = stableRows.map((r: any) => ({
+        id: r.channelId,
+        name: r.channel?.name || r.channelId,
+        stabilityScore: r.stabilityScore,
+        popularityScore: r.popularityScore,
+        successCount: r.successCount,
+        failCount: r.failCount,
+        avgLoadTimeMs: r.avgLoadTimeMs,
+      }))
+    } catch {}
+
+    // Ad clicks stats
+    let adClicks = { today: 0, week: 0, month: 0, revenue30d: 0, topAds: [] as any[] }
+    try {
+      const prismaAny = prisma as any
+      const [aToday, aWeek, aMonth] = await Promise.all([
+        prismaAny.tvAdClick.count({ where: { createdAt: { gte: today } } }).catch(() => 0),
+        prismaAny.tvAdClick.count({ where: { createdAt: { gte: weekAgo } } }).catch(() => 0),
+        prismaAny.tvAdClick.count({ where: { createdAt: { gte: monthAgo } } }).catch(() => 0),
+      ])
+      adClicks.today = aToday; adClicks.week = aWeek; adClicks.month = aMonth
+      adClicks.revenue30d = (aMonth * 0.5) / 1000
+      try {
+        const grouped = await prismaAny.tvAdClick.groupBy({
+          by: ['adKey'], where: { createdAt: { gte: monthAgo } },
+          _count: { adKey: true }, orderBy: { _count: { adKey: 'desc' } }, take: 5,
+        })
+        for (const g of grouped) {
+          const sample = await prismaAny.tvAdClick.findFirst({ where: { adKey: g.adKey }, select: { adText: true }, orderBy: { createdAt: 'desc' } })
+          adClicks.topAds.push({ adKey: g.adKey, adText: sample?.adText || g.adKey, count: g._count.adKey })
+        }
+      } catch {}
+    } catch {}
+
+    // Storage B2 stats (via S3 list, non-blocking)
+    let storageB2: any = { count: 0, usedLabel: '—' }
+    try {
+      const s3mod: any = await import('@aws-sdk/client-s3')
+      const S3Client = s3mod.S3Client
+      const ListObjectsV2Command = s3mod.ListObjectsV2Command
+      const s3 = new S3Client({
+        endpoint: process.env.B2_ENDPOINT ?? 'https://s3.us-east-005.backblazeb2.com',
+        region: process.env.B2_REGION ?? 'us-east-005',
+        credentials: {
+          accessKeyId: process.env.B2_ACCOUNT_ID ?? '',
+          secretAccessKey: process.env.B2_APPLICATION_KEY ?? '',
+        },
+        forcePathStyle: true,
+      })
+      const resp: any = await s3.send(new ListObjectsV2Command({ Bucket: process.env.B2_BUCKET ?? 'hostamar-prod', MaxKeys: 1000 }))
+      storageB2.count = resp.KeyCount ?? resp.Contents?.length ?? 0
+      const totalBytes = (resp.Contents || []).reduce((s: number, o: any) => s + (o.Size || 0), 0)
+      storageB2.usedLabel = totalBytes < 1024 * 1024 ? `${(totalBytes / 1024).toFixed(1)} KB` : `${(totalBytes / 1024 / 1024).toFixed(2)} MB`
+    } catch {}
+
     // Live status: check data/live.json (set by PC cron or manual POST)
     let liveNow: { platform: string; title: string; viewers: number } | null = null
     try {
@@ -45,6 +117,9 @@ export async function GET(req: NextRequest) {
       externalEmbeds,
       liveNow,
       cpm: Number(env.ADMIN_TV_CPM || process.env.ADMIN_TV_CPM || '2.5'),
+      topStable,
+      adClicks,
+      storageB2,
     })
   } catch (err) {
     console.error('[admin/tv-analytics] error:', err)
