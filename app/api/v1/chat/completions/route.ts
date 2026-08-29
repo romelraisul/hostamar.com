@@ -1,174 +1,121 @@
-import { NextRequest } from 'next/server'
-import { shouldUseNvidia, markFail, markSuccess, retryWithBackoff, isBlocked } from '@/lib/gateway/nvidia-guard'
-import { nvidiaGuardWithRanking, getFallbackForModel } from '@/lib/gateway/ranking-fallback'
-import { isFree } from '@/lib/gateway/filter'
-import { ROUTE_MAP } from '@/lib/gateway/95-models'
+import { NextRequest, NextResponse } from 'next/server'
+import { callBestModel } from '@/lib/ai-fallback'
+import { getAuthUser } from '@/lib/auth'
+import { deductCredits } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 10 // Vercel hobby free tier limit
-
-const OPENROUTER_BASE = () => process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
+export const maxDuration = 55
 
 /**
- * Deterministic routing from the generated catalog (ROUTE_MAP), falling back to
- * legacy heuristics for unknown ids. Routes: kilo | opencode | openrouter |
- * nvidia | hostamar-alias | ollama-local.
+ * POST /api/v1/chat/completions — PUBLIC OpenAI-compatible endpoint.
+ * Same-domain customer base URL (works with OPENAI_BASE_URL=https://hostamar.com/api/v1
+ * for codex/claude/hermes CLIs and the dashboard chat) — serverless, always-on:
+ * runs the lib/ai-fallback.ts unlimited chain (vercel-gateway → litellm →
+ * nvidia → groq → openrouter → knowledge-base), NOT the home-VPS tunnel.
+ *
+ * Auth model:
+ *  - No auth → allowed (rate-limited naturally by the free fallback chain),
+ *    no credit deduction (public support tier).
+ *  - Authed customer (cookie or Bearer JWT) → credit spend: 1 credit per
+ *    request min, plus usage-based (total_tokens/1000, min 1) via deductCredits,
+ *    with CreditTransaction audit row and INSUFFICIENT → 402 + bKash link.
  */
-function getProvider(model: string): { base: string; key: string | undefined; provider: string } {
-  switch (ROUTE_MAP[model]) {
-    case 'kilo':
-      return { base: process.env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway', key: process.env.KILOCODE_API_KEY, provider: 'kilo' }
-    case 'opencode':
-      return { base: process.env.OPENCODE_ZEN_BASE_URL || 'https://opencode.ai/zen/v1', key: process.env.OPENCODE_ZEN_API_KEY, provider: 'opencode' }
-    case 'nvidia':
-      return { base: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1', key: process.env.NVIDIA_API_KEY, provider: 'nvidia' }
-    case 'openrouter':
-    case 'hostamar-alias':
-      return { base: OPENROUTER_BASE(), key: process.env.OPENROUTER_API_KEY, provider: 'openrouter' }
-  }
-  // legacy heuristic fallback (ids not yet in the generated catalog)
-  const lower = model.toLowerCase()
-  if (lower.endsWith(':free') && !lower.startsWith('opencode') && !lower.startsWith('kilocode') && !lower.startsWith('tokenrouter')) {
-    return { base: OPENROUTER_BASE(), key: process.env.OPENROUTER_API_KEY, provider: 'openrouter' }
-  }
-  if (lower.startsWith('nvidia/')) {
-    return { base: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1', key: process.env.NVIDIA_API_KEY, provider: 'nvidia' }
-  }
-  if (lower.includes('kilo') || lower.startsWith('kilo')) {
-    return { base: process.env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway', key: process.env.KILOCODE_API_KEY, provider: 'kilo' }
-  }
-  if (lower.includes('tokenrouter')) {
-    return { base: process.env.TOKENROUTER_BASE_URL || 'https://tokenrouter.app/api/v1', key: process.env.TOKENROUTER_API_KEY, provider: 'tokenrouter' }
-  }
-  return { base: OPENROUTER_BASE(), key: process.env.OPENROUTER_API_KEY, provider: 'openrouter' }
-}
+const SYSTEM_PROMPT =
+  'You are Hostamar AI — an assistant for Bangladeshi businesses. Reply in Bangla or English matching the user. Hostamar offers 50+ AI services (video, logo, ads, social), 6000 FREE credits, bKash personal payment 01822417463, plans Starter ৳599 / Pro ৳1299 / Business ৳2999. Be concise and helpful.'
 
 export async function POST(req: NextRequest) {
-  const auth = req.headers.get('authorization') || ''
-  const master = process.env.LITELLM_MASTER_KEY || ''
-  if (master && auth !== `Bearer ${master}`) {
-    return Response.json({ error: { message: 'Missing API key', code: 401 } }, { status: 401 })
-  }
-
   let body: any
-  try { body = await req.json() } catch { return Response.json({ error: { message: 'Invalid JSON' } }, { status: 400 }) }
-  // Accept display ids like "moonshotai/kimi-k3 [1M]" — strip the context suffix
-  const rawModel: string = body.model || 'moonshotai/kimi-k3'
-  const model = rawModel.replace(/\s*\[[^\]]*\]\s*$/, '').trim() || rawModel.trim()
-  body.model = model
-  const messages: any[] = body.messages || []
-
-  // free filter: block paid models on the free-only gateways (zero-cost rule)
-  const prov = getProvider(model)
-  if (['kilocode', 'kilo', 'tokenrouter', 'opencode'].includes(prov.provider) && !isFree(model) && !model.startsWith('hostamar-')) {
-    return Response.json({ error: { message: `Model ${model} filtered: only :free allowed for ${prov.provider}`, code: 400 } }, { status: 400 })
-  }
-
-  // nvidia guard: live limits (nvidia docs via browser.hostamar.com) +
-  // world-ranking fallback (glm→kimi-k3, circuit-open→top model)
-  let activeModel = model
-  if (prov.provider === 'nvidia') {
-    const guard = await nvidiaGuardWithRanking(model, messages, isBlocked(model))
-    if ('fallback' in guard) {
-      console.log(`[nvidia-guard] ${model} → ${guard.to} (${guard.reason})`)
-      // reroute to the ranking-based fallback via openrouter
-      const fbBase = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
-      const fbKey = process.env.OPENROUTER_API_KEY
-      if (fbKey) {
-        try {
-          const res = await fetch(`${fbBase}/chat/completions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${fbKey}` },
-            body: JSON.stringify({ ...body, model: guard.to }),
-          })
-          const data = await res.text()
-          return new Response(data, {
-            status: res.status,
-            headers: { 'Content-Type': 'application/json', 'X-Fallback-From': model, 'X-Fallback-To': guard.to, 'X-Fallback-Reason': guard.reason },
-          })
-        } catch {}
-      }
-      return Response.json({ error: { message: `nvidia guard: ${guard.reason}`, code: 429 } }, { status: 429 })
-    }
-  }
-
-  if (!prov.key) {
-    return Response.json({ error: { message: `No API key for provider ${prov.provider}`, code: 500 } }, { status: 500 })
-  }
-
-  // hostamar-1m-a/b mapping
-  let forwardModel = model
-  let forwardBase = prov.base
-  let forwardKey = prov.key
-  if (model.startsWith('hostamar-1m-')) {
-    // map to latest 1M: use openrouter kimi-k3 as base
-    forwardModel = 'moonshotai/kimi-k3'
-    forwardBase = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
-    forwardKey = process.env.OPENROUTER_API_KEY!
-  }
-  if (prov.provider === 'opencode') {
-    // catalog ids are prefixed opencode/<model>; the zen gateway expects bare ids
-    forwardModel = model.replace(/^opencode\//, '')
-  }
-  if (model === 'hostamar-own') {
-    forwardModel = 'qwen3:8b'
-    forwardBase = 'http://host.docker.internal:11434/v1'
-    forwardKey = 'ollama'
-  }
-
-  const stream = body.stream === true
-
   try {
-    const doFetch = async () => {
-      const r = await fetch(`${forwardBase.replace(/\/+$/, '')}/chat/completions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${forwardKey}` },
-        body: JSON.stringify({ ...body, model: forwardModel, stream }),
-      })
-      if (!r.ok) {
-        const t = await r.text()
-        const err: any = new Error(t)
-        err.status = r.status
-        throw err
-      }
-      return r
-    }
-
-    const res = await retryWithBackoff(doFetch, prov.provider === 'nvidia' ? 3 : 1)
-
-    if (prov.provider === 'nvidia') markSuccess(model)
-
-    if (stream && res.body) {
-      return new Response(res.body, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          Connection: 'keep-alive',
-        },
-      })
-    }
-
-    const text = await res.text()
-    return new Response(text, { status: res.status, headers: { 'Content-Type': 'application/json' } })
-  } catch (e: any) {
-    const status = e?.status || 500
-    if (prov.provider === 'nvidia') markFail(model, status)
-    // auto-fallback on nvidia fail: world-ranking target (glm→kimi-k3 etc.)
-    if (prov.provider === 'nvidia' && (status === 429 || status === 402 || status === 404 || status === 500)) {
-      const rankTo = await getFallbackForModel(model)
-      try {
-        const fbBase = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
-        const fbKey = process.env.OPENROUTER_API_KEY!
-        const r = await fetch(`${fbBase}/chat/completions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${fbKey}` },
-          body: JSON.stringify({ ...body, model: forwardModel.startsWith('nvidia/') ? rankTo : forwardModel }),
-        })
-        const t = await r.text()
-        return new Response(t, { status: r.status, headers: { 'Content-Type': 'application/json', 'X-Fallback-Provider': 'openrouter' } })
-      } catch {}
-    }
-    return Response.json({ error: { message: e?.message || 'Upstream error', code: status } }, { status })
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: { message: 'Invalid JSON', code: 400 } }, { status: 400 })
   }
+
+  const messages: Array<{ role: string; content: string }> = Array.isArray(body.messages)
+    ? body.messages.filter((m: any) => m?.content)
+    : []
+  if (!messages.length) {
+    return NextResponse.json({ error: { message: 'messages[] required', code: 400 } }, { status: 400 })
+  }
+
+  // Optional auth — public works, authed users get credit accounting
+  let authUser: any = null
+  try {
+    authUser = await getAuthUser(req)
+  } catch {
+    authUser = null
+  }
+
+  // Pre-spend check for authed users (min 1 credit)
+  if (authUser) {
+    const precheck = await deductCredits(authUser.id, 0, 'spend', 'chat precheck noop')
+    if (!precheck.ok) {
+      return NextResponse.json(
+        {
+          error: {
+            message: 'INSUFFICIENT_CREDITS',
+            code: 402,
+            needed: precheck.needed,
+            balance: precheck.balance,
+            bkash: { number: '01822417463', link: 'https://hostamar.com/dashboard/payment' },
+          },
+        },
+        { status: 402 }
+      )
+    }
+  }
+
+  const result = await callBestModel(messages, SYSTEM_PROMPT)
+
+  // Token estimate + credit spend for authed users: 1 credit per 1000 tokens, min 1
+  let usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+  let creditsCharged = 0
+  let creditsRemaining: number | null = null
+  if (authUser) {
+    const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
+    const completionTokens = Math.ceil((result.text?.length || 0) / 4)
+    const totalTokens = promptTokens + completionTokens
+    const amount = Math.max(1, Math.ceil(totalTokens / 1000)) // 1 credit / 1k tokens, min 1
+    const spend = await deductCredits(authUser.id, -amount, 'spend', `chat ${result.model} ${totalTokens}tk`).catch(() => null)
+    usage = { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: totalTokens }
+    if (spend && 'creditsRemaining' in spend) {
+      creditsCharged = amount
+      creditsRemaining = (spend as any).creditsRemaining
+    } else if (spend && (spend as any).error === 'INSUFFICIENT_CREDITS') {
+      // Response already produced by free chain — deliver it but flag the balance.
+      creditsCharged = 0
+      creditsRemaining = (spend as any).balance ?? null
+    }
+  } else {
+    const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
+    const completionTokens = Math.ceil((result.text?.length || 0) / 4)
+    usage = { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: promptTokens + completionTokens }
+  }
+
+  return NextResponse.json({
+    id: `chatcmpl-${Date.now().toString(36)}`,
+    object: 'chat.completion',
+    created: Math.floor(Date.now() / 1000),
+    model: result.model,
+    provider: result.provider,
+    choices: [
+      {
+        index: 0,
+        message: { role: 'assistant', content: result.text },
+        finish_reason: 'stop',
+      },
+    ],
+    usage,
+    credits: authUser ? { charged: creditsCharged, remaining: creditsRemaining } : undefined,
+    ok: true,
+  })
+}
+
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    endpoint: '/api/v1/chat/completions',
+    usage: 'POST {model, messages[], max_tokens} — OpenAI compatible',
+    auth: 'optional — public works, authed users get credit accounting',
+  })
 }

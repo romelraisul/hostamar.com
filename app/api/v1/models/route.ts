@@ -1,104 +1,51 @@
-import { NextRequest } from 'next/server'
-import { MODELS_95 } from '@/lib/gateway/95-models'
-import { isFree } from '@/lib/gateway/filter'
+import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 /**
- * Unified gateway: ai.hostamar.com serves the SAME catalog as the edge worker.
- * Tier 1: KV-backed worker (hostamar-ai-gateway, 120 models, source:"kv")
- * Tier 2: local generated catalog (MODELS_95) + fresh free-model discovery
- * Keeps both domains identical even when the home computer is off.
+ * GET /api/v1/models — PUBLIC OpenAI-compatible model list (no auth).
+ * Tier 1: Cloudflare Worker KV catalog (120 models, always-on, no home VPS).
+ * Tier 2: MODELS_95 generated catalog (local, no network).
+ * This is the same-domain customer base URL (hostamar.com/api/v1) so the
+ * dashboard chat and external CLIs (codex/claude/hermes with
+ * OPENAI_BASE_URL=https://hostamar.com/api/v1) work even when the home
+ * computer is off — unlike the /v1 rewrite → ai.hostamar.com tunnel.
  */
 const EDGE_MODELS_URL = process.env.EDGE_GATEWAY_URL
   ? `${process.env.EDGE_GATEWAY_URL.replace(/\/+$/, '')}/models`
   : 'https://hostamar-ai-gateway.romelraisul.workers.dev/v1/models'
 
-async function edgeCatalog(): Promise<{ data: any[]; source: string } | null> {
+import { MODELS_95 } from '@/lib/gateway/95-models'
+
+export async function GET(_req: NextRequest) {
+  // Tier 1: worker KV — the same 120-model catalog ai.hostamar.com serves
   try {
-    const r = await fetch(EDGE_MODELS_URL, {
-      signal: AbortSignal.timeout(4000),
-      cache: 'no-store',
-    })
-    if (!r.ok) return null
-    const d: any = await r.json()
-    if (Array.isArray(d?.data) && d.data.length) return { data: d.data, source: d.source || 'kv' }
-    return null
+    const r = await fetch(EDGE_MODELS_URL, { signal: AbortSignal.timeout(4000), cache: 'no-store' })
+    if (r.ok) {
+      const d: any = await r.json()
+      if (Array.isArray(d?.data) && d.data.length) {
+        return NextResponse.json(
+          { object: 'list', data: d.data, source: d.source || 'kv' },
+          { headers: { 'Cache-Control': 'public, max-age=300', 'Access-Control-Allow-Origin': '*' } }
+        )
+      }
+    }
   } catch {
-    return null
+    /* fall through */
   }
-}
-
-/**
- * Runtime free-model discovery cache. The generated catalog is redeploy-static;
- * this layer merges in freshly discovered free models from all upstreams so a
- * brand-new :free model appears here within an hour of its upstream listing,
- * even before `node scripts/gen-model-catalog.mjs` + redeploy runs.
- */
-type Cached = { at: number; ids: string[] }
-let freshCache: Cached | null = null
-const FRESH_TTL = 60 * 60 * 1000 // 1h
-
-async function freshFreeIds(): Promise<string[]> {
-  if (freshCache && Date.now() - freshCache.at < FRESH_TTL) return freshCache.ids
-  try {
-    const { fetchLatestFreeModels } = await import('@/lib/gateway/update-free-models')
-    const free = await fetchLatestFreeModels()
-    const ids = free.map(f => f.id)
-    freshCache = { at: Date.now(), ids }
-    return ids
-  } catch {
-    return freshCache?.ids || []
-  }
-}
-
-export async function GET(req: NextRequest) {
-  const auth = req.headers.get('authorization') || ''
-  const master = process.env.LITELLM_MASTER_KEY || ''
-  // allow public models list if no master key set, otherwise require valid bearer
-  if (master && auth !== `Bearer ${master}`) {
-    // still allow without auth for discovery, but mark as public
-  }
-
-  // Tier 1: unified edge catalog (KV via worker)
-  const edge = await edgeCatalog()
-  if (edge) {
-    return Response.json(
-      { object: 'list', source: edge.source, data: edge.data },
-      { headers: { 'Cache-Control': 'public, max-age=60' } }
-    )
-  }
-
-  // Tier 2: local generated catalog + fresh discovery (worker unreachable)
-  const servedIds = new Set(MODELS_95.map(m => m.id))
-  const fresh = await freshFreeIds()
-  const extra = fresh.filter(id => !servedIds.has(id)).map(id => ({
-    id,
-    object: 'model' as const,
-    created: Math.floor(Date.now() / 1000),
-    owned_by: id.startsWith('opencode/') ? 'opencode' : 'upstream',
-    display_name: `${id} [?]`,
-    context_length: null,
-    context: '?',
-    fresh_discovery: true,
+  // Tier 2: generated catalog — always available offline
+  const data = (MODELS_95 as any[]).map(m => ({
+    id: m.id,
+    object: 'model',
+    owned_by: m.provider || 'hostamar',
+    display_name: m.displayName || m.id,
+    context: m.context,
+    context_length: m.context_length || 0,
+    free: !!m.free,
   }))
-
-  const data = [
-    ...MODELS_95.map(m => ({
-      id: m.id,
-      object: 'model' as const,
-      created: 1677610602,
-      owned_by: (m as any).provider || 'hostamar',
-      // context window surfaced for customer choice; every label ends with [ctx]
-      display_name: m.displayName,
-      context_length: m.context_length,
-      context: m.context,
-      free: (m as any).free ?? isFree(m.id),
-    })),
-    ...extra,
-  ]
-  return Response.json(
-    { object: 'list', data },
-    { headers: { 'Cache-Control': 'public, max-age=60' } }
+  return NextResponse.json(
+    { object: 'list', data, source: 'local-catalog' },
+    { headers: { 'Cache-Control': 'public, max-age=300', 'Access-Control-Allow-Origin': '*' } }
   )
 }
