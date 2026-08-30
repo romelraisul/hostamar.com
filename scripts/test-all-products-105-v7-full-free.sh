@@ -30,7 +30,7 @@ check "isFree true" "$(echo "$CR" | python3 -c 'import sys,json;print(json.load(
 
 echo "── FULL FREE: 10-service activation loop (NO 402, credits stay 6000) ──"
 SVC_OK=0
-for sid in voiceover jingle market-research prompt-pack sql-query t-shirt-design infographic translation seo-audit ats-optimizer; do
+for sid in voiceover jingle market-research prompt-pack sql-query t-shirt-design book-cover translation seo-audit ats-optimizer; do
   R=$(curl -s -X POST $B/api/ai-services/activate -H "$H" -H 'Content-Type: application/json' -d "{\"serviceId\":\"$sid\",\"inputs\":{\"a\":\"b\"}}")
   if echo "$R" | python3 -c "import sys,json;d=json.load(sys.stdin);sys.exit(0 if d.get('success') else 1)" 2>/dev/null; then SVC_OK=$((SVC_OK+1)); fi
 done
