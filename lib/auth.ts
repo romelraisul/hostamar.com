@@ -110,10 +110,31 @@ export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
     }
   }
 
-  if (req) {
-    let token = (req.headers.get('authorization') || '').replace('Bearer ', '').trim()
+  // FIX (v5): when called from a server component PAGE (no req passed), read
+  // the auth_token cookie via next/headers cookies(). Before this, JWT-cookie
+  // users (login via /api/auth/login) had no NextAuth session → getAuthUser
+  // returned null → every /dashboard page redirected to /login. This is the
+  // root cause of the chat/game/ide → /login bug report.
+  let requestRef: NextRequest | null = req ?? null
+  if (!requestRef) {
+    try {
+      const { cookies } = await import('next/headers')
+      const cookieStore = await cookies()
+      const cookieToken = cookieStore.get('auth_token')?.value
+      if (cookieToken) {
+        // Minimal NextRequest-shaped shim carrying only the cookie getter
+        requestRef = {
+          headers: { get: (_: string) => '' },
+          cookies: { get: (name: string) => (name === 'auth_token' ? { value: cookieToken } : undefined) },
+        } as unknown as NextRequest
+      }
+    } catch { /* cookies() unavailable in this context — fall through */ }
+  }
+
+  if (requestRef) {
+    let token = (requestRef.headers.get('authorization') || '').replace('Bearer ', '').trim()
     if (!token) {
-      token = req.cookies.get('auth_token')?.value || ''
+      token = requestRef.cookies.get('auth_token')?.value || ''
     }
     if (token) {
       const payload = verifyToken(token)
