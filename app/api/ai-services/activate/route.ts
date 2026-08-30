@@ -22,11 +22,8 @@ export async function POST(req: NextRequest) {
   const inputs = (body.inputs && typeof body.inputs === 'object') ? body.inputs : {}
 
   const r = await activateService(user, serviceId, inputs)
-  if (!r.ok) {
-    if (r.status === 402) {
-      return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
-    }
-    return NextResponse.json({ error: r.error }, { status: r.status })
-  }
-  return NextResponse.json({ success: true, ...r })
+  if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status })
+  // FULL FREE (v7): cost badges may still show the Fiverr-equivalent, but
+  // activation never charges, never 402s.
+  return NextResponse.json({ success: true, ...r, isFree: true, charged: 0 })
 }
