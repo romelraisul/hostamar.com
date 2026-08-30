@@ -120,7 +120,7 @@ export const MCP_TOOLS: McpTool[] = [
     run: async () => MCP_TOOLS.map(t => ({ server: t.server, name: t.name, costCr: t.costCr, description: t.description })),
   },
   {
-    server: 'webmcp-gateway-mcp', name: 'call_webmcp_tool', costCr: -1,
+    server: 'webmcp-gateway-mcp', name: 'call_webmcp_tool', costCr: 0,
     description: 'Invoke any registered tool (bills the tool cost)',
     run: async (args, userId) => {
       const tool = MCP_TOOLS.find(t => t.name === args?.tool)
