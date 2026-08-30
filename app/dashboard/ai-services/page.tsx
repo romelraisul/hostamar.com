@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
  * 📌 pinned-chat operation:
  *   Activate (creditCost cr) → Material Collection Modal (dynamic inputs)
  *   → pinned chat created → AI asks missing materials → generating
- *   → delivered → revisions (-5cr) in the SAME thread forever.
+ *   → delivered → free unlimited revisions in the SAME thread forever.
  * Data: /api/ai-services/catalog (merged deduped), /api/ai-services/chats,
  *       /api/ai-services/chat/[chatId]/messages.
  */
@@ -215,10 +215,11 @@ export default function AiServicesPage() {
             <div className="flex items-center gap-2">
               <Coins className="h-5 w-5" style={{ color: GREEN }} />
               <div>
-                <p className="text-lg font-bold">{credits.toLocaleString('bn-BD')} <span className="text-xs font-normal text-zinc-500">/ 6000 cr</span></p>
-                <div className="mt-1 h-1.5 w-40 overflow-hidden rounded-full bg-zinc-100">
-                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: GREEN }} />
-                </div>
+                <p className="flex items-center gap-2 text-lg font-bold">
+                  6000 <span className="text-xs font-normal text-zinc-500">credits</span>
+                  <span className="rounded-full bg-[#ECFDF5] px-2 py-0.5 text-[10px] font-bold" style={{ color: GREEN }}>FREE • UNLIMITED</span>
+                </p>
+                <div className="mt-1 h-1.5 w-40 overflow-hidden rounded-full" style={{ background: GREEN }} />
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs">
@@ -257,12 +258,12 @@ export default function AiServicesPage() {
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <div className="text-[10px] leading-tight">
                     <p className="text-zinc-400 line-through">Fiverr {s.dollarRange || '$20-50'}</p>
-                    <p className="font-bold" style={{ color: GREEN }}>{s.creditCost}cr = ${(s.creditCost * 0.01).toFixed(2)}</p>
+                    <p className="font-bold" style={{ color: GREEN }}>You: FREE</p>
                   </div>
-                  <button onClick={() => openModal(s)} disabled={credits < s.creditCost}
-                    className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold text-white disabled:bg-zinc-300"
-                    style={{ background: credits < s.creditCost ? undefined : GREEN }}>
-                    {s.creditCost}cr • Activate
+                  <button onClick={() => openModal(s)}
+                    className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold text-white"
+                    style={{ background: GREEN }}>
+                    Free • Activate
                   </button>
                 </div>
               </div>
@@ -321,7 +322,7 @@ export default function AiServicesPage() {
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
                 rows={1}
-                placeholder={activeChat.status === 'delivered' ? 'রিভিশন চান (5cr) — যেমন: make it more minimal green #0E7C3A…' : 'উত্তর দিন / ম্যাটেরিয়াল দিন…'}
+                placeholder={activeChat.status === 'delivered' ? 'রিভিশন চান (FREE) — যেমন: make it more minimal green #0E7C3A…' : 'উত্তর দিন / ম্যাটেরিয়াল দিন…'}
                 className="max-h-24 min-h-[38px] flex-1 resize-none rounded-xl border px-3 py-2 text-xs focus:border-[#0E7C3A] focus:outline-none"
               />
               <button onClick={send} disabled={chatBusy || !chatInput.trim()}
@@ -374,14 +375,14 @@ export default function AiServicesPage() {
             {err && <p className="mt-3 rounded-xl bg-red-50 p-2 text-xs text-red-600">{err}</p>}
 
             <div className="mt-4 rounded-xl bg-[#ECFDF5] p-2.5 text-[11px]" style={{ color: GREEN }}>
-              Cost {modal.creditCost}cr • You have {credits}cr • After: {Math.max(0, credits - modal.creditCost)}cr
+              Cost: <strong>FREE</strong> • You have 6000 credits • Unlimited free testing — no restriction
             </div>
 
             <div className="mt-4 flex gap-2">
               <button onClick={() => setModal(null)} className="flex-1 rounded-xl border py-2.5 text-sm font-medium hover:bg-zinc-50">বাতিল</button>
-              <button onClick={activate} disabled={activating || credits < modal.creditCost}
+              <button onClick={activate} disabled={activating}
                 className="flex-[2] rounded-xl py-2.5 text-sm font-semibold text-white disabled:bg-zinc-300"
-                style={{ background: credits < modal.creditCost ? undefined : GREEN }}>
+                style={{ background: GREEN }}>
                 {activating ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : 'Continue to AI Chat →'}
               </button>
             </div>

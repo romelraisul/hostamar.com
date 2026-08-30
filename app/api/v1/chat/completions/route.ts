@@ -57,30 +57,9 @@ export async function POST(req: NextRequest) {
     authUser = null
   }
 
-  // Pre-spend check for authed users — REAL balance read (the old
-  // deductCredits(id, 0) noop returned ok:false 'Invalid amount' → spurious 402
-  // for every authed user with credits; public chat never hit it, hiding it).
-  if (authUser) {
-    const acct: any = await prisma.customer.findUnique({
-      where: { id: authUser.id },
-      select: { credits: true },
-    }).catch(() => null)
-    const balance = Number(acct?.credits ?? 0)
-    if (balance < 1) {
-      return NextResponse.json(
-        {
-          error: {
-            message: 'INSUFFICIENT_CREDITS',
-            code: 402,
-            needed: 1,
-            balance,
-            bkash: { number: '01822417463', link: 'https://hostamar.com/dashboard/payment' },
-          },
-        },
-        { status: 402 }
-      )
-    }
-  }
+  // FULL FREE (v7): chat is FREE for everyone — no pre-spend check, no 402,
+  // balance never changes. Usage is logged via deductCredits (free-tier
+  // analytics) but never enforced.
 
   const result = await callBestModel(messages, SYSTEM_PROMPT)
 
