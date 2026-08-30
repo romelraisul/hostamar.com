@@ -162,6 +162,7 @@ function ServicesStrip() {
 export default function DashboardPage() {
   const { t, locale } = useLocale()
   const [data, setData] = useState<ApiData | null>(null)
+  const [insight, setInsight] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [cmdOpen, setCmdOpen] = useState(false)
@@ -177,6 +178,16 @@ export default function DashboardPage() {
         if (alive) setData(j)
       } catch (e: any) { if (alive) setError(e.message) }
       finally { if (alive) setLoading(false) }
+    })()
+    // v5: model insight loads lazily AFTER paint — never blocks the dashboard
+    ;(async () => {
+      try {
+        const r = await fetch('/api/dashboard/insight', { credentials: 'include' })
+        if (r.ok) {
+          const j = await r.json()
+          if (alive && j?.insight) setInsight(j.insight)
+        }
+      } catch { /* optional nicety — never blocks */ }
     })()
     return () => { alive = false }
   }, [])
@@ -400,6 +411,12 @@ export default function DashboardPage() {
 
           <NodeStatus />
           <RecentCard videos={recentVideos} />
+          {insight && (
+            <div className="rounded-2xl border bg-[#ECFDF5] p-4 text-sm text-[#0E7C3A]">
+              <p className="mb-1 text-xs font-semibold">AI ইনসাইট</p>
+              {insight}
+            </div>
+          )}
         </div>
 
         {/* Right column 4 */}
