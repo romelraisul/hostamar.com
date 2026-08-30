@@ -20,7 +20,6 @@ const RAW = require('../scripts/fiverr-110-raw.json')
 // L2 semantic overlap: fiverr slug → existing catalog slug that already
 // covers the job. Anything listed here is SKIPPED (existing card wins).
 const SEMANTIC_OVERLAP = {
-  'logo-design': 'brand-identity-starter',
   'thumbnail-design': 'youtube-thumbnail-studio',
   'business-card': 'ai-business-card-designer',
   'flyer': 'event-social-kit',
