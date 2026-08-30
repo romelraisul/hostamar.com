@@ -53,9 +53,24 @@ export async function callBestModel(
   };
 
   // PAID selection first — never silently swap the user's chosen model.
+  // hostamar-* are OUR proprietary SKUs: compute rides the kilocode capacity
+  // slot (free inference capacity we own), but the response is BRANDED as
+  // the selected hostamar model with provider 'hostamar' and billed at tier.
   if (wanted) {
-    attempts.push(kilocodeCall(wanted));
-    attempts.push(edgeCall(wanted));
+    const slot = isHostamarModel ? 'kilo-auto/free' : wanted;
+    if (isHostamarModel) {
+      attempts.push(async () => {
+        const r = await kilocodeCall(slot)();
+        return { text: r.text, model: wanted, provider: 'hostamar' };
+      });
+      attempts.push(async () => {
+        const r = await edgeCall(slot)();
+        return { text: r.text, model: wanted, provider: 'hostamar' };
+      });
+    } else {
+      attempts.push(kilocodeCall(wanted));
+      attempts.push(edgeCall(wanted));
+    }
   }
 
   // Capacity fallback order (reports the ACTUAL model used in the response)
