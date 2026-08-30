@@ -158,7 +158,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Public page paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide']
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide', '/docs']
   for (const p of publicPaths) {
     if (pathname === p || pathname.startsWith(p + '/')) {
       return NextResponse.next()
