@@ -44,7 +44,7 @@ export default function GameClient() {
       if (res.status === 402) { setMsg(`ক্রেডিট লাগবে ${data.needed}cr — ব্যালেন্স ${data.balance}cr। টপ-আপ: bKash ${data.bkash}`); return }
       if (!res.ok || !data.success) { setMsg(data.error || 'ব্যর্থ'); return }
       setRunning(r => ({ ...r, [gameId]: action === 'start' }))
-      setMsg(action === 'start' ? `✅ ${gameId} সার্ভার চালু — ${data.creditsPerHour}cr কাটা হয়েছে` : `⏹ ${gameId} বন্ধ হয়েছে`)
+      setMsg(action === 'start' ? `✅ ${gameId} সার্ভার চালু — ফ্রি` : `⏹ ${gameId} বন্ধ হয়েছে`)
       load()
     } catch { setMsg('নেটওয়ার্ক সমস্যা') } finally { setBusy('') }
   }
@@ -70,7 +70,7 @@ export default function GameClient() {
                 <h3 className="font-semibold">{g.name}</h3>
                 <p className="text-xs text-zinc-500">{g.ram} RAM • {g.cpu}</p>
               </div>
-              <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600">{g.price}cr/ঘণ্টা</span>
+              <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600">ফ্রি</span>
             </div>
             <div className="mt-4 flex items-center gap-2">
               <button

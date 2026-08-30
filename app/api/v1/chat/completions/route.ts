@@ -57,30 +57,8 @@ export async function POST(req: NextRequest) {
     authUser = null
   }
 
-  // STRICT CREDIT (v9): authed users need >= 1 credit — real pre-spend check.
-  // (Public/unauth stays open as the support tier.) Usage-based spend happens
-  // after the reply: 1cr per 1000 tokens, min 1.
-  if (authUser) {
-    const acct: any = await prisma.customer.findUnique({
-      where: { id: authUser.id },
-      select: { credits: true },
-    }).catch(() => null)
-    const balance = Number(acct?.credits ?? 0)
-    if (balance < 1) {
-      return NextResponse.json(
-        {
-          error: {
-            message: 'INSUFFICIENT_CREDITS',
-            code: 402,
-            needed: 1,
-            balance,
-            bkash: { number: '01822417463', link: 'https://hostamar.com/dashboard/payment' },
-          },
-        },
-        { status: 402 }
-      )
-    }
-  }
+  // FULL FREE (v11): chat is free for everyone — no pre-spend check, no 402,
+  // balance never changes.
 
   const result = await callBestModel(messages, SYSTEM_PROMPT)
 
