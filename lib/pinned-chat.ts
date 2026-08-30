@@ -100,14 +100,17 @@ async function materialAskMessage(serviceName: string, missing: string[], provid
   // customer always gets a clear ask even if the chain is degraded.
   const deterministic = `আপনি **${serviceName}** চালু করেছেন! শুরু করতে আমার দরকার: ${missing.join(', ')}. (আপনি দিয়েছেন: ${provided.join(', ') || 'কিছুই না'})`
   try {
-    const { text, provider } = await callBestModel(
-      [{ role: 'user', content: `Write a friendly Bangla first-message for a pinned project chat. Service: ${serviceName}. Missing required fields: ${missing.join(', ')}. Already provided: ${provided.join(', ') || 'none'}. Ask ONLY for the missing fields, warm tone, max 3 sentences.` }],
-      'You are Hostamar project assistant. Bangla, concise, friendly.',
-    )
-    // KB fallback always "succeeds" with generic text — a material ask must
-    // NEVER be replaced by the generic blurb; deterministic ask wins instead.
-    if (provider === 'fallback' || provider === 'knowledge-base-fallback') return deterministic
-    return text || deterministic
+    // TIMEOUT 25s: activation must never 504 on a slow chain — the
+    // deterministic ask is always correct and instant.
+    const res = await Promise.race([
+      callBestModel(
+        [{ role: 'user', content: `Write a friendly Bangla first-message for a pinned project chat. Service: ${serviceName}. Missing required fields: ${missing.join(', ')}. Already provided: ${provided.join(', ') || 'none'}. Ask ONLY for the missing fields, warm tone, max 3 sentences.` }],
+        'You are Hostamar project assistant. Bangla, concise, friendly.',
+      ),
+      new Promise<{ text: string; provider: string }>((_, rej) => setTimeout(() => rej(new Error('ask-timeout')), 25_000)),
+    ])
+    if (res.provider === 'fallback' || res.provider === 'knowledge-base-fallback') return deterministic
+    return res.text || deterministic
   } catch {
     return deterministic
   }

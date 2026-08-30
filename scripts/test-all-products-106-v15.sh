@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test-all-products-106-v14-harden.sh — 30-test hardening suite.
+# test-all-products-106-v15.sh — 35-test suite (30 core + 5 docs).
 # Covers: auth/coin, hostamar SKU branding ×5, token pricing table ×6,
 # logo-design search normalization, discount badge 3-tier math, tier activation,
 # worktree 5cr flat, Orca actions, bKash 402 plans, regression core.
@@ -93,6 +93,16 @@ check "29. MCP 11 tools" "$MC" "11"
 M402=$(curl -s -m 120 -H "$H" -X POST $B/api/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"hostamar-1m-a","messages":[{"role":"user","content":"hi"}]}' | python3 -c 'import sys,json;d=json.load(sys.stdin);print(1 if (d.get("pricing") or {}).get("inCrPer1k")==0.3 else 0)')
 check "30. chat pricing breakdown 0.3cr/1K" "$M402" "1"
 
+echo "── docs (31-35) ──"
+DOCS=$(curl -s -m 90 "$B/docs?cb=$RANDOM")
+SZ=$(echo "$DOCS" | wc -c)
+[ "$SZ" -gt 400000 ] && echo "$DOCS" | grep -q "Hostamar Docs" && ok "31. /docs 200 real content (${SZ}B)" || bad "31. /docs content"
+echo "$DOCS" | grep -q "1cr = 1TK" && ok "32. banner 1cr=1TK=1COIN" || bad "32. banner"
+echo "$DOCS" | grep -q "01822417463" && ok "33. bKash 01822417463" || bad "33. bKash"
+echo "$DOCS" | grep -q "Orca" && echo "$DOCS" | grep -q "106" && ok "34. 106 + Orca guide" || bad "34. Orca/106"
+HOME1=$(curl -s -m 60 "$B/?cb=$RANDOM")
+echo "$HOME1" | grep -q "ডকস" && echo "$HOME1" | grep -q 'href="/docs"' && ok "35. navbar Docs link" || bad "35. navbar Docs"
+
 echo "══ RESULT: $PASS passed, $FAIL failed ══"
-[ "$FAIL" -eq 0 ] && echo "🚢 V14 30/30 ALL PASSED" || echo "❌ FIX FAILURES"
+[ "$FAIL" -eq 0 ] && echo "🚢 V15 35/35 ALL PASSED" || echo "❌ FIX FAILURES"
 exit $FAIL
