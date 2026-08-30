@@ -21,6 +21,23 @@ export async function GET(req: NextRequest) {
   // Idempotent seed of the deduped new jobs (runs once per cold instance)
   await ensureFiverrCatalog().catch(() => 0)
 
+  // V14: one-shot tier backfill for existing-50 services (not in the deduped
+  // JSON) — priced from their own catalog creditCost via the pricing lib.
+  try {
+    const { priceService } = await import('@/lib/pricing/ai-services-pricing')
+    const bare = await prisma.serviceCatalog.findMany({ where: { isActive: true } })
+    for (const svc of bare) {
+      const inp = svc.inputs as any
+      if (!inp?.tiers) {
+        const p = priceService(svc.id, svc.category, svc.creditCost)
+        await prisma.serviceCatalog.update({
+          where: { id: svc.id },
+          data: { inputs: { ...inp, tiers: p.tiers, marketFiverrUSD: p.fiverrUSD, marketFiverrBDT: `৳${Math.round(p.fiverrAvgUSD * 120)}`, hostamarDiscountPct: p.hostamarDiscountPct } },
+        }).catch(() => {})
+      }
+    }
+  } catch {}
+
   const where: any = { isActive: true }
   if (category && category !== 'all') where.category = category
   const services = await prisma.serviceCatalog.findMany({ where, orderBy: { id: 'asc' } })
