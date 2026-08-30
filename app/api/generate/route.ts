@@ -30,13 +30,21 @@ export async function POST(req: NextRequest) {
   if (!service) return NextResponse.json({ error: 'SERVICE_NOT_FOUND', serviceId }, { status: 404 })
   const creditCost = service.creditCost
 
-  // FULL FREE (v7): no balance check, no deduction, no 402 — video generation
-  // is free for testing. Balance stays 6000.
+  // STRICT CREDIT (v9): check → 402+bKash; race-safe deduct creditCost.
   const customer = await prisma.customer.findUnique({
     where: { id: user.id },
     select: { credits: true },
   }).catch(() => null)
-  const balanceAfter = Number(customer?.credits ?? 6000)
+  const balance = Number(customer?.credits ?? 0)
+  if (balance < creditCost) {
+    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: creditCost, balance, bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
+  }
+  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${creditCost} WHERE id = ${user.id} AND credits >= ${creditCost}`
+  if (Number(dec) === 0) {
+    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: creditCost, balance, bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
+  }
+  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${user.id} LIMIT 1`
+  const balanceAfter = Number(after?.[0]?.credits ?? balance - creditCost)
 
   // MODEL IN EVERY POINT: expand the customer prompt into a render brief
   // (non-blocking: empty string if chain degraded — flow never breaks).
@@ -61,7 +69,7 @@ export async function POST(req: NextRequest) {
   // so a customerId-based Prisma insert may be rejected; log raw instead.
   await prisma.$executeRaw`
     INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter", "videoId")
-    VALUES (${'ctx_' + Date.now().toString(36)}, ${user.id}, 0, 'free:generate', ${`FREE generate ${service.id}`}, ${Math.round(balanceAfter)}, ${video.id})
+    VALUES (${'ctx_' + Date.now().toString(36)}, ${user.id}, ${-creditCost}, 'spend', ${`generate ${service.id}`}, ${Math.round(balanceAfter)}, ${video.id})
   `.catch(() => null)
 
   // Simulated render → completed with placeholder MP4 (B2 upload hook point:
@@ -81,7 +89,7 @@ export async function POST(req: NextRequest) {
       serviceNameBn: service.nameBn,
       creditCost,
       status: 'completed',
-      isFree: true,
+      isFree: false,
       url: PLACEHOLDER_MP4,
       createdAt: video.createdAt,
     },
