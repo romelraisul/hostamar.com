@@ -62,7 +62,7 @@ export default function IdeClient() {
       if (res.status === 401) { window.location.href = '/login'; return }
       if (res.status === 402) { setMsg(`ক্রেডিট লাগবে ${data.needed}cr — ব্যালেন্স ${data.balance}cr। টপ-আপ: bKash ${data.bkash}`); return }
       if (!res.ok || !data.success) { setMsg(data.error || 'ব্যর্থ'); return }
-      setMsg(`✅ ${data.type} IDE চালু (${data.serverId}) — ${data.creditsPerHour}cr/ঘণ্টা • ব্যালেন্স ${data.remainingCredits}cr`)
+      setMsg(`✅ ${data.type} IDE চালু (${data.serverId}) — ফ্রি আনলিমিটেড`)
       await load()
       const created = { inputs: { serverId: data.serverId, ideType: data.type }, status: 'processing', id: data.orderId, createdAt: new Date().toISOString() }
       setActiveSession(created)
@@ -105,7 +105,7 @@ export default function IdeClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">কোড এডিটর 💻</h1>
-          <p className="mt-1 text-sm text-zinc-500">ব্রাউজারে সফটওয়্যার বানান — ফাইল B2-তে সেভ, কোড রান, ১০-১৫cr/ঘণ্টা</p>
+          <p className="mt-1 text-sm text-zinc-500">ব্রাউজারে সফটওয়্যার বানান — ফাইল B2-তে সেভ, কোড রান — ফ্রি আনলিমিটেড</p>
         </div>
         <a href="/dashboard/services/new?type=ide" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">+ নতুন IDE</a>
       </div>
@@ -124,7 +124,7 @@ export default function IdeClient() {
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between">
-                <span className="text-sm font-bold text-[#0E7C3A]">{ide.price}cr/ঘণ্টা</span>
+                <span className="text-sm font-bold text-[#0E7C3A]">ফ্রি</span>
                 <button onClick={() => create(ide.id)} disabled={busy === ide.id}
                   className="rounded-lg bg-[#0E7C3A] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-zinc-300">
                   {busy === ide.id ? 'খুলছে...' : 'শুরু করুন'}

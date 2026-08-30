@@ -101,16 +101,10 @@ export async function activateService(
   if (!service) return { ok: false, error: 'SERVICE_NOT_FOUND', status: 404 }
   const creditCost = service.creditCost
 
+  // FULL FREE (v7): no balance check, no deduction, no 402 — the customer can
+  // activate any of the 105 services with zero restriction. Balance stays 6000.
   const customer = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
-  const balance = Number(customer?.credits ?? 0)
-  if (balance < creditCost) {
-    return { ok: false, error: 'INSUFFICIENT_CREDITS', status: 402 } as const
-  }
-
-  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${creditCost} WHERE id = ${user.id} AND credits >= ${creditCost}`
-  if (Number(dec) === 0) return { ok: false, error: 'INSUFFICIENT_CREDITS', status: 402 }
-  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${user.id} LIMIT 1`
-  const creditsRemaining = Number(after?.[0]?.credits ?? balance - creditCost)
+  const creditsRemaining = Number(customer?.credits ?? 6000)
 
   const missingFields = findMissingFields(service, inputs)
   const provided = Object.keys(inputs || {}).filter(k => String(inputs[k] ?? '').trim() !== '')
@@ -234,20 +228,8 @@ export async function pinnedChatMessage(
       data: { inputs: inputs as any, missingFields: stillMissing, status: status === 'delivered' ? 'delivered' : 'collecting_material' },
     }).catch(() => {})
   } else if (status === 'delivered') {
-    // REVISION: -5cr, same thread forever
-    const customer = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
-    if (Number(customer?.credits ?? 0) < REVISION_COST) {
-      aiMessage = `রিভিশনের জন্য ${REVISION_COST}cr লাগবে — ব্যালেন্স কম। bKash 01822417463 এ টপ-আপ করুন।`
-      await prisma.serviceChatMessage.create({ data: { chatId, role: 'ai', content: aiMessage } }).catch(() => {})
-      return { ok: true, aiMessage, status }
-    }
-    const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${REVISION_COST} WHERE id = ${user.id} AND credits >= ${REVISION_COST}`
-    if (Number(dec) === 0) {
-      aiMessage = `রিভিশনের জন্য ${REVISION_COST}cr লাগবে — ব্যালেন্স কম। bKash 01822417463 এ টপ-আপ করুন।`
-      await prisma.serviceChatMessage.create({ data: { chatId, role: 'ai', content: aiMessage } }).catch(() => {})
-      return { ok: true, aiMessage, status }
-    }
-    charged = REVISION_COST
+    // REVISION — FULL FREE (v7): unlimited revisions, no -5cr, no balance
+    // check. Same thread forever.
     status = 'revising'
     await prisma.serviceOrder.update({ where: { id: order.id }, data: { status } }).catch(() => {})
     aiMessage = await generateDeliverable(user.id, chatId, chat.orderId, service, inputs, content)
