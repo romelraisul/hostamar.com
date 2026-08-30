@@ -34,7 +34,7 @@ export async function callBestModel(
     const j: any = await r.json();
     const txt = j.choices?.[0]?.message?.content;
     if (!txt || txt.length < 5) throw new Error('empty');
-    return { text: txt, model: m, provider: isHostamarModel ? 'hostamar' : 'kilocode' };
+    return { text: txt, model: m, provider: 'kilocode' };
   };
 
   const edgeCall = (m: string) => async (): Promise<Res> => {
