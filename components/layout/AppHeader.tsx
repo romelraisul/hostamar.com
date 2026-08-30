@@ -11,6 +11,7 @@ const GREEN = '#0E7C3A'
 
 // Primary nav (same order on every page). Products is a mega-menu.
 export const NAV_LINKS: { href: string; labelBn: string; labelEn: string }[] = [
+  { href: '/docs', labelBn: 'ডকস', labelEn: 'Docs' },
   { href: '/pricing', labelBn: 'প্রাইসিং', labelEn: 'Pricing' },
   { href: '/features', labelBn: 'ফিচার', labelEn: 'Features' },
   { href: '/faq', labelBn: 'FAQ', labelEn: 'FAQ' },
