@@ -1,12 +1,13 @@
 /**
- * FULL FREE (v11) — NO credit restrictions. If there is credit, the user can
- * use it: balances stay 6000, nothing 402s, no bKash blocking. The race-safe
- * metered implementation stays dormant behind FREE_TIER_ENABLED=false for a
- * future paid mode; usage still logs raw-SQL audit rows (amount 0, free:*).
+ * PAID MODE (V12) — 1cr = 1TK = 1 future HOST coin. Every customer gets a
+ * 6000cr bonus at signup; spend it at products/services; buy more via bKash
+ * (Starter ৳599→6000cr, Pro ৳1,299→13000cr, Business ৳2,999→30000cr).
+ * Race-safe metered implementation ACTIVE; every debit logs a raw-SQL audit
+ * row. Insufficient → INSUFFICIENT_CREDITS → callers return 402 + bKash.
  */
 import { prisma } from '@/lib/prisma'
 
-export const FREE_TIER_ENABLED = true
+export const FREE_TIER_ENABLED = false
 
 export type DeductResult =
   | { ok: true; creditsRemaining: number; charged: number; source: 'free_tier' | 'credit_account' | 'customer' }
@@ -80,7 +81,7 @@ export async function getCreditBalance(userId: string): Promise<{ credits: numbe
       credits: 6000,
       unlimited: true,
       isFree: true,
-      message: 'FREE UNLIMITED — all products free — 6000 bonus credits',
+      message: '6000 bonus = 6000 TK — 1cr = 1TK = 1 ভবিষ্যৎ HOST কয়েন — বোনাস শেষ হলে কিনুন',
     }
   }
   const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
