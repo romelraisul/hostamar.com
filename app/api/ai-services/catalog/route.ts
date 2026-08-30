@@ -25,11 +25,14 @@ export async function GET(req: NextRequest) {
   if (category && category !== 'all') where.category = category
   const services = await prisma.serviceCatalog.findMany({ where, orderBy: { id: 'asc' } })
 
+  // V13: normalize hyphens ↔ spaces so 'logo-design' matches 'Logo Design'
+  const norm = (x: string) => x.toLowerCase().replace(/[-\s]+/g, '')
+  const needle = norm(search)
   const filtered = search
     ? services.filter((s: any) =>
-        s.name.toLowerCase().includes(search) || s.nameBn.includes(search) ||
-        s.category.toLowerCase().includes(search) ||
-        s.benefit.toLowerCase().includes(search) || s.benefitBn.includes(search))
+        norm(s.name).includes(needle) || norm(s.nameBn).includes(needle) ||
+        norm(s.category).includes(needle) ||
+        norm(s.benefit).includes(needle) || norm(s.benefitBn).includes(needle))
     : services
 
   return NextResponse.json({
