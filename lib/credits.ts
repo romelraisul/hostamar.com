@@ -75,12 +75,20 @@ export async function deductCredits(
 
 /** FREE: balance is always 6000 + unlimited flag for the UI meter. */
 export async function getCreditBalance(userId: string): Promise<{ credits: number; unlimited: boolean; isFree: boolean; message: string }> {
+  if (FREE_TIER_ENABLED) {
+    return {
+      credits: 6000,
+      unlimited: true,
+      isFree: true,
+      message: 'FREE UNLIMITED — all products free — 6000 bonus credits',
+    }
+  }
   const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
   return {
     credits: Number(c?.credits ?? 0),
     unlimited: false,
     isFree: false,
-    message: 'FREE UNLIMITED — all products free — 6000 bonus credits',
+    message: '',
   }
 }
 
