@@ -42,7 +42,7 @@ export default function DashboardBrowserPage() {
       if (res.status === 401) { window.location.href = '/login'; return }
       if (res.status === 402) { setSessMsg(`ক্রেডিট লাগবে ${d.needed}cr — ব্যালেন্স ${d.balance}cr। bKash ${d.bkash}`); return }
       if (!d.success) { setSessMsg(d.error || 'সেশন তৈরি ব্যর্থ'); return }
-      setSessMsg(`✅ সেশন চালু (${d.sessionId}) — ফ্রি আনলিমিটেড`)
+      setSessMsg(`✅ সেশন চালু (${d.sessionId}) — ${d.creditsPerHour}cr/ঘণ্টা`)
       loadSessions()
     } catch { setSessMsg('নেটওয়ার্ক সমস্যা') } finally { setCreating(false) }
   }
@@ -85,7 +85,7 @@ export default function DashboardBrowserPage() {
       <form onSubmit={go} className="flex items-center gap-2">
         <button type="button" onClick={createSession} disabled={creating}
           className="flex items-center gap-1.5 rounded-xl bg-[#0E7C3A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0c6a32] disabled:opacity-50">
-          <Plus className="h-4 w-4" /> {creating ? 'তৈরি হচ্ছে...' : 'নতুন ব্রাউজার (ফ্রি)'}
+          <Plus className="h-4 w-4" /> {creating ? 'তৈরি হচ্ছে...' : 'নতুন ব্রাউজার (5cr/ঘণ্টা)'}
         </button>
         <div className="flex flex-1 items-center gap-2 rounded-xl border bg-white px-3 py-2">
           <Globe className="h-4 w-4 text-[#0E7C3A]" />

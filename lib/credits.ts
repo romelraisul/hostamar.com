@@ -1,16 +1,13 @@
 /**
- * FULL FREE (v7) — no credit restrictions during the free-testing era.
- *
- * Policy: every customer gets 6000 welcome credits and NOTHING deducts or
- * blocks. deductCredits is a no-op that always succeeds; balances stay 6000.
- * Usage is still LOGGED (free-tier analytics) but never enforced.
- *
- * To return to metered mode later: flip FREE_TIER_ENABLED to false — the old
- * race-safe metered implementation is preserved below, unused.
+ * STRICT CREDIT (v9) — race-safe metered mode is ACTIVE.
+ * FREE_TIER_ENABLED=false: every product point deducts real credits; the only
+ * free part is the 6000 welcome grant at signup. Insufficient → ok:false
+ * INSUFFICIENT_CREDITS → callers return 402 + bKash 01822417463.
+ * (The v7 full-free no-op lives behind the flag if ever needed again.)
  */
 import { prisma } from '@/lib/prisma'
 
-export const FREE_TIER_ENABLED = true
+export const FREE_TIER_ENABLED = false
 
 export type DeductResult =
   | { ok: true; creditsRemaining: number; charged: number; source: 'free_tier' | 'credit_account' | 'customer' }
@@ -79,11 +76,13 @@ export async function deductCredits(
 
 /** FREE: balance is always 6000 + unlimited flag for the UI meter. */
 export async function getCreditBalance(userId: string): Promise<{ credits: number; unlimited: boolean; isFree: boolean; message: string }> {
-  if (FREE_TIER_ENABLED) {
-    return { credits: 6000, unlimited: true, isFree: true, message: 'Full Free — Test All Products — No Restriction' }
-  }
   const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
-  return { credits: Number(c?.credits ?? 0), unlimited: false, isFree: false, message: '' }
+  return {
+    credits: Number(c?.credits ?? 0),
+    unlimited: false,
+    isFree: false,
+    message: '6000 free on signup only — every product costs credits — nothing free',
+  }
 }
 
 /** FREE: always enough. */

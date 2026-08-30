@@ -32,9 +32,18 @@ export async function POST(req: NextRequest) {
 
   const CREDIT_PER_HOUR = 5
 
-  // FULL FREE (v7): browser sessions are free to test — no check, no deduction.
+  // STRICT CREDIT (v9): check → 402+bKash; race-safe deduct.
   const customer = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
-  const balanceAfter = Number(customer?.credits ?? 6000)
+  const balance = Number(customer?.credits ?? 0)
+  if (balance < CREDIT_PER_HOUR) {
+    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: CREDIT_PER_HOUR, balance, bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
+  }
+  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${CREDIT_PER_HOUR} WHERE id = ${user.id} AND credits >= ${CREDIT_PER_HOUR}`
+  if (Number(dec) === 0) {
+    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: CREDIT_PER_HOUR, balance, bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
+  }
+  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${user.id} LIMIT 1`
+  const balanceAfter = Number(after?.[0]?.credits ?? balance - CREDIT_PER_HOUR)
 
   const sessionId = `brs-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
@@ -60,7 +69,6 @@ export async function POST(req: NextRequest) {
     openUrl: `/dashboard/browser?session=${sessionId}`,
     creditsPerHour: CREDIT_PER_HOUR,
     remainingCredits: balanceAfter,
-    isFree: true,
-    charged: 0,
+    isFree: false,
   })
 }
