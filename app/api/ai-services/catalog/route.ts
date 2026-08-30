@@ -46,6 +46,10 @@ export async function GET(req: NextRequest) {
       perfectFor: s.perfectFor, perfectForBn: s.perfectForBn,
       model: s.model, icon: s.icon,
       inputs: (s.inputs as any)?.fields || [],
+      tiers: (s.inputs as any)?.tiers || null,
+      marketFiverrUSD: (s.inputs as any)?.marketFiverrUSD || s.dollarRange,
+      marketFiverrBDT: (s.inputs as any)?.marketFiverrBDT || null,
+      hostamarDiscountPct: (s.inputs as any)?.hostamarDiscountPct || null,
     })),
   })
 }
