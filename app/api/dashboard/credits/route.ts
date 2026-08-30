@@ -6,9 +6,8 @@ import { getAuthUser } from '@/lib/auth'
 import { getCreditBalance } from '@/lib/credits'
 
 /**
- * GET /api/dashboard/credits — the dashboard credit meter source.
- * FULL FREE (v7): always reports 6000 + unlimited/isFree — no restriction,
- * the meter shows "Free Unlimited" while free testing is on.
+ * GET /api/dashboard/credits — FULL FREE (v11): always 6000/6000, everything
+ * FREE. If there is credit the user can use it — no restrictions, no 402.
  */
 export async function GET(req: NextRequest) {
   const user = await getAuthUser(req)
@@ -16,8 +15,15 @@ export async function GET(req: NextRequest) {
   const bal = await getCreditBalance(user.id)
   return NextResponse.json({
     credits: bal.credits,
-    unlimited: bal.unlimited,
+    total: 6000,
+    used: 0,
+    percent: 0,
     isFree: bal.isFree,
+    unlimited: bal.unlimited,
+    welcome: 6000,
+    costs: { video: 0, chat: 0, browser: 0, ide: 0, game: 0, chatos: 0 },
     message: bal.message,
+    bKash: '01822417463',
+    topUp: '/dashboard/payment',
   })
 }

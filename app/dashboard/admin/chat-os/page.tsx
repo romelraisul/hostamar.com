@@ -211,7 +211,7 @@ export default function ChatOsPage() {
   const startPreview = async () => {
     const d = await api('preview_session')
     afterAction(d)
-    if (d.ok) setTermLines(l => [...l, `preview session active (5cr/hr) — Design Mode ready`])
+    if (d.ok) setTermLines(l => [...l, `preview session active (ফ্রি) — Design Mode ready`])
   }
   const onPreviewClick = (e: React.MouseEvent) => {
     if (!designMode) return
@@ -282,7 +282,7 @@ export default function ChatOsPage() {
           {openFile && (
             <div className="border-t border-zinc-800 p-1">
               <button onClick={saveF} disabled={!dirty} className="flex w-full items-center justify-center gap-1.5 rounded-lg py-1.5 text-[11px] font-semibold disabled:bg-zinc-800 disabled:text-zinc-600" style={{ background: dirty ? GREEN : undefined }}>
-                <Save className="h-3 w-3" /> সেভ (1cr)
+                <Save className="h-3 w-3" /> সেভ (ফ্রি)
               </button>
             </div>
           )}
@@ -307,7 +307,7 @@ export default function ChatOsPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
                 rows={2}
-                placeholder="চ্যাট করুন (1cr) — /tools দেখুন MCP tools…  |  Shift+Enter নতুন লাইন"
+                placeholder="চ্যাট করুন (ফ্রি) — /tools দেখুন MCP tools…  |  Shift+Enter নতুন লাইন"
                 className="flex-1 resize-none rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-[12px] focus:border-[#0E7C3A] focus:outline-none"
               />
               <button onClick={send} disabled={busy || !input.trim()} className="rounded-xl p-2.5 disabled:bg-zinc-800" style={{ background: GREEN }}>
@@ -322,7 +322,7 @@ export default function ChatOsPage() {
           <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-semibold text-zinc-400">
             <span className="flex items-center gap-1"><MonitorPlay className="h-3.5 w-3.5" /> PREVIEW</span>
             <div className="flex items-center gap-1">
-              <button onClick={startPreview} title="Start session (5cr/hr)" className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] hover:bg-zinc-800"><Play className="h-3 w-3" /> 5cr/hr</button>
+              <button onClick={startPreview} title="Start session (ফ্রি)" className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] hover:bg-zinc-800"><Play className="h-3 w-3" /> ফ্রি</button>
               <button onClick={() => setDesignMode(v => !v)} title="Design Mode: click any element → drops into chat (1cr per click)"
                 className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] ${designMode ? 'font-bold text-white' : 'hover:bg-zinc-800'}`}
                 style={designMode ? { background: GREEN } : undefined}>
@@ -372,7 +372,7 @@ export default function ChatOsPage() {
               <span className="font-mono text-[11px] text-emerald-400">$</span>
               <input value={termCmd} onChange={e => setTermCmd(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') runTerm() }}
-                placeholder="help · ls · cat file · git status · git commit -m …  (1cr/cmd)"
+                placeholder="help · ls · cat file · git status · git commit -m …  (ফ্রি)"
                 className="flex-1 bg-transparent font-mono text-[11px] text-zinc-100 focus:outline-none" />
             </div>
           </div>
@@ -386,7 +386,7 @@ export default function ChatOsPage() {
               <button onClick={() => git('diff')} className="flex items-center gap-1 rounded-lg border border-zinc-800 px-2 py-1 text-[10px] hover:bg-zinc-800">Diff</button>
               <input value={commitMsg} onChange={e => setCommitMsg(e.target.value)} placeholder="commit message"
                 className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] focus:outline-none" />
-              <button onClick={() => git('commit')} className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-white" style={{ background: GREEN }}>✓ Commit (1cr)</button>
+              <button onClick={() => git('commit')} className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-white" style={{ background: GREEN }}>✓ Commit (ফ্রি)</button>
             </div>
             <pre className="mt-2 min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-900 p-2 font-mono text-[10px] text-zinc-300">{gitOut || 'git status / diff দেখুন — commit করুন Chat OS থেকেই'}</pre>
           </div>
@@ -416,14 +416,14 @@ export default function ChatOsPage() {
                 <div key={p.id} className="flex items-center justify-between rounded-lg border border-zinc-800 px-2 py-1.5">
                   <div><p className="text-[10px] font-semibold text-zinc-200">{p.name}</p><p className="text-[9px] text-zinc-500">{p.desc}</p></div>
                   {p.installed ? <span className="text-[9px] text-emerald-400">✓ active</span>
-                    : <button onClick={() => installPlugin(p.id)} className="rounded px-1.5 py-0.5 text-[9px] font-semibold text-white" style={{ background: GREEN }}>Install (5cr)</button>}
+                    : <button onClick={() => installPlugin(p.id)} className="rounded px-1.5 py-0.5 text-[9px] font-semibold text-white" style={{ background: GREEN }}>Install (ফ্রি)</button>}
                 </div>
               ))}
             </div>
             <div className="flex min-h-0 flex-col">
               <p className="mb-1 text-[10px] font-bold text-zinc-400">TASKMASTER</p>
               <div className="mb-1 flex gap-1">
-                <input value={taskTitle} onChange={e => setTaskTitle(e.target.value)} placeholder="নতুন টাস্ক (2cr)"
+                <input value={taskTitle} onChange={e => setTaskTitle(e.target.value)} placeholder="নতুন টাস্ক (ফ্রি)"
                   className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] focus:outline-none" />
                 <button onClick={addTask} className="rounded-lg px-2 text-[10px] font-semibold text-white" style={{ background: GREEN }}>+</button>
               </div>

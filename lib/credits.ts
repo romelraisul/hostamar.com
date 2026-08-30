@@ -1,13 +1,12 @@
 /**
- * STRICT CREDIT (v9) — race-safe metered mode is ACTIVE.
- * FREE_TIER_ENABLED=false: every product point deducts real credits; the only
- * free part is the 6000 welcome grant at signup. Insufficient → ok:false
- * INSUFFICIENT_CREDITS → callers return 402 + bKash 01822417463.
- * (The v7 full-free no-op lives behind the flag if ever needed again.)
+ * FULL FREE (v11) — NO credit restrictions. If there is credit, the user can
+ * use it: balances stay 6000, nothing 402s, no bKash blocking. The race-safe
+ * metered implementation stays dormant behind FREE_TIER_ENABLED=false for a
+ * future paid mode; usage still logs raw-SQL audit rows (amount 0, free:*).
  */
 import { prisma } from '@/lib/prisma'
 
-export const FREE_TIER_ENABLED = false
+export const FREE_TIER_ENABLED = true
 
 export type DeductResult =
   | { ok: true; creditsRemaining: number; charged: number; source: 'free_tier' | 'credit_account' | 'customer' }
@@ -81,7 +80,7 @@ export async function getCreditBalance(userId: string): Promise<{ credits: numbe
     credits: Number(c?.credits ?? 0),
     unlimited: false,
     isFree: false,
-    message: '6000 free on signup only — every product costs credits — nothing free',
+    message: 'FREE UNLIMITED — all products free — 6000 bonus credits',
   }
 }
 

@@ -66,18 +66,9 @@ export async function POST(req: NextRequest) {
 
   const creditCost = game.price
 
-  // STRICT CREDIT (v9): check → 402+bKash; race-safe deduct.
+  // FULL FREE (v11): no check, no deduction, no 402 — game servers free.
   const customer = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
-  const balance = Number(customer?.credits ?? 0)
-  if (balance < creditCost) {
-    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: creditCost, balance, bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
-  }
-  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${creditCost} WHERE id = ${user.id} AND credits >= ${creditCost}`
-  if (Number(dec) === 0) {
-    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: creditCost, balance, bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
-  }
-  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${user.id} LIMIT 1`
-  const balanceAfter = Number(after?.[0]?.credits ?? balance - creditCost)
+  const balanceAfter = Number(customer?.credits ?? 6000)
 
   // MODEL IN EVERY POINT: LLM-generated server config (non-blocking)
   const config = await gameConfig(gameId, game.name)

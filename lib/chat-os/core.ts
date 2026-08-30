@@ -17,45 +17,24 @@ export type ChatOsAction =
   | 'preview_session'
 
 export const ACTION_COSTS: Record<string, number> = {
-  chat: 1,             // 1cr per message (plus 1cr/1000 tokens usage)
-  terminal: 1,
-  file_list: 0,
-  file_read: 0,
-  file_save: 1,
-  git_status: 0,
-  git_diff: 0,
-  git_commit: 1,
-  mcp_list: 0,
-  mcp_call: -1,         // dynamic: tool cost
-  design_click: 1,
-  plugin_list: 0,
-  plugin_install: 5,
-  task_list: 0,
-  task_create: 2,
-  preview_session: 5,   // 5cr/hr browser session equivalent
+  // FULL FREE (v11): every Chat OS action is free — usage still logged.
+  chat: 0, terminal: 0, file_list: 0, file_read: 0, file_save: 0,
+  git_status: 0, git_diff: 0, git_commit: 0, mcp_list: 0, mcp_call: 0,
+  design_click: 0, plugin_list: 0, plugin_install: 0, task_list: 0, task_create: 0,
+  preview_session: 0,
 }
 
 type Bill = { ok: true; remaining: number } | { ok: false; needed: number; balance: number; bkash: string; plans: any }
 
 async function bill(userId: string, cost: number): Promise<Bill> {
-  if (cost === 0) return { ok: true, remaining: -1 }
-  const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
-  const balance = Number(c?.credits ?? 0)
-  if (balance < cost) {
-    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: 599, Pro: 1299, Business: 2999 } }
-  }
-  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${cost} WHERE id = ${userId} AND credits >= ${cost}`
-  if (Number(dec) === 0) {
-    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: 599, Pro: 1299, Business: 2999 } }
-  }
-  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${userId} LIMIT 1`
-  const remaining = Number(after?.[0]?.credits ?? balance - cost)
-  // raw-SQL audit row (prod CreditTransaction is accountId-shaped; customerId insert allowed)
-  await prisma.$executeRaw`
-    INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
-    VALUES (${'osx_' + Date.now().toString(36)}, ${userId}, ${-cost}, 'chatos', ${'chatos action'}, ${Math.round(remaining)})
-  `.catch(() => null)
-  return { ok: true, remaining }
+  // FULL FREE (v11): always succeeds; keep a raw-SQL audit row (amount 0).
+  try {
+    await prisma.$executeRaw`
+      INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
+      VALUES (${'fcs_' + Date.now().toString(36)}, ${userId}, 0, 'chatos-free', ${'chatos usage (free)'}, 6000)
+    `.catch(() => null)
+  } catch { /* audit only */ }
+  return { ok: true, remaining: -1 }
 }
 
 // ── Virtual project FS (B2-backed, sandboxed) ─────────────────────────────
