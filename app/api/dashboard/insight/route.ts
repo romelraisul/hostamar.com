@@ -22,16 +22,7 @@ export async function GET(req: NextRequest) {
     prisma.customer.findUnique({ where: { id: authUser.id }, select: { credits: true } }).catch(() => null),
   ])
 
-  // STRICT CREDIT (v9): insight costs 2cr — race-safe deduct, 402 if short.
-  const cust = await prisma.customer.findUnique({ where: { id: authUser.id }, select: { credits: true } }).catch(() => null)
-  const bal = Number(cust?.credits ?? 0)
-  if (bal < 2) {
-    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: 2, balance: bal, bkash: '01822417463' }, { status: 402 })
-  }
-  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - 2 WHERE id = ${authUser.id} AND credits >= 2`
-  if (Number(dec) === 0) {
-    return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: 2, balance: bal, bkash: '01822417463' }, { status: 402 })
-  }
+  // FULL FREE (v11): insight is free — no check, no deduction.
 
   const insight = await explainAnalytics({
     videos: videoCount,

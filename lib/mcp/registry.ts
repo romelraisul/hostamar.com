@@ -16,14 +16,16 @@ export type McpTool = {
 }
 
 async function bill(userId: string | undefined, cost: number): Promise<{ ok: true; remaining: number } | { ok: false; needed: number; balance: number }> {
-  if (!userId || cost <= 0) return { ok: true, remaining: -1 }
-  const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
-  const balance = Number(c?.credits ?? 0)
-  if (balance < cost) return { ok: false, needed: cost, balance }
-  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${cost} WHERE id = ${userId} AND credits >= ${cost}`
-  if (Number(dec) === 0) return { ok: false, needed: cost, balance }
-  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${userId} LIMIT 1`
-  return { ok: true, remaining: Number(after?.[0]?.credits ?? 0) }
+  // FULL FREE (v11): always ok — audit-only insert (amount 0).
+  try {
+    if (userId) {
+      await prisma.$executeRaw`
+        INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
+        VALUES (${'fmc_' + Date.now().toString(36)}, ${userId}, 0, 'mcp-free', ${'mcp tool usage (free)'}, 6000)
+      `.catch(() => null)
+    }
+  } catch { /* audit only */ }
+  return { ok: true, remaining: 6000 }
 }
 
 export const MCP_TOOLS: McpTool[] = [
@@ -40,7 +42,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── pinned-chat-mcp ──
   {
-    server: 'pinned-chat-mcp', name: 'activate_service', costCr: -1, // dynamic: service creditCost
+    server: 'pinned-chat-mcp', name: 'activate_service', costCr: 0, // FULL FREE (v11)
     description: 'Activate a service (bills the service creditCost)',
     run: async (args, userId) => {
       const svc = await prisma.serviceCatalog.findUnique({ where: { id: String(args?.serviceId) } }).catch(() => null)
@@ -58,7 +60,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── vision-mcp ──
   {
-    server: 'vision-mcp', name: 'analyze_image', costCr: 5,
+    server: 'vision-mcp', name: 'analyze_image', costCr: 0,
     description: 'Analyze an image (vision model) — 5cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 5)
@@ -72,7 +74,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── sequential-thinking-mcp / deep-think-mcp ──
   {
-    server: 'sequential-thinking-mcp', name: 'sequential_thinking', costCr: 2,
+    server: 'sequential-thinking-mcp', name: 'sequential_thinking', costCr: 0,
     description: 'Structured step-by-step reasoning — 2cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
@@ -85,7 +87,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'deep-think-mcp', name: 'deep_think', costCr: 2,
+    server: 'deep-think-mcp', name: 'deep_think', costCr: 0,
     description: 'Deep analysis of a problem before coding — 2cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
@@ -99,7 +101,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── browser-mcp ──
   {
-    server: 'browser-mcp', name: 'run_browser_agent', costCr: 5,
+    server: 'browser-mcp', name: 'run_browser_agent', costCr: 0,
     description: 'Run a browser-agent task — 5cr per run',
     run: async (args, userId) => {
       const b = await bill(userId, 5)
@@ -128,7 +130,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── model-gateway-mcp ──
   {
-    server: 'model-gateway-mcp', name: 'gateway_chat', costCr: 1,
+    server: 'model-gateway-mcp', name: 'gateway_chat', costCr: 0,
     description: 'Chat via the 120-model gateway — 1cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 1)
@@ -151,7 +153,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'insight-mcp', name: 'explain_analytics', costCr: 2,
+    server: 'insight-mcp', name: 'explain_analytics', costCr: 0,
     description: 'Model explanation of your analytics — 2cr',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
