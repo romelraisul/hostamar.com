@@ -106,6 +106,7 @@ export async function middleware(request: NextRequest) {
     '/api/services/catalog',
     '/api/ai-services/catalog',
     '/api/mcp',
+    '/api/orca',
     // Hostamar TV — public read-only endpoints for the /tv player.
     // (agent/* + stream/* + destinations self-guard with TV_AGENT_SECRET / admin cookie at the route.)
     '/api/tv/status',
