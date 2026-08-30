@@ -1,13 +1,12 @@
 # Product List — Deduped ~110 Unique (2026-08-30)
 
 Raw Fiverr jobs: **86** · Existing catalog: **50**
-Duplicates skipped (semantic, existing card wins): **31**
+Duplicates skipped (semantic, existing card wins): **30**
 Duplicates skipped (exact slug): **0**
-New unique jobs added: **55**
-**FINAL TOTAL: 105 unique services — NOT 160+**
+New unique jobs added: **56**
+**FINAL TOTAL: 106 unique services — NOT 160+**
 
 ## Skipped as semantic duplicates (existing service already covers the job)
-- ~~logo-design~~ → covered by existing `brand-identity-starter`
 - ~~thumbnail-design~~ → covered by existing `youtube-thumbnail-studio`
 - ~~business-card~~ → covered by existing `ai-business-card-designer`
 - ~~flyer~~ → covered by existing `event-social-kit`
@@ -40,6 +39,7 @@ New unique jobs added: **55**
 - ~~sop~~ → covered by existing `sop-document-creator`
 
 ## New unique jobs added
+- logo-design (Graphics & Design, 40cr, $20-100, model: flux-dev)
 - packaging (Graphics & Design, 75cr, $25-150, model: flux-dev)
 - book-cover (Graphics & Design, 50cr, $20-100, model: flux-dev)
 - t-shirt-design (Graphics & Design, 40cr, $10-50, model: flux-dev)
@@ -70,7 +70,7 @@ New unique jobs added: **55**
 - face-swap (Video, 25cr, $10-50, model: kling)
 - subtitles (Video, 15cr, $5-30, model: whisper)
 - transcription (Video, 15cr, $5-40, model: whisper)
-- voiceover (Music & Audio, 40cr, $10-100, model: elevenlabs)
+- voiceover (Music & Audio, 40cr, $20-60, model: elevenlabs)
 - tts-bn (Music & Audio, 15cr, $5-30, model: elevenlabs)
 - meditation-audiobook (Music & Audio, 40cr, $15-90, model: elevenlabs)
 - audiobook-narration (Music & Audio, 100cr, $50-500, model: elevenlabs)

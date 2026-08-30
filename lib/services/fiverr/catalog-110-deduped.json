@@ -1,5 +1,62 @@
 [
   {
+    "id": "logo-design",
+    "name": "Logo Design",
+    "category": "Graphics & Design",
+    "fiverrPrice": "$20-100",
+    "creditCost": 40,
+    "model": "flux-dev",
+    "icon": "🎨",
+    "benefit": "3 logo concepts + source files",
+    "perfectFor": "New brands",
+    "inputs": [
+      {
+        "name": "brandName",
+        "label": "Brand Name",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "name": "industry",
+        "label": "Industry",
+        "required": true,
+        "type": "select",
+        "options": [
+          "Tech",
+          "Hosting",
+          "Fashion",
+          "Food",
+          "Education",
+          "Other"
+        ]
+      },
+      {
+        "name": "style",
+        "label": "Style",
+        "type": "select",
+        "options": [
+          "minimalist",
+          "vintage",
+          "luxury",
+          "playful"
+        ]
+      },
+      {
+        "name": "description",
+        "label": "Description",
+        "type": "textarea"
+      }
+    ],
+    "tiers": {
+      "basic": 400,
+      "standard": 900,
+      "premium": 1800
+    },
+    "marketFiverrUSD": "$20-100",
+    "marketFiverrBDT": "2400 TK",
+    "hostamarDiscountPct": 83
+  },
+  {
     "id": "packaging",
     "name": "Packaging Design",
     "category": "Graphics & Design",
@@ -22,14 +79,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 500,
-      "standard": 1200,
-      "premium": 2500
-    },
     "marketFiverrUSD": "$25-150",
     "marketFiverrBDT": "3000 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "book-cover",
@@ -55,14 +107,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 400,
-      "standard": 900,
-      "premium": 1800
-    },
     "marketFiverrUSD": "$20-100",
     "marketFiverrBDT": "2400 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "t-shirt-design",
@@ -87,14 +134,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 300,
-      "standard": 700,
-      "premium": 1400
-    },
     "marketFiverrUSD": "$10-50",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 75
+    "hostamarDiscountPct": 95
   },
   {
     "id": "product-mockup",
@@ -119,14 +161,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 300,
-      "standard": 700,
-      "premium": 1400
-    },
     "marketFiverrUSD": "$10-40",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 75
+    "hostamarDiscountPct": 95
   },
   {
     "id": "instagram-shop",
@@ -151,14 +188,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 960,
-      "standard": 2304,
-      "premium": 4800
-    },
     "marketFiverrUSD": "$15-70",
     "marketFiverrBDT": "1800 TK",
-    "hostamarDiscountPct": 47
+    "hostamarDiscountPct": 95
   },
   {
     "id": "sale-graphics",
@@ -183,14 +215,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 960,
-      "standard": 2304,
-      "premium": 4800
-    },
     "marketFiverrUSD": "$10-35",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "product-photoshoot",
@@ -215,14 +242,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 960,
-      "standard": 2304,
-      "premium": 4800
-    },
     "marketFiverrUSD": "$25-100",
     "marketFiverrBDT": "3000 TK",
-    "hostamarDiscountPct": 68
+    "hostamarDiscountPct": 95
   },
   {
     "id": "ad-copy",
@@ -248,14 +270,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-50",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "email-newsletter",
@@ -275,14 +292,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-50",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "translation",
@@ -311,14 +323,9 @@
         ]
       }
     ],
-    "tiers": {
-      "basic": 200,
-      "standard": 500,
-      "premium": 1000
-    },
     "marketFiverrUSD": "$5-40",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 67
+    "hostamarDiscountPct": 95
   },
   {
     "id": "proofreading",
@@ -338,14 +345,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 150,
-      "standard": 350,
-      "premium": 700
-    },
     "marketFiverrUSD": "$5-30",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 75
+    "hostamarDiscountPct": 95
   },
   {
     "id": "press-release",
@@ -365,14 +367,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 400,
-      "standard": 900,
-      "premium": 1800
-    },
     "marketFiverrUSD": "$20-100",
     "marketFiverrBDT": "2400 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "seo-keyword",
@@ -397,14 +394,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 250,
-      "standard": 600,
-      "premium": 1200
-    },
     "marketFiverrUSD": "$10-80",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 79
+    "hostamarDiscountPct": 95
   },
   {
     "id": "seo-meta",
@@ -424,14 +416,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$5-25",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "fb-ad",
@@ -456,14 +443,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$15-90",
     "marketFiverrBDT": "1800 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "google-ad",
@@ -488,14 +470,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$15-70",
     "marketFiverrBDT": "1800 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "email-sequence",
@@ -515,14 +492,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$25-150",
     "marketFiverrBDT": "3000 TK",
-    "hostamarDiscountPct": 60
+    "hostamarDiscountPct": 95
   },
   {
     "id": "landing-copy",
@@ -548,14 +520,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$30-200",
     "marketFiverrBDT": "3600 TK",
-    "hostamarDiscountPct": 67
+    "hostamarDiscountPct": 95
   },
   {
     "id": "competitor-analysis",
@@ -580,14 +547,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 500,
-      "standard": 1200,
-      "premium": 2500
-    },
     "marketFiverrUSD": "$20-120",
     "marketFiverrBDT": "2400 TK",
-    "hostamarDiscountPct": 79
+    "hostamarDiscountPct": 95
   },
   {
     "id": "content-strategy",
@@ -613,14 +575,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$30-200",
     "marketFiverrBDT": "3600 TK",
-    "hostamarDiscountPct": 67
+    "hostamarDiscountPct": 95
   },
   {
     "id": "youtube-seo",
@@ -640,14 +597,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-60",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "linkedin-ideas",
@@ -667,14 +619,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-50",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "brand-name",
@@ -699,14 +646,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1200,
-      "standard": 2880,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-60",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "product-demo",
@@ -732,14 +674,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$30-250",
     "marketFiverrBDT": "3600 TK",
-    "hostamarDiscountPct": 60
+    "hostamarDiscountPct": 95
   },
   {
     "id": "podcast-clip",
@@ -759,14 +696,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$15-80",
     "marketFiverrBDT": "1800 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "logo-animation",
@@ -786,14 +718,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$15-100",
     "marketFiverrBDT": "1800 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "video-upscale",
@@ -813,14 +740,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-50",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "face-swap",
@@ -840,14 +762,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-50",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "subtitles",
@@ -867,14 +784,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$5-30",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "transcription",
@@ -894,14 +806,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$5-40",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "voiceover",
@@ -935,7 +842,7 @@
       "standard": 1200,
       "premium": 2500
     },
-    "marketFiverrUSD": "$10-100",
+    "marketFiverrUSD": "$20-60",
     "marketFiverrBDT": "2400 TK",
     "hostamarDiscountPct": 79
   },
@@ -943,7 +850,7 @@
     "id": "tts-bn",
     "name": "Bangla TTS",
     "category": "Music & Audio",
-    "fiverrPrice": "$15-50",
+    "fiverrPrice": "$5-30",
     "creditCost": 15,
     "model": "elevenlabs",
     "icon": "🗣️",
@@ -957,20 +864,15 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 400,
-      "standard": 900,
-      "premium": 1800
-    },
     "marketFiverrUSD": "$5-30",
-    "marketFiverrBDT": "1800 TK",
-    "hostamarDiscountPct": 78
+    "marketFiverrBDT": "600 TK",
+    "hostamarDiscountPct": 95
   },
   {
     "id": "meditation-audiobook",
     "name": "Meditation Audio",
     "category": "Music & Audio",
-    "fiverrPrice": "$25-80",
+    "fiverrPrice": "$15-90",
     "creditCost": 40,
     "model": "elevenlabs",
     "icon": "🧘",
@@ -989,20 +891,15 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 600,
-      "standard": 1400,
-      "premium": 2800
-    },
     "marketFiverrUSD": "$15-90",
-    "marketFiverrBDT": "3000 TK",
-    "hostamarDiscountPct": 80
+    "marketFiverrBDT": "1800 TK",
+    "hostamarDiscountPct": 95
   },
   {
     "id": "audiobook-narration",
     "name": "Audiobook Narration",
     "category": "Music & Audio",
-    "fiverrPrice": "$50-300",
+    "fiverrPrice": "$50-500",
     "creditCost": 100,
     "model": "elevenlabs",
     "icon": "🎧",
@@ -1016,14 +913,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1000,
-      "standard": 2400,
-      "premium": 4800
-    },
     "marketFiverrUSD": "$50-500",
     "marketFiverrBDT": "6000 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "intro-music",
@@ -1043,14 +935,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 250,
-      "standard": 600,
-      "premium": 1200
-    },
     "marketFiverrUSD": "$10-70",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 79
+    "hostamarDiscountPct": 95
   },
   {
     "id": "jingle",
@@ -1075,14 +962,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 400,
-      "standard": 900,
-      "premium": 1800
-    },
     "marketFiverrUSD": "$25-200",
     "marketFiverrBDT": "3000 TK",
-    "hostamarDiscountPct": 87
+    "hostamarDiscountPct": 95
   },
   {
     "id": "yt-music",
@@ -1102,14 +984,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 250,
-      "standard": 600,
-      "premium": 1200
-    },
     "marketFiverrUSD": "$10-60",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 79
+    "hostamarDiscountPct": 95
   },
   {
     "id": "sfx",
@@ -1129,14 +1006,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 200,
-      "standard": 500,
-      "premium": 1000
-    },
     "marketFiverrUSD": "$5-40",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 67
+    "hostamarDiscountPct": 95
   },
   {
     "id": "podcast-edit",
@@ -1156,14 +1028,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 960,
-      "standard": 2304,
-      "premium": 4800
-    },
     "marketFiverrUSD": "$20-150",
     "marketFiverrBDT": "2400 TK",
-    "hostamarDiscountPct": 60
+    "hostamarDiscountPct": 95
   },
   {
     "id": "wp-bug",
@@ -1183,14 +1050,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 1920,
-      "standard": 4608,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-100",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "chatbot-script",
@@ -1210,14 +1072,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1920,
-      "standard": 4608,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$20-150",
     "marketFiverrBDT": "2400 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "excel-formula",
@@ -1237,14 +1094,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 100,
-      "standard": 250,
-      "premium": 500
-    },
     "marketFiverrUSD": "$5-40",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "sql-query",
@@ -1270,14 +1122,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 150,
-      "standard": 350,
-      "premium": 700
-    },
     "marketFiverrUSD": "$5-50",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 75
+    "hostamarDiscountPct": 95
   },
   {
     "id": "api-docs",
@@ -1303,14 +1150,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 600,
-      "standard": 1400,
-      "premium": 2800
-    },
     "marketFiverrUSD": "$30-200",
     "marketFiverrBDT": "3600 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "code-explain",
@@ -1330,14 +1172,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 100,
-      "standard": 250,
-      "premium": 500
-    },
     "marketFiverrUSD": "$5-40",
     "marketFiverrBDT": "600 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "website-to-app",
@@ -1357,14 +1194,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 1920,
-      "standard": 4608,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$50-500",
     "marketFiverrBDT": "6000 TK",
-    "hostamarDiscountPct": 68
+    "hostamarDiscountPct": 95
   },
   {
     "id": "market-research",
@@ -1389,14 +1221,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 600,
-      "standard": 1400,
-      "premium": 2800
-    },
     "marketFiverrUSD": "$25-250",
     "marketFiverrBDT": "3000 TK",
-    "hostamarDiscountPct": 80
+    "hostamarDiscountPct": 95
   },
   {
     "id": "job-description",
@@ -1421,14 +1248,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$10-60",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "prompt-pack",
@@ -1448,14 +1270,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 400,
-      "standard": 900,
-      "premium": 1800
-    },
     "marketFiverrUSD": "$10-80",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 67
+    "hostamarDiscountPct": 95
   },
   {
     "id": "custom-gpt-guide",
@@ -1475,14 +1292,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 500,
-      "standard": 1200,
-      "premium": 2500
-    },
     "marketFiverrUSD": "$20-150",
     "marketFiverrBDT": "2400 TK",
-    "hostamarDiscountPct": 79
+    "hostamarDiscountPct": 95
   },
   {
     "id": "chatbot-training-data",
@@ -1502,14 +1314,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 600,
-      "standard": 1400,
-      "premium": 2800
-    },
     "marketFiverrUSD": "$30-200",
     "marketFiverrBDT": "3600 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   },
   {
     "id": "content-repurpose",
@@ -1529,14 +1336,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$15-100",
     "marketFiverrBDT": "1800 TK",
-    "hostamarDiscountPct": 40
+    "hostamarDiscountPct": 95
   },
   {
     "id": "seo-audit",
@@ -1556,14 +1358,9 @@
         "type": "text"
       }
     ],
-    "tiers": {
-      "basic": 500,
-      "standard": 1200,
-      "premium": 2500
-    },
     "marketFiverrUSD": "$30-300",
     "marketFiverrBDT": "3600 TK",
-    "hostamarDiscountPct": 86
+    "hostamarDiscountPct": 95
   },
   {
     "id": "ats-optimizer",
@@ -1583,14 +1380,9 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 300,
-      "standard": 700,
-      "premium": 1400
-    },
     "marketFiverrUSD": "$10-70",
     "marketFiverrBDT": "1200 TK",
-    "hostamarDiscountPct": 75
+    "hostamarDiscountPct": 95
   },
   {
     "id": "social-automation",
@@ -1610,50 +1402,8 @@
         "type": "textarea"
       }
     ],
-    "tiers": {
-      "basic": 1440,
-      "standard": 3456,
-      "premium": 5000
-    },
     "marketFiverrUSD": "$25-200",
     "marketFiverrBDT": "3000 TK",
-    "hostamarDiscountPct": 52
-  },
-  {
-    "id": "logo-design",
-    "name": "Logo Design",
-    "category": "Graphics & Design",
-    "fiverrPrice": "$20-100",
-    "creditCost": 40,
-    "model": "flux-dev",
-    "icon": "🎨",
-    "benefit": "3 logo concepts + source files",
-    "perfectFor": "New brands",
-    "inputs": [
-      {
-        "name": "brandName",
-        "label": "Brand Name",
-        "required": true,
-        "type": "text"
-      },
-      {
-        "name": "style",
-        "label": "Style",
-        "type": "select",
-        "options": [
-          "minimalist",
-          "vintage",
-          "luxury"
-        ]
-      }
-    ],
-    "tiers": {
-      "basic": 400,
-      "standard": 900,
-      "premium": 1800
-    },
-    "marketFiverrUSD": "$20-100",
-    "marketFiverrBDT": "2400 TK",
-    "hostamarDiscountPct": 83
+    "hostamarDiscountPct": 95
   }
 ]

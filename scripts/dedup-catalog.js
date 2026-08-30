@@ -73,6 +73,23 @@ for (const item of RAW) {
 const seen = new Set()
 const deduped = unique.filter(x => { if (seen.has(x.id)) return false; seen.add(x.id); return true })
 
+// V13: curated pricing overrides for research-anchored services (idempotent across re-runs)
+const CURATED = {
+  'voiceover': { fiverrPrice: '$20-60', tiers: { basic: 500, standard: 1200, premium: 2500 } },
+  'logo-design': { fiverrPrice: '$20-100', tiers: { basic: 400, standard: 900, premium: 1800 } },
+}
+for (const j of deduped) {
+  const c = CURATED[j.id]
+  if (c) { j.fiverrPrice = c.fiverrPrice; j.tiers = c.tiers }
+  // discount from Fiverr BASIC (range lower bound × 120TK)
+  const lo = parseFloat(String(j.fiverrPrice || '$25').replace(/[$\s]/g, '').split('-')[0]) || 25
+  const fb = lo * 120
+  const our = j.tiers?.basic ?? j.creditCost ?? 100
+  j.marketFiverrUSD = j.fiverrPrice
+  j.marketFiverrBDT = `${Math.round(fb)} TK`
+  j.hostamarDiscountPct = Math.max(40, Math.min(95, Math.round((1 - our / fb) * 100)))
+}
+
 fs.writeFileSync(path.join(__dirname, '..', 'lib', 'services', 'fiverr', 'catalog-110-deduped.json'), JSON.stringify(deduped, null, 2))
 
 const report = [
