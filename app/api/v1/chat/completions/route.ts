@@ -60,24 +60,30 @@ export async function POST(req: NextRequest) {
   // FULL FREE (v11): chat is free for everyone — no pre-spend check, no 402,
   // balance never changes.
 
-  const result = await callBestModel(messages, SYSTEM_PROMPT)
+  const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined)
 
-  // Token estimate + credit spend for authed users: 1 credit per 1000 tokens, min 1
+  // PAID TOKEN BILLING (V12): market price per model + real token counts.
+  // 1cr = 1TK = 1 future HOST coin. Race-safe deduct via lib/credits.
   let usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   let creditsCharged = 0
   let creditsRemaining: number | null = null
+  let pricing: any = null
   if (authUser) {
     const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
     const completionTokens = Math.ceil((result.text?.length || 0) / 4)
     const totalTokens = promptTokens + completionTokens
-    const amount = Math.max(1, Math.ceil(totalTokens / 1000)) // 1 credit / 1k tokens, min 1
-    const spend = await deductCredits(authUser.id, -amount, 'spend', `chat ${result.model} ${totalTokens}tk`).catch(() => null)
     usage = { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: totalTokens }
+
+    const { computeCharge } = await import('@/lib/pricing/market-pricing')
+    const { credits, breakdown } = computeCharge(result.model, promptTokens, completionTokens)
+    pricing = { credits, ...breakdown }
+
+    const spend = await deductCredits(authUser.id, -credits, 'chat', `chat ${result.model} ${totalTokens}tk`).catch(() => null)
     if (spend && 'creditsRemaining' in spend) {
-      creditsCharged = amount
+      creditsCharged = credits
       creditsRemaining = (spend as any).creditsRemaining
     } else if (spend && (spend as any).error === 'INSUFFICIENT_CREDITS') {
-      // Response already produced by free chain — deliver it but flag the balance.
+      // Deliver the answer but flag the balance (never silently lose a reply)
       creditsCharged = 0
       creditsRemaining = (spend as any).balance ?? null
     }
@@ -102,6 +108,7 @@ export async function POST(req: NextRequest) {
     ],
     usage,
     credits: authUser ? { charged: creditsCharged, remaining: creditsRemaining } : undefined,
+    pricing: authUser ? pricing : undefined,
     ok: true,
   })
 }

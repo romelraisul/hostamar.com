@@ -25,11 +25,11 @@ export async function POST(req: NextRequest) {
   if (!r.ok) {
     if (r.status === 402) {
       return NextResponse.json(
-        { error: 'INSUFFICIENT_CREDITS', needed: (r as any).needed ?? null, balance: (r as any).balance ?? null, bkash: '01822417463', topUp: '/dashboard/payment', plans: { Starter: 599, Pro: 1299, Business: 2999 } },
+        { error: 'INSUFFICIENT_CREDITS', needed: (r as any).needed ?? null, balance: (r as any).balance ?? null, bkash: '01822417463', topUp: '/dashboard/payment', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } },
         { status: 402 },
       )
     }
     return NextResponse.json({ error: r.error }, { status: r.status })
   }
-  return NextResponse.json({ success: true, ...r, isFree: false })
+  return NextResponse.json({ success: true, ...r, isFree: false, coinNote: '1cr = 1TK = 1 ভবিষ্যৎ HOST কয়েন' })
 }

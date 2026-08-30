@@ -17,24 +17,34 @@ export type ChatOsAction =
   | 'preview_session'
 
 export const ACTION_COSTS: Record<string, number> = {
-  // FULL FREE (v11): every Chat OS action is free — usage still logged.
-  chat: 0, terminal: 0, file_list: 0, file_read: 0, file_save: 0,
-  git_status: 0, git_diff: 0, git_commit: 0, mcp_list: 0, mcp_call: 0,
-  design_click: 0, plugin_list: 0, plugin_install: 0, task_list: 0, task_create: 0,
-  preview_session: 0,
+  // PAID (V12): base costs; chat charges real token price on top.
+  chat: 0, // billed dynamically by market token price inside the action
+  terminal: 1, file_list: 0, file_read: 0, file_save: 1,
+  git_status: 0, git_diff: 0, git_commit: 1, mcp_list: 0, mcp_call: 0,
+  design_click: 1, plugin_list: 0, plugin_install: 5, task_list: 0, task_create: 2,
+  preview_session: 5,
 }
 
 type Bill = { ok: true; remaining: number } | { ok: false; needed: number; balance: number; bkash: string; plans: any }
 
 async function bill(userId: string, cost: number): Promise<Bill> {
-  // FULL FREE (v11): always succeeds; keep a raw-SQL audit row (amount 0).
-  try {
-    await prisma.$executeRaw`
-      INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
-      VALUES (${'fcs_' + Date.now().toString(36)}, ${userId}, 0, 'chatos-free', ${'chatos usage (free)'}, 6000)
-    `.catch(() => null)
-  } catch { /* audit only */ }
-  return { ok: true, remaining: -1 }
+  if (cost === 0) return { ok: true, remaining: -1 }
+  const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
+  const balance = Number(c?.credits ?? 0)
+  if (balance < cost) {
+    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } }
+  }
+  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${cost} WHERE id = ${userId} AND credits >= ${cost}`
+  if (Number(dec) === 0) {
+    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } }
+  }
+  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${userId} LIMIT 1`
+  const remaining = Number(after?.[0]?.credits ?? 0)
+  await prisma.$executeRaw`
+    INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
+    VALUES (${'osx_' + Date.now().toString(36)}, ${userId}, ${-cost}, 'chatos', ${'chatos action'}, ${Math.round(remaining)})
+  `.catch(() => null)
+  return { ok: true, remaining }
 }
 
 // ── Virtual project FS (B2-backed, sandboxed) ─────────────────────────────
@@ -173,18 +183,20 @@ export async function runAction(userId: string, action: string, args: any = {}):
   switch (action) {
     case 'chat': {
       const history = Array.isArray(args.history) ? args.history.slice(-8) : []
+      const selected = args.model ? String(args.model) : undefined
       const { text, model, provider } = await callBestModel(
         [...history, { role: 'user', content: String(args.message || '').slice(0, 4000) }],
         'You are Hostamar Chat OS — a Claude-first coding assistant inside an Orca-style IDE. Bangla+English, production-grade answers.',
+        selected,
       )
-      // usage-based add-on: 1cr per 1000 tokens, min already charged above
-      const tokens = Math.ceil((String(args.message || '').length + text.length) / 4)
-      const extra = Math.max(0, Math.ceil(tokens / 1000) - 1)
-      if (extra > 0) {
-        const b2 = await bill(userId, extra)
-        if (b2.ok) remaining = b2.remaining
-      }
-      return { ok: true, result: { reply: text, model, provider }, remaining }
+      // PAID TOKEN BILLING (V12): market price per model, real token counts.
+      const inputTokens = Math.ceil(String(args.message || '').length / 4)
+      const outputTokens = Math.ceil(text.length / 4)
+      const { computeCharge } = await import('@/lib/pricing/market-pricing')
+      const { credits, breakdown } = computeCharge(model, inputTokens, outputTokens)
+      const b2 = await bill(userId, credits)
+      if (b2.ok) remaining = b2.remaining
+      return { ok: true, result: { reply: text, model, provider, pricing: { credits, ...breakdown } }, remaining }
     }
     case 'terminal': {
       const out = await runTerminal(userId, String(args.command || 'help'))

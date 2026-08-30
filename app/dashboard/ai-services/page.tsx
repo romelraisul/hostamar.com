@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
  * 📌 pinned-chat operation:
  *   Activate (creditCost cr) → Material Collection Modal (dynamic inputs)
  *   → pinned chat created → AI asks missing materials → generating
- *   → delivered → free unlimited revisions in the SAME thread forever.
+ *   → delivered → revisions cost the same as the product in the SAME thread forever.
  * Data: /api/ai-services/catalog (merged deduped), /api/ai-services/chats,
  *       /api/ai-services/chat/[chatId]/messages.
  */
@@ -20,6 +20,7 @@ type Svc = {
   id: string; name: string; nameBn: string; category: string; creditCost: number
   dollarRange?: string | null; benefit: string; benefitBn: string; perfectFor: string
   model?: string | null; icon: string; inputs: Field[]
+  tiers?: { basic: number; standard: number; premium: number }
 }
 type PinnedChat = { chatId: string; orderId: string; title: string; status: string; creditCost: number; createdAt: string; lastMessage: string }
 type Msg = { id: string; role: string; content: string; creditCost?: number | null; createdAt?: string }
@@ -33,6 +34,17 @@ const CAT_COLORS: Record<string, string> = {
   'Professional': '#1e2d4a', 'Content Creator': '#0E7C3A',
 }
 
+const TIERS = [
+  { v: 'basic', n: 'Basic' },
+  { v: 'standard', n: 'Standard' },
+  { v: 'premium', n: 'Premium' },
+] as const
+type Tier = 'basic' | 'standard' | 'premium'
+
+function tierPrice(s: any, tier: Tier = 'basic'): number {
+  return s?.tiers?.[tier] ?? s?.creditCost ?? 100
+}
+
 export default function AiServicesPage() {
   const [services, setServices] = useState<Svc[]>([])
   const [pinned, setPinned] = useState<PinnedChat[]>([])
@@ -43,6 +55,7 @@ export default function AiServicesPage() {
 
   // modal + chat state
   const [modal, setModal] = useState<Svc | null>(null)
+  const [tier, setTier] = useState<Tier>('basic')
   const [form, setForm] = useState<Record<string, string>>({})
   const [activating, setActivating] = useState(false)
   const [activeChat, setActiveChat] = useState<PinnedChat | null>(null)
@@ -90,7 +103,7 @@ export default function AiServicesPage() {
        s.benefit.toLowerCase().includes(needle) || s.benefitBn.includes(needle)))
   }, [services, q, cat])
 
-  const openModal = (s: Svc) => { setModal(s); setForm({}); setErr('') }
+  const openModal = (s: Svc) => { setModal(s); setTier('basic'); setForm({}); setErr('') }
 
   const activate = async () => {
     if (!modal) return
@@ -105,7 +118,7 @@ export default function AiServicesPage() {
       const res = await fetch('/api/ai-services/activate', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ serviceId: modal.id, inputs: form }),
+        body: JSON.stringify({ serviceId: modal.id, tier, inputs: { ...form, tier } }),
       })
       const d = await res.json()
       if (res.status === 401) { window.location.href = '/login'; return }
@@ -258,12 +271,12 @@ export default function AiServicesPage() {
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <div className="text-[10px] leading-tight">
                     <p className="text-zinc-400 line-through">Fiverr {s.dollarRange || '$20-50'}</p>
-                    <p className="font-bold" style={{ color: GREEN }}>FREE</p>
+                    <p className="font-bold" style={{ color: GREEN }}>{tierPrice(s, tier)}cr = {tierPrice(s, tier)}TK</p>
                   </div>
-                  <button onClick={() => openModal(s)}
+                  <button onClick={() => openModal(s)} disabled={credits < tierPrice(s, 'basic')}
                     className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold text-white disabled:bg-zinc-300"
-                    style={{ background: credits < s.creditCost ? undefined : GREEN }}>
-                    FREE • Activate
+                    style={{ background: credits < tierPrice(s, 'basic') ? undefined : GREEN }}>
+                    {tierPrice(s, 'basic')}cr • Activate
                   </button>
                 </div>
               </div>
@@ -322,7 +335,7 @@ export default function AiServicesPage() {
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
                 rows={1}
-                placeholder={activeChat.status === 'delivered' ? 'রিভিশন চান (ফ্রি) — যেমন: make it more minimal green #0E7C3A…' : 'উত্তর দিন / ম্যাটেরিয়াল দিন…'}
+                placeholder={activeChat.status === 'delivered' ? 'রিভিশন চান (প্রোডাক্টের সমান খরচ) — যেমন: make it more minimal green #0E7C3A…' : 'উত্তর দিন / ম্যাটেরিয়াল দিন…'}
                 className="max-h-24 min-h-[38px] flex-1 resize-none rounded-xl border px-3 py-2 text-xs focus:border-[#0E7C3A] focus:outline-none"
               />
               <button onClick={send} disabled={chatBusy || !chatInput.trim()}
@@ -374,8 +387,17 @@ export default function AiServicesPage() {
 
             {err && <p className="mt-3 rounded-xl bg-red-50 p-2 text-xs text-red-600">{err}</p>}
 
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {TIERS.map(t => (
+                <button key={t.v} type="button" onClick={() => setTier(t.v)}
+                  className={`rounded-xl border p-2 text-center text-[11px] ${tier === t.v ? 'border-[#0E7C3A] bg-[#ECFDF5] font-bold' : ''}`}
+                  style={tier === t.v ? { color: GREEN } : undefined}>
+                  {t.n}<br />{tierPrice(modal, t.v)}cr
+                </button>
+              ))}
+            </div>
             <div className="mt-4 rounded-xl bg-[#ECFDF5] p-2.5 text-[11px]" style={{ color: GREEN }}>
-              Cost: FREE • Unlimited free testing — no restriction
+              Cost {tierPrice(modal, tier)}cr ({tierPrice(modal, tier)}TK) • You have {credits}cr • After: {Math.max(0, credits - tierPrice(modal, tier))}cr — 1cr = 1TK = 1 ভবিষ্যৎ HOST কয়েন
             </div>
 
             <div className="mt-4 flex gap-2">
