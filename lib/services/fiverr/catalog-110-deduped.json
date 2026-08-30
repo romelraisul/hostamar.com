@@ -21,7 +21,15 @@
         "label": "Pack Size",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 500,
+      "standard": 1200,
+      "premium": 2500
+    },
+    "marketFiverrUSD": "$25-150",
+    "marketFiverrBDT": "18000 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "book-cover",
@@ -46,7 +54,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 400,
+      "standard": 900,
+      "premium": 1800
+    },
+    "marketFiverrUSD": "$20-100",
+    "marketFiverrBDT": "12000 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "t-shirt-design",
@@ -70,7 +86,15 @@
         "label": "Text on shirt",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 300,
+      "standard": 700,
+      "premium": 1400
+    },
+    "marketFiverrUSD": "$10-50",
+    "marketFiverrBDT": "6000 TK",
+    "hostamarDiscountPct": 95
   },
   {
     "id": "product-mockup",
@@ -94,7 +118,15 @@
         "label": "Setting",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 300,
+      "standard": 700,
+      "premium": 1400
+    },
+    "marketFiverrUSD": "$10-40",
+    "marketFiverrBDT": "4800 TK",
+    "hostamarDiscountPct": 94
   },
   {
     "id": "instagram-shop",
@@ -118,7 +150,15 @@
         "label": "Product list",
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 960,
+      "standard": 2304,
+      "premium": 4800
+    },
+    "marketFiverrUSD": "$15-70",
+    "marketFiverrBDT": "8400 TK",
+    "hostamarDiscountPct": 89
   },
   {
     "id": "sale-graphics",
@@ -142,7 +182,15 @@
         "label": "Discount %",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 960,
+      "standard": 2304,
+      "premium": 4800
+    },
+    "marketFiverrUSD": "$10-35",
+    "marketFiverrBDT": "4200 TK",
+    "hostamarDiscountPct": 77
   },
   {
     "id": "product-photoshoot",
@@ -166,7 +214,15 @@
         "label": "Mood",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 960,
+      "standard": 2304,
+      "premium": 4800
+    },
+    "marketFiverrUSD": "$25-100",
+    "marketFiverrBDT": "12000 TK",
+    "hostamarDiscountPct": 92
   },
   {
     "id": "ad-copy",
@@ -191,7 +247,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-50",
+    "marketFiverrBDT": "6000 TK",
+    "hostamarDiscountPct": 80
   },
   {
     "id": "email-newsletter",
@@ -210,7 +274,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-50",
+    "marketFiverrBDT": "6000 TK",
+    "hostamarDiscountPct": 80
   },
   {
     "id": "translation",
@@ -238,7 +310,15 @@
           "BN→EN"
         ]
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 200,
+      "standard": 500,
+      "premium": 1000
+    },
+    "marketFiverrUSD": "$5-40",
+    "marketFiverrBDT": "4800 TK",
+    "hostamarDiscountPct": 96
   },
   {
     "id": "proofreading",
@@ -257,7 +337,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 150,
+      "standard": 350,
+      "premium": 700
+    },
+    "marketFiverrUSD": "$5-30",
+    "marketFiverrBDT": "3600 TK",
+    "hostamarDiscountPct": 96
   },
   {
     "id": "press-release",
@@ -276,7 +364,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 400,
+      "standard": 900,
+      "premium": 1800
+    },
+    "marketFiverrUSD": "$20-100",
+    "marketFiverrBDT": "12000 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "seo-keyword",
@@ -300,7 +396,15 @@
         "label": "Market",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 250,
+      "standard": 600,
+      "premium": 1200
+    },
+    "marketFiverrUSD": "$10-80",
+    "marketFiverrBDT": "9600 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "seo-meta",
@@ -319,7 +423,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$5-25",
+    "marketFiverrBDT": "3000 TK",
+    "hostamarDiscountPct": 60
   },
   {
     "id": "fb-ad",
@@ -343,7 +455,15 @@
         "label": "Budget",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$15-90",
+    "marketFiverrBDT": "10800 TK",
+    "hostamarDiscountPct": 89
   },
   {
     "id": "google-ad",
@@ -367,7 +487,15 @@
         "label": "Keywords",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$15-70",
+    "marketFiverrBDT": "8400 TK",
+    "hostamarDiscountPct": 86
   },
   {
     "id": "email-sequence",
@@ -386,7 +514,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$25-150",
+    "marketFiverrBDT": "18000 TK",
+    "hostamarDiscountPct": 93
   },
   {
     "id": "landing-copy",
@@ -411,7 +547,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$30-200",
+    "marketFiverrBDT": "24000 TK",
+    "hostamarDiscountPct": 95
   },
   {
     "id": "competitor-analysis",
@@ -435,7 +579,15 @@
         "label": "Industry",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 500,
+      "standard": 1200,
+      "premium": 2500
+    },
+    "marketFiverrUSD": "$20-120",
+    "marketFiverrBDT": "14400 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "content-strategy",
@@ -460,7 +612,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$30-200",
+    "marketFiverrBDT": "24000 TK",
+    "hostamarDiscountPct": 95
   },
   {
     "id": "youtube-seo",
@@ -479,7 +639,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-60",
+    "marketFiverrBDT": "7200 TK",
+    "hostamarDiscountPct": 83
   },
   {
     "id": "linkedin-ideas",
@@ -498,7 +666,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-50",
+    "marketFiverrBDT": "6000 TK",
+    "hostamarDiscountPct": 80
   },
   {
     "id": "brand-name",
@@ -522,7 +698,15 @@
         "label": "Vibe",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1200,
+      "standard": 2880,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-60",
+    "marketFiverrBDT": "7200 TK",
+    "hostamarDiscountPct": 83
   },
   {
     "id": "product-demo",
@@ -547,7 +731,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$30-250",
+    "marketFiverrBDT": "30000 TK",
+    "hostamarDiscountPct": 95
   },
   {
     "id": "podcast-clip",
@@ -566,7 +758,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$15-80",
+    "marketFiverrBDT": "9600 TK",
+    "hostamarDiscountPct": 85
   },
   {
     "id": "logo-animation",
@@ -585,7 +785,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$15-100",
+    "marketFiverrBDT": "12000 TK",
+    "hostamarDiscountPct": 88
   },
   {
     "id": "video-upscale",
@@ -604,7 +812,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-50",
+    "marketFiverrBDT": "6000 TK",
+    "hostamarDiscountPct": 76
   },
   {
     "id": "face-swap",
@@ -623,7 +839,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-50",
+    "marketFiverrBDT": "6000 TK",
+    "hostamarDiscountPct": 76
   },
   {
     "id": "subtitles",
@@ -642,7 +866,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$5-30",
+    "marketFiverrBDT": "3600 TK",
+    "hostamarDiscountPct": 60
   },
   {
     "id": "transcription",
@@ -661,7 +893,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$5-40",
+    "marketFiverrBDT": "4800 TK",
+    "hostamarDiscountPct": 70
   },
   {
     "id": "voiceover",
@@ -689,7 +929,15 @@
           "female"
         ]
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 500,
+      "standard": 1200,
+      "premium": 2500
+    },
+    "marketFiverrUSD": "$10-100",
+    "marketFiverrBDT": "12000 TK",
+    "hostamarDiscountPct": 96
   },
   {
     "id": "tts-bn",
@@ -708,7 +956,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 400,
+      "standard": 900,
+      "premium": 1800
+    },
+    "marketFiverrUSD": "$5-30",
+    "marketFiverrBDT": "3600 TK",
+    "hostamarDiscountPct": 89
   },
   {
     "id": "meditation-audiobook",
@@ -732,7 +988,15 @@
         "label": "Minutes",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 600,
+      "standard": 1400,
+      "premium": 2800
+    },
+    "marketFiverrUSD": "$15-90",
+    "marketFiverrBDT": "10800 TK",
+    "hostamarDiscountPct": 94
   },
   {
     "id": "audiobook-narration",
@@ -751,7 +1015,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1000,
+      "standard": 2400,
+      "premium": 4800
+    },
+    "marketFiverrUSD": "$50-500",
+    "marketFiverrBDT": "60000 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "intro-music",
@@ -770,7 +1042,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 250,
+      "standard": 600,
+      "premium": 1200
+    },
+    "marketFiverrUSD": "$10-70",
+    "marketFiverrBDT": "8400 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "jingle",
@@ -794,7 +1074,15 @@
         "label": "Style",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 400,
+      "standard": 900,
+      "premium": 1800
+    },
+    "marketFiverrUSD": "$25-200",
+    "marketFiverrBDT": "24000 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "yt-music",
@@ -813,7 +1101,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 250,
+      "standard": 600,
+      "premium": 1200
+    },
+    "marketFiverrUSD": "$10-60",
+    "marketFiverrBDT": "7200 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "sfx",
@@ -832,7 +1128,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 200,
+      "standard": 500,
+      "premium": 1000
+    },
+    "marketFiverrUSD": "$5-40",
+    "marketFiverrBDT": "4800 TK",
+    "hostamarDiscountPct": 96
   },
   {
     "id": "podcast-edit",
@@ -851,7 +1155,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 960,
+      "standard": 2304,
+      "premium": 4800
+    },
+    "marketFiverrUSD": "$20-150",
+    "marketFiverrBDT": "18000 TK",
+    "hostamarDiscountPct": 95
   },
   {
     "id": "wp-bug",
@@ -870,7 +1182,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1920,
+      "standard": 4608,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-100",
+    "marketFiverrBDT": "12000 TK",
+    "hostamarDiscountPct": 84
   },
   {
     "id": "chatbot-script",
@@ -889,7 +1209,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1920,
+      "standard": 4608,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$20-150",
+    "marketFiverrBDT": "18000 TK",
+    "hostamarDiscountPct": 89
   },
   {
     "id": "excel-formula",
@@ -908,7 +1236,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 100,
+      "standard": 250,
+      "premium": 500
+    },
+    "marketFiverrUSD": "$5-40",
+    "marketFiverrBDT": "4800 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "sql-query",
@@ -933,7 +1269,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 150,
+      "standard": 350,
+      "premium": 700
+    },
+    "marketFiverrUSD": "$5-50",
+    "marketFiverrBDT": "6000 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "api-docs",
@@ -958,7 +1302,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 600,
+      "standard": 1400,
+      "premium": 2800
+    },
+    "marketFiverrUSD": "$30-200",
+    "marketFiverrBDT": "24000 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "code-explain",
@@ -977,7 +1329,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 100,
+      "standard": 250,
+      "premium": 500
+    },
+    "marketFiverrUSD": "$5-40",
+    "marketFiverrBDT": "4800 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "website-to-app",
@@ -996,7 +1356,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1920,
+      "standard": 4608,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$50-500",
+    "marketFiverrBDT": "60000 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "market-research",
@@ -1020,7 +1388,15 @@
         "label": "Region",
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 600,
+      "standard": 1400,
+      "premium": 2800
+    },
+    "marketFiverrUSD": "$25-250",
+    "marketFiverrBDT": "30000 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "job-description",
@@ -1044,7 +1420,15 @@
         "label": "Requirements",
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$10-60",
+    "marketFiverrBDT": "7200 TK",
+    "hostamarDiscountPct": 80
   },
   {
     "id": "prompt-pack",
@@ -1063,7 +1447,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 400,
+      "standard": 900,
+      "premium": 1800
+    },
+    "marketFiverrUSD": "$10-80",
+    "marketFiverrBDT": "9600 TK",
+    "hostamarDiscountPct": 96
   },
   {
     "id": "custom-gpt-guide",
@@ -1082,7 +1474,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 500,
+      "standard": 1200,
+      "premium": 2500
+    },
+    "marketFiverrUSD": "$20-150",
+    "marketFiverrBDT": "18000 TK",
+    "hostamarDiscountPct": 97
   },
   {
     "id": "chatbot-training-data",
@@ -1101,7 +1501,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 600,
+      "standard": 1400,
+      "premium": 2800
+    },
+    "marketFiverrUSD": "$30-200",
+    "marketFiverrBDT": "24000 TK",
+    "hostamarDiscountPct": 98
   },
   {
     "id": "content-repurpose",
@@ -1120,7 +1528,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$15-100",
+    "marketFiverrBDT": "12000 TK",
+    "hostamarDiscountPct": 88
   },
   {
     "id": "seo-audit",
@@ -1139,7 +1555,15 @@
         "required": true,
         "type": "text"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 500,
+      "standard": 1200,
+      "premium": 2500
+    },
+    "marketFiverrUSD": "$30-300",
+    "marketFiverrBDT": "36000 TK",
+    "hostamarDiscountPct": 99
   },
   {
     "id": "ats-optimizer",
@@ -1158,7 +1582,15 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 300,
+      "standard": 700,
+      "premium": 1400
+    },
+    "marketFiverrUSD": "$10-70",
+    "marketFiverrBDT": "8400 TK",
+    "hostamarDiscountPct": 96
   },
   {
     "id": "social-automation",
@@ -1177,6 +1609,14 @@
         "required": true,
         "type": "textarea"
       }
-    ]
+    ],
+    "tiers": {
+      "basic": 1440,
+      "standard": 3456,
+      "premium": 5000
+    },
+    "marketFiverrUSD": "$25-200",
+    "marketFiverrBDT": "24000 TK",
+    "hostamarDiscountPct": 94
   }
 ]

@@ -1,0 +1,23 @@
+/** Orca ADE client catalog (Bring your own Agent / Subscription). */
+export const CLIENTS = [
+  { id: 'claude-code', name: 'Claude Code', vendor: 'Anthropic', note: 'Terminal-first coding agent' },
+  { id: 'codex', name: 'Codex', vendor: 'OpenAI', note: 'Cloud + CLI coding agent' },
+  { id: 'opencode', name: 'OpenCode', vendor: 'Open', note: 'Open-source agent' },
+  { id: 'grok', name: 'Grok', vendor: 'xAI', note: 'xAI coding agent' },
+  { id: 'gemini', name: 'Gemini CLI', vendor: 'Google', note: 'Google agent' },
+  { id: 'cursor', name: 'Cursor', vendor: 'Anysphere', note: 'AI-first IDE' },
+  { id: 'copilot', name: 'GitHub Copilot', vendor: 'GitHub', note: 'IDE assistant' },
+  { id: 'amp', name: 'Amp', vendor: 'Sourcegraph', note: 'Agentic assistant' },
+  { id: 'openclaude', name: 'OpenClaude', vendor: 'Open', note: 'Open Claude runtime' },
+  { id: 'pi', name: 'Pi', vendor: 'Inflection', note: 'Personal agent' },
+  { id: 'hermes', name: 'Hermes Agent', vendor: 'Nous Research', note: 'Nous agent' },
+  { id: 'goose', name: 'Goose', vendor: 'Block', note: 'Open agent' },
+  { id: 'cline', name: 'Cline', vendor: 'Open', note: 'VS Code agent' },
+  { id: 'codebuff', name: 'Codebuff', vendor: 'Codebuff', note: 'Terminal agent' },
+  { id: 'kilocode', name: 'Kilocode', vendor: 'Kilo', note: 'Gateway agent (built-in)' },
+  { id: 'kimi', name: 'Kimi', vendor: 'Moonshot', note: 'Long-context agent' },
+  { id: 'kiro', name: 'Kiro', vendor: 'AWS', note: 'Spec-driven agent' },
+  { id: 'qwen-code', name: 'Qwen Code', vendor: 'Alibaba', note: 'Qwen agent' },
+  { id: 'rovo', name: 'Rovo Dev', vendor: 'Atlassian', note: 'Dev agent' },
+  { id: 'hostamar', name: 'Hostamar Models', vendor: 'Hostamar', note: 'Our 120-model gateway (built-in)' },
+] as const

@@ -12,6 +12,8 @@ export type FiverrJob = {
   id: string; name: string; category: string; fiverrPrice: string
   creditCost: number; model: string; icon: string; benefit: string; perfectFor: string
   inputs: Array<{ name: string; label: string; required?: boolean; type: string; options?: string[] }>
+  tiers?: { basic: number; standard: number; premium: number }
+  marketFiverrUSD?: string; marketFiverrBDT?: string; hostamarDiscountPct?: number
 }
 
 /** Ensure the 55 new unique Fiverr jobs exist in ServiceCatalog (idempotent). */
@@ -19,6 +21,16 @@ export async function ensureFiverrCatalog(): Promise<number> {
   const jobs = FIVERR_NEW as FiverrJob[]
   let created = 0
   for (const j of jobs) {
+    // PATCH existing rows with V12 tier pricing if missing (idempotent)
+    try {
+      const ex = await prisma.serviceCatalog.findUnique({ where: { id: j.id } })
+      if (ex && !(ex.inputs as any)?.tiers && j.tiers) {
+        await prisma.serviceCatalog.update({
+          where: { id: j.id },
+          data: { inputs: { ...(ex.inputs as any), tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: j.hostamarDiscountPct } },
+        })
+      }
+    } catch {}
     const exists = await prisma.serviceCatalog.findUnique({ where: { id: j.id } }).catch(() => null)
     if (exists) continue
     try {
@@ -37,7 +49,7 @@ export async function ensureFiverrCatalog(): Promise<number> {
           perfectForBn: j.perfectFor,
           promptTemplate: `You are delivering the "${j.name}" service (model target: ${j.model}) for {{brandName}}. Requirements: {{requirements}}. Produce the complete, production-grade deliverable.`,
           model: j.model,
-          inputs: { fields: j.inputs },
+          inputs: { fields: j.inputs, tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: j.hostamarDiscountPct },
           icon: j.icon,
           isActive: true,
         },
@@ -99,11 +111,23 @@ export async function activateService(
 
   const service = await prisma.serviceCatalog.findUnique({ where: { id: serviceId } }).catch(() => null)
   if (!service) return { ok: false, error: 'SERVICE_NOT_FOUND', status: 404 }
-  const creditCost = service.creditCost
 
-  // FULL FREE (v11): no balance check, no deduction, no 402 — balance stays 6000.
+  // PAID MARKET PRICING (V12): tier pricing from the service inputs (stored
+  // tiers) or fallback to creditCost. 1cr = 1TK.
+  const tier = (inputs as any)?.tier || 'basic'
+  const tierMap = ((service.inputs as any)?.tiers) || { basic: service.creditCost, standard: Math.round(service.creditCost*2.4), premium: service.creditCost*5 }
+  const creditCost = Number(tierMap[tier] ?? service.creditCost)
+
+  // PAID (V12): race-safe deduct; 402+bKash when short. Bonus 6000 then buy.
   const customer = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
-  const creditsRemaining = Number(customer?.credits ?? 6000)
+  const balance = Number(customer?.credits ?? 0)
+  if (balance < creditCost) {
+    return { ok: false, error: 'INSUFFICIENT_CREDITS', status: 402, needed: creditCost, balance } as const
+  }
+  const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${creditCost} WHERE id = ${user.id} AND credits >= ${creditCost}`
+  if (Number(dec) === 0) return { ok: false, error: 'INSUFFICIENT_CREDITS', status: 402 } as const
+  const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${user.id} LIMIT 1`
+  const creditsRemaining = Number(after?.[0]?.credits ?? balance - creditCost)
 
   const missingFields = findMissingFields(service, inputs)
   const provided = Object.keys(inputs || {}).filter(k => String(inputs[k] ?? '').trim() !== '')
@@ -227,8 +251,21 @@ export async function pinnedChatMessage(
       data: { inputs: inputs as any, missingFields: stillMissing, status: status === 'delivered' ? 'delivered' : 'collecting_material' },
     }).catch(() => {})
   } else if (status === 'delivered') {
-    // REVISION — FULL FREE (v11): unlimited free revisions, no check, no
-    // deduction. Same permanent thread.
+    // REVISION — PAID (V12): costs the SAME as the product (order.creditCost).
+    const revCost = order.creditCost
+    const cust = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
+    if (Number(cust?.credits ?? 0) < revCost) {
+      aiMessage = `রিভিশনের জন্য ${revCost}cr লাগবে (প্রোডাক্টের সমান) — ব্যালেন্স কম। bKash 01822417463 এ টপ-আপ করুন।`
+      await prisma.serviceChatMessage.create({ data: { chatId, role: 'ai', content: aiMessage } }).catch(() => {})
+      return { ok: true, aiMessage, status }
+    }
+    const rev: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${revCost} WHERE id = ${user.id} AND credits >= ${revCost}`
+    if (Number(rev) === 0) {
+      aiMessage = `রিভিশনের জন্য ${revCost}cr লাগবে (প্রোডাক্টের সমান) — ব্যালেন্স কম। bKash 01822417463 এ টপ-আপ করুন।`
+      await prisma.serviceChatMessage.create({ data: { chatId, role: 'ai', content: aiMessage } }).catch(() => {})
+      return { ok: true, aiMessage, status }
+    }
+    charged = revCost
     status = 'revising'
     await prisma.serviceOrder.update({ where: { id: order.id }, data: { status } }).catch(() => {})
     aiMessage = await generateDeliverable(user.id, chatId, chat.orderId, service, inputs, content)
