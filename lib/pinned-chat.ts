@@ -35,11 +35,16 @@ export async function ensureFiverrCatalog(): Promise<number> {
     // PATCH existing rows with V12 tier pricing if missing (idempotent)
     try {
       const ex = await prisma.serviceCatalog.findUnique({ where: { id: j.id } })
-      if (ex && !(ex.inputs as any)?.tiers && j.tiers) {
-        await prisma.serviceCatalog.update({
-          where: { id: j.id },
-          data: { inputs: { ...(ex.inputs as any), tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: j.hostamarDiscountPct } },
-        })
+      if (ex && j.tiers) {
+        const cur = ex.inputs as any
+        const wantPct = j.hostamarDiscountPct ?? fiverrBasicDiscount(j)
+        const stale = !cur?.tiers || cur?.hostamarDiscountPct !== wantPct || cur?.marketFiverrBDT !== j.marketFiverrBDT
+        if (stale) {
+          await prisma.serviceCatalog.update({
+            where: { id: j.id },
+            data: { inputs: { ...cur, tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: wantPct } },
+          })
+        }
       }
     } catch {}
     const exists = await prisma.serviceCatalog.findUnique({ where: { id: j.id } }).catch(() => null)
