@@ -21,6 +21,9 @@ export default function Navbar() {
             </span>
           </Link>
           <div className="hidden items-center gap-7 text-[14px] font-medium text-zinc-600 md:flex">
+            <Link href="/docs" className="bangla transition font-medium hover:text-[#0E7C3A]">
+              {isBengali ? 'ডকস' : 'Docs'}
+            </Link>
             <Link href="/prompts" className="bangla transition hover:text-[#18181B]">
               {isBengali ? 'টেমপ্লেট' : 'Templates'}
             </Link>
