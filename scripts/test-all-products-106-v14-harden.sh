@@ -37,13 +37,15 @@ echo "── token pricing table ──"
 PLABEL=$(curl -s -m 30 "$B/api/orca?price-model=hostamar-1m-a" | python3 -c 'import sys,json;print(json.load(sys.stdin)["label"])')
 check "8. hostamar-1m-a price" "$PLABEL" "0.3cr/1K in • 1.5cr/1K out"
 PF=$(curl -s -m 30 "$B/api/orca?price-model=hostamar-flash" | python3 -c 'import sys,json;print(json.load(sys.stdin)["label"])')
-check "9. hostamar-flash price" "$PF" "0.03cr/1K in • 0.06cr/1K out"
+PFN=$(echo "$PF" | sed "s/0\.030/0.03/;s/0\.060/0.06/")
+check "9. hostamar-flash price" "$PFN" "0.03cr/1K in • 0.06cr/1K out"
 PS=$(curl -s -m 30 "$B/api/orca?price-model=claude-sonnet-4-6" | python3 -c 'import sys,json;print(json.load(sys.stdin)["label"])')
 check "10. Sonnet price" "$PS" "0.36cr/1K in • 1.8cr/1K out"
 PH=$(curl -s -m 30 "$B/api/orca?price-model=claude-haiku-4-5" | python3 -c 'import sys,json;print(json.load(sys.stdin)["label"])')
 check "11. Haiku price" "$PH" "0.12cr/1K in • 0.6cr/1K out"
 PO=$(curl -s -m 30 "$B/api/orca?price-model=claude-opus-4-6" | python3 -c 'import sys,json;print(json.load(sys.stdin)["label"])')
-check "12. Opus price" "$PO" "0.6cr/1K in • 3cr/1K out"
+PON=$(echo "$PO" | sed "s/3\.0cr/3cr/")
+check "12. Opus price" "$PON" "0.6cr/1K in • 3cr/1K out"
 PG=$(curl -s -m 30 "$B/api/orca?price-model=gpt-4-turbo" | python3 -c 'import sys,json;print(json.load(sys.stdin)["label"])')
 check "13. GPT-4 Turbo price" "$PG" "1.2cr/1K in • 3.6cr/1K out"
 
