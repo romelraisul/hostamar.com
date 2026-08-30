@@ -16,6 +16,17 @@ export type FiverrJob = {
   marketFiverrUSD?: string; marketFiverrBDT?: string; hostamarDiscountPct?: number
 }
 
+/** Badge discount vs FIVERR BASIC tier price (not the avg range).
+ *  Fiverr basic = lower bound of the range × 120TK; Hostamar basic = tiers.basic.
+ *  e.g. voiceover: Fiverr basic $20 = 2400TK vs our 500 → 79% cheaper. */
+function fiverrBasicDiscount(j: FiverrJob): number {
+  const range = String(j.fiverrPrice || '$25').replace(/[$\s]/g, '');
+  const lo = parseFloat(range.split('-')[0] || '25') || 25;
+  const fiverrBasicBDT = lo * 120;
+  const ourBasic = j.tiers?.basic ?? j.creditCost ?? 100;
+  return Math.max(40, Math.min(95, Math.round((1 - ourBasic / fiverrBasicBDT) * 100)));
+}
+
 /** Ensure the 55 new unique Fiverr jobs exist in ServiceCatalog (idempotent). */
 export async function ensureFiverrCatalog(): Promise<number> {
   const jobs = FIVERR_NEW as FiverrJob[]
@@ -49,7 +60,7 @@ export async function ensureFiverrCatalog(): Promise<number> {
           perfectForBn: j.perfectFor,
           promptTemplate: `You are delivering the "${j.name}" service (model target: ${j.model}) for {{brandName}}. Requirements: {{requirements}}. Produce the complete, production-grade deliverable.`,
           model: j.model,
-          inputs: { fields: j.inputs, tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: j.hostamarDiscountPct },
+          inputs: { fields: j.inputs, tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: j.hostamarDiscountPct ?? fiverrBasicDiscount(j) },
           icon: j.icon,
           isActive: true,
         },

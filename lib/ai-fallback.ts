@@ -57,16 +57,19 @@ export async function callBestModel(
   // slot (free inference capacity we own), but the response is BRANDED as
   // the selected hostamar model with provider 'hostamar' and billed at tier.
   if (wanted) {
-    const slot = isHostamarModel ? 'kilo-auto/free' : wanted;
     if (isHostamarModel) {
-      attempts.push(async () => {
-        const r = await kilocodeCall(slot)();
-        return { text: r.text, model: wanted, provider: 'hostamar' };
-      });
-      attempts.push(async () => {
-        const r = await edgeCall(slot)();
-        return { text: r.text, model: wanted, provider: 'hostamar' };
-      });
+      // Proprietary SKU: ride BOTH capacity slots (kilo-auto + longcat) so a
+      // single slot hiccup can't degrade the branded reply. Direct + edge per slot.
+      for (const slot of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
+        attempts.push(async () => {
+          const r = await kilocodeCall(slot)();
+          return { text: r.text, model: wanted, provider: wanted };
+        });
+        attempts.push(async () => {
+          const r = await edgeCall(slot)();
+          return { text: r.text, model: wanted, provider: wanted };
+        });
+      }
     } else {
       attempts.push(kilocodeCall(wanted));
       attempts.push(edgeCall(wanted));
