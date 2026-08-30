@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   // V13: normalize hyphens ↔ spaces so 'logo-design' matches 'Logo Design'
   const norm = (x: string) => x.toLowerCase().replace(/[-\s]+/g, '')
-  const needle = norm(search)
+  const needle = norm(search || '')
   const filtered = search
     ? services.filter((s: any) =>
         norm(s.name).includes(needle) || norm(s.nameBn).includes(needle) ||
