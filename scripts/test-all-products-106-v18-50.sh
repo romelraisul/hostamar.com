@@ -100,7 +100,7 @@ check "26. models 120" "$(curl -s -m 60 $B/api/v1/models | python3 -c 'import sy
 check "27. TV 50" "$(curl -s -m 60 "$B/api/tv/stable-channels?limit=50" | python3 -c 'import sys,json;print(json.load(sys.stdin)["total"])')" "50"
 check "28. storage unauth 401" "$(curl -s -m 30 -o /dev/null -w '%{http_code}' $B/api/storage)" "401"
 MC=$(curl -s -m 30 $B/api/mcp | python3 -c 'import sys,json;print(len(json.load(sys.stdin)["tools"]))')
-check "29. MCP 11 tools" "$MC" "11"
+[ "$MC" -ge 11 ] && ok "29. MCP tools ≥11 ($MC — 11 core + facebook + seo)" || bad "29. MCP tools: $MC"
 M402=$(curl -s -m 120 -H "$H" -X POST $B/api/v1/chat/completions -H 'Content-Type: application/json' -d '{"model":"hostamar-1m-a","messages":[{"role":"user","content":"hi"}]}' | python3 -c 'import sys,json;d=json.load(sys.stdin);print(1 if (d.get("pricing") or {}).get("inCrPer1k")==0.3 else 0)')
 check "30. chat pricing breakdown 0.3cr/1K" "$M402" "1"
 

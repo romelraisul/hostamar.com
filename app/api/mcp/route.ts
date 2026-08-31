@@ -29,7 +29,9 @@ export async function POST(req: NextRequest) {
   if (tool.costCr !== 0 && !userId) {
     return NextResponse.json({ error: 'Unauthorized (billable tool)' }, { status: 401 })
   }
-  const result = await tool.run(body?.args, userId)
+  // V19: tools accept {params} (facebook/seo-mcp) or flat args (legacy tools) — pass both merged
+  const callArgs = { ...(body?.params ? { params: body.params } : {}), ...(body?.args && typeof body.args === 'object' ? body.args : {}), ...(body?.params && typeof body.params === 'object' ? body.params : {}) }
+  const result = await tool.run(callArgs, userId)
   if (result && (result as any).error === 'INSUFFICIENT_CREDITS') {
     return NextResponse.json({ ...result, bkash: '01822417463', topUp: '/dashboard/payment' }, { status: 402 })
   }
