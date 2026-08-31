@@ -107,7 +107,7 @@ async function materialAskMessage(serviceName: string, missing: string[], provid
         [{ role: 'user', content: `Write a friendly Bangla first-message for a pinned project chat. Service: ${serviceName}. Missing required fields: ${missing.join(', ')}. Already provided: ${provided.join(', ') || 'none'}. Ask ONLY for the missing fields, warm tone, max 3 sentences.` }],
         'You are Hostamar project assistant. Bangla, concise, friendly.',
       ),
-      new Promise<{ text: string; provider: string }>((_, rej) => setTimeout(() => rej(new Error('ask-timeout')), 25_000)),
+      new Promise<{ text: string; provider: string }>((_, rej) => setTimeout(() => rej(new Error('ask-timeout')), 15_000)),
     ])
     if (res.provider === 'fallback' || res.provider === 'knowledge-base-fallback') return deterministic
     return res.text || deterministic
@@ -126,7 +126,12 @@ export async function activateService(
   inputs: Record<string, unknown>,
 ): Promise<{ ok: true; orderId: string; chatId: string; creditCost: number; creditsRemaining: number } | { ok: false; error: string; status: number; needed?: number; balance?: number }> {
   await ensurePinnedChatSchema()
-  await ensureFiverrCatalog()
+  // V17 PERF FIX: the 112-query catalog seed/self-heal does NOT belong in the
+  // hot activation path (it alone can exceed the 60s serverless budget on a
+  // slow Neon day → 504 on the money surface). Fire it in the background; the
+  // service row read below needs no result from it (seed is idempotent and the
+  // catalog route still runs it inline for its own warm path).
+  ensureFiverrCatalog().catch(() => {})
 
   const service = await prisma.serviceCatalog.findUnique({ where: { id: serviceId } }).catch(() => null)
   if (!service) return { ok: false, error: 'SERVICE_NOT_FOUND', status: 404 }
