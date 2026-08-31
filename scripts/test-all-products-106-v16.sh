@@ -103,6 +103,21 @@ echo "$DOCS" | grep -q "Orca" && echo "$DOCS" | grep -q "106" && ok "34. 106 + O
 HOME1=$(curl -s -m 60 "$B/?cb=$RANDOM")
 echo "$HOME1" | grep -q "ডকস" && echo "$HOME1" | grep -q 'href="/docs"' && ok "35. navbar Docs link" || bad "35. navbar Docs"
 
+echo "── docs bn + api (36-40) ──"
+ENAPI=$(curl -s -m 90 "$B/api/docs?lang=en")
+ENS=$(echo "$ENAPI" | python3 -c 'import sys,json;print(len(json.load(sys.stdin).get("sections",[])))')
+[ "$ENS" -ge 60 ] && ok "36. /api/docs EN sections ($ENS)" || bad "36. EN sections: $ENS"
+BNAPI=$(curl -s -m 60 "$B/api/docs?lang=bn")
+BNS=$(echo "$BNAPI" | python3 -c 'import sys,json;print(len(json.load(sys.stdin).get("sections",[])))')
+[ "$BNS" -ge 10 ] && ok "37. /api/docs BN sections ($BNS)" || bad "37. BN sections: $BNS"
+BNPG=$(curl -s -m 60 "$B/docs/bn")
+BNSZ=$(echo "$BNPG" | wc -c)
+[ "$BNSZ" -gt 30000 ] && ok "38. /docs/bn 200 (${BNSZ}B)" || bad "38. /docs/bn: ${BNSZ}B"
+ENPG=$(curl -s -m 60 "$B/docs")
+echo "$ENPG" | grep -q "Hostamar Docs" && ok "39. /docs EN 200" || bad "39. /docs EN"
+NAV1=$(curl -s -m 60 "$B/?cb=$RANDOM")
+echo "$NAV1" | grep -q "ডকস" && echo "$NAV1" | grep -q 'href="/docs"' && ok "40. navbar Docs link" || bad "40. navbar Docs"
+
 echo "══ RESULT: $PASS passed, $FAIL failed ══"
-[ "$FAIL" -eq 0 ] && echo "🚢 V15 35/35 ALL PASSED" || echo "❌ FIX FAILURES"
+[ "$FAIL" -eq 0 ] && echo "🚢 V16 40/40 ALL PASSED" || echo "❌ FIX FAILURES"
 exit $FAIL
