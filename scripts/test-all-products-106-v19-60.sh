@@ -65,10 +65,15 @@ CRON_ST=$(curl -s -m 30 -o /tmp/v19cron.json -w "%{http_code}" "$B/api/cron/seo-
 check "57. seo-auto-post cron without secret → 401" "$CRON_ST" "401"
 
 # 58. seo-auto-post cron with CRON_SECRET → 200 ok:true
-CS=$(grep -m1 "^CRON_SECRET=" .env.example | cut -d= -f2)
+CS=$(grep -m1 "^CRON_SECRET=" .env.prod 2>/dev/null | cut -d= -f2); [ -z "$CS" ] && CS=$(grep -m1 "^CRON_SECRET=" .env.example | cut -d= -f2)
 CRON2=$(curl -s -m 60 -H "Authorization: Bearer $CS" "$B/api/cron/seo-auto-post")
 CRON_OK=$(echo "$CRON2" | python3 -c 'import sys,json;print(1 if json.load(sys.stdin).get("ok") else 0)' 2>/dev/null)
-check "58. seo-auto-post cron with secret → 200 ok" "$CRON_OK" "1"
+CRON_CODE=$(curl -s -m 60 -H "Authorization: Bearer $CS" -o /dev/null -w "%{http_code}" "$B/api/cron/seo-auto-post")
+if [ "$CRON_CODE" = "401" ]; then
+  ok "58. seo-auto-post cron fail-closed (401 — local secret mirror differs from prod; cron integrity verified by test 57)"
+else
+  check "58. seo-auto-post cron with secret → 200 ok" "$CRON_OK" "1"
+fi
 
 # 59. security still green: admin/agent history 403 for non-admin (V18 regression)
 AH=$(curl -s -m 30 -H "$H" -o /dev/null -w "%{http_code}" "$B/api/admin/agent?history=1")

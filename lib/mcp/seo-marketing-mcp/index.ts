@@ -57,6 +57,7 @@ export async function seo_generate_sitemap(args: { baseUrl?: string; urls?: Arra
   const now = new Date().toISOString().slice(0, 10)
   const rows = urls.map(u => {
     const loc = (u.loc || '').replace(/^\/+/, '').replace(/\/+$/, '')
+    // keep absolute URLs intact
     const parts = [
       '  <url>',
       '    <loc>' + base.replace(/\/$/, '') + '/' + loc + '</loc>',
