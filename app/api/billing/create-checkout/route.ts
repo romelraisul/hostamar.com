@@ -5,16 +5,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
 import { getCurrentOrg } from '@/lib/tenancy/tenant'
+import { PAYMENT_PLANS } from '@/lib/pricing'
 import { createPayment, makeOrderId } from '@/lib/payment/bkash'
 import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
 
 export const runtime = 'nodejs'
 
-const PLAN_AMOUNT: Record<string, number> = { business: 3500, agency: 7000 }
+// V17: single source — amounts from lib/pricing.ts PAYMENT_PLANS (599/1299/2999)
+const PLAN_AMOUNT: Record<string, number> = { starter: PAYMENT_PLANS.starter.price, pro: PAYMENT_PLANS.pro.price, business: PAYMENT_PLANS.business.price }
 
 const schema = z.object({
-  plan: z.enum(['business', 'agency']),
+  plan: z.enum(['starter', 'pro', 'business']),
   orgId: z.string().optional(),
 })
 

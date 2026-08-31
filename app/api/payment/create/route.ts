@@ -7,77 +7,73 @@ import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/auth';
 import { bkashConfig, createCheckout } from '@/lib/payment/bkash';
 import { env } from '@/lib/env'
+import { PAYMENT_PLANS, BKASH_PERSONAL, type PaymentPlanId } from '@/lib/pricing'
 
 // ============================================================================
-// POST /api/payment/create
-// Creates a payment order for a plan.
+// POST /api/payment/create — creates a payment order for a plan.
 //
-// Two real modes:
-//  1. bKash tokenized checkout — when BKASH_* credentials are configured,
-//     returns a real hosted bKash payment URL (lib/payment/bkash.ts).
-//  2. Manual send-money — customer sends money to the merchant number
-//     (bKash/Nagad/Rocket personal numbers) or USDT wallet, then submits the
-//     TrxID via /api/payment/bkash-verify for admin review. This is a real
-//     payment method, not a mock: money actually moves, admin verifies the
-//     TrxID against the merchant statement before approving.
+// Three real modes (never a mock):
+//  1. bKash tokenized checkout — when BKASH_* credentials are configured AND
+//     the gateway answers. If the gateway call fails we FALL THROUGH to mode 2
+//     instead of 502 — the customer can always pay.
+//  2. Manual send-money — customer sends money to the personal number
+//     (bKash/Nagad/Rocket) or USDT wallet, then submits the TrxID via
+//     /api/payment/bkash-verify. Money actually moves; admin (or SMS
+//     auto-match) verifies the TrxID before credits are granted.
+//  3. Honest 503 only when NO receiver is configured at all.
 //
-// All orders are persisted to the Payment table (DB-backed, no in-memory
-// store). No fake checkout URLs are ever returned.
+// V17: prices/credits come ONLY from lib/pricing.ts PAYMENT_PLANS
+// (Starter ৳599→6000cr · Pro ৳1299→13000cr · Business ৳2999→30000cr).
 // ============================================================================
 
-const PLANS = {
-  starter: { amount: 2000, name: 'Starter', currency: 'BDT' },
-  business: { amount: 3500, name: 'Business', currency: 'BDT' },
-  enterprise: { amount: 6000, name: 'Enterprise', currency: 'BDT' },
-} as const;
-
-type PlanKey = keyof typeof PLANS;
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';
 
 function generateTrxId(): string {
   return `HOST${Date.now()}${randomBytes(4).toString('hex').toUpperCase()}`;
 }
 
-// Merchant receiver numbers (manual send-money mode). Configurable via env.
-const BKASH_NUMBER = env.BKASH_NUMBER || '';
-const NAGAD_NUMBER = env.NAGAD_NUMBER || '';
-const ROCKET_NUMBER = env.ROCKET_NUMBER || '';
+// Receiver numbers: checkout vars first, then the personal-number vars the
+// /api/payments/personal-config endpoint serves, then the known merchant
+// number as the final default for bKash. One env system, no split-brain.
+const BKASH_NUMBER = env.BKASH_NUMBER || env.BKASH_PERSONAL_NUMBER || BKASH_PERSONAL;
+const NAGAD_NUMBER = env.NAGAD_NUMBER || env.NAGAD_PERSONAL_NUMBER || '';
+const ROCKET_NUMBER = env.ROCKET_NUMBER || env.ROCKET_PERSONAL_NUMBER || '';
 const USDT_WALLET = env.USDT_WALLET_ADDRESS || '';
 
 // Instruction generators for the manual send-money mode
-function generateInstructions(method: PaymentMethod, plan: { name: string; amount: number }, trxId: string, phone?: string): string[] {
+function generateInstructions(method: PaymentMethod, plan: { name: string; price: number; credits: number }, trxId: string, phone?: string): string[] {
   switch (method) {
     case 'bkash':
       return [
-        `৳${plan.amount.toLocaleString()} প্রদানের জন্য আপনার ${phone} নম্বরে bKash অ্যাপ খুলুন`,
+        `৳${plan.price.toLocaleString()} প্রদানের জন্য আপনার ${phone} নম্বরে bKash অ্যাপ খুলুন`,
         '"Send Money" অথবা "Payment" অপশনে ক্লিক করুন',
         `Merchant Number: ${BKASH_NUMBER} (Hostamar)`,
-        `Amount: ৳${plan.amount.toLocaleString()} লিখুন`,
+        `Amount: ৳${plan.price.toLocaleString()} লিখুন`,
         `Reference: ${trxId} (অবশ্যই লিখুন)`,
         'আপনার bKash PIN দিয়ে নিশ্চিত করুন',
-        'পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
+        `পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — ${plan.credits.toLocaleString()} ক্রেডিট যোগ হবে`,
       ];
     case 'nagad':
       return [
-        `৳${plan.amount.toLocaleString()} প্রদানের জন্য আপনার ${phone} নম্বরে Nagad অ্যাপ খুলুন`,
+        `৳${plan.price.toLocaleString()} প্রদানের জন্য আপনার ${phone} নম্বরে Nagad অ্যাপ খুলুন`,
         '"Send Money" অথবা "Payment" অপশনে ক্লিক করুন',
         `Merchant Number: ${NAGAD_NUMBER} (Hostamar)`,
-        `Amount: ৳${plan.amount.toLocaleString()} লিখুন`,
+        `Amount: ৳${plan.price.toLocaleString()} লিখুন`,
         `Reference: ${trxId} (অবশ্যই লিখুন)`,
         'আপনার Nagad PIN দিয়ে নিশ্চিত করুন',
-        'পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
+        `পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — ${plan.credits.toLocaleString()} ক্রেডিট যোগ হবে`,
       ];
     case 'rocket':
       return [
-        `৳${plan.amount.toLocaleString()} প্রদানের জন্য Rocket অ্যাপ বা SMS ব্যবহার করুন`,
+        `৳${plan.price.toLocaleString()} প্রদানের জন্য Rocket অ্যাপ বা SMS ব্যবহার করুন`,
         `Rocket Number: ${ROCKET_NUMBER} (Hostamar)`,
-        `Amount: ৳${plan.amount.toLocaleString()}`,
+        `Amount: ৳${plan.price.toLocaleString()}`,
         `Message/Memo এ লিখুন: ${trxId}`,
         'পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
       ];
     case 'usdt':
       return [
-        `USDT (BEP20) ওয়ালেট থেকে ${(plan.amount * 0.0025).toFixed(2)} USDT পাঠান`,
+        `USDT (BEP20) ওয়ালেট থেকে ${(plan.price * 0.0025).toFixed(2)} USDT পাঠান`,
         `পাঠানোর ঠিকানা: ${USDT_WALLET}`,
         `Memo/Note এ লিখুন: ${trxId}`,
         'পেমেন্ট সম্পন্ন হলে TxHash জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',
@@ -109,9 +105,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['starter', 'business', 'enterprise'].includes(plan)) {
+    // V17: single source of truth — starter | pro | business @ 599/1299/2999
+    const planInfo = PAYMENT_PLANS[plan as PaymentPlanId];
+    if (!planInfo) {
       return NextResponse.json(
-        { error: 'Invalid plan. Choose: starter, business, enterprise' },
+        { error: `Invalid plan. Choose: starter, pro, business — Starter ৳${PAYMENT_PLANS.starter.price} → ${PAYMENT_PLANS.starter.credits}cr, Pro ৳${PAYMENT_PLANS.pro.price} → ${PAYMENT_PLANS.pro.credits}cr, Business ৳${PAYMENT_PLANS.business.price} → ${PAYMENT_PLANS.business.credits}cr` },
         { status: 400 }
       );
     }
@@ -123,8 +121,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const planKey = plan as PlanKey;
-    const planInfo = PLANS[planKey];
     const m = method as PaymentMethod;
 
     // Validate phone for mobile methods
@@ -154,50 +150,56 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Mode 1: real bKash tokenized checkout when configured
+    // ── Mode 1: real bKash tokenized checkout when configured. On failure we
+    // fall through to manual (never 502 on the money surface).
     if (m === 'bkash' && bkashConfig().configured) {
       const trxId = generateTrxId();
-      const callbackUrl = `${env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`;
-      const result = await createCheckout({
-        amount: planInfo.amount,
-        orderId: trxId,
-        intent: 'sale',
-        callbackUrl,
-      });
-      if (!result.ok) {
-        return NextResponse.json({ error: result.error || 'bKash create failed' }, { status: 502 });
+      try {
+        const result = await createCheckout({
+          amount: planInfo.price,
+          orderId: trxId,
+          intent: 'sale',
+          callbackUrl: `${env.NEXTAUTH_URL || 'https://hostamar.com'}/api/payments/webhook`,
+        });
+        if (result.ok) {
+          await prisma.payment.create({
+            data: {
+              customerId: authUser.id,
+              method: 'bkash',
+              amount: planInfo.price,
+              currency: 'BDT',
+              status: 'pending',
+              transactionId: result.paymentId || trxId,
+              providerPaymentId: result.paymentId || null,
+              invoiceNumber: trxId,
+              planName: planInfo.name,
+              billingPeriod: 'monthly',
+            },
+          });
+          return NextResponse.json({
+            success: true,
+            trxId,
+            plan: planInfo.name,
+            amount: planInfo.price,
+            credits: planInfo.credits,
+            currency: 'BDT',
+            method: m,
+            mode: 'bkash_checkout',
+            paymentUrl: result.bkashUrl,
+            status: 'pending',
+          });
+        }
+        // gateway said no → fall through to manual mode below
+      } catch {
+        // gateway unreachable → fall through to manual mode below
       }
-      await prisma.payment.create({
-        data: {
-          customerId: authUser.id,
-          method: 'bkash',
-          amount: planInfo.amount,
-          currency: 'BDT',
-          status: 'pending',
-          transactionId: result.paymentId || trxId,
-          providerPaymentId: result.paymentId || null,
-          invoiceNumber: trxId,
-          planName: planInfo.name,
-          billingPeriod: 'yearly',
-        },
-      });
-      return NextResponse.json({
-        success: true,
-        trxId,
-        plan: planInfo.name,
-        amount: planInfo.amount,
-        currency: planInfo.currency,
-        method: m,
-        mode: 'bkash_checkout',
-        paymentUrl: result.bkashUrl,
-        status: 'pending',
-      });
     }
 
-    // Mode 2: manual send-money (bKash/Nagad/Rocket without API creds, or USDT)
+    // ── Mode 2: manual send-money (always available for bkash; others when a
+    // receiver is configured). This is a REAL method — money moves via the
+    // personal apps and TrxID verification grants the credits.
     const trxId = generateTrxId();
 
-    // Manual mode requires a configured receiver number/wallet
     const receiver =
       m === 'bkash' ? BKASH_NUMBER :
       m === 'nagad' ? NAGAD_NUMBER :
@@ -207,7 +209,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'PAYMENT_NOT_CONFIGURED',
-          message: `No ${m} receiver configured. Set the merchant number/wallet in env to enable manual ${m} payments, or configure bKash API credentials for online checkout.`,
+          message: `No ${m} receiver configured. bKash (Send Money to ${BKASH_PERSONAL}) is always available.`,
         },
         { status: 503 }
       );
@@ -218,13 +220,13 @@ export async function POST(request: NextRequest) {
       data: {
         customerId: authUser.id,
         method: m,
-        amount: planInfo.amount,
+        amount: planInfo.price,
         currency: m === 'usdt' ? 'USDT' : 'BDT',
         status: 'pending',
         transactionId: trxId,
         invoiceNumber: trxId,
         planName: planInfo.name,
-        billingPeriod: 'yearly',
+        billingPeriod: 'monthly',
         walletAddress: m === 'usdt' ? walletAddress : undefined,
       },
     });
@@ -235,12 +237,14 @@ export async function POST(request: NextRequest) {
       success: true,
       trxId,
       plan: planInfo.name,
-      amount: planInfo.amount,
-      currency: planInfo.currency,
+      amount: planInfo.price,
+      credits: planInfo.credits,
+      currency: m === 'usdt' ? 'USDT' : 'BDT',
       method: m,
       phone,
       walletAddress,
       mode: 'manual',
+      personalNumber: m === 'bkash' ? BKASH_NUMBER : undefined,
       paymentUrl: null, // manual mode: no hosted checkout URL
       instructions,
       status: 'pending',

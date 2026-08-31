@@ -27,12 +27,14 @@ beforeEach(() => {
       if (String(url).includes('/token/grant')) {
         return {
           ok: true,
+          text: async () => JSON.stringify({ id_token: 'idtok_abc123', token_type: 'Bearer', expires_in: 3600 }),
           json: async () => ({ id_token: 'idtok_abc123', token_type: 'Bearer', expires_in: 3600 }),
         }
       }
       if (String(url).includes('/checkout/create')) {
         return {
           ok: true,
+          text: async () => JSON.stringify({ statusCode: '0000', statusMessage: 'Successful', bkashURL: 'https://bka.sh/pay/XYZ', paymentID: 'PAYID_999' }),
           json: async () => ({
             statusCode: '0000',
             statusMessage: 'Successful',
