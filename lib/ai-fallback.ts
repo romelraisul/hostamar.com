@@ -27,6 +27,7 @@ export async function callBestModel(
     const base = process.env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway';
     const r = await fetch(`${base}/chat/completions`, {
       method: 'POST',
+      signal: AbortSignal.timeout(30_000), // hung-slot guard: fail this attempt fast
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.KILOCODE_API_KEY}` },
       body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS }),
     });
@@ -42,6 +43,7 @@ export async function callBestModel(
     const key = process.env.EDGE_INTERNAL_KEY || 'hostamar-edge-internal-2026-xK39m';
     const r = await fetch(`${EDGE_URL}/chat/completions`, {
       method: 'POST',
+      signal: AbortSignal.timeout(30_000), // hung-slot guard: fail this attempt fast
       headers: { 'Content-Type': 'application/json', 'x-internal-key': String(key) },
       body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS }),
     });
