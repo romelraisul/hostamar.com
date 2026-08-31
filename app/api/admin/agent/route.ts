@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
 import { callBestModel } from '@/lib/ai-fallback'
+import { isAdminUser } from '@/lib/auth/admin'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -19,7 +20,7 @@ async function ensureTables(){
 }
 
 async function getHostamarHealth(){
-  const cronSecret = process.env.CRON_SECRET || 'hostamar-cron-2026'
+  const cronSecret = process.env.CRON_SECRET || '' // V18: no hardcoded fallback
   const headers:any = { 'x-cron-secret': cronSecret, 'User-Agent': 'HostamarOS/1.0', 'x-user-id': 'audit-customer-001' }
   const out:any = { ok:true, hostamar:'200 ✅', status:200, details:{} as any }
   // health
@@ -243,6 +244,10 @@ export async function POST(req: NextRequest){
 export async function GET(req: NextRequest){
   const authUser = await getAuthUser(req)
   if(!authUser) return NextResponse.json({ error:'Unauthorized' },{status:401})
+  // V18 SECURITY (IDOR, live-verified): GET previously had NO role check — any
+  // logged-in user could read founder-os agent chat history. Same DB-role
+  // re-check as POST; JWT role claim is never trusted.
+  if(!(await isAdminUser(authUser.id))) return NextResponse.json({ error:'Forbidden — admin only' },{status:403})
   await ensureTables()
   const url = new URL(req.url)
   if(url.searchParams.get('history')==='1' || url.searchParams.get('customerId')){

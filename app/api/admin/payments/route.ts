@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { requireAdmin } from '@/lib/auth'
+import { requireAdmin, getAuthUser } from '@/lib/auth'
 import { env } from '@/lib/env'
 
 export async function GET(req: NextRequest) {
@@ -31,6 +31,17 @@ export async function GET(req: NextRequest) {
         }).catch(() => fallback)
       : fallback
 
+    // V18: admin listing of all payments leaves an audit trail (who saw the ledger)
+    try {
+      const admin = await getAuthUser(req)
+      await prisma.activityLog.create({
+        data: {
+          customerId: admin?.id || 'unknown-admin',
+          action: 'admin_payments_list',
+          description: `Admin listed ${payments.length} payments (limit ${limit})`,
+        },
+      }).catch(() => {})
+    } catch { /* audit non-fatal */ }
     return NextResponse.json({ success: true, payments })
   } catch (error: any) {
     console.error('Admin payments fetch error:', error)

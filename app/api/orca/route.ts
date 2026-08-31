@@ -57,6 +57,15 @@ export async function POST(req: NextRequest) {
     }
     case 'fan_prompt': {
       const ids: string[] = (body.args?.worktreeIds || []).slice(0, 5)
+      // V18 (defense-in-depth): only fan across worktrees OWNED by the caller.
+      // The B2 write path is caller-prefixed (safe), but a foreign id must be
+      // rejected BEFORE billing so users can't pay to fan into ids that
+      // aren't theirs (and future refactors can't reintroduce cross-tenant writes).
+      const owned = new Set((await listWorktrees(userId)).map(w => w.id))
+      const foreign = ids.filter(id => !owned.has(id))
+      if (foreign.length) {
+        return NextResponse.json({ error: 'FORBIDDEN', message: 'Not your worktree', foreign }, { status: 403 })
+      }
       const b = await bill(5 * Math.max(1, ids.length))
       if (!b.ok) return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: b.needed, balance: b.balance, bkash: '01822417463', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } }, { status: 402 })
       const results = await fanPrompt(userId, String(body.args?.prompt || ''), ids, body.args?.model)
