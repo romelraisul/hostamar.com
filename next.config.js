@@ -5,6 +5,12 @@
 // builder prerender bug on internal error pages). Sentry runtime reporting can
 // be re-enabled here once the build is green.
 const nextConfig = {
+  // V17: /dashboard/chatos → the real Chat OS page (admin chat-os)
+  async redirects() {
+    return [
+      { source: '/dashboard/chatos', destination: '/dashboard/admin/chat-os', permanent: true },
+    ]
+  },
   // reactStrictMode disabled: Next 14.2.5's build-time prerender of the
   // internal /_error page (which imports `Html` from next/document) crashes
   // on Vercel with "<Html> should not be imported outside of pages/_document".

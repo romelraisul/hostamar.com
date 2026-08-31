@@ -16,7 +16,10 @@ type Msg = { role: 'user' | 'assistant'; content: string; model?: string; cost?:
 export default function ChatClient() {
   // models
   const [models, setModels] = useState<CatalogModel[]>([])
-  const [modelId, setModelId] = useState('meituan/longcat-2.0-free')
+  // V17: default = hostamar-1m-a (PAID workhorse, 0.3cr/1K in · 1.5cr/1K out) —
+  // every model bills ≥1cr; nothing is actually free, so don't default to a
+  // 'free'-labeled slot.
+  const [modelId, setModelId] = useState('hostamar-1m-a')
   const [modelQuery, setModelQuery] = useState('')
   const [modelsOpen, setModelsOpen] = useState(false) // mobile drawer
 
@@ -141,7 +144,7 @@ export default function ChatClient() {
                     className={`w-full text-left rounded-lg px-2.5 py-1.5 text-xs transition flex items-center justify-between gap-2 ${modelId === m.id ? 'bg-[#0E7C3A] text-white' : 'hover:bg-[#F1F5F9] text-[#0F172A]'}`}
                   >
                     <span className="truncate flex-1">{m.displayName}<PongBadge id={m.id} /></span>
-                    <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${m.free ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'} ${modelId === m.id ? '!bg-white/20 !text-white' : ''}`}>{m.free ? 'FREE' : 'PAID'}</span>
+                    <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-700 ${modelId === m.id ? '!bg-white/20 !text-white' : ''}`}>PAID</span>
                   </button>
                 ))}
               </div>
@@ -161,7 +164,7 @@ export default function ChatClient() {
           <div className="flex items-center gap-2 min-w-0 pl-8 lg:pl-0">
             <Bot className="w-4 h-4 text-[#0E7C3A] shrink-0" />
             <span className="text-sm font-bold text-[#0F172A] truncate">{sel?.displayName || modelId}</span>
-            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#ECFDF5] px-2 py-0.5 text-[10px] font-semibold text-[#0E7C3A]">{sel?.free ? 'FREE' : sel ? 'PAID' : ''} {sel?.context ? `• ${sel.context}` : ''}</span>
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#ECFDF5] px-2 py-0.5 text-[10px] font-semibold text-[#0E7C3A]">{sel ? 'PAID' : ''} {sel?.context ? `• ${sel.context}` : ''}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <button onClick={() => setSettingsOpen(v => !v)} className="hidden xl:inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs text-[#475569] hover:bg-[#F8FAFC]">

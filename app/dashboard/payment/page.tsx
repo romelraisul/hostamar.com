@@ -7,13 +7,16 @@ import NextImage from 'next/image';
 import { useLocale } from '@/lib/locale-context';
 import PersonalPaymentPanel from './personal-payment-panel';
 
-type Plan = 'starter' | 'business' | 'enterprise';
+type Plan = 'starter' | 'pro' | 'business';
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';
 
+// V17: single source of truth — lib/pricing.ts (Starter ৳599→6000cr · Pro ৳1299→13000cr · Business ৳2999→30000cr)
+import { PAYMENT_PLANS } from '@/lib/pricing';
+
 const PLANS = {
-  starter: { amount: 2000, name: 'Starter', features: ['Web Hosting (5GB)', '10 Videos/month', 'Free SSL', 'Email Support'] },
-  business: { amount: 3500, name: 'Business', features: ['VPS (2 CPU, 4GB RAM)', '20 Videos/month', 'Custom Topics', 'Priority Support', 'Social Scheduler'] },
-  enterprise: { amount: 6000, name: 'Enterprise', features: ['VPS (4 CPU, 8GB RAM)', 'Unlimited Videos', 'Custom Branding', '24/7 Support', 'We Post For You'] },
+  starter: { amount: PAYMENT_PLANS.starter.price, credits: PAYMENT_PLANS.starter.credits, name: 'Starter', features: ['৬০০০ ক্রেডিট / মাস', '১০০+ AI ভিডিও', '10GB হোস্টিং + ফ্রি SSL', 'Email Support'] },
+  pro: { amount: PAYMENT_PLANS.pro.price, credits: PAYMENT_PLANS.pro.credits, name: 'Pro', features: ['১৩০০০ ক্রেডিট / মাস (২× ভ্যালু)', '৫০GB হোস্টিং', 'API এক্সেস + টিম ৫ জন', 'Priority Support'] },
+  business: { amount: PAYMENT_PLANS.business.price, credits: PAYMENT_PLANS.business.credits, name: 'Business', features: ['৩০০০০ ক্রেডিট / মাস', 'আনলিমিটেড হোস্টিং', 'কাস্টম ডোমেইন আনলিমিটেড', 'ডেডিকেটেড সাপোর্ট'] },
 };
 
 const PAYMENT_METHODS = {
@@ -199,7 +202,7 @@ export default function PaymentPage() {
           <PersonalPaymentPanel
             amount={selectedPlan ? PLANS[selectedPlan].amount : undefined}
             plan={selectedPlan || undefined}
-            credits={selectedPlan ? (selectedPlan === 'starter' ? 6000 : selectedPlan === 'business' ? 12000 : 30000) : undefined}
+            credits={selectedPlan ? PAYMENT_PLANS[selectedPlan].credits : undefined}
           />
         </div>
 

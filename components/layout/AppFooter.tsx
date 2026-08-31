@@ -13,6 +13,15 @@ const COMPANY_LINKS = [
   { href: '/contact', bn: 'যোগাযোগ', en: 'Contact' },
 ]
 
+// V17: Docs column — the user-facing documentation hub (EN + বাংলা) +
+// public API surfaces. 106 services · 120 models · Orca ADE guide.
+const DOCS_LINKS = [
+  { href: '/docs', bn: 'ডকুমেন্টেশন', en: 'Documentation', desc: '১০৬ সার্ভিস · ১২০ মডেল · Orca ADE · ১cr=1TK=1COIN' },
+  { href: '/docs/bn', bn: 'বাংলা ডকস', en: 'Bangla Docs', desc: 'সম্পূর্ণ ডকুমেন্টেশন বাংলায়' },
+  { href: '/api/v1/models', bn: 'API / মডেল তালিকা', en: 'API / Models', desc: '120 models — OpenAI compatible' },
+  { href: '/pricing', bn: 'প্রাইসিং', en: 'Pricing', desc: 'Starter ৳599 · Pro ৳1299 · Business ৳2999' },
+]
+
 const LEGAL_LINKS = [
   { href: '/terms', bn: 'শর্তাবলী', en: 'Terms' },
   { href: '/privacy', bn: 'প্রাইভেসি', en: 'Privacy' },
@@ -70,7 +79,24 @@ export default function AppFooter() {
             </ul>
           </div>
 
-          {/* Column 3: Company */}
+          {/* Column 3: Docs (V17) */}
+          <div>
+            <div className="mb-3 text-[13px] font-semibold text-zinc-900">
+              📚 {isBn ? 'ডকস' : 'Docs'}
+            </div>
+            <ul className="space-y-2.5 text-[13px] text-zinc-500">
+              {DOCS_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-zinc-900">
+                    {isBn ? l.bn : l.en}
+                  </Link>
+                  <p className="mt-0.5 text-[11px] leading-snug text-zinc-400">{l.desc}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Company */}
           <div>
             <div className="mb-3 text-[13px] font-semibold text-zinc-900">
               {isBn ? 'কোম্পানি' : 'Company'}
@@ -125,6 +151,9 @@ export default function AppFooter() {
         {/* Bottom bar */}
         <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-zinc-100 pt-6 text-[12px] text-zinc-500 sm:flex-row">
           <span>© {year} Hostamar. All rights reserved.</span>
+          <span className="flex items-center gap-1.5">
+            📚 <Link href="/docs" className="hover:text-zinc-900">ডকস</Link> · ১০৬ সার্ভিস · ১২০ মডেল · Orca ADE · ১cr=1TK=1COIN · ৬০০০ বোনাস · bKash 01822417463
+          </span>
           <span className="flex items-center gap-1.5">
             Made for Bangladesh 🇧🇩
           </span>

@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { planCredits } from '@/lib/pricing'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import {
   TRXID_REGEX,
@@ -117,7 +118,8 @@ export async function POST(req: NextRequest) {
         senderNumber: String(senderNumber).replace(/\s/g, ''),
         trxId: trx,
         plan: plan || null,
-        credits: Number(credits) || 0,
+        // V17: never trust client-provided credits — single source when a plan is given
+        credits: (plan && planCredits(String(plan).toLowerCase())) || Number(credits) || 0,
         status: 'PENDING',
         expiresAt: new Date(Date.now() + PENDING_EXPIRY_MINUTES * 60 * 1000),
       },

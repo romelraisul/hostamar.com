@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
+import { PAYMENT_PLANS } from '@/lib/pricing'
 import { activateService } from '@/lib/pinned-chat'
 
 export const dynamic = 'force-dynamic'
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
   if (!r.ok) {
     if (r.status === 402) {
       return NextResponse.json(
-        { error: 'INSUFFICIENT_CREDITS', needed: (r as any).needed ?? null, balance: (r as any).balance ?? null, bkash: '01822417463', topUp: '/dashboard/payment', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } },
+        { error: 'INSUFFICIENT_CREDITS', needed: (r as any).needed ?? null, balance: (r as any).balance ?? null, bkash: '01822417463', topUp: '/dashboard/payment', plans: { Starter: `${PAYMENT_PLANS.starter.price}TK → ${PAYMENT_PLANS.starter.credits}cr`, Pro: `${PAYMENT_PLANS.pro.price}TK → ${PAYMENT_PLANS.pro.credits}cr`, Business: `${PAYMENT_PLANS.business.price}TK → ${PAYMENT_PLANS.business.credits}cr` } },
         { status: 402 },
       )
     }

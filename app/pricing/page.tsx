@@ -47,31 +47,23 @@ function TrxVerify({ plan, credits }: { plan: Plan; credits: number }) {
   async function verify() {
     if (!trx.trim()) { setMsg('ট্রানজেকশন আইডি দিন'); setState('error'); return }
     setState('verifying')
-    setMsg('')
+    setMsg('TrxID যাচাই হচ্ছে…')
     try {
-      // Try real verify endpoint, fallback to demo success after 1.2s
+      // V17: REAL verification only — /api/billing/verify-trx records the
+      // TrxID for admin/SMS approval. Credits are granted on approval, NEVER
+      // claimed client-side. No demo/fake-success branch anymore.
       const res = await fetch('/api/billing/verify-trx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ trxId: trx.trim(), plan: plan.id }),
-      }).catch(() => null)
-      if (res && res.ok) {
-        const data = await res.json().catch(() => null)
-        if (data?.ok || data?.success) {
-          setState('success')
-          setMsg(`${toBn(credits)} ক্রেডিট যোগ হয়েছে`)
-          return
-        }
-      }
-      // Demo success (since no real bKash verify in dev)
-      await new Promise(r => setTimeout(r, 900))
-      // simple trx format check: 8-10 alnum
-      if (trx.trim().length >= 6) {
+      })
+      const data = await res.json().catch(() => null)
+      if (res.ok && (data?.ok || data?.success)) {
         setState('success')
-        setMsg(`${toBn(credits)} ক্রেডিট যোগ হয়েছে`)
+        setMsg(data?.message || `TrxID গৃহীত — অনুমোদনের পর ${toBn(credits)} ক্রেডিট যোগ হবে`)
       } else {
         setState('error')
-        setMsg('সঠিক ট্রানজেকশন আইডি দিন')
+        setMsg(data?.error || 'TrxID যাচাই ব্যর্থ — আবার চেষ্টা করুন')
       }
     } catch {
       setState('error')
