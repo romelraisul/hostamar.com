@@ -6,10 +6,14 @@ import { callBestModel } from '@/lib/ai-fallback'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export async function POST(req: NextRequest){
-  const secret = req.headers.get('x-cron-secret')
-  const expected = process.env.CRON_SECRET || 'hostamar-cron-2026'
-  const allowed = new Set([expected, 'hostamar-cron-2026', 'change-me-random-string'])
-  if(!secret || !allowed.has(secret)) return NextResponse.json({ error:'Forbidden — bad cron secret' },{status:401})
+  // V18 SECURITY (live-exploited hole): the previous code accepted the public
+  // fallback secret 'hostamar-cron-2026' + the literal 'change-me-random-string'
+  // when CRON_SECRET was unset — an anonymous caller triggered auto-payments
+  // (grants +6000cr per matched pending row). Now FAIL CLOSED: no CRON_SECRET
+  // in env → every caller is rejected. No hardcoded fallbacks, ever.
+  const expected = process.env.CRON_SECRET || ''
+  const secret = req.headers.get('x-cron-secret') || req.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+  if(!expected || !secret || secret !== expected) return NextResponse.json({ error:'Forbidden — bad cron secret' },{status:401})
 
   const body = await req.json().catch(()=>({}))
   const type = body.type || 'daily-health'
