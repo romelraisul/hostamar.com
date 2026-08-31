@@ -3,11 +3,16 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { planCredits } from '@/lib/pricing'
+import { isAdminUser } from '@/lib/auth/admin'
+import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 
 // ---------------------------------------------------------------------------
-// POST /api/payment/bkash/verify
-// User submits bKash TrxID + sender number after sending money to 01822417463.
-// Creates a pending_verification transaction for manual admin review.
+// POST /api/payment/bkash/verify — user submits bKash TrxID + sender number
+// after sending money to 01822417463. Creates a pending_verification
+// transaction for admin review (credits granted on approval, never here).
+// V17: credits come from lib/pricing.ts planCredits() — the old hardcoded
+// {starter:10, growth:30, pro:100} video-package map is GONE.
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
@@ -16,14 +21,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const rl = slidingWindow(`bkashverify:${getClientIpEdge(req)}`, 20, 60_000)
+    if (!rl.ok) {
+      return NextResponse.json({ error: 'Too many requests — try again in a minute' }, { status: 429 })
+    }
+
     const { package: pkg, amount, bkashNumber, trxId, senderNumber } = await req.json()
 
     if (!pkg || !amount || !trxId) {
       return NextResponse.json({ error: 'পেমেন্ট তথ্য অসম্পূর্ণ' }, { status: 400 })
     }
 
-    const creditsMap: Record<string, number> = { starter: 10, growth: 30, pro: 100 }
-    const credits = creditsMap[pkg] || 0
+    const credits = planCredits(String(pkg).toLowerCase())
+    if (credits <= 0) {
+      return NextResponse.json(
+        { error: 'Invalid plan. Choose: starter, pro, business' },
+        { status: 400 },
+      )
+    }
 
     // Check for duplicate TrxID
     const existing = await prisma.transaction.findFirst({
@@ -42,10 +57,10 @@ export async function POST(req: NextRequest) {
         status: 'pending_verification',
         gateway: 'bkash_personal',
         gatewayTrxId: trxId,
-        videoPackage: pkg,
+        videoPackage: String(pkg).toLowerCase(),
         creditsAdded: credits,
         cardType: senderNumber || null,   // stores the sender's bKash number
-        cardBrand: bkashNumber || null,    // stores the merchant number (01822417463)
+        cardBrand: bkashNumber || null,   // stores the merchant number (01822417463)
       },
     })
 
@@ -68,7 +83,10 @@ export async function POST(req: NextRequest) {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/payment/bkash/verify — list pending bKash payments (admin)
+// GET /api/payment/bkash/verify — list pending bKash payments.
+// V17 IDOR FIX: admins see all pending payments; NON-admin users see ONLY
+// their own submissions (previously any logged-in user could read every
+// customer's amount/TrxID/name/email/phone).
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
   try {
@@ -77,10 +95,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const rl = slidingWindow(`bkashverifylist:${getClientIpEdge(req)}`, 20, 60_000)
+    if (!rl.ok) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    }
+
+    // Role check via lib/auth/admin.ts (DB re-check — JWT role claim is not trusted)
+    const isAdmin = await isAdminUser(authUser.id)
+
     const pending = await prisma.transaction.findMany({
       where: {
         status: 'pending_verification',
         gateway: 'bkash_personal',
+        // non-admin sees ONLY their own rows — IDOR fixed
+        ...(isAdmin ? {} : { customerId: authUser.id }),
       },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -88,9 +116,9 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    return NextResponse.json({ transactions: pending })
+    return NextResponse.json({ transactions: pending, scope: isAdmin ? 'all' : 'own' })
   } catch (error: any) {
     console.error('Pending bKash payments error:', error?.message || error)
     return NextResponse.json({ error: 'Failed to load' }, { status: 500 })
   }
-}
+}

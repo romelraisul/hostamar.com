@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { PAYMENT_PLANS } from '@/lib/pricing'
 
 /**
  * POST /api/admin/payments/approve/[transactionId]
@@ -23,12 +24,13 @@ import { prisma } from '@/lib/prisma'
  *
  * Body optional: { planOverride?: 'STARTER'|'GROWTH'|'PRO', notes?: string }
  */
+// V17: price from lib/pricing.ts single source (credits granted = txn.creditsAdded
+// from planCredits at submission time; videos/storage kept as plan limits).
 const PLAN_MAP: Record<string, { videos: number; storage: number; price: number }> = {
-  starter:  { videos: 20,  storage: 10,  price: 500 },
-  growth:   { videos: 30,  storage: 50,  price: 2000 },
-  pro:      { videos: 999, storage: 100, price: 3500 },
-  business: { videos: 999, storage: 500, price: 5000 },
-  free:     { videos: 5,   storage: 1,   price: 0   },
+  starter:  { videos: 20,  storage: 10,  price: PAYMENT_PLANS.starter.price },
+  pro:      { videos: 200, storage: 100, price: PAYMENT_PLANS.pro.price },
+  business: { videos: 999, storage: 500, price: PAYMENT_PLANS.business.price },
+  free:     { videos: 5,   storage: 1,   price: 0 },
 }
 
 export async function POST(
@@ -116,7 +118,7 @@ export async function POST(
     })
 
     // 3. Add credits
-    const creditsToAdd = txn.creditsAdded > 0 ? txn.creditsAdded : planInfo.videos
+    const creditsToAdd = txn.creditsAdded > 0 ? txn.creditsAdded : (PAYMENT_PLANS[(pkgKey === 'growth' ? 'pro' : pkgKey) as keyof typeof PAYMENT_PLANS]?.credits ?? planInfo.videos)
     await prisma.customer.update({
       where: { id: txn.customer.id },
       data: { credits: { increment: creditsToAdd } },

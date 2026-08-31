@@ -70,6 +70,48 @@ export const PLANS: Plan[] = [
 
 export const CURRENCY = 'BDT'
 
+// ============================================================================
+// V17 — PAYMENT PLANS: single source of truth for EVERY money surface.
+// 1cr = 1TK = 1 future HOST coin. Starter ৳599→6000cr · Pro ৳1299→13000cr ·
+// Business ৳2999→30000cr. All payment routes/pages MUST import from here —
+// no route may hardcode its own price/credit table.
+// ============================================================================
+
+export type PaymentPlanId = 'starter' | 'pro' | 'business'
+
+export const PAYMENT_PLANS: Record<PaymentPlanId, {
+  id: PaymentPlanId
+  price: number       // BDT to pay
+  credits: number    // credits granted on payment
+  name: string
+  nameBn: string
+  usd: number
+  popular: boolean
+}> = {
+  starter:  { id: 'starter',  price: 599,  credits: 6000,  name: 'Starter',  nameBn: 'স্টার্টার', usd: 5,    popular: false },
+  pro:      { id: 'pro',      price: 1299, credits: 13000, name: 'Pro',      nameBn: 'প্রো',     usd: 10.8, popular: true },
+  business: { id: 'business', price: 2999, credits: 30000, name: 'Business', nameBn: 'বিজনেস',  usd: 25,   popular: false },
+}
+
+/** Display table used by pricing UIs: [{id, tk, cr, usd}] */
+export const PRICING_DISPLAY: Array<{ id: PaymentPlanId; tk: number; cr: number; usd: number }> =
+  (Object.keys(PAYMENT_PLANS) as PaymentPlanId[]).map(id => ({
+    id, tk: PAYMENT_PLANS[id].price, cr: PAYMENT_PLANS[id].credits, usd: PAYMENT_PLANS[id].usd,
+  }))
+
+/** The personal bKash Send-Money number customers pay to (manual mode). */
+export const BKASH_PERSONAL = '01822417463'
+
+/** credits granted for a plan payment (single source — replaces all creditsMap tables). */
+export function planCredits(plan: string): number {
+  return PAYMENT_PLANS[plan as PaymentPlanId]?.credits ?? 0
+}
+
+/** price in BDT for a plan (single source). */
+export function planPrice(plan: string): number {
+  return PAYMENT_PLANS[plan as PaymentPlanId]?.price ?? 0
+}
+
 
 // ============================================================================
 // Credit pricing (single source of truth for API + dashboard hints)

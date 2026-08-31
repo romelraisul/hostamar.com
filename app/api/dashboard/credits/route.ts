@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 import { getCreditBalance } from '@/lib/credits'
+import { PAYMENT_PLANS } from '@/lib/pricing'
 
 /**
  * GET /api/dashboard/credits — PAID MODE (V12): real balance (6000 bonus at
@@ -26,6 +27,6 @@ export async function GET(req: NextRequest) {
     message: bal.message,
     bKash: '01822417463',
     topUp: '/dashboard/payment',
-    plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' },
+    plans: { Starter: `${PAYMENT_PLANS.starter.price}TK → ${PAYMENT_PLANS.starter.credits}cr`, Pro: `${PAYMENT_PLANS.pro.price}TK → ${PAYMENT_PLANS.pro.credits}cr`, Business: `${PAYMENT_PLANS.business.price}TK → ${PAYMENT_PLANS.business.credits}cr` },
   })
 }

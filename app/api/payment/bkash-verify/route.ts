@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { planCredits } from '@/lib/pricing'
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,8 +18,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'পেমেন্ট তথ্য অসম্পূর্ণ' }, { status: 400 })
     }
 
-    const creditsMap: Record<string, number> = { starter: 10, growth: 30, pro: 100 }
-    const credits = creditsMap[pkg] || 0
+    // V17: single source of truth — lib/pricing.ts planCredits()
+    const credits = planCredits(String(pkg).toLowerCase())
 
     // Check for duplicate TrxID
     const existing = await prisma.transaction.findFirst({
@@ -60,4 +61,4 @@ export async function POST(req: NextRequest) {
     console.error('bKash verify error:', error?.message || error)
     return NextResponse.json({ error: 'পেমেন্ট যাচাই করতে সমস্যা হয়েছে' }, { status: 500 })
   }
-}
+}

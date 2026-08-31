@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
+import { planCredits } from '@/lib/pricing'
 import crypto from 'crypto'
 import { env } from '@/lib/env'
 
@@ -25,8 +26,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Package and amount required' }, { status: 400 })
     }
 
-    const creditsMap: Record<string, number> = { starter: 10, growth: 30, pro: 100 }
-    const credits = creditsMap[pkg] || 0
+    // V17: single source — lib/pricing.ts planCredits()
+    const credits = planCredits(String(pkg).toLowerCase())
 
     // Create transaction in our DB
     const transaction = await prisma.transaction.create({
