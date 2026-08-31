@@ -6,22 +6,24 @@
  * any MCP client (Claude/Codex/WebMCP navigator.modelContext) can call them.
  */
 import prisma from '@/lib/prisma'
+import { facebook_create_post, facebook_get_page_insights, facebook_get_posts, facebook_reply_comment, facebook_create_ad, facebook_get_ad_insights, instagram_create_post, facebook_get_messages, facebook_post_reel, facebook_schedule_post } from './facebook-mcp'
 
 export type McpTool = {
   server: string
   name: string
   description: string
-  costCr: number // 0 = free viewing
+  costCr: number // 0 = free viewing; real billing follow-up TBD (today: audit-insert + free)
   run: (args: any, userId?: string) => Promise<any>
 }
 
 async function bill(userId: string | undefined, cost: number): Promise<{ ok: true; remaining: number } | { ok: false; needed: number; balance: number }> {
-  // FULL FREE (v11): always ok — audit-only insert (amount 0).
+  // FULL FREE (v11 today): audit-only insert (amount 0). Real billing is a
+  // follow-up pass — until then tools are free but the ledger records usage.
   try {
     if (userId) {
       await prisma.$executeRaw`
         INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
-        VALUES (${'fmc_' + Date.now().toString(36)}, ${userId}, 0, 'mcp-free', ${'mcp tool usage (free)'}, 6000)
+        VALUES (${'$' + 'fmc_' + Date.now().toString(36)}, ${userId}, 0, 'mcp-free', ${'mcp tool usage (free)'}, 6000)
       `.catch(() => null)
     }
   } catch { /* audit only */ }
@@ -32,7 +34,7 @@ export const MCP_TOOLS: McpTool[] = [
   // ── catalog-mcp ──
   {
     server: 'catalog-mcp', name: 'search_catalog', costCr: 0,
-    description: 'Search the deduped 105-service catalog (free viewing)',
+    description: 'Search the deduped 106-service catalog (free viewing)',
     run: async (args) => {
       const q = String(args?.query || '').toLowerCase()
       const list = await prisma.serviceCatalog.findMany({ where: { isActive: true } })
@@ -42,8 +44,8 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── pinned-chat-mcp ──
   {
-    server: 'pinned-chat-mcp', name: 'activate_service', costCr: 0, // FULL FREE (v11)
-    description: 'Activate a service (bills the service creditCost)',
+    server: 'pinned-chat-mcp', name: 'activate_service', costCr: 0, // bills the service creditCost internally
+    description: 'Activate a service — bills the service creditCost',
     run: async (args, userId) => {
       const svc = await prisma.serviceCatalog.findUnique({ where: { id: String(args?.serviceId) } }).catch(() => null)
       if (!svc) return { error: 'SERVICE_NOT_FOUND' }
@@ -72,7 +74,7 @@ export const MCP_TOOLS: McpTool[] = [
       return { analysis: text, model, provider, charged: 5, remaining: (b as any).remaining }
     },
   },
-  // ── sequential-thinking-mcp / deep-think-mcp ──
+  // ── sequential-thinking-mcp ──
   {
     server: 'sequential-thinking-mcp', name: 'sequential_thinking', costCr: 0,
     description: 'Structured step-by-step reasoning — 2cr per call',
@@ -86,6 +88,7 @@ export const MCP_TOOLS: McpTool[] = [
       return { reasoning: text, charged: 2, remaining: (b as any).remaining }
     },
   },
+  // ── deep-think-mcp ──
   {
     server: 'deep-think-mcp', name: 'deep_think', costCr: 0,
     description: 'Deep analysis of a problem before coding — 2cr per call',
@@ -116,7 +119,7 @@ export const MCP_TOOLS: McpTool[] = [
   // ── webmcp-gateway-mcp ──
   {
     server: 'webmcp-gateway-mcp', name: 'list_webmcp_tools', costCr: 0,
-    description: 'List available WebMCP tools (free)',
+    description: 'List available MCP tools (free)',
     run: async () => MCP_TOOLS.map(t => ({ server: t.server, name: t.name, costCr: t.costCr, description: t.description })),
   },
   {
@@ -141,25 +144,239 @@ export const MCP_TOOLS: McpTool[] = [
       return { reply: text, model, provider, charged: 1, remaining: (b as any).remaining }
     },
   },
-  // ── analytics-mcp / insight-mcp ──
+  // ── facebook-mcp ──
+  // Facebook Graph API v18.0 social-marketing tools.
+  // Env: FACEBOOK_PAGE_ACCESS_TOKEN, FACEBOOK_PAGE_ID, FACEBOOK_AD_ACCOUNT_ID, FACEBOOK_IG_USER_ID
+  // Real posting requires a long-lived Page token with pages_manage_posts,
+  // pages_read_engagement, pages_show_list, instagram_content_publish (IG),
+  // ads_management + ads_read (ads). Without tokens, tools return UNAUTHENTICATED.
+  //
+  // Today: costCr = 0 because the real billing follow-up isn't wired yet.
+  // TODOs: move the per-tool charge out of the tool body into `bill()` at the
+  // registry wrapper and make `bill()` actually deduct (not just audit-insert 0).
   {
-    server: 'analytics-mcp', name: 'dashboard_stats', costCr: 0,
-    description: 'Read own dashboard stats (free)',
-    run: async (_args, userId) => {
-      if (!userId) return { error: 'UNAUTHENTICATED' }
-      const videos = await prisma.video.count({ where: { customerId: userId } }).catch(() => 0)
-      const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
-      return { videos, credits: Number(c?.credits ?? 0) }
+    server: 'facebook-mcp', name: 'facebook_create_post', costCr: 0,
+    description: 'Create a post to a Facebook Page — 1cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_create_post(args?.params || {}, userId)
+      return { ...r }
     },
   },
   {
-    server: 'insight-mcp', name: 'explain_analytics', costCr: 0,
-    description: 'Model explanation of your analytics — 2cr',
+    server: 'facebook-mcp', name: 'facebook_get_page_insights', costCr: 0,
+    description: 'Page insights (page_views, engaged users, impressions) — 2cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_get_page_insights(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'facebook_get_posts', costCr: 0,
+    description: 'List recent posts from a Page — 2cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_get_posts(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'facebook_reply_comment', costCr: 0,
+    description: 'Reply to a comment on a Page post — 1cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_reply_comment(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'facebook_create_ad', costCr: 0,
+    description: 'Create a FB ad (campaign → ad set → ad) — 5cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_create_ad(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'facebook_get_ad_insights', costCr: 0,
+    description: 'Ad/AdSet/Campaign insights — 2cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_get_ad_insights(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'instagram_create_post', costCr: 0,
+    description: 'Create an Instagram post via Graph API — 2cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await instagram_create_post(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'facebook_get_messages', costCr: 0,
+    description: 'Get Page conversations/messages — 2cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_get_messages(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'facebook_post_reel', costCr: 0,
+    description: 'Post a Reel to a Page (video) — 5cr (real billing TBD, multipart video required)',
+    run: async (args, userId) => {
+      const r = await facebook_post_reel(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'facebook-mcp', name: 'facebook_schedule_post', costCr: 0,
+    description: 'Schedule a Page post for a future ISO8601 time — 1cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await facebook_schedule_post(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  // ── seo-marketing-mcp ──
+  {
+    server: 'seo-marketing-mcp', name: 'seo_generate_meta', costCr: 0,
+    description: 'Generate SEO meta tags for a URL (title/desc/og/jsonLd) — 1cr (real billing TBD)',
+    run: async (args, userId) => {
+      const r = await (await import('./seo-marketing-mcp')).seo_generate_meta(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_generate_sitemap', costCr: 0,
+    description: 'Generate sitemap.xml from a URL list — free (build-time-ish)',
+    run: async (args, userId) => {
+      const r = await (await import('./seo-marketing-mcp')).seo_generate_sitemap(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_generate_robots', costCr: 0,
+    description: 'Generate robots.txt — free',
+    run: async (args, userId) => {
+      const r = await (await import('./seo-marketing-mcp')).seo_generate_robots(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_audit_page', costCr: 0,
+    description: 'Audit a page URL for SEO (title/desc/h1/images/links/schema/performance) — 2cr',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', ...b, bkash: '01822417463' }
-      const insight = await (await import('@/lib/model-in-every-point')).explainAnalytics(args?.stats || {})
-      return { insight, charged: 2, remaining: (b as any).remaining }
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 2, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).seo_audit_page(args?.params || {}, userId)
+      return { ...r, charged: 2, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_generate_schema', costCr: 0,
+    description: 'Generate schema.org JSON-LD (Organization/Product/Service/FAQ/Article) — 1cr',
+    run: async (args, userId) => {
+      const b = await bill(userId, 1)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 1, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).seo_generate_schema(args?.params || {}, userId)
+      return { ...r, charged: 1, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_generate_blog_post', costCr: 0,
+    description: 'Generate an SEO-optimized blog post (1500 words) via hostamar-1m-a — 10cr',
+    run: async (args, userId) => {
+      const b = await bill(userId, 10)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 10, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).seo_generate_blog_post(args?.params || {}, userId)
+      return { ...r, charged: 10, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'social_create_campaign', costCr: 0,
+    description: 'Create a cross-platform social campaign (FB/IG/LinkedIn/Twitter) — 5cr per platform',
+    run: async (args, userId) => {
+      const b = await bill(userId, 5)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 5, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).social_create_campaign(args?.params || {}, userId)
+      return { ...r, charged: 5, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'social_schedule_posts', costCr: 0,
+    description: 'Schedule posts across platforms — 5cr per post',
+    run: async (args, userId) => {
+      const b = await bill(userId, 5)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 5, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).social_schedule_posts(args?.params || {}, userId)
+      return { ...r, charged: 5, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'social_get_analytics', costCr: 0,
+    description: 'Aggregate social analytics across platforms — 2cr',
+    run: async (args, userId) => {
+      const b = await bill(userId, 2)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 2, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).social_get_analytics(args?.params || {}, userId)
+      return { ...r, charged: 2, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_generate_backlinks', costCr: 0,
+    description: 'Generate backlink outreach list from niche/competitors — 3cr',
+    run: async (args, userId) => {
+      const b = await bill(userId, 3)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 3, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).seo_generate_backlinks(args?.params || {}, userId)
+      return { ...r, charged: 3, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_optimize_content', costCr: 0,
+    description: 'Optimize existing content for SEO (keyword density/readability/internal links) — 3cr',
+    run: async (args, userId) => {
+      const b = await bill(userId, 3)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 3, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).seo_optimize_content(args?.params || {}, userId)
+      return { ...r, charged: 3, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'social_auto_post_new_service', costCr: 0,
+    description: 'Auto-post a new AI service to social + generate blog post — 5cr (cron)',
+    run: async (args, userId) => {
+      const b = await bill(userId, 5)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 5, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).social_auto_post_new_service(args?.params || {}, userId)
+      return { ...r, charged: 5, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_generate_faq_schema', costCr: 0,
+    description: 'Generate FAQPage schema.org JSON-LD — 1cr',
+    run: async (args, userId) => {
+      const b = await bill(userId, 1)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 1, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).seo_generate_faq_schema(args?.params || {}, userId)
+      return { ...r, charged: 1, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'seo_check_rankings', costCr: 0,
+    description: 'Check keyword rankings for a domain — 2cr (SERPAPI_KEY env)',
+    run: async (args, userId) => {
+      const b = await bill(userId, 2)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 2, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).seo_check_rankings(args?.params || {}, userId)
+      return { ...r, charged: 2, remaining: (b as any).remaining }
+    },
+  },
+  {
+    server: 'seo-marketing-mcp', name: 'social_generate_hashtags', costCr: 0,
+    description: 'Generate platform-optimized hashtags for a post — 1cr',
+    run: async (args, userId) => {
+      const b = await bill(userId, 1)
+      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 1, balance: b.balance, bkash: '01822417463' }
+      const r = await (await import('./seo-marketing-mcp')).social_generate_hashtags(args?.params || {}, userId)
+      return { ...r, charged: 1, remaining: (b as any).remaining }
     },
   },
 ]
