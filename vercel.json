@@ -141,6 +141,19 @@
           "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()"
         }
       ]
+    },
+    {
+      "source": "/api/video/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=60"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "public, s-maxage=60"
+        }
+      ]
     }
   ],
   "git": {

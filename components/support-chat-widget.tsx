@@ -21,6 +21,7 @@ export default function SupportChatWidget(){
     const t = (text || input).trim()
     if(!t || loading) return
     const user:Msg={role:'user',content:t}
+      if(t.includes('Reel')||t.includes('রিল')){ try{ window.location.href='/dashboard/reel' }catch{} return }
     setMsgs(m=>[...m,user]); setInput(''); setLoading(true)
     try{
       const r = await fetch('/api/support/chat',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({messages:[...msgs,user]})})
@@ -45,7 +46,7 @@ export default function SupportChatWidget(){
             <Bot size={18}/><span className="font-bold text-sm">Hostamar Support — AI (Google Gemini)</span><Sparkles size={14} className="ml-auto opacity-70"/>
           </div>
           <div className="flex gap-1.5 px-2 py-1.5 bg-zinc-900 border-b border-zinc-800 overflow-x-auto">
-            {['bKash payment','Storage help','TV not playing','Pricing'].map(q=>(
+            {['Reel বানাও','bKash payment','Storage help','TV not playing','Pricing'].map(q=>(
               <button key={q} onClick={()=>send(q)} className="text-[11px] px-2 py-1 rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 whitespace-nowrap">{q}</button>
             ))}
           </div>
