@@ -16,14 +16,25 @@ CORE_FAIL=$(grep -oP '\d+(?= failed)' /tmp/v22-core.log | tail -1); CORE_FAIL=${
 echo "  core 1-80: $CORE_PASS ✓ / $CORE_FAIL ✗ (rc=$CORE_RC)"
 PASS=$((PASS + CORE_PASS)); FAIL=$((FAIL + CORE_FAIL))
 
+
+# SHARED-AUTH: fresh signup → pool login → cached token (signup limiter is 5/h/IP
+# and nested suites share the IP; login has no limiter).
+HM_AUTH_POOL="v18-27461@example.com:v18-123456 v20-14898@example.com:v20-123456"
+hm_login(){ curl -s -m 30 -X POST $B/api/auth/login -H 'Content-Type: application/json' -d "{\"email\":\"$1\",\"password\":\"$2\"}" | python3 -c 'import sys,json
+try: print(json.load(sys.stdin).get("token",""))
+except Exception: print("")'; }
 EMAIL="v22-$RANDOM@example.com"
 curl -s -m 30 -X POST $B/api/auth/signup -H 'Content-Type: application/json' -d "{\"name\":\"V22\",\"email\":\"$EMAIL\",\"password\":\"$PW\"}" -o /tmp/v22s.json
 TOK=$(curl -s -m 30 -X POST $B/api/auth/login -H 'Content-Type: application/json' -d "{\"email\":\"$EMAIL\",\"password\":\"$PW\"}" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("token",""))')
+# hm_pool_fallback_done: signup 429 (5/h/IP shared by nested suites) → pool login → cache
 if [ -z "$TOK" ]; then
-  # signup rate-limited (5/hour/IP — nested suites share the IP). Reuse a known
-  # long-lived test user instead of failing: rotate among previously created ones.
-  TOK=$(cat /tmp/audit/user_token.txt 2>/dev/null || echo "")
+  for pair in $HM_AUTH_POOL; do
+    PE="${pair%%:*}"; PP="${pair##*:}"
+    TOK=$(hm_login "$PE" "$PP")
+    [ -n "$TOK" ] && break
+  done
 fi
+if [ -z "$TOK" ] && [ -f /tmp/audit/user_token.txt ]; then TOK=$(cat /tmp/audit/user_token.txt); fi
 H="Authorization: Bearer $TOK"
 [ -n "$TOK" ] && ok "81a. auth token ready (new or reused — signup limiter is shared across nested suites)" || bad "81a. login"
 mcpbal(){ curl -s -m 30 -H "$H" $B/api/dashboard/credits | python3 -c 'import sys,json
