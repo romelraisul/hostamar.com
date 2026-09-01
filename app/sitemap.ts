@@ -41,8 +41,15 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/dev/android', changeFrequency: 'weekly', priority: 0.7 },
 ]
 
-// ISR: re-check the DB hourly so newly SEO'd videos enter the sitemap
-// without a full rebuild.
+// V27 STRUCTURAL FIX for the prebuilt-deploy sitemap transient: the local
+// prebuilt build has NO DATABASE_URL (vercel pull redacts secrets), so a
+// build-time prerender bakes a 41-URL sitemap (0 TV) and vercel.json's 1h
+// Cache-Control serves it for an hour after each prebuilt deploy (V25/V26
+// observed 41 → heals at TTL). Making the route dynamic skips the prerender
+// entirely: the deployed function always queries the DB (with raw-SQL fallback)
+// on first request, then Vercel CDN caches it via the vercel.json header.
+// DB cost is identical (1 query/hour via CDN TTL) and the transient is gone.
+export const dynamic = 'force-dynamic'
 export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
