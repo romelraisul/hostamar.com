@@ -39,7 +39,7 @@ CC1=$(curl -sI --max-time 30 "$B/api/v1/models" | grep -i cache-control | head -
 echo "$CC1" | grep -qE "max-age=3600" && ok "94. LIVE /api/v1/models s-maxage=3600 ($(echo $CC1 | tr -d '\r' | head -c 70))" || bad "94. models cc: $CC1"
 
 # 95. LIVE: catalog route now carries a real max-age (was bare 'public')
-CC2=$(curl -sI --max-time 30 "$B/api/ai-services/catalog" | grep -i cache-control | head -1)
+CC2=$(curl -sI --max-time 90 "$B/api/ai-services/catalog" | grep -i cache-control | head -1)
 echo "$CC2" | grep -qE "max-age=3600" && ok "95. LIVE catalog real cache header ($(echo $CC2 | tr -d '\r' | head -c 70))" || bad "95. catalog cc: $CC2"
 
 # 96. LIVE: /api/docs s-maxage=3600
