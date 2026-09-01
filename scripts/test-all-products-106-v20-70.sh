@@ -41,28 +41,28 @@ B0=$(mcpbal)
 R=$(mcpcall '{"tool":"seo_generate_robots","params":{}}')
 B1=$(mcpbal)
 D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
-check "61. seo_generate_robots real deduction 1cr" "$D" "1.0"
+check "61. seo_generate_robots real deduction 1cr" "$D" "1"
 
 # 62. seo_generate_meta real deduction 1cr (LLM chain)
 B0=$(mcpbal)
 R=$(mcpcall '{"tool":"seo_generate_meta","params":{"url":"https://hostamar.com","title":"Hostamar AI"}}')
 B1=$(mcpbal)
 D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
-check "62. seo_generate_meta real deduction 1cr" "$D" "1.0"
+check "62. seo_generate_meta real deduction 1cr" "$D" "1"
 
 # 63. seo_generate_sitemap real deduction 1cr
 B0=$(mcpbal)
 R=$(mcpcall '{"tool":"seo_generate_sitemap","params":{"urls":[{"loc":"/pricing"}]}}')
 B1=$(mcpbal)
 D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
-check "63. seo_generate_sitemap real deduction 1cr" "$D" "1.0"
+check "63. seo_generate_sitemap real deduction 1cr" "$D" "1"
 
 # 64. sequential_thinking (core registry tool) real deduction 2cr — proves registry flip
 B0=$(mcpbal)
 R=$(mcpcall '{"tool":"sequential_thinking","params":{"problem":"1+1"}}')
 B1=$(mcpbal)
 D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
-check "64. sequential_thinking registry tool real deduction 2cr" "$D" "2.0"
+check "64. sequential_thinking registry tool real deduction 2cr" "$D" "2"
 
 # 65. facebook_create_post without token: honest UNAUTHENTICATED error AND no charge
 B0=$(mcpbal)
