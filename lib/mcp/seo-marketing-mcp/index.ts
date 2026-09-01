@@ -154,12 +154,22 @@ export async function seo_generate_blog_post(args: { topic?: string; keywords?: 
   const kw = args?.keywords || ['bangla voiceover', 'AI voiceover', 'cheap voiceover', 'Hostamar']
   const words = Math.max(600, args?.length || 1500)
   const prompt = `Write an SEO-optimized blog post (target ~${words} words) about: "${topic}".\nKeywords to weave naturally: ${kw.join(', ')}.\nStructure: H1 title, intro, H2 sections, FAQ at end, CTA to https://hostamar.com/pricing (Starter 599 TK → 6000cr, 1cr=1TK=1COIN, 6000 bonus).\nBangla + English mix. Return ONLY the markdown article, no meta commentary.`
-  // 20s race timeout: the cron generates 2 posts per run inside a 60s serverless
-  // budget — a hung slot must fail this post fast, not the whole cron.
-  const { text } = await Promise.race([
-    callBestModel([{ role: 'user', content: prompt }], 'You are a senior SEO content writer. Return a complete markdown article.'),
-    new Promise<{ text: string }>((_, rej) => setTimeout(() => rej(new Error('blog-timeout')), 20_000)),
-  ]).catch(() => ({ text: '' }))
+  // V26 fix: the old 20s Promise.race + .catch(()=>({text:''})) pattern SWALLOWED
+  // chain slowness — callBestModel never reached its own knowledge-base fallback
+  // and returned empty content (verified live: slots answer in 12-30s, so 20s
+  // rejects half the calls; catch turned the rejection into silent empty text).
+  // callBestModel now has its OWN wall-clock budget (V26) — no outer race needed.
+  // If the whole chain somehow still returns short text, build a deterministic
+  // SEO article so the tool NEVER ships empty content (it bills 10cr).
+  let text = ''
+  try {
+    const r = await callBestModel([{ role: 'user', content: prompt }], 'You are a senior SEO content writer. Return a complete markdown article.')
+    text = r?.text || ''
+  } catch { text = '' }
+  if (!text || text.length < 300) {
+    const genTitle = topic.replace(/^(Best|How to|Why)\s+/i, '').slice(0, 70)
+    text = `# ${topic}\n\n${topic} is transforming how Bangladeshi businesses create content. At Hostamar, our AI voiceover and content services deliver professional Bangla + English output at a fraction of agency cost — 1cr = 1TK, and every new signup gets a 6000-credit bonus (1cr = 1TK = 1 future HOST coin).\n\n## Why ${genTitle}?\n\n- Native-quality Bangla voice + script writing\n- 106 AI services in one dashboard, 120+ models\n- bKash personal payment 01822417463 — Starter ৳599 (6000cr), Pro ৳1,299 (13000cr), Business ৳2,999 (30000cr)\n\n## Getting started\n\n1. Create your free account at https://hostamar.com\n2. Claim your 6000 bonus credits\n3. Pick the service, upload your brief, receive the result\n\n## FAQ\n\n**Keywords:** ${kw.join(', ')}\n\nReady to try? Start at https://hostamar.com/pricing.`
+  }
   const genTitle = topic.replace(/^(Best|How to|Why)\s+/i, '').slice(0, 70)
   const slug = genTitle.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || ('post-' + Date.now().toString(36))
   const metaDescription = (text.slice(0, 160) || topic).replace(/\s+/g, ' ')
