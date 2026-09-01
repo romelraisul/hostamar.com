@@ -30,6 +30,7 @@ import {
   Clock,
   ChevronRight,
   Tv,
+  Clapperboard,
 } from 'lucide-react'
 import { PRODUCT_NAV } from '@/lib/products'
 import { DASHBOARD_ROUTES } from '@/lib/dashboard-routes'
@@ -131,6 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/services', icon: Server, label: 'Services', labelBn: 'সার্ভিস', description: 'VPS/RDP' },
     { href: '/dashboard/services/new', icon: Plus, label: 'New Service', labelBn: 'নতুন সার্ভিস', description: 'অর্ডার করুন' },
     { href: '/dashboard/analytics', icon: BarChart3, label: t('nav.analytics') || 'Analytics' },
+    { href: '/dashboard/reel', icon: Clapperboard, label: 'AI Reel Generator', labelBn: 'AI রিল জেনারেটর', badge: 'NEW', description: 'বাংলা রিল — ৪ স্লাইড + ভয়েসওভার' },
     { href: '/dashboard/tv', icon: Tv, label: 'My TV' },
     { href: '/dashboard/payment', icon: CreditCard, label: t('nav.payment') || 'Billing' },
     { href: '/dashboard/referral', icon: Gift, label: t('nav.referral') || 'Referral' },
