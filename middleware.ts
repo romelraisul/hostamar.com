@@ -133,6 +133,9 @@ export async function middleware(request: NextRequest) {
     '/api/v1/chat/completions',
     '/api/showcase',
     '/api/showcase/:path*',
+    // V25 AI Reel — public preview via x-user-id; full features require login.
+    '/api/video/reel/generate',
+    '/api/video/reel/upload-logo',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
