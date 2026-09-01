@@ -19,6 +19,10 @@ import { env } from '@/lib/env'
 const STATEMENTS: string[] = [
   // V26: chat product — Conversation + Message tables (prod predates them;
   // /api/chat/conversations self-heals on first authed call).
+  // NOTE: prod may ALREADY have these tables in an older shape (verified:
+  // Conversation exists without userId — early migration). CREATE IF NOT EXISTS
+  // is a no-op on shape, so ALTER ADD COLUMN IF NOT EXISTS heals the columns
+  // BEFORE the indexes reference them.
   `CREATE TABLE IF NOT EXISTS "Conversation" (
   "id" TEXT NOT NULL,
   "userId" TEXT NOT NULL,
@@ -27,6 +31,10 @@ const STATEMENTS: string[] = [
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
 )`,
+  `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "userId" TEXT`,
+  `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "title" TEXT NOT NULL DEFAULT 'New conversation'`,
+  `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP`,
+  `ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP`,
   `CREATE INDEX IF NOT EXISTS "Conversation_userId_createdAt_idx" ON "Conversation"("userId","createdAt")`,
   `CREATE TABLE IF NOT EXISTS "Message" (
   "id" TEXT NOT NULL,
@@ -38,6 +46,11 @@ const STATEMENTS: string[] = [
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 )`,
+  `ALTER TABLE "Message" ADD COLUMN IF NOT EXISTS "userId" TEXT`,
+  `ALTER TABLE "Message" ADD COLUMN IF NOT EXISTS "role" TEXT`,
+  `ALTER TABLE "Message" ADD COLUMN IF NOT EXISTS "content" TEXT`,
+  `ALTER TABLE "Message" ADD COLUMN IF NOT EXISTS "model" TEXT`,
+  `ALTER TABLE "Message" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP`,
   `CREATE INDEX IF NOT EXISTS "Message_conversationId_idx" ON "Message"("conversationId")`,
   `CREATE INDEX IF NOT EXISTS "Message_conversationId_createdAt_idx" ON "Message"("conversationId","createdAt")`,
   // V21: cron-generated SEO blog posts (auto blog per new AI service)
