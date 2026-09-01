@@ -17,17 +17,23 @@ export type McpTool = {
 }
 
 async function bill(userId: string | undefined, cost: number): Promise<{ ok: true; remaining: number } | { ok: false; needed: number; balance: number }> {
-  // FULL FREE (v11 today): audit-only insert (amount 0). Real billing is a
-  // follow-up pass — until then tools are free but the ledger records usage.
+  // V20 REAL DEDUCTION: race-safe UPDATE guarded by balance; authed users pay,
+  // anonymous/system callers (cron, public viewing) stay free. 1cr = 1TK = 1COIN.
+  if (!userId || cost === 0) return { ok: true, remaining: -1 }
   try {
-    if (userId) {
-      await prisma.$executeRaw`
-        INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
-        VALUES (${'$' + 'fmc_' + Date.now().toString(36)}, ${userId}, 0, 'mcp-free', ${'mcp tool usage (free)'}, 6000)
-      `.catch(() => null)
-    }
-  } catch { /* audit only */ }
-  return { ok: true, remaining: 6000 }
+    const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
+    const bal = Number(c?.credits ?? 0)
+    if (bal < cost) return { ok: false, needed: cost, balance: bal }
+    const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${cost} WHERE id = ${userId} AND credits >= ${cost}`
+    if (Number(dec) === 0) return { ok: false, needed: cost, balance: bal }
+    const after: any = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${userId} LIMIT 1`
+    const remaining = Number(after?.[0]?.credits ?? 0)
+    await prisma.$executeRaw`
+      INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
+      VALUES (${'reg_' + Date.now().toString(36)}, ${userId}, ${-cost}, 'mcp', ${'mcp tool usage (paid)'}, ${remaining})
+    `.catch(() => null)
+    return { ok: true, remaining }
+  } catch { return { ok: true, remaining: -1 } } // DB unavailable: allow (audit row lost, not a customer outage)
 }
 
 export const MCP_TOOLS: McpTool[] = [
@@ -62,7 +68,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── vision-mcp ──
   {
-    server: 'vision-mcp', name: 'analyze_image', costCr: 0,
+    server: 'vision-mcp', name: 'analyze_image', costCr: 5,
     description: 'Analyze an image (vision model) — 5cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 5)
@@ -76,7 +82,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── sequential-thinking-mcp ──
   {
-    server: 'sequential-thinking-mcp', name: 'sequential_thinking', costCr: 0,
+    server: 'sequential-thinking-mcp', name: 'sequential_thinking', costCr: 2,
     description: 'Structured step-by-step reasoning — 2cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
@@ -90,7 +96,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── deep-think-mcp ──
   {
-    server: 'deep-think-mcp', name: 'deep_think', costCr: 0,
+    server: 'deep-think-mcp', name: 'deep_think', costCr: 2,
     description: 'Deep analysis of a problem before coding — 2cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
@@ -104,7 +110,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── browser-mcp ──
   {
-    server: 'browser-mcp', name: 'run_browser_agent', costCr: 0,
+    server: 'browser-mcp', name: 'run_browser_agent', costCr: 5,
     description: 'Run a browser-agent task — 5cr per run',
     run: async (args, userId) => {
       const b = await bill(userId, 5)
@@ -133,7 +139,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── model-gateway-mcp ──
   {
-    server: 'model-gateway-mcp', name: 'gateway_chat', costCr: 0,
+    server: 'model-gateway-mcp', name: 'gateway_chat', costCr: 1,
     description: 'Chat via the 120-model gateway — 1cr per call',
     run: async (args, userId) => {
       const b = await bill(userId, 1)
@@ -155,7 +161,7 @@ export const MCP_TOOLS: McpTool[] = [
   // TODOs: move the per-tool charge out of the tool body into `bill()` at the
   // registry wrapper and make `bill()` actually deduct (not just audit-insert 0).
   {
-    server: 'facebook-mcp', name: 'facebook_create_post', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_create_post', costCr: 2,
     description: 'Create a post to a Facebook Page — 1cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_create_post(args?.params || {}, userId)
@@ -163,7 +169,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_get_page_insights', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_get_page_insights', costCr: 1,
     description: 'Page insights (page_views, engaged users, impressions) — 2cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_get_page_insights(args?.params || {}, userId)
@@ -171,7 +177,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_get_posts', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_get_posts', costCr: 1,
     description: 'List recent posts from a Page — 2cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_get_posts(args?.params || {}, userId)
@@ -179,7 +185,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_reply_comment', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_reply_comment', costCr: 1,
     description: 'Reply to a comment on a Page post — 1cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_reply_comment(args?.params || {}, userId)
@@ -187,7 +193,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_create_ad', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_create_ad', costCr: 10,
     description: 'Create a FB ad (campaign → ad set → ad) — 5cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_create_ad(args?.params || {}, userId)
@@ -195,7 +201,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_get_ad_insights', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_get_ad_insights', costCr: 2,
     description: 'Ad/AdSet/Campaign insights — 2cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_get_ad_insights(args?.params || {}, userId)
@@ -203,7 +209,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'instagram_create_post', costCr: 0,
+    server: 'facebook-mcp', name: 'instagram_create_post', costCr: 3,
     description: 'Create an Instagram post via Graph API — 2cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await instagram_create_post(args?.params || {}, userId)
@@ -211,7 +217,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_get_messages', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_get_messages', costCr: 1,
     description: 'Get Page conversations/messages — 2cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_get_messages(args?.params || {}, userId)
@@ -219,7 +225,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_post_reel', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_post_reel', costCr: 5,
     description: 'Post a Reel to a Page (video) — 5cr (real billing TBD, multipart video required)',
     run: async (args, userId) => {
       const r = await facebook_post_reel(args?.params || {}, userId)
@@ -227,7 +233,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'facebook-mcp', name: 'facebook_schedule_post', costCr: 0,
+    server: 'facebook-mcp', name: 'facebook_schedule_post', costCr: 2,
     description: 'Schedule a Page post for a future ISO8601 time — 1cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await facebook_schedule_post(args?.params || {}, userId)
@@ -236,7 +242,7 @@ export const MCP_TOOLS: McpTool[] = [
   },
   // ── seo-marketing-mcp ──
   {
-    server: 'seo-marketing-mcp', name: 'seo_generate_meta', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_generate_meta', costCr: 1,
     description: 'Generate SEO meta tags for a URL (title/desc/og/jsonLd) — 1cr (real billing TBD)',
     run: async (args, userId) => {
       const r = await (await import('./seo-marketing-mcp')).seo_generate_meta(args?.params || {}, userId)
@@ -244,7 +250,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_generate_sitemap', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_generate_sitemap', costCr: 1,
     description: 'Generate sitemap.xml from a URL list — free (build-time-ish)',
     run: async (args, userId) => {
       const r = await (await import('./seo-marketing-mcp')).seo_generate_sitemap(args?.params || {}, userId)
@@ -252,7 +258,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_generate_robots', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_generate_robots', costCr: 1,
     description: 'Generate robots.txt — free',
     run: async (args, userId) => {
       const r = await (await import('./seo-marketing-mcp')).seo_generate_robots(args?.params || {}, userId)
@@ -260,7 +266,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_audit_page', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_audit_page', costCr: 2,
     description: 'Audit a page URL for SEO (title/desc/h1/images/links/schema/performance) — 2cr',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
@@ -270,7 +276,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_generate_schema', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_generate_schema', costCr: 1,
     description: 'Generate schema.org JSON-LD (Organization/Product/Service/FAQ/Article) — 1cr',
     run: async (args, userId) => {
       const b = await bill(userId, 1)
@@ -280,7 +286,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_generate_blog_post', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_generate_blog_post', costCr: 10,
     description: 'Generate an SEO-optimized blog post (1500 words) via hostamar-1m-a — 10cr',
     run: async (args, userId) => {
       const b = await bill(userId, 10)
@@ -290,7 +296,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'social_create_campaign', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'social_create_campaign', costCr: 5,
     description: 'Create a cross-platform social campaign (FB/IG/LinkedIn/Twitter) — 5cr per platform',
     run: async (args, userId) => {
       const b = await bill(userId, 5)
@@ -300,7 +306,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'social_schedule_posts', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'social_schedule_posts', costCr: 2,
     description: 'Schedule posts across platforms — 5cr per post',
     run: async (args, userId) => {
       const b = await bill(userId, 5)
@@ -310,7 +316,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'social_get_analytics', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'social_get_analytics', costCr: 2,
     description: 'Aggregate social analytics across platforms — 2cr',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
@@ -320,7 +326,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_generate_backlinks', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_generate_backlinks', costCr: 5,
     description: 'Generate backlink outreach list from niche/competitors — 3cr',
     run: async (args, userId) => {
       const b = await bill(userId, 3)
@@ -330,7 +336,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_optimize_content', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_optimize_content', costCr: 3,
     description: 'Optimize existing content for SEO (keyword density/readability/internal links) — 3cr',
     run: async (args, userId) => {
       const b = await bill(userId, 3)
@@ -340,7 +346,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'social_auto_post_new_service', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'social_auto_post_new_service', costCr: 3,
     description: 'Auto-post a new AI service to social + generate blog post — 5cr (cron)',
     run: async (args, userId) => {
       const b = await bill(userId, 5)
@@ -350,7 +356,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_generate_faq_schema', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_generate_faq_schema', costCr: 1,
     description: 'Generate FAQPage schema.org JSON-LD — 1cr',
     run: async (args, userId) => {
       const b = await bill(userId, 1)
@@ -360,7 +366,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'seo_check_rankings', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'seo_check_rankings', costCr: 3,
     description: 'Check keyword rankings for a domain — 2cr (SERPAPI_KEY env)',
     run: async (args, userId) => {
       const b = await bill(userId, 2)
@@ -370,7 +376,7 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
-    server: 'seo-marketing-mcp', name: 'social_generate_hashtags', costCr: 0,
+    server: 'seo-marketing-mcp', name: 'social_generate_hashtags', costCr: 1,
     description: 'Generate platform-optimized hashtags for a post — 1cr',
     run: async (args, userId) => {
       const b = await bill(userId, 1)
