@@ -36,3 +36,6 @@ video-output/
 *.mkv
 *.wav
 *.flac
+
+.env.bak-v25build
+.env.local.bak-v25build
