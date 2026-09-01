@@ -136,6 +136,8 @@ export async function middleware(request: NextRequest) {
     // V25 AI Reel — public preview via x-user-id; full features require login.
     '/api/video/reel/generate',
     '/api/video/reel/upload-logo',
+    // V26 AI gateway health — public, 60s-cached chain probe (never 504s).
+    '/api/ai/health',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
