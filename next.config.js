@@ -20,6 +20,7 @@ const nextConfig = {
   images: {
     unoptimized: false,
     formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 86400, // V24: 24h image cache TTL
     deviceSizes: [640, 768, 1024, 1280, 1536],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
@@ -96,8 +97,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  swcMinify: true, // explicit (Next 14 default) — SWC minify
+  compiler: {
+    // V24: strip console.log/info in prod (keep error/warn) — smaller client bundles
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
   experimental: {
     optimizeCss: false,
+    serverActions: { allowedOrigins: ['hostamar.com', '*.vercel.app'] },
     scrollRestoration: true,
     optimizePackageImports: ['lucide-react'],
     serverComponentsExternalPackages: ['playwright-core'],
