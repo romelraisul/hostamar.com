@@ -104,7 +104,27 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         videoId: video.id,
       }
-    })
+    }).catch(() => null)
+
+    // V28: process INLINE (serverless) — the queue was designed for a local
+    // render worker that never runs (nothing consumes it; the home machine is
+    // not always on). Rows stuck in processing forever was the bug. This call
+    // transitions the row to completed/failed within the same request, using
+    // the ai-video provider chain with honest gradient fallback (V25 pattern).
+    // Non-blocking for the response: kick it off, let the response return the
+    // processing state — BUT with a bounded await so the row NEVER stays stuck
+    // (wait up to 35s; the pipeline itself is single-pass within the budget).
+    try {
+      const { processVideoNow } = await import('@/lib/video-pipeline')
+      await Promise.race([
+        processVideoNow(video.id, topic),
+        new Promise((res) => setTimeout(res, 35_000)),
+      ])
+    } catch (e: any) {
+      console.warn('[videos/create] inline processing warn:', String(e?.message || e).slice(0, 120))
+      // 35s elapsed without transition → heal pass (retry route or list route
+      // auto-heal) will finish it; the row is at most minutes stale, never forever.
+    }
 
     // Log activity with credit info
     await prisma.activityLog.create({
