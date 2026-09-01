@@ -1542,6 +1542,25 @@ model ServiceChatMessage {
 }
 
 // ── SEO: Preferred Sources / submit tracking ──
+// ── V21: cron-generated SEO blog posts (auto blog per new AI service) ──
+model BlogPost {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  excerpt         String?
+  metaDescription String?
+  keywords        String[]
+  content         String
+  serviceId       String?
+  authorId        String?
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([serviceId])
+}
+
 model SeoEvent {
   id        String   @id @default(cuid())
   type      String // preferred_source_click | seo_submit_google | seo_submit_bing

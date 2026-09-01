@@ -354,6 +354,14 @@ export const MCP_TOOLS: McpTool[] = [
     },
   },
   {
+    server: 'seo-marketing-mcp', name: 'seo_ping_gsc', costCr: 2,
+    description: 'Ping Google Indexing API (service account) + Bing with sitemap/URLs — 2cr',
+    run: async (args, userId) => {
+      const r = await (await import('./seo-marketing-mcp')).seo_ping_gsc(args?.params || {}, userId)
+      return { ...r }
+    },
+  },
+  {
     server: 'seo-marketing-mcp', name: 'social_generate_hashtags', costCr: 1,
     description: 'Generate platform-optimized hashtags for a post — 1cr',
     run: async (args, userId) => {
