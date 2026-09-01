@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const p = join(process.cwd(), 'lib', 'docs', lang === 'bn' ? 'bn' : '', 'content.json')
     const data = readFileSync(p, 'utf-8')
     return new NextResponse(data, {
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=3600, max-age=300, stale-while-revalidate=86400' },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400' },
     })
   } catch {
     return NextResponse.json({ sections: [] }, { status: 200 })
