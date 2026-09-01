@@ -49,22 +49,29 @@ B0=$(mcpbal)
 PG=$(mcpcall '{"tool":"seo_ping_gsc","params":{"sitemapUrl":"https://hostamar.com/sitemap.xml"}}')
 B1=$(mcpbal)
 D=$(python3 -c "print(round($B0-$B1,1))" | sed "s/\.0$//")
-NOTE=$(echo "$PG" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("result",{}).get("note","") or json.load(open("/dev/null")).x if False else json.load(sys.stdin).get("result",{}).get("note","MISSING")' 2>/dev/null || echo "MISSING")
-GSA=$(echo "$NOTE" | grep -c "GOOGLE_SERVICE_ACCOUNT_JSON missing")
+# GSC state: honest missing-note OR live submission (both = PASS; anything else = fail)
+PG_JSON=$(echo "$PG" | python3 -c 'import sys,json
+try:
+  r=json.load(sys.stdin).get("result",{})
+  g=r.get("google",[])
+  if isinstance(g,list) and g and g[0].get("ok"): print("LIVE")
+  elif "GOOGLE_SERVICE_ACCOUNT_JSON" in str(r.get("note","")): print("HONEST")
+  else: print("OTHER")
+except Exception: print("OTHER")' 2>/dev/null)
 BING=$(echo "$PG" | grep -c '"bing"')
-if [ "$GSA" -ge 1 ] && [ "$BING" -ge 1 ]; then
-  ok "81. GSC honest: GOOGLE_SERVICE_ACCOUNT_JSON missing note + Bing ping attempted (2cr)"
+if [ "$PG_JSON" = "HONEST" ] && [ "$BING" -ge 1 ]; then
+  ok "81. GSC honest: GOOGLE_SERVICE_ACCOUNT_JSON missing note + Bing attempted (2cr) — owner runbook docs/v21-audit.md"
+elif [ "$PG_JSON" = "LIVE" ]; then
+  ok "81. GSC LIVE: Indexing API submission ok (owner JSON configured)"
 else
-  # IF the owner added the JSON, google results should be real submissions
-  GOK=$(echo "$PG" | python3 -c 'import sys,json;r=json.load(sys.stdin).get("result",{});g=r.get("google",[]);print(1 if (isinstance(g,list) and g and g[0].get("ok")) else 0)' 2>/dev/null)
-  [ "$GOK" = "1" ] && ok "81. GSC LIVE: Indexing API submission ok (owner JSON configured)" || bad "81. GSC unexpected: $PG"
+  bad "81. GSC unexpected: $PG"
 fi
 
 # 82. FB honest state (no token) — 0cr on failed call
 B0=$(mcpbal)
 FB=$(mcpcall '{"tool":"facebook_create_post","params":{"message":"v22 test"}}')
 B1=$(mcpbal)
-DFB=$(python3 -c "print(round($B0-$B1,1))" | sed "s/\.0$")
+DFB=$(python3 -c "print(round($B0-$B1,1))" 2>/dev/null | sed 's/\.0$//')
 FBERR=$(echo "$FB" | python3 -c 'import sys,json;d=json.load(sys.stdin);r=d.get("result",{});print(1 if "FACEBOOK_PAGE" in str(r.get("error","")) else (1 if r.get("postId") else 0))' 2>/dev/null)
 if [ "$FBERR" = "1" ]; then
   # got error-or-postId. If postId → LIVE (owner token configured) — verify permalink shape
