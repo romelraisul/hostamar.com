@@ -40,10 +40,50 @@ export default function VideosPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [retrying, setRetrying] = useState<string | null>(null)
 
   useEffect(() => {
     fetchVideos()
   }, [])
+
+  // V28: auto-refresh every 10s while any video is processing (or a stuck legacy
+  // row exists) — plus a one-time heal sweep for rows stranded by the pre-V28
+  // queue design (nothing ever consumed it). Clears "processing forever".
+  useEffect(() => {
+    if (loading) return
+    const anyStuck = videos.some(
+      (v) => v.status === 'processing' && Date.now() - new Date(v.createdAt).getTime() > 5 * 60_000,
+    )
+    if (anyStuck) {
+      fetch('/api/videos/retry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heal: true }),
+      })
+        .then(() => fetchVideos())
+        .catch(() => {})
+    }
+    const anyProcessing = videos.some((v) => v.status === 'processing')
+    if (!anyProcessing) return
+    const iv = setInterval(() => fetchVideos(), 10_000)
+    return () => clearInterval(iv)
+  }, [videos, loading])
+
+  async function retryVideo(videoId: string) {
+    setRetrying(videoId)
+    try {
+      await fetch('/api/videos/retry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId }),
+      })
+      await fetchVideos()
+    } catch (e) {
+      console.error('retry failed', e)
+    } finally {
+      setRetrying(null)
+    }
+  }
 
   async function fetchVideos() {
     try {
@@ -89,9 +129,10 @@ export default function VideosPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ready':
+      case 'completed':
         return 'bg-green-100 text-green-700 border-green-200'
       case 'processing':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200 animate-pulse'
       case 'failed':
         return 'bg-red-100 text-red-700 border-red-200'
       default:
@@ -283,6 +324,19 @@ export default function VideosPage() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                    {(video.status === 'processing' || video.status === 'failed') && (
+                      <button
+                        onClick={() => retryVideo(video.id)}
+                        disabled={retrying === video.id}
+                        className="p-2 text-gray-400 hover:text-[#0E7C3A] hover:bg-green-50 rounded-lg transition-colors disabled:opacity-40"
+                        title="আবার চালান (retry pipeline)"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 4v6h6M23 20v-6h-6" />
+                          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

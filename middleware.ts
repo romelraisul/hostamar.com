@@ -138,6 +138,8 @@ export async function middleware(request: NextRequest) {
     '/api/video/reel/upload-logo',
     // V26 AI gateway health — public, 60s-cached chain probe (never 504s).
     '/api/ai/health',
+    // V28 owner-check — public honest status board (no secrets in output).
+    '/api/owner-check',
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
