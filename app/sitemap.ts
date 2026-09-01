@@ -79,8 +79,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 0.8,
     }))
-  } catch {
-    // DB unreachable (e.g. build sandbox) — static routes only.
+  } catch (e1: any) {
+    // V25: ORM path failed (observed on prebuilt deploy) — retry with raw SQL
+    // so the sitemap never silently loses the 83 TV URLs again.
+    console.warn('[sitemap] tvVideoSeo.findMany failed:', String(e1?.message || e1).slice(0, 200))
+    try {
+      const rows: any[] = await (prisma as any).$queryRawUnsafe('SELECT slug, "updatedAt" FROM "TvVideoSeo" ORDER BY "updatedAt" DESC LIMIT 200') as any[]
+      videoEntries = (rows || []).map((v: any) => ({
+        url: `${SITE_URL}/tv/watch/${v.slug}`,
+        lastModified: v.updatedAt ? new Date(v.updatedAt) : now,
+        changeFrequency: 'daily' as const,
+        priority: 0.8,
+      }))
+    } catch (e2: any) {
+      console.warn('[sitemap] raw SQL fallback failed:', String(e2?.message || e2).slice(0, 200))
+    }
   }
 
   return [...base, ...blogEntries, ...videoEntries]
