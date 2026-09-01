@@ -17,6 +17,29 @@ import { env } from '@/lib/env'
 
 // One statement per entry — never concatenate.
 const STATEMENTS: string[] = [
+  // V26: chat product — Conversation + Message tables (prod predates them;
+  // /api/chat/conversations self-heals on first authed call).
+  `CREATE TABLE IF NOT EXISTS "Conversation" (
+  "id" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "title" TEXT NOT NULL DEFAULT 'New conversation',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "Conversation_userId_createdAt_idx" ON "Conversation"("userId","createdAt")`,
+  `CREATE TABLE IF NOT EXISTS "Message" (
+  "id" TEXT NOT NULL,
+  "conversationId" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "role" TEXT NOT NULL,
+  "content" TEXT NOT NULL,
+  "model" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "Message_conversationId_idx" ON "Message"("conversationId")`,
+  `CREATE INDEX IF NOT EXISTS "Message_conversationId_createdAt_idx" ON "Message"("conversationId","createdAt")`,
   // V21: cron-generated SEO blog posts (auto blog per new AI service)
   `CREATE TABLE IF NOT EXISTS "BlogPost" (
   "id" TEXT NOT NULL,

@@ -19,9 +19,10 @@ export async function GET() {
   let modelsCount: number | null = null
   let modelsStatus = 'unknown'
   try {
-    const r = await fetch('https://hostamar.com/api/v1/models', {
+    const r = await fetch('https://ai.hostamar.com/v1/models', {
+      // UA set: Cloudflare's bot heuristics 403 bare fetch() probes without one.
+      headers: { 'User-Agent': 'HostamarHealthProbe/1.0' },
       signal: AbortSignal.timeout(5_000),
-      headers: { 'x-skip-rewrite': '1' },
     })
     modelsStatus = String(r.status)
     if (r.ok) {
@@ -35,10 +36,10 @@ export async function GET() {
   // 2) Live completion probe — tiny "hi" through the full chain
   let chat: any = { reachable: false }
   try {
-    const r = await fetch('https://hostamar.com/api/v1/chat/completions', {
+    const r = await fetch('https://ai.hostamar.com/v1/chat/completions', {
       method: 'POST',
       signal: AbortSignal.timeout(20_000),
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'HostamarHealthProbe/1.0' },
       body: JSON.stringify({ model: 'hostamar-1m-a', messages: [{ role: 'user', content: 'hi' }], max_tokens: 10 }),
     })
     const j: any = await r.json().catch(() => ({}))
