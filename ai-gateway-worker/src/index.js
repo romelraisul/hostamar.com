@@ -202,7 +202,43 @@ export default {
 
     if (url.pathname === "/health") {
       const { models, source } = await getCatalog(env);
-      return Response.json({ ok: true, models: models.length, catalogSource: source });
+      // V26: upstream probes so /health reports the whole chain honestly.
+      let kilo = { configured: Boolean(env.KILO_API_KEY), reachable: false, latencyMs: null };
+      try {
+        const t0 = Date.now();
+        const probe = await fetch(`${env.KILO_API_BASE}/models`, { signal: AbortSignal.timeout(4000) });
+        kilo.reachable = probe.ok;
+        kilo.latencyMs = Date.now() - t0;
+      } catch (_) { /* honest unreachable */ }
+      return new Response(JSON.stringify({
+        ok: true,
+        models: models.length,
+        catalogSource: source,
+        upstreams: {
+          kilo,
+          internalKey: true,
+          knowledgeBase: true,
+        },
+        serving: "cloudflare-worker", // note: ai.hostamar.com DNS currently → Vercel
+      }), {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=30",
+        },
+      });
+    }
+
+    // V26: CORS preflight for browser clients
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, x-internal-key",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
     }
 
     // KV Binance rate for Worker costTaka -> usdtBdt conversion (cron writes here)

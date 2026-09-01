@@ -1,0 +1,113 @@
+# docker-compose.all.yml — V26 6-product local stack (Hostamar monorepo)
+#
+# Products (এক লগইনে ৬টি প্রোডাক্ট): Video (reel) + Hosting + Chat + Browser + IDE + Gaming.
+# Single auth: hostamar-app's lib/auth.ts JWT (HttpOnly cookie) — every service
+# below is reached THROUGH the app's APIs (app/api/*), never directly exposed.
+# Billing: bKash 01822417463 via the app's /api/payment/* — one verify path for all.
+#
+# MERGE-SAFE: this is a NEW file; docker-compose.yml/.prod/.vps are untouched.
+# OSS tools from the V26 spec are referenced as IMAGES (no repo vendoring —
+# 1.5GB+ of cloned sources doesn't belong in the app repo). Profiles let the
+# owner opt in per product: `docker compose -f docker-compose.all.yml --profile chat up`
+#
+# Zero-cost rule: every service has a free tier / local-only mode. Nothing here
+# is required for prod (hostamar.com runs on Vercel + CF + B2 + Neon); this
+# compose is the BDIX/self-host expansion path on the home VPS.
+
+services:
+  # ── Core app: the ONLY public entry. Proxies/authorizes all products. ──
+  hostamar-app:
+    build: .
+    ports: ["3005:3000"]
+    env_file: .env.local
+    environment:
+      - NEXT_PUBLIC_BUILD_TARGET=api   # serve /api/* locally (no /api rewrite — avoids proxy loop)
+    depends_on: [ollama]
+    restart: unless-stopped
+
+  # ── Local models (free, no key): chat/browser/IDE/game inference ──
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
+    volumes: ["ollama-data:/root/.ollama"]
+    restart: unless-stopped
+
+  # ── Chat: ChatGPT-style UI + live support desk (profile: chat) ──
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    profiles: ["chat"]
+    ports: ["8080:8080"]
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=false               # auth handled by hostamar-app proxy header
+    volumes: ["open-webui:/app/backend/data"]
+    depends_on: [ollama]
+    restart: unless-stopped
+
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    profiles: ["chat"]
+    ports: ["3002:3000"]
+    environment:
+      - SECRET_BASE=change-me-in-env-local
+      - RAILS_ENV=production
+    volumes: ["chatwoot-data:/app/storage"]
+    restart: unless-stopped
+
+  # ── Hosting: Coolify-style PaaS (profile: hosting) ──
+  # Full Coolify stack is its own installer; this is the lightweight single-node
+  # entry. The app's /api/hosting/* routes talk to its API over the docker socket.
+  coolify:
+    image: coollabsio/coolify:latest
+    profiles: ["hosting"]
+    ports: ["3000:3000"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - coolify-data:/data/coolify
+    restart: unless-stopped
+
+  # ── Browser: anti-detect browsing (profile: browser) ──
+  # Camoufox (Firefox fingerprint-spoof) driven by FastAPI shim exposing
+  # POST /v1/browse {task} — matches app/api/browser/* contracts.
+  camofox-browser:
+    image: ghcr.io/daijro/camoufox:latest
+    profiles: ["browser"]
+    ports: ["3003:3003"]
+    environment:
+      - CAMOUFOX_HEADLESS=true
+    restart: unless-stopped
+
+  # ── IDE: VS Code in the browser (profile: ide) ──
+  code-server:
+    image: codercom/code-server:latest
+    profiles: ["ide"]
+    ports: ["8443:8080"]
+    environment:
+      - PASSWORD=${CODE_SERVER_PASSWORD:-hostamar-change-me}
+    volumes:
+      - code-server-projects:/home/coder/project
+    restart: unless-stopped
+
+  # ── Gaming: Sunshine host (profile: gaming) ──
+  # GameStream host (NVIDIA/AMD/intel). Moonlight is the CLIENT app on the
+  # user's device — not a service here. Pterodactyl (game server panel) is a
+  # full PHP stack; use its official compose when scaling beyond Sunshine.
+  sunshine:
+    image: lizardbyte/sunshine:latest
+    profiles: ["gaming"]
+    ports:
+      - "47989:47989/tcp"
+      - "47990:47990/tcp"
+      - "48010:48010/tcp"
+      - "47998-48000:47998-48000/udp"
+    environment:
+      - SUNSHINE_USER=hostamar
+    privileged: true   # GPU/display access on the host VPS
+    restart: unless-stopped
+
+volumes:
+  ollama-data:
+  open-webui:
+  chatwoot-data:
+  coolify-data:
+  code-server-projects:
