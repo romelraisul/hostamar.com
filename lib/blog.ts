@@ -177,6 +177,8 @@ export function getPost(slug: string): Post | undefined {
   return POSTS.find((p) => p.slug === slug)
 }
 
+
+
 export const FEATURED = POSTS.find((p) => p.slug === 'ai-marketing-video')!
 export const GRID = POSTS.filter((p) => p.slug !== 'ai-marketing-video')
 export const POPULAR = [...POSTS].sort((a, b) => b.views - a.views).slice(0, 3)
