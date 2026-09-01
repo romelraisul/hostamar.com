@@ -10,6 +10,9 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/faq', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/about', changeFrequency: 'monthly', priority: 0.5 },
   { path: '/blog', changeFrequency: 'daily', priority: 0.7 },
+  // V21: docs hub is public + indexable (EN + বাংলা)
+  { path: '/docs', changeFrequency: 'daily', priority: 0.9 },
+  { path: '/docs/bn', changeFrequency: 'daily', priority: 0.8 },
   { path: '/generate', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/hosting', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/products', changeFrequency: 'weekly', priority: 0.9 },
@@ -51,6 +54,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   }))
 
+  // V21: static blog posts from lib/blog.ts
+  let blogEntries: MetadataRoute.Sitemap = []
+  try {
+    const { POSTS } = await import('@/lib/blog')
+    blogEntries = POSTS.map((p2) => ({
+      url: `${SITE_URL}/blog/${p2.slug}`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
+  } catch { /* blog list unavailable in build sandbox */ }
+
   // Every TV video SEOs itself: /tv/watch/{slug} entries from TvVideoSeo.
   let videoEntries: MetadataRoute.Sitemap = []
   try {
@@ -68,5 +83,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // DB unreachable (e.g. build sandbox) — static routes only.
   }
 
-  return [...base, ...videoEntries]
+  return [...base, ...blogEntries, ...videoEntries]
 }

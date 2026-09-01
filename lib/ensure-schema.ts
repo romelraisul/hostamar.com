@@ -17,6 +17,24 @@ import { env } from '@/lib/env'
 
 // One statement per entry — never concatenate.
 const STATEMENTS: string[] = [
+  // V21: cron-generated SEO blog posts (auto blog per new AI service)
+  `CREATE TABLE IF NOT EXISTS "BlogPost" (
+  "id" TEXT NOT NULL,
+  "slug" TEXT NOT NULL UNIQUE,
+  "title" TEXT NOT NULL,
+  "excerpt" TEXT,
+  "metaDescription" TEXT,
+  "keywords" TEXT[],
+  "content" TEXT NOT NULL,
+  "serviceId" TEXT,
+  "authorId" TEXT,
+  "published" BOOLEAN NOT NULL DEFAULT true,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "BlogPost_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "BlogPost_createdAt_idx" ON "BlogPost"("createdAt")`,
+  `CREATE INDEX IF NOT EXISTS "BlogPost_serviceId_idx" ON "BlogPost"("serviceId")`,
   `CREATE TABLE IF NOT EXISTS "ProvisioningLedger" (
   "id" TEXT NOT NULL,
   "tranId" TEXT NOT NULL,

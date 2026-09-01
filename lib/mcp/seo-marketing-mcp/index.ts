@@ -149,13 +149,17 @@ export async function seo_generate_schema(args: { type?: 'Organization' | 'Produ
 }
 
 // ── blog post ──
-export async function seo_generate_blog_post(args: { topic?: string; keywords?: string[]; length?: number }, userId?: string) {
+export async function seo_generate_blog_post(args: { topic?: string; keywords?: string[]; length?: number; serviceId?: string; language?: string }, userId?: string) {
   const topic = args?.topic || 'Best AI Voiceover in Bangladesh'
   const kw = args?.keywords || ['bangla voiceover', 'AI voiceover', 'cheap voiceover', 'Hostamar']
   const words = Math.max(600, args?.length || 1500)
   const prompt = `Write an SEO-optimized blog post (target ~${words} words) about: "${topic}".\nKeywords to weave naturally: ${kw.join(', ')}.\nStructure: H1 title, intro, H2 sections, FAQ at end, CTA to https://hostamar.com/pricing (Starter 599 TK → 6000cr, 1cr=1TK=1COIN, 6000 bonus).\nBangla + English mix. Return ONLY the markdown article, no meta commentary.`
   const { text } = await callBestModel([{ role: 'user', content: prompt }], 'You are a senior SEO content writer. Return a complete markdown article.')
-  return { title: topic.toUpperCase().slice(0,80), topic, keywords: kw, content: text, charged: 10, remaining: (await bill(userId, 10)).remaining }
+  const genTitle = topic.replace(/^(Best|How to|Why)\s+/i, '').slice(0, 70)
+  const slug = genTitle.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || ('post-' + Date.now().toString(36))
+  const metaDescription = (text.slice(0, 160) || topic).replace(/\s+/g, ' ')
+  const b10 = await bill(userId, 10)
+  return { title: topic.slice(0, 90), slug, metaDescription, topic, keywords: kw, content: text, charged: 10, remaining: b10.remaining }
 }
 
 // ── social campaign ──
@@ -272,6 +276,48 @@ export async function seo_check_rankings(args: { keywords?: string[]; domain?: s
   ))
   const b2 = await bill(userId, 2)
   return { rankings: results, charged: 2, remaining: b2.remaining }
+}
+
+// ── ping GSC + Bing (V21) ──
+export async function seo_ping_gsc(args: { sitemapUrl?: string; urls?: string[] }, userId?: string) {
+  const b = await bill(userId, 2)
+  if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 2, balance: b.balance, bkash: '01822417463' }
+  const sitemapUrl = args?.sitemapUrl || 'https://hostamar.com/sitemap.xml'
+  const urls = (args?.urls || []).slice(0, 20)
+
+  // Google: real Indexing API (GOOGLE_SERVICE_ACCOUNT_JSON — same service account
+  // the seo-sync cron + /api/seo/submit already use). Honest result per URL.
+  let googleResults: any[] = []
+  try {
+    const { submitUrlsToGoogle } = await import('@/lib/google/indexingApi')
+    const targets = [sitemapUrl, ...urls]
+    const { hasGoogleServiceAccount } = await import('@/lib/google/auth')
+    if (hasGoogleServiceAccount()) {
+      googleResults = await submitUrlsToGoogle(targets)
+    } else {
+      googleResults = [{ url: sitemapUrl, ok: false, status: 0, detail: 'GOOGLE_SERVICE_ACCOUNT_JSON missing (set it in Vercel env; owner runbook in docs/v21-audit.md)' }]
+    }
+  } catch (e: any) {
+    googleResults = [{ url: sitemapUrl, ok: false, status: 0, detail: String(e?.message || e).slice(0, 200) }]
+  }
+
+  // Bing: public sitemap ping endpoint (no key needed)
+  let bingPing = ''
+  try {
+    const r = await fetch('https://www.bing.com/ping?sitemap=' + encodeURIComponent(sitemapUrl), { signal: AbortSignal.timeout(10000) })
+    bingPing = ('HTTP ' + r.status + ' ' + (await r.text().catch(() => ''))).slice(0, 200)
+  } catch (e: any) { bingPing = 'bing ping failed: ' + String(e?.message || e).slice(0, 120) }
+
+  const okCount = googleResults.filter(g => g?.ok).length
+  return {
+    sitemapUrl,
+    google: googleResults,
+    bing: bingPing,
+    urlsSubmitted: urls.length,
+    googleOk: okCount,
+    charged: 2, remaining: b.remaining,
+    note: okCount === 0 && googleResults[0]?.detail?.includes('missing') ? googleResults[0].detail : '',
+  }
 }
 
 // ── hashtags ──

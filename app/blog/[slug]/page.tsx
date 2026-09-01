@@ -3,14 +3,18 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowLeft, Eye, Clock, Calendar } from 'lucide-react'
 import { POSTS, getPost, FEATURED, GRID, formatViews } from '@/lib/blog'
+import { getGeneratedPost } from '@/lib/blog-generated'
 import { injectPreferredSourceBadge } from '@/lib/seo/preferredSourcesInjector'
+
+// V21: cron-generated posts are runtime rows — dynamic page to pick them up.
+export const dynamic = 'force-dynamic'
 
 export function generateStaticParams() {
   return POSTS.map((p) => ({ slug: p.slug }))
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const post = getPost(params.slug)
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const post = getPost(params.slug) || (await getGeneratedPost(params.slug))
   if (!post) return { title: 'Blog — Hostamar' }
   return {
     title: `${post.title} — Hostamar ব্লগ`,
@@ -27,8 +31,8 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   }
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = getPost(params.slug)
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = getPost(params.slug) || (await getGeneratedPost(params.slug))
   if (!post) notFound()
   const jsonLd = {
     '@context': 'https://schema.org',

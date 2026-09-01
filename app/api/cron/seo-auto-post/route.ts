@@ -35,10 +35,53 @@ export async function GET(req: NextRequest) {
   }).catch(() => [] as any[])
 
   const fbToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN || ''
-  const { social_auto_post_new_service } = await import('@/lib/mcp/seo-marketing-mcp')
+  const { social_auto_post_new_service, seo_generate_blog_post } = await import('@/lib/mcp/seo-marketing-mcp')
 
   const results: Array<{ serviceId: string; name: string; ok: boolean }> = []
+  const blogPosts: Array<{ slug: string; url: string }> = []
+
+  // V21 AUTO-BLOG: for each new service, generate + persist a 1500-word SEO post
+  // (BlogPost row — renders at /blog/{slug} via the dynamic [slug] page), then
+  // queue it for Google Indexing. Anonymous cron context: no billing (free path).
+  const { ensureSchema } = await import('@/lib/ensure-schema')
+  await ensureSchema().catch(() => {})
+
   for (const svc of newServices) {
+    const blog: any = await seo_generate_blog_post(
+      {
+        topic: 'Best ' + svc.name + ' AI in Bangladesh — 79% Cheaper Than Fiverr',
+        keywords: [svc.name.toLowerCase(), (svc.name + ' ai').toLowerCase(), (svc.name + ' bangladesh').toLowerCase(), 'ai services bangladesh', 'hostamar'],
+        serviceId: svc.id,
+      },
+      undefined,
+    ).catch((e: any) => ({ error: String(e).slice(0, 200) }))
+
+    let slug = ''
+    if (blog && !('error' in blog) && blog.title) {
+      slug = String(blog.title)
+        .toLowerCase()
+        .replace(/[^a-z0-9\u0980-\u09FF]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80)
+      const content = typeof blog.content === 'string' ? blog.content : JSON.stringify(blog)
+      try {
+        await (prisma as any).blogPost.upsert({
+          where: { slug },
+          create: {
+            slug,
+            title: String(blog.title).slice(0, 200),
+            excerpt: String(blog.metaDescription || '').slice(0, 200) || ('SEO guide for ' + svc.name),
+            metaDescription: String(blog.metaDescription || '').slice(0, 200),
+            keywords: (blog.keywords as string[]) || [],
+            content: content.slice(0, 100_000),
+            serviceId: svc.id,
+          },
+          update: { content: content.slice(0, 100_000), updatedAt: new Date() },
+        })
+        blogPosts.push({ slug, url: 'https://hostamar.com/blog/' + slug })
+      } catch (e: any) { blogPosts.push({ slug: 'FAILED:' + String(e?.message || e).slice(0, 80), url: '' }) }
+    }
+
     const r: any = await social_auto_post_new_service(
       { serviceId: svc.id, serviceName: svc.name, description: String((svc as any).benefit || '').slice(0, 120), price: (svc as any).creditCost },
       undefined,
@@ -46,18 +89,42 @@ export async function GET(req: NextRequest) {
     results.push({ serviceId: svc.id, name: svc.name, ok: !r || !('error' in (r as any)) })
   }
 
+  // V21 GSC PING: submit new blog URLs via the real Indexing API when the
+  // service account is configured (GOOGLE_SERVICE_ACCOUNT_JSON — same one the
+  // seo-sync cron and /api/seo/submit use). Bing sitemap ping (no key needed).
+  let googlePing: any = 'skipped'
+  let bingPing = 'skipped'
+  if (blogPosts.length) {
+    try {
+      const { submitUrlsToGoogle } = await import('@/lib/google/indexingApi')
+      const { hasGoogleServiceAccount } = await import('@/lib/google/auth')
+      if (hasGoogleServiceAccount()) {
+        googlePing = await submitUrlsToGoogle(blogPosts.map(b => b.url).filter(Boolean))
+      } else {
+        googlePing = 'GOOGLE_SERVICE_ACCOUNT_JSON missing (owner: see docs/v21-audit.md)'
+      }
+    } catch (e: any) { googlePing = String(e?.message || e).slice(0, 160) }
+    try {
+      const r = await fetch('https://www.bing.com/ping?sitemap=' + encodeURIComponent('https://hostamar.com/sitemap.xml'), { signal: AbortSignal.timeout(10000) })
+      bingPing = 'HTTP ' + r.status
+    } catch (e: any) { bingPing = String(e?.message || e).slice(0, 120) }
+  }
+
   // History row (SeoEvent: id/type/url/userAgent — url carries the summary)
   await prisma.seoEvent.create({
     data: {
       type: 'auto-post',
       url: 'https://hostamar.com/api/cron/seo-auto-post',
-      userAgent: 'newServices=' + newServices.length + '; fb=' + (fbToken ? 'configured' : 'NOT-configured'),
+      userAgent: 'newServices=' + newServices.length + '; blogs=' + blogPosts.length + '; fb=' + (fbToken ? 'configured' : 'NOT-configured') + '; google=' + (typeof googlePing === 'string' ? googlePing.slice(0, 40) : 'submitted'),
     },
   }).catch(() => {})
 
   return NextResponse.json({
     ok: true,
     newServices: newServices.length,
+    blogs: blogPosts,
+    googlePing,
+    bingPing,
     fbConfigured: !!fbToken,
     results,
     note: fbToken ? '' : 'Set FACEBOOK_PAGE_ACCESS_TOKEN in Vercel env to enable live posting.',
