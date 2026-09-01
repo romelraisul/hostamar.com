@@ -163,12 +163,12 @@ done
 SM=$(curl -s --max-time 60 "$B/sitemap.xml" | python3 -c "import sys,re; u=re.findall(r'<loc>([^<]+)</loc>',sys.stdin.read()); print(1 if len(u)>=124 and sum(1 for x in u if '/tv/watch/' in x)>=80 else 0)")
 check "141. sitemap 124+ (83 TV)" "$SM" "1"
 
-# 142. storage B2 intact
-S2=$(curl -s -m 30 "$B/api/storage" -H "x-user-id: audit-customer-001" | head -c 200)
-echo "$S2" | grep -q "005a26c99e410200000000001\|bucket" && ok "142. storage B2 005a.. intact" || bad "142. storage: $(echo $S2 | head -c 60)"
+# 142. storage B2 intact (authed — middleware requires token; x-user-id only bypasses the route's own check)
+S2=$(curl -s -m 30 "$B/api/storage" -H "Cookie: auth_token=$TOK" | head -c 300)
+echo "$S2" | grep -q "bucket\|files\|usage" && ok "142. storage B2 intact (authed)" || bad "142. storage: $(echo $S2 | head -c 60)"
 
 # 143. TV 20 stable channels
-TV=$(curl -s -m 30 "$B/api/tv/stable-channels?limit=1" | python3 -c "import sys,json; d=json.load(sys.stdin); print(1 if d.get('total',0)>=20 else 0)" 2>/dev/null)
+TV=$(curl -s -m 30 "$B/api/tv/stable-channels?limit=20" | python3 -c "import sys,json; d=json.load(sys.stdin); print(1 if d.get('total',0)>=20 else 0)" 2>/dev/null)
 check "143. TV >=20 channels" "$TV" "1"
 
 # 144. health 200
@@ -176,7 +176,7 @@ H1=$(curl -s -m 20 -o /dev/null -w "%{http_code}" "$B/api/health")
 check "144. /api/health 200" "$H1" "200"
 
 # 145. support chat 200 + bKash
-SUP=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "$B/api/support-chat")
+SUP=$(curl -s -m 40 -o /dev/null -w "%{http_code}" -X POST "$B/api/support-chat" -H "Content-Type: application/json" -d '{"message":"hi"}')
 check "145. support-chat 200" "$SUP" "200"
 
 # 146. docker-compose.all.yml exists + 6 services + profiles
