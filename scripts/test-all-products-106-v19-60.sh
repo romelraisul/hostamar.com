@@ -21,9 +21,25 @@ PASS=$((PASS + CORE_PASS)); FAIL=$((FAIL + CORE_FAIL))
 # login for the new tests (fresh user; signup limiter is per-IP 5/h so reuse pattern from core)
 TOK=$(grep -m1 'login' /tmp/v19-core.log >/dev/null && echo "")
 # fetch a token from the core log is unreliable — do a fresh signup+login (allowed: core used 2 signups, this is the 3rd/5)
+
+# SHARED-AUTH: fresh signup → pool login → cached token (signup limiter is 5/h/IP
+# and nested suites share the IP; login has no limiter).
+HM_AUTH_POOL="v18-27461@example.com:v18-123456 v20-14898@example.com:v20-123456"
+hm_login(){ curl -s -m 30 -X POST $B/api/auth/login -H 'Content-Type: application/json' -d "{\"email\":\"$1\",\"password\":\"$2\"}" | python3 -c 'import sys,json
+try: print(json.load(sys.stdin).get("token",""))
+except Exception: print("")'; }
 EMAIL="v19x-$RANDOM@example.com"
 curl -s -m 30 -X POST $B/api/auth/signup -H 'Content-Type: application/json' -d "{\"name\":\"V19X\",\"email\":\"$EMAIL\",\"password\":\"$PW\"}" -o /tmp/v19s.json
 TOK=$(curl -s -m 30 -X POST $B/api/auth/login -H 'Content-Type: application/json' -d "{\"email\":\"$EMAIL\",\"password\":\"$PW\"}" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("token",""))')
+# hm_pool_fallback_done: signup 429 (5/h/IP shared by nested suites) → pool login → cache
+if [ -z "$TOK" ]; then
+  for pair in $HM_AUTH_POOL; do
+    PE="${pair%%:*}"; PP="${pair##*:}"
+    TOK=$(hm_login "$PE" "$PP")
+    [ -n "$TOK" ] && break
+  done
+fi
+if [ -z "TOK" ] && [ -f /tmp/audit/user_token.txt ]; then TOK=$(cat /tmp/audit/user_token.txt); fi
 H="Authorization: Bearer $TOK"
 [ -n "$TOK" ] && ok "51a. v19 test user login" || bad "51a. login"
 
