@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
         norm(s.benefit).includes(needle) || norm(s.benefitBn).includes(needle))
     : services
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     success: true,
     total: filtered.length,
     totalDeduped: services.length,
@@ -72,4 +72,8 @@ export async function GET(req: NextRequest) {
       hostamarDiscountPct: (s.inputs as any)?.hostamarDiscountPct || null,
     })),
   })
+  // V23 Fluid-CPU fix: 1h CDN cache + 24h stale-while-revalidate — the 106-service
+  // catalog changes ~monthly; every request re-running the DB merge burns CPU.
+  res.headers.set('Cache-Control', 'public, s-maxage=3600, max-age=300, stale-while-revalidate=86400')
+  return res
 }
