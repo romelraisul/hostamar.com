@@ -74,6 +74,6 @@ export async function GET(req: NextRequest) {
   })
   // V23 Fluid-CPU fix: 1h CDN cache + 24h stale-while-revalidate — the 106-service
   // catalog changes ~monthly; every request re-running the DB merge burns CPU.
-  res.headers.set('Cache-Control', 'public, s-maxage=3600, max-age=300, stale-while-revalidate=86400')
+  res.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400')
   return res
 }

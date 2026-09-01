@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest) {
       if (Array.isArray(d?.data) && d.data.length) {
         return NextResponse.json(
           { object: 'list', data: d.data, source: d.source || 'kv' },
-          { headers: { 'Cache-Control': 'public, s-maxage=3600, max-age=300, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
+          { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
         )
       }
     }
@@ -46,6 +46,6 @@ export async function GET(_req: NextRequest) {
   }))
   return NextResponse.json(
     { object: 'list', data, source: 'local-catalog' },
-    { headers: { 'Cache-Control': 'public, s-maxage=3600, max-age=300, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
+    { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
   )
 }
