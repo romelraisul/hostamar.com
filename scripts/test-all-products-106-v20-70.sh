@@ -16,8 +16,11 @@ echo "══ V20 — 70 TESTS (60 core + 10 MCP billing) ══"
 # core 1-60 via the v19 suite
 bash "$(dirname "$0")/test-all-products-106-v19-60.sh" > /tmp/v20-core.log 2>&1
 CORE_RC=$?
-CORE_PASS=$(grep -oP '✓' /tmp/v20-core.log | wc -l)
-CORE_FAIL=$(grep -oP '✗' /tmp/v20-core.log | wc -l)
+# Count the v19 suite's own RESULT line (authoritative), not per-line greps which
+# double-count the nested "core 1-50" summary inside the log.
+CORE_PASS=$(grep -oP '\d+(?= passed)' /tmp/v20-core.log | tail -1)
+CORE_FAIL=$(grep -oP '\d+(?= failed)' /tmp/v20-core.log | tail -1)
+CORE_PASS=${CORE_PASS:-0}; CORE_FAIL=${CORE_FAIL:-0}
 echo "  core 1-60: $CORE_PASS ✓ / $CORE_FAIL ✗ (rc=$CORE_RC)"
 PASS=$((PASS + CORE_PASS)); FAIL=$((FAIL + CORE_FAIL))
 
@@ -37,28 +40,28 @@ echo "── V20 61-70: MCP real billing ──"
 B0=$(mcpbal)
 R=$(mcpcall '{"tool":"seo_generate_robots","params":{}}')
 B1=$(mcpbal)
-D=$(python3 -c "print(round($B0-$B1,1))")
+D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
 check "61. seo_generate_robots real deduction 1cr" "$D" "1.0"
 
 # 62. seo_generate_meta real deduction 1cr (LLM chain)
 B0=$(mcpbal)
 R=$(mcpcall '{"tool":"seo_generate_meta","params":{"url":"https://hostamar.com","title":"Hostamar AI"}}')
 B1=$(mcpbal)
-D=$(python3 -c "print(round($B0-$B1,1))")
+D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
 check "62. seo_generate_meta real deduction 1cr" "$D" "1.0"
 
 # 63. seo_generate_sitemap real deduction 1cr
 B0=$(mcpbal)
 R=$(mcpcall '{"tool":"seo_generate_sitemap","params":{"urls":[{"loc":"/pricing"}]}}')
 B1=$(mcpbal)
-D=$(python3 -c "print(round($B0-$B1,1))")
+D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
 check "63. seo_generate_sitemap real deduction 1cr" "$D" "1.0"
 
 # 64. sequential_thinking (core registry tool) real deduction 2cr — proves registry flip
 B0=$(mcpbal)
 R=$(mcpcall '{"tool":"sequential_thinking","params":{"problem":"1+1"}}')
 B1=$(mcpbal)
-D=$(python3 -c "print(round($B0-$B1,1))")
+D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
 check "64. sequential_thinking registry tool real deduction 2cr" "$D" "2.0"
 
 # 65. facebook_create_post without token: honest UNAUTHENTICATED error AND no charge
@@ -66,7 +69,7 @@ B0=$(mcpbal)
 FB=$(mcpcall '{"tool":"facebook_create_post","params":{"message":"test"}}')
 B1=$(mcpbal)
 FBERR=$(echo "$FB" | python3 -c 'import sys,json;d=json.load(sys.stdin);r=d.get("result",{});print(1 if ("FACEBOOK_PAGE" in str(r.get("error","")) or "TOKEN" in str(r.get("error","")).upper()) else 0)' 2>/dev/null)
-D=$(python3 -c "print(round($B0-$B1,1))")
+D=$(python3 -c "print(round($B0-$B1,1));" | sed "s/\.0$//")
 if [ "$FBERR" = "1" ]; then
   if [ "$D" = "0.0" ]; then
     ok "65. facebook_create_post no-token → honest error, $D cr charged (post-action billing — no charge on failed FB call)"
