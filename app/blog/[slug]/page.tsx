@@ -6,8 +6,8 @@ import { POSTS, getPost, FEATURED, GRID, formatViews } from '@/lib/blog'
 import { getGeneratedPost } from '@/lib/blog-generated'
 import { injectPreferredSourceBadge } from '@/lib/seo/preferredSourcesInjector'
 
-// V21: cron-generated posts are runtime rows — dynamic page to pick them up.
-export const dynamic = 'force-dynamic'
+// V23: ISR 1h — new cron-generated posts appear within 1h; cached HTML between (Fluid CPU saved).
+export const revalidate = 3600
 
 export function generateStaticParams() {
   return POSTS.map((p) => ({ slug: p.slug }))
