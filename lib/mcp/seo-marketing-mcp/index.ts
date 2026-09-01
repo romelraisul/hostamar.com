@@ -27,17 +27,24 @@ async function fetchJson(url: string, init?: RequestInit) {
   return r.json()
 }
 
-async function bill(userId: string | undefined, cost: number): Promise<{ ok: boolean; remaining: number; needed?: number; balance?: number }> {
-  // Today: audit-insert only (FREE path). Real deduction is a follow-up TBD.
+async function bill(userId: string | undefined, cost: number): Promise<{ ok: boolean; remaining?: number; needed?: number; balance?: number }> {
+  // V20 REAL DEDUCTION: authed users pay the tool cost (race-safe guarded
+  // UPDATE + CreditTransaction audit). Anonymous/cron stays free. 1cr=1TK=1COIN.
+  if (!userId || cost === 0) return { ok: true, remaining: -1 }
   try {
-    if (userId) {
-      await prisma.$executeRaw`
-        INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
-        VALUES (${'seo_' + Date.now().toString(36)}, ${userId}, 0, 'seo-mcp-free', ${'seo tool usage (free)'}, 6000)
-      `.catch(() => null)
-    }
-  } catch { /* audit only */ }
-  return { ok: true, remaining: 6000 }
+    const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
+    const bal = Number(c?.credits ?? 0)
+    if (bal < cost) return { ok: false, needed: cost, balance: bal }
+    const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${cost} WHERE id = ${userId} AND credits >= ${cost}`
+    if (Number(dec) === 0) return { ok: false, needed: cost, balance: bal }
+    const after: any = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${userId} LIMIT 1`
+    const remaining = Number(after?.[0]?.credits ?? 0)
+    await prisma.$executeRaw`
+      INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
+      VALUES (${'seo_' + Date.now().toString(36)}, ${userId}, ${-cost}, 'seo-mcp', ${'seo tool usage (paid)'}, ${remaining})
+    `.catch(() => null)
+    return { ok: true, remaining }
+  } catch { return { ok: true, remaining: -1 } }
 }
 
 // ── meta generator ──

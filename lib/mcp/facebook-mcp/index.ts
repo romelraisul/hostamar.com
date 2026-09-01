@@ -45,7 +45,7 @@ async function bill(userId: string | undefined, cost: number) {
     await prisma.$executeRaw`INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter") VALUES (${'mcr_' + Date.now().toString(36)}, ${userId}, ${-cost}, 'facebook-mcp', ${'facebook-mcp tool'}, ${remaining})`
       .catch(() => null)
     return { ok: true, remaining }
-  } catch { return { ok: true, remaining: 6000 } } // empty/env path: audit noop
+  } catch { return { ok: true, remaining: -1 } } // DB unavailable: allow (audit row lost, not a customer outage)
 }
 
 /** 1. Create a post to a FB Page. */
