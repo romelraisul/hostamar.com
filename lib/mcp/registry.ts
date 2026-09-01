@@ -269,120 +269,96 @@ export const MCP_TOOLS: McpTool[] = [
     server: 'seo-marketing-mcp', name: 'seo_audit_page', costCr: 2,
     description: 'Audit a page URL for SEO (title/desc/h1/images/links/schema/performance) — 2cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 2)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 2, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).seo_audit_page(args?.params || {}, userId)
-      return { ...r, charged: 2, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'seo_generate_schema', costCr: 1,
     description: 'Generate schema.org JSON-LD (Organization/Product/Service/FAQ/Article) — 1cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 1)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 1, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).seo_generate_schema(args?.params || {}, userId)
-      return { ...r, charged: 1, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'seo_generate_blog_post', costCr: 10,
     description: 'Generate an SEO-optimized blog post (1500 words) via hostamar-1m-a — 10cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 10)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 10, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).seo_generate_blog_post(args?.params || {}, userId)
-      return { ...r, charged: 10, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'social_create_campaign', costCr: 5,
     description: 'Create a cross-platform social campaign (FB/IG/LinkedIn/Twitter) — 5cr per platform',
     run: async (args, userId) => {
-      const b = await bill(userId, 5)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 5, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).social_create_campaign(args?.params || {}, userId)
-      return { ...r, charged: 5, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'social_schedule_posts', costCr: 2,
     description: 'Schedule posts across platforms — 5cr per post',
     run: async (args, userId) => {
-      const b = await bill(userId, 5)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 5, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).social_schedule_posts(args?.params || {}, userId)
-      return { ...r, charged: 5, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'social_get_analytics', costCr: 2,
     description: 'Aggregate social analytics across platforms — 2cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 2)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 2, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).social_get_analytics(args?.params || {}, userId)
-      return { ...r, charged: 2, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'seo_generate_backlinks', costCr: 5,
     description: 'Generate backlink outreach list from niche/competitors — 3cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 3)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 3, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).seo_generate_backlinks(args?.params || {}, userId)
-      return { ...r, charged: 3, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'seo_optimize_content', costCr: 3,
     description: 'Optimize existing content for SEO (keyword density/readability/internal links) — 3cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 3)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 3, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).seo_optimize_content(args?.params || {}, userId)
-      return { ...r, charged: 3, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'social_auto_post_new_service', costCr: 3,
     description: 'Auto-post a new AI service to social + generate blog post — 5cr (cron)',
     run: async (args, userId) => {
-      const b = await bill(userId, 5)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 5, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).social_auto_post_new_service(args?.params || {}, userId)
-      return { ...r, charged: 5, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'seo_generate_faq_schema', costCr: 1,
     description: 'Generate FAQPage schema.org JSON-LD — 1cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 1)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 1, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).seo_generate_faq_schema(args?.params || {}, userId)
-      return { ...r, charged: 1, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'seo_check_rankings', costCr: 3,
     description: 'Check keyword rankings for a domain — 2cr (SERPAPI_KEY env)',
     run: async (args, userId) => {
-      const b = await bill(userId, 2)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 2, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).seo_check_rankings(args?.params || {}, userId)
-      return { ...r, charged: 2, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
   {
     server: 'seo-marketing-mcp', name: 'social_generate_hashtags', costCr: 1,
     description: 'Generate platform-optimized hashtags for a post — 1cr',
     run: async (args, userId) => {
-      const b = await bill(userId, 1)
-      if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed || 1, balance: b.balance, bkash: '01822417463' }
       const r = await (await import('./seo-marketing-mcp')).social_generate_hashtags(args?.params || {}, userId)
-      return { ...r, charged: 1, remaining: (b as any).remaining }
+      return { ...r }
     },
   },
 ]

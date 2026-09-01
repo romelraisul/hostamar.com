@@ -59,6 +59,8 @@ export async function seo_generate_meta(args: { url?: string; title?: string; de
 
 // ── sitemap.xml ──
 export async function seo_generate_sitemap(args: { baseUrl?: string; urls?: Array<{ loc?: string; lastmod?: string; changefreq?: string; priority?: number }> }, userId?: string) {
+  const bS = await bill(userId, 1)
+  if (!bS.ok) return { error: 'INSUFFICIENT_CREDITS', needed: bS.needed, balance: bS.balance, bkash: '01822417463' }
   const base = args?.baseUrl || 'https://hostamar.com'
   const urls: Array<{ loc?: string; lastmod?: string; changefreq?: string; priority?: number }> = args?.urls || [{ loc: '' }]
   const now = new Date().toISOString().slice(0, 10)
@@ -80,18 +82,19 @@ export async function seo_generate_sitemap(args: { baseUrl?: string; urls?: Arra
   const closeTag = '</urlset>'
   const NL = String.fromCharCode(10)
   const xml = [head, openTag, ...rows, closeTag].join(NL)
-  const b0 = await bill(userId, 0)
-  return { sitemap: xml, charged: 0, remaining: b0.remaining }
+  return { sitemap: xml, charged: 1, remaining: bS.remaining }
 }
 
 // ── robots.txt ──
 export async function seo_generate_robots(args: { allow?: string[]; disallow?: string[]; sitemap?: string }, userId?: string) {
+  const b = await bill(userId, 1)
+  if (!b.ok) return { error: 'INSUFFICIENT_CREDITS', needed: b.needed, balance: b.balance, bkash: '01822417463' }
   const allow = args?.allow ?? ['/', '/docs', '/pricing', '/video', '/hosting', '/chat', '/browser', '/ide', '/game']
   const disallow = args?.disallow ?? ['/api/', '/dashboard/', '/admin/', '/editor/', '/studio/', '/internal/', '/_next/', '/_vercel/']
   const sitemap = args?.sitemap ?? 'https://hostamar.com/sitemap.xml'
   const lines = ['User-agent: *', ...allow.map(a => 'Allow: ' + a), ...disallow.map(d => 'Disallow: ' + d), 'Sitemap: ' + sitemap]
   const b0 = await bill(userId, 0)
-  return { robots: lines.join(String.fromCharCode(10)) + String.fromCharCode(10), charged: 0, remaining: b0.remaining }
+  return { robots: lines.join(String.fromCharCode(10)) + String.fromCharCode(10), charged: 1, remaining: b.remaining }
 }
 
 // ── SEO audit ──
@@ -103,8 +106,8 @@ export async function seo_audit_page(args: { url?: string }, userId?: string) {
     html = await r.text()
   } catch { html = '' }
   if (!html || html.length < 200) {
-    const b0 = await bill(userId, 0)
-    return { error: 'Could not fetch page', url: target, charged: 0, remaining: b0.remaining }
+    const bE = await bill(userId, 0)
+    return { error: 'Could not fetch page', url: target, charged: 0, remaining: bE.remaining }
   }
   const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i)
   const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i) || html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i)
