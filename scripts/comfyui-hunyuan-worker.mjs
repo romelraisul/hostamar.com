@@ -26,8 +26,8 @@
  *   node scripts/comfyui-hunyuan-worker.mjs --once     # one job then exit (tests)
  *   node scripts/comfyui-hunyuan-worker.mjs --videoId <id>  # force one row
  */
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs'
-import { execFileSync } from 'node:child_process'
+import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -181,6 +181,15 @@ async function run(job) {
   const seed = Math.floor(Math.random() * 1_000_000)
   for (let i = 0; i < scenes.length; i++) {
     const prefix = `hsworker_${videoId}_${i + 1}`
+    // Disk-reuse: a clip already rendered for this video (previous worker run,
+    // reclaim after crash, or a failed post-process like the 2026-09-02 ffmpeg
+    // incident) is NOT re-rendered — GPU hours are not spent twice.
+    const reuse = join(OUT_DIR, `${prefix}_00001.mp4`)
+    if (existsSync(reuse) && statSync(reuse).size > 10_000) {
+      clipFiles.push(reuse)
+      console.log(`[worker] clip ${i + 1}/5 reused from disk: ${reuse}`)
+      continue
+    }
     const wf = buildWorkflow(scenes[i], seed + i, prefix)
     const { file } = await submitAndWait(wf)
     clipFiles.push(file)
@@ -206,9 +215,20 @@ async function run(job) {
   let acc = 0
   const vfilters = []
   const durs = []
-  const FP = process.env.WORKER_FFPROBE || 'C:\\ProgramData\\chocolatey\\bin\\ffprobe.exe'
+  const FP = process.env.WORKER_FFPROBE || ''
   for (const p of clipFiles) {
-    const d = Number(execFileSync(FP, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', p]).toString().trim()) || 6
+    let d = 6
+    if (FP) {
+      d = Number(execFileSync(FP, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', p]).toString().trim()) || 6
+    } else {
+      // ffprobe-free: ffmpeg prints "Duration: HH:MM:SS.ms" on stderr even when
+      // it exits nonzero (no output file). spawnSync always hands us stderr.
+      try {
+        const r = spawnSync(FF, ['-hide_banner', '-i', p], { encoding: 'utf8' })
+        const m = String(r.stderr || '').match(/Duration: (\d+):(\d+):(\d+\.\d+)/)
+        if (m) d = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])
+      } catch { /* keep 6s default */ }
+    }
     durs.push(d)
   }
   for (let i = 0; i < caps.length; i++) {
