@@ -27,6 +27,8 @@ interface VideoItem {
   downloads: number
   views: number
   createdAt: string
+  url?: string | null
+  script?: string | null
 }
 
 export default function VideosPage() {
@@ -41,6 +43,10 @@ export default function VideosPage() {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [retrying, setRetrying] = useState<string | null>(null)
+  // V29: reel-style preview/export modal per video
+  const [previewVideo, setPreviewVideo] = useState<VideoItem | null>(null)
+  const [exporting, setExporting] = useState(false)
+  const [previewMsg, setPreviewMsg] = useState('')
 
   useEffect(() => {
     fetchVideos()
@@ -82,6 +88,108 @@ export default function VideosPage() {
       console.error('retry failed', e)
     } finally {
       setRetrying(null)
+    }
+  }
+
+  // V29 — parse the inline manifest from the pipeline (script field) for preview
+  function getManifest(v: VideoItem): { slides: string[]; captions: string[] } | null {
+    try {
+      const d = JSON.parse(v.script || '')
+      if (d?.manifest && Array.isArray(d.slides)) {
+        return { slides: d.slides, captions: Array.isArray(d.captions) ? d.captions : [] }
+      }
+    } catch { /* not a manifest */ }
+    return null
+  }
+
+  // V29 — client-side WEBM export (reel pattern) + optional B2 persist
+  async function exportVideoWebm(v: VideoItem) {
+    const m = getManifest(v)
+    if (!m || m.slides.length === 0) {
+      setPreviewMsg('ম্যানিফেস্ট নেই — আগে রিট্রাই করুন (pipeline regenerate)')
+      return
+    }
+    setExporting(true)
+    setPreviewMsg('')
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = 720
+      canvas.height = 1280
+      const ctx = canvas.getContext('2d')!
+      const slideMs = 3000
+      const totalMs = Math.max(6000, m.slides.length * slideMs)
+
+      const loadImg = (src: string) => new Promise<HTMLImageElement>((res) => {
+        const im = new Image()
+        im.onload = () => res(im)
+        im.onerror = () => res(im)
+        im.src = src
+      })
+      const slideImgs = await Promise.all(m.slides.map(loadImg))
+
+      const stream = canvas.captureStream(30)
+      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm'
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2_500_000 })
+      const chunks: Blob[] = []
+      rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data) }
+      const done = new Promise<Blob>((res) => { rec.onstop = () => res(new Blob(chunks, { type: 'video/webm' })) })
+      rec.start(200)
+
+      const t0 = performance.now()
+      await new Promise<void>((resolve) => {
+        const draw = (t: number) => {
+          const el = t - t0
+          const i = Math.min(m.slides.length - 1, Math.floor(el / slideMs))
+          ctx.fillStyle = '#0a0a0a'
+          ctx.fillRect(0, 0, 720, 1280)
+          try { ctx.drawImage(slideImgs[i], 0, 0, 720, 1280) } catch { /* backdrop */ }
+          const g = ctx.createLinearGradient(0, 950, 0, 1280)
+          g.addColorStop(0, 'rgba(0,0,0,0)')
+          g.addColorStop(1, 'rgba(0,0,0,0.8)')
+          ctx.fillStyle = g
+          ctx.fillRect(0, 950, 720, 330)
+          ctx.fillStyle = '#ffffff'
+          ctx.font = 'bold 40px "Noto Sans Bengali", "Hind Siliguri", sans-serif'
+          ctx.textAlign = 'center'
+          ctx.shadowColor = 'rgba(0,0,0,0.9)'
+          ctx.shadowBlur = 10
+          ctx.fillText(m.captions[i] || v.title, 360, 1150, 640)
+          ctx.fillStyle = 'rgba(14,124,58,0.85)'
+          ctx.beginPath(); ctx.arc(660, 70, 44, 0, Math.PI * 2); ctx.fill()
+          ctx.fillStyle = '#ffffff'
+          ctx.font = 'bold 44px sans-serif'
+          ctx.fillText('H', 660, 86)
+          if (el >= totalMs) { resolve(); return }
+          requestAnimationFrame(draw)
+        }
+        requestAnimationFrame(draw)
+      })
+
+      rec.stop()
+      const blob = await done
+
+      // persist to B2 → video.url becomes a real .webm (non-fatal for the local download)
+      let uploaded = false
+      try {
+        const fd = new FormData()
+        fd.append('videoId', v.id)
+        fd.append('file', blob, 'export.webm')
+        const up = await fetch('/api/videos/upload', { method: 'POST', body: fd })
+        if (up.ok) uploaded = true
+      } catch { /* local download still works */ }
+
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `hostamar-${v.id.slice(0, 8)}-${Date.now()}.webm`
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 30000)
+      setPreviewMsg(`✓ WEBM ডাউনলোড হয়েছে${uploaded ? ' + B2 আপলোড সম্পন্ন — এখন player-এ চালবে' : ''}`)
+      if (uploaded) await fetchVideos()
+    } catch (e: any) {
+      setPreviewMsg('এক্সপোর্ট ব্যর্থ: ' + String(e?.message || e).slice(0, 120))
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -391,12 +499,27 @@ export default function VideosPage() {
                         <div className="flex items-center justify-end gap-1">
                           {video.status === 'ready' && (
                             <>
-                              <button className="p-2 text-[#0E7C3A] hover:bg-[#0E7C3A]/10 rounded-lg transition-colors" title={t('dashVideos.play')}>
+                              <button
+                                onClick={() => { setPreviewVideo(video); setPreviewMsg('') }}
+                                className="p-2 text-[#0E7C3A] hover:bg-[#0E7C3A]/10 rounded-lg transition-colors"
+                                title="প্রিভিউ ও প্লেয়ার"
+                              >
                                 <Play className="w-4 h-4" />
                               </button>
-                              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title={t('dashVideos.download')}>
-                                <Download className="w-4 h-4" />
-                              </button>
+                              {(video.url && !video.url.startsWith('manifest://')) ? (
+                                <a href={video.url} download className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title={t('dashVideos.download')}>
+                                  <Download className="w-4 h-4" />
+                                </a>
+                              ) : (
+                                <button
+                                  onClick={() => exportVideoWebm(video)}
+                                  disabled={exporting}
+                                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-40"
+                                  title="WEBM এক্সপোর্ট + ডাউনলোড"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </button>
+                              )}
                             </>
                           )}
                           <button
@@ -432,6 +555,66 @@ export default function VideosPage() {
             <Plus className="w-4 h-4" />
             {t('dashVideos.create')}
           </button>
+        </div>
+      )}
+
+      {/* V29: reel-style preview + export modal */}
+      {previewVideo && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setPreviewVideo(null)}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-3">
+              <h3 className="font-semibold text-gray-900 line-clamp-1">{previewVideo.title}</h3>
+              <button className="p-1 text-gray-400 hover:text-gray-600" onClick={() => setPreviewVideo(null)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {previewVideo.url && !previewVideo.url.startsWith('manifest://') ? (
+              /* Real file (B2 webm) — native player */
+              <video controls src={previewVideo.url} className="w-full aspect-[9/16] bg-black rounded-xl" />
+            ) : (() => {
+              const m = getManifest(previewVideo)
+              if (!m) {
+                return (
+                  <div className="text-sm text-gray-500 p-4 text-center">
+                    ম্যানিফেস্ট নেই — <button className="text-[#0E7C3A] underline" onClick={() => retryVideo(previewVideo.id)}>রিট্রাই</button> করে pipeline আবার চালান
+                  </div>
+                )
+              }
+              return (
+                <div className="space-y-3">
+                  <div className="relative w-full aspect-[9/16] bg-[#0a0a0a] rounded-xl overflow-hidden">
+                    <img src={m.slides[0]} alt="slide" className="w-full h-full object-cover opacity-90" />
+                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent" />
+                    <p className="absolute bottom-4 inset-x-4 text-white text-sm text-center font-medium" style={{ fontFamily: 'Noto Sans Bengali, Hind Siliguri, sans-serif' }}>
+                      {m.captions[0] || previewVideo.title}
+                    </p>
+                    <div className="absolute top-3 right-3 w-10 h-10 rounded-full bg-[#0E7C3A]/85 flex items-center justify-center text-white font-bold">H</div>
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 rounded text-white text-xs">
+                      ১/{m.slides.length} স্লাইড · ৩ সে/স্লাইড
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => exportVideoWebm(previewVideo)}
+                    disabled={exporting}
+                    className="w-full py-3 bg-[#0E7C3A] text-white rounded-xl font-medium disabled:opacity-40 hover:bg-[#0b6b31] transition-colors"
+                  >
+                    {exporting ? 'এক্সপোর্ট হচ্ছে… (রেকর্ডিং ১২ সেকেন্ড)' : 'প্রিভিউ ও এক্সপোর্ট WEBM'}
+                  </button>
+                  <p className="text-xs text-gray-400 text-center">
+                    স্লাইডগুলো canvas-এ রেন্ডার হয়ে MediaRecorder দিয়ে WEBM বানে (V25 রিল প্যাটার্ন) — তারপর B2-তে আপলোড হলে player-এ সরাসরি চালবে।
+                  </p>
+                </div>
+              )
+            })()}
+
+            {previewMsg && <p className="mt-3 text-sm text-gray-700 text-center">{previewMsg}</p>}
+
+            <div className="mt-4 pt-4 border-t flex items-center justify-between">
+              <span className="text-xs text-gray-400">ম্যানুয়াল পাবলিশ: মার্কেটিং মডিউল (/dashboard/marketing)</span>
+              <a href="/dashboard/marketing" className="text-xs text-[#0E7C3A] underline">যান</a>
+            </div>
+          </div>
         </div>
       )}
 
