@@ -37,6 +37,18 @@ export function __getVideoRows() {
   return videoRows
 }
 
+// V31 — CloudState singleton (the PC heartbeat row).
+let cloudStateRow: any = null
+export function __seedCloudState(row: any) {
+  cloudStateRow = row
+}
+export function __getCloudState() {
+  return cloudStateRow
+}
+export function __resetCloudState() {
+  cloudStateRow = null
+}
+
 function matchQueueWhere(r: any, where: any): boolean {
   if (!where) return true
   for (const entry of Object.entries(where) as [string, any][]) {
@@ -117,6 +129,7 @@ export const prisma = {
   },
   // V30 — VideoQueue surface (queue/next, queue/fail, upload/complete).
   videoQueue: {
+    count: async (q: any) => queueRows.filter((r) => matchQueueWhere(r, q?.where)).length,
     findFirst: async (q: any) => {
       const cands = queueRows
         .filter((r) => matchQueueWhere(r, q?.where))
@@ -168,6 +181,18 @@ export const prisma = {
       const r = videoRows.find((x) => x.id === q.where.id)
       if (r) Object.assign(r, q.data)
       return r || null
+    },
+  },
+  // V31 — CloudState singleton (heartbeat row).
+  cloudState: {
+    findUnique: async (q: any) => (cloudStateRow && cloudStateRow.id === q.where.id ? cloudStateRow : null),
+    upsert: async (q: any) => {
+      if (cloudStateRow && cloudStateRow.id === q.where.id) {
+        Object.assign(cloudStateRow, q.update || {})
+      } else {
+        cloudStateRow = { ...(q.create || {}), ...(q.update || {}) }
+      }
+      return cloudStateRow
     },
   },
 }

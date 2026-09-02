@@ -1593,3 +1593,17 @@ model AgentTask {
 
   @@index([type, status])
 }
+
+// V31 — PC-as-Cloud tracker. One row (singleton by design: upsert on id="pc").
+// The local cloud-tracker.mjs heartbeats here every 60s; when the PC is off,
+// /api/cloud/status reports honest pcOn:false with lastSeen from this row.
+model CloudState {
+  id          String   @id @default("pc") // singleton
+  pcOn        Boolean  @default(false)
+  lastSeen    DateTime @default(now())
+  pcUptimeSec Int      @default(0)
+  gpu         Json?
+  tailscaleIp String?
+  services    Json?
+  updatedAt   DateTime @updatedAt
+}
