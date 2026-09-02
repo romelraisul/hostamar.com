@@ -35,11 +35,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO = join(__dirname, '..')
 
 // ── tiny .env.local loader (KEY=VALUE lines; no shell interpolation needed) ──
+// File values WIN over inherited process env for these keys — a stale
+// COMFYUI_WORKER_SECRET in a parent shell (e.g. a pasted placeholder from an
+// old snippet) must never shadow the real secret in .env.local.
+const FILE_ENV_KEYS = ['COMFYUI_WORKER_SECRET', 'WORKER_APP_URL', 'COMFYUI_URL', 'WORKER_POLL_MS', 'WORKER_PYTHON', 'WORKER_FFMPEG', 'WORKER_FFPROBE', 'WORKER_COMFYUI_DIR']
+const fileEnv: Record<string, string> = {}
 if (existsSync(join(REPO, '.env.local'))) {
   for (const line of readFileSync(join(REPO, '.env.local'), 'utf8').split(/\r?\n/)) {
     const m = line.match(/^([A-Z0-9_]+)=(.*)$/)
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '')
+    if (m) fileEnv[m[1]] = m[2].replace(/^["']|["']$/g, '')
   }
+}
+for (const k of FILE_ENV_KEYS) {
+  if (fileEnv[k]) process.env[k] = fileEnv[k]
 }
 
 const SECRET = process.env.COMFYUI_WORKER_SECRET || ''
