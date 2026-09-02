@@ -39,7 +39,7 @@ const REPO = join(__dirname, '..')
 // COMFYUI_WORKER_SECRET in a parent shell (e.g. a pasted placeholder from an
 // old snippet) must never shadow the real secret in .env.local.
 const FILE_ENV_KEYS = ['COMFYUI_WORKER_SECRET', 'WORKER_APP_URL', 'COMFYUI_URL', 'WORKER_POLL_MS', 'WORKER_PYTHON', 'WORKER_FFMPEG', 'WORKER_FFPROBE', 'WORKER_COMFYUI_DIR']
-const fileEnv: Record<string, string> = {}
+const fileEnv = {}
 if (existsSync(join(REPO, '.env.local'))) {
   for (const line of readFileSync(join(REPO, '.env.local'), 'utf8').split(/\r?\n/)) {
     const m = line.match(/^([A-Z0-9_]+)=(.*)$/)
