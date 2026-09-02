@@ -7,6 +7,7 @@ export default defineConfig({
       // Specific module mock MUST come before the broad '@' alias so vite
       // matches it first (vite uses the first matching alias entry).
       '@/lib/prisma': path.resolve(__dirname, '__tests__/prisma-mock.ts'),
+      '@/lib/get-auth-user': path.resolve(__dirname, '__tests__/get-auth-user-mock.ts'),
       '@': path.resolve(__dirname, '.'),
     },
   },
