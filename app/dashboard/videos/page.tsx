@@ -91,6 +91,15 @@ export default function VideosPage() {
     }
   }
 
+  // V29c: B2 is PRIVATE (customer files) — direct f005 URLs 401 in the
+  // browser. Serve through the authorized streaming proxy instead.
+  function proxiedUrl(v: VideoItem): string {
+    const u = v.url || ''
+    const m = u.match(/^https:\/\/[^/]+\/file\/[^/]+\/(.+)$/)
+    if (m) return '/api/videos/file/' + m[1]
+    return u
+  }
+
   // V29 — parse the inline manifest from the pipeline (script field) for preview
   function getManifest(v: VideoItem): { slides: string[]; captions: string[] } | null {
     try {
@@ -413,16 +422,30 @@ export default function VideosPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                    {video.status === 'ready' && (
+                    {(video.status === 'ready' || video.status === 'completed') && (
                       <>
-                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-[#0E7C3A]/10 text-[#0E7C3A] rounded-lg hover:bg-[#0E7C3A]/10 transition-colors">
+                        <button
+                          onClick={() => { setPreviewVideo(video); setPreviewMsg('') }}
+                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-[#0E7C3A]/10 text-[#0E7C3A] rounded-lg hover:bg-[#0E7C3A]/10 transition-colors"
+                        >
                           <Play className="w-4 h-4" />
                           {t('dashVideos.play')}
                         </button>
-                        <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-                          <Download className="w-4 h-4" />
-                          {t('dashVideos.download')}
-                        </button>
+                        {(video.url && /\.(webm|mp4)(\?|$)/i.test(video.url)) ? (
+                          <a href={proxiedUrl(video)} download className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                            <Download className="w-4 h-4" />
+                            {t('dashVideos.download')}
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => exportVideoWebm(video)}
+                            disabled={exporting}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-40"
+                          >
+                            <Download className="w-4 h-4" />
+                            {exporting ? 'রেকর্ডিং…' : t('dashVideos.download')}
+                          </button>
+                        )}
                       </>
                     )}
                     <button
@@ -497,7 +520,7 @@ export default function VideosPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-1">
-                          {video.status === 'ready' && (
+                          {(video.status === 'ready' || video.status === 'completed') && (
                             <>
                               <button
                                 onClick={() => { setPreviewVideo(video); setPreviewMsg('') }}
@@ -506,8 +529,8 @@ export default function VideosPage() {
                               >
                                 <Play className="w-4 h-4" />
                               </button>
-                              {(video.url && !video.url.startsWith('manifest://')) ? (
-                                <a href={video.url} download className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title={t('dashVideos.download')}>
+                              {(video.url && /\.(webm|mp4)(\?|$)/i.test(video.url)) ? (
+                                <a href={proxiedUrl(video)} download className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title={t('dashVideos.download')}>
                                   <Download className="w-4 h-4" />
                                 </a>
                               ) : (
@@ -569,9 +592,9 @@ export default function VideosPage() {
               </button>
             </div>
 
-            {previewVideo.url && !previewVideo.url.startsWith('manifest://') ? (
-              /* Real file (B2 webm) — native player */
-              <video controls src={previewVideo.url} className="w-full aspect-[9/16] bg-black rounded-xl" />
+            {previewVideo.url && /\.(webm|mp4)(\?|$)/i.test(previewVideo.url) ? (
+              /* Real video file (B2 webm/mp4) — native player */
+              <video controls src={proxiedUrl(previewVideo)} className="w-full aspect-[9/16] bg-black rounded-xl" />
             ) : (() => {
               const m = getManifest(previewVideo)
               if (!m) {
