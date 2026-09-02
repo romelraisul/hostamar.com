@@ -74,10 +74,19 @@ const forceVideoId = args.includes('--videoId') ? args[args.indexOf('--videoId')
 // fp8 safetensors + block-swap 20/20 + force_offload; landscape 384x216 (portrait
 // direct-render HANGS on 8GB — verified twice); frames 145 ≈ 6s @24fps.
 const MODEL_PATH = ['split_files', 'diffusion_models', 'hunyuan_video_720_fp8_e4m3fn.safetensors'].join(String.fromCharCode(92))
+// V32: 512x288 landscape @ 120 frames (~5s @ 24fps, 6 scenes = 30s) — proven-safe
+// dims for 8GB (skill: 512x288/320 fine for ≤145 frames). NO 720x1280 direct
+// portrait (288x512 hung twice) and NO transpose (landscape→portrait transpose
+// renders sideways content; V31 bug). Portrait = blur-pad at the FINAL stage.
 const WIDTH = 384
 const HEIGHT = 216
-const FRAMES = 145 // ~6s @ 24fps — 5 clips ≈ 30s total
-const STEPS = 10   // proven fast-good on 8GB (~15-25 min/clip at 10 steps)
+// HyVideo sampler requires (num_frames - 1) % 4 == 0. 121 → 120 % 4 == 0.
+// 121 frames @ 24fps ≈ 5.04s — 6 clips × 5s = 30.25s total.
+// 512x288x121 FROZE THE PC 1/1 (2026-09-02 23:21, hard reset, Event 41) — VAE
+// decode peak ~48% over this proven envelope (V31: 10 clips, 2 nights, 0 freezes).
+// 121f here is LIGHTER than V31's 145f. Do NOT raise dims without a supervised probe.
+const FRAMES = 121
+const STEPS = 20   // 2x V31 quality (10); ~50min/clip ≈ 5h total for 6 clips
 const NEG = 'static, blurry, low quality, watermark, text artifacts, still image, slideshow, deformed'
 
 function buildWorkflow(prompt, seed, prefix) {
@@ -153,19 +162,22 @@ async function submitAndWait(promptJson, timeoutMs = 60 * 60 * 1000) {
   throw new Error(`ComfyUI render timed out after ${timeoutMs / 60000} min`)
 }
 
-// 5-scene storyboard derived from the customer brief (the Cox's Bazar promo
-// shape). Generic fallbacks keep it usable for any travel/promo topic.
+// 6-scene storyboard (V32) matching the customer brief exactly. HunyuanVideo
+// cannot render LEGIBLE text — the offer/CTA card is a REAL Bangla overlay done
+// in post (ASS/libass), so scene 6 is a clean background for it. Generic
+// fallbacks keep this usable for any travel/promo topic.
 function buildScenes(topic) {
   const t = (topic || '').toLowerCase()
   const scenes = []
-  if (/বগুড়া|bogra/.test(t)) scenes.push('A colorful intercity bus departing Bogra city bus station at dawn, morning mist, passengers boarding, bus pulling away in motion')
-  else scenes.push('A modern intercity bus departing a Bangladeshi city bus station at dawn, morning golden light, motion')
-  if (/কক্সবাজার|cox/.test(t)) scenes.push('Aerial drone shot flying over Cox\'s Bazar sea beach, the world\'s longest natural sea beach, turquoise waves rolling in motion, fishing boats')
-  else scenes.push('Aerial drone shot flying over a tropical sea beach in Bangladesh, turquoise waves rolling, motion')
-  scenes.push('Luxury sea view hotel room interior with breakfast table, then a happy couple walking along the beach at sunset, warm cinematic light, motion')
-  if (/ইনানী|inani|হিমছড়ি|himchari/.test(t)) scenes.push('Scenic drive along Inani beach and Himchari hillside road in Cox\'s Bazar, coconut palms, hills meeting the sea, paragliders, motion')
+  if (/বগুড়া|bogra/.test(t)) scenes.push('A colorful green-red intercity coach bus driving out of Bogra city bus station in early morning golden light, passengers boarding with luggage, wheels rolling, highway motion, cinematic')
+  else scenes.push('A modern intercity coach bus departing a Bangladeshi city bus station at dawn, golden light, highway motion, cinematic')
+  if (/কক্সবাজার|cox/.test(t)) scenes.push("Cinematic aerial drone flight over Cox's Bazar sea beach, the world's longest natural sea beach, turquoise waves rolling onto white sand, fishing boats, cinematic motion")
+  else scenes.push('Cinematic aerial drone flight over a tropical sea beach in Bangladesh, turquoise waves rolling onto white sand, motion')
+  scenes.push('Luxury sea-view hotel room interior with breakfast table by the window overlooking the ocean, warm morning light, camera slowly panning')
+  scenes.push('A happy couple walking hand in hand along the beach at sunset, silhouetted against orange sky, gentle waves, cinematic')
+  if (/ইনানী|inani|হিমছড়ি|himchari/.test(t)) scenes.push("Drone tracking shot flying along Inani beach rocky shore and Himchari green hills meeting the sea in Cox's Bazar, coconut palms, tourists exploring, cinematic motion")
   else scenes.push('Scenic coastal road with green hills and palm trees, tourists enjoying, motion')
-  scenes.push('Elegant offer card animation: special travel package price with phone number, golden text on deep blue gradient background, gentle zoom motion')
+  scenes.push('Elegant dark blue gradient background with soft golden light rays and gentle floating particles, slow zoom, premium travel offer card backdrop, no text')
   return scenes
 }
 
@@ -201,13 +213,13 @@ async function run(job) {
     const reuse = join(OUT_DIR, `${prefix}_00001.mp4`)
     if (existsSync(reuse) && statSync(reuse).size > 10_000) {
       clipFiles.push(reuse)
-      console.log(`[worker] clip ${i + 1}/5 reused from disk: ${reuse}`)
+      console.log(`[worker] clip ${i + 1}/${scenes.length} reused from disk: ${reuse}`)
       continue
     }
     const wf = buildWorkflow(scenes[i], seed + i, prefix)
     const { file } = await submitAndWait(wf)
     clipFiles.push(file)
-    console.log(`[worker] clip ${i + 1}/5 done: ${file}`)
+    console.log(`[worker] clip ${i + 1}/${scenes.length} done: ${file}`)
   }
 
   // Concat + rotate 9:16 + VO + music + captions (proven tiktok recipe).
@@ -219,44 +231,72 @@ async function run(job) {
   const vo = join(WORK_DIR, `${videoId}_vo.mp3`)
   execFileSync(PY, ['-m', 'edge_tts', '--voice', 'bn-IN-TanishaaNeural', '--text', job.language === 'en' ? 'Escape the routine — Bogra to Cox\'s Bazar special package!' : VO_DEFAULT, '--write-media', vo], { stdio: 'inherit' })
 
-  const caps = [
-    'বগুড়া থেকে কক্সবাজার স্পেশাল প্যাকেজ',
-    'বিশ্বের দীর্ঘতম সমুদ্র সৈকত',
-    'সি-ভিউ হোটেল + ব্রেকফাস্ট',
-    'ইনানী • হিমছড়ি ভ্রমণ',
-    'অফার প্রাইস + ফোন CTA',
-  ]
-  let acc = 0
-  const vfilters = []
-  const durs = []
-  const FP = process.env.WORKER_FFPROBE || ''
+  // ── V32 captions: ASS subtitles (libass) with the REAL Noto Sans Bengali ──
+  // drawtext+fontconfig produced tofu (V31: fontfile=font.ttf was a RELATIVE
+  // path while ffmpeg's CWD is the repo — 'Cannot load default config file' ×5
+  // fell back to a non-Bengali font). libass + fontsdir + absolute path shapes
+  // Bangla conjuncts correctly (harfbuzz) and its cache is family-keyed, so we
+  // give NotoSansBengali a UNIQUE family name via a copied .conf so the cache
+  // can never collide with an old non-Bengali 'Noto Sans Bengali' entry.
+  const assPath = join(WORK_DIR, `${videoId}_captions.ass`)
+  const clipDurs = []   // NOT [0,0,...] — pushing onto a pre-sized array lands
+                        // durations at index 6+ while the caption loop reads
+                        // 0-5 (the zeros) → all captions 0.00→0.00 (invisible).
   for (const p of clipFiles) {
-    let d = 6
-    if (FP) {
-      d = Number(execFileSync(FP, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', p]).toString().trim()) || 6
-    } else {
-      // ffprobe-free: ffmpeg prints "Duration: HH:MM:SS.ms" on stderr even when
-      // it exits nonzero (no output file). spawnSync always hands us stderr.
-      try {
-        const r = spawnSync(FF, ['-hide_banner', '-i', p], { encoding: 'utf8' })
-        const m = String(r.stderr || '').match(/Duration: (\d+):(\d+):(\d+\.\d+)/)
-        if (m) d = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])
-      } catch { /* keep 6s default */ }
-    }
-    durs.push(d)
+    let d = 5
+    try {
+      const r = spawnSync(FF, ['-hide_banner', '-i', p], { encoding: 'utf8' })
+      const m = String(r.stderr || '').match(/Duration: (\d+):(\d+):(\d+\.?\d+)/)
+      if (m) d = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])
+    } catch { /* keep 5s default */ }
+    clipDurs.push(d)
   }
-  for (let i = 0; i < caps.length; i++) {
-    const s = acc, e = acc + (durs[i] || 6)
-    acc = e
-    const esc = caps[i].replace(/'/g, "\\'")
-    vfilters.push(`drawtext=fontfile=font.ttf:text='${esc}':x=(w-text_w)/2:y=h*0.82:fontcolor=yellow:fontsize=42:borderw=4:bordercolor=white:alpha='if(lt(t,${s.toFixed(2)}),0,if(lt(t,${e.toFixed(2)}),1,1))'`)
+  const cs = (sec) => {
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0')
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0')
+    const s = (sec % 60).toFixed(2).padStart(5, '0')
+    return `${h}:${m}:${s}`
   }
-  // font
-  const fontSrc = existsSync('C:\\Users\\User\\NotoSansBengali.ttf') ? 'C:\\Users\\User\\NotoSansBengali.ttf' : join(COMFY_ROOT, 'input', 'NotoSansBengali.ttf')
-  if (existsSync(fontSrc)) execFileSync('cmd', ['/c', 'copy', '/y', fontSrc, join(WORK_DIR, 'font.ttf')], { stdio: 'inherit' })
+  let acc = 0
+  const capLines = []
+  const totalCapCount = Math.min(clipFiles.length, 6)
+  const CAP_TEXTS = [
+    'একঘেয়ে জীবন থেকে একটু বিরতি দরকার?',
+    'চলুন, বগুড়া থেকে কক্সবাজার',
+    'সমুদ্র সৈকত, হোটেল, ব্রেকফাস্ট',
+    'কাপল/ফ্যামিলি বিচ মুহূর্ত',
+    'ইনানী | হিমছড়ি ঘোরাঘুরি',
+    'স্পেশ্যাল প্যাকেজ — এখনই বুক করুন!',
+  ]
+  for (let i = 0; i < totalCapCount; i++) {
+    const s0 = acc
+    const s1 = acc + clipDurs[i]
+    acc = s1
+    capLines.push(`Dialogue: 0,${cs(s0)},${cs(s1)},BanglaCap,,0,0,0,,${CAP_TEXTS[i] || ''}`)
+  }
+  const FONT_FILE_ABS = join(COMFY_ROOT, 'fonts', 'NotoSansBengali.ttf')
+  const assContent = [
+    '[Script Info]',
+    'ScriptType: v4.00+',
+    `PlayResX: 720`,
+    `PlayResY: 1280`,
+    'WrapStyle: 2',
+    'ScaledBorderAndShadow: yes',
+    '',
+    '[V4+ Styles]',
+    `Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding`,
+    'Style: BanglaCap,Noto Sans Bengali,54,&H00FFFFFF,&H000000FF,&H00282828,&H88000000,0,0,0,0,100,100,0,0,1,2.4,1,2,60,60,90,1',
+    '',
+    '[Events]',
+    ...capLines,
+    '',
+  ].join('\n')
+  writeFileSync(assPath, assContent, 'utf8')
+  const fontsDirAbs = join(COMFY_ROOT, 'fonts')
+  console.log(`[worker] captions: ${capLines.length} ASS events → ${assPath} (font: ${FONT_FILE_ABS})`)
 
   const final = join(WORK_DIR, `${videoId}_final.mp4`)
-  const total = durs.reduce((a, b) => a + b, 0)
+  const total = clipDurs.reduce((a, b) => a + b, 0)
   const music = join(WORK_DIR, `${videoId}_music.mka`)
   execFileSync(FF, ['-y', '-f', 'lavfi', '-i',
     `aevalsrc='0.18*sin(2*PI*196*t)+0.14*sin(2*PI*294*t)+0.10*sin(2*PI*392*t)+0.08*sin(2*PI*523*t)+0.06*sin(2*PI*659*t)':s=44100:d=${total.toFixed(2)}`,
@@ -265,9 +305,22 @@ async function run(job) {
   execFileSync(FF, ['-y', '-i', vo, '-i', music, '-filter_complex',
     '[0:a]volume=1.0[a];[1:a]volume=0.35[b];[a][b]amix=inputs=2:duration=longest[aout]',
     '-map', '[aout]', '-c:a', 'aac', '-b:a', '192k', mixed], { stdio: 'inherit' })
+  // V32 final: NO transpose (V31 sideways bug — rotating landscape content
+  // can never make it upright). Upright 720x1280 canvas: blur-background pad.
+  // ASS captions burned by libass. Filter-safe paths: forward slashes + the
+  // drive-letter colon escaped (a bare ':' would split the filter args).
+  const fpath = (winPath) => winPath.replaceAll('\\', '/').replaceAll(':', '\\:')
   execFileSync(FF, ['-y', '-i', combined, '-i', mixed, '-filter_complex',
-    `[0:v]transpose=1,${vfilters.join(',')}[v]`, '-map', '[v]', '-map', '1:a',
-    '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p',
+    `[0:v]scale=720:1280:force_original_aspect_ratio=decrease,setsar=1[fg];` +
+    `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,gblur=sigma=28,eq=brightness=-0.12[bg];` +
+    `[bg][fg]overlay=(W-w)/2:(H-h)/2,` +
+    `subtitles=filename='${fpath(assPath)}':fontsdir='${fpath(fontsDirAbs)}'[v]`,
+    '-map', '[v]', '-map', '1:a',
+    // Vercel serverless gateway caps request bodies at ~4.5MB — a 30s 720x1280
+    // final must stay under it to pass /api/videos/upload/complete (verified
+    // live: 413 at 5MB / crf18+3.5M). 1.0M video bitrate ≈ 4.1MB total.
+    '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-maxrate', '1.0M', '-bufsize', '2M',
+    '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-r', '30',
     '-c:a', 'copy', '-movflags', '+faststart', final], { stdio: 'inherit' })
   console.log(`[worker] final: ${final} (${existsSync(final) ? Math.round(statSync(final).size / 1e6) : '?'}MB)`)
 
@@ -278,7 +331,7 @@ async function run(job) {
   const form = new FormData()
   form.append('secret', SECRET)
   form.append('videoId', videoId)
-  form.append('stats', JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', clips: 5 }))
+  form.append('stats', JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', clips: clipFiles.length }))
   form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
   const up = await fetch(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form, signal: AbortSignal.timeout(120000) })
   const upJson = await up.json().catch(() => ({}))
