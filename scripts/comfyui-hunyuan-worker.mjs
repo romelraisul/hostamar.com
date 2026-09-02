@@ -26,7 +26,7 @@
  *   node scripts/comfyui-hunyuan-worker.mjs --once     # one job then exit (tests)
  *   node scripts/comfyui-hunyuan-worker.mjs --videoId <id>  # force one row
  */
-import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync } from 'node:fs'
+import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, rmSync, readdirSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -181,7 +181,24 @@ function buildScenes(topic) {
   return scenes
 }
 
-const VO_DEFAULT = 'একঘেয়ে জীবন থেকে একটু বিরতি দরকার? চলুন বগুড়া থেকে কক্সবাজার! সমুদ্র সৈকত, হোটেল, ব্রেকফাস্ট — স্পেশাল প্যাকেজ। এখনই বুক করুন!'
+const VO_DEFAULT = 'একঘেয়ে জীবন থেকে একটু বিরতি দরকার? চলুন, বগুড়া থেকে কক্সবাজার! সমুদ্র সৈকত, হোটেল, ব্রেকফাস্ট — স্পেশাল প্যাকেজ মাত্র পাঁচ হাজার পাঁচশো টাকা। কাপল বা ফ্যামিলি বিচ মুহূর্ত, ইনানী আর হিমছড়ি ঘোরাঘুরি। বুক করতে কল করুন এক সাতে পাঁচ এক সাতে নয় তিন শূন্য শূন্য শূন্য শূন্য। এখনই বুক করুন!'
+
+// V33: edge-tts ALSO emits word-timed VTT (--write-subtitles). Captions sync to
+// the VO's own word boundaries, NOT clip boundaries — V32's 11s VO left captions
+// running to 30s with dead air. VO above is ~26s; cues map 1:1 to ASS events.
+function vttCuesToAss(vtt, capCount, cs) {
+  const cues = []
+  const re = /(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s*\n([^\n]+)/g
+  let m
+  while ((m = re.exec(vtt)) !== null) {
+    const s0 = +m[1] * 3600 + +m[2] * 60 + +m[3] + +m[4] / 1000
+    const s1 = +m[5] * 3600 + +m[6] * 60 + +m[7] + +m[8] / 1000
+    const text = m[9].trim().replace(/\s+/g, ' ')
+    if (text) cues.push({ s0, s1, text })
+  }
+  // One ASS event per scene cue, capped at capCount scenes.
+  return cues.slice(0, capCount).map((c) => `Dialogue: 0,${cs(c.s0)},${cs(c.s1)},BanglaCap,,0,0,0,,${c.text}`)
+}
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)) }
 
@@ -229,15 +246,18 @@ async function run(job) {
   execFileSync(FF, ['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-fflags', '+genpts', '-c', 'copy', combined], { stdio: 'inherit' })
 
   const vo = join(WORK_DIR, `${videoId}_vo.mp3`)
-  execFileSync(PY, ['-m', 'edge_tts', '--voice', 'bn-IN-TanishaaNeural', '--text', job.language === 'en' ? 'Escape the routine — Bogra to Cox\'s Bazar special package!' : VO_DEFAULT, '--write-media', vo], { stdio: 'inherit' })
+  const voVtt = join(WORK_DIR, `${videoId}_vo.vtt`)
+  execFileSync(PY, ['-m', 'edge_tts', '--voice', 'bn-IN-TanishaaNeural', '--rate=-5%', '--text', job.language === 'en' ? 'Escape the routine — Bogra to Cox\'s Bazar special package! Call now to book!' : VO_DEFAULT, '--write-media', vo, '--write-subtitles', voVtt], { stdio: 'inherit' })
 
-  // ── V32 captions: ASS subtitles (libass) with the REAL Noto Sans Bengali ──
-  // drawtext+fontconfig produced tofu (V31: fontfile=font.ttf was a RELATIVE
-  // path while ffmpeg's CWD is the repo — 'Cannot load default config file' ×5
-  // fell back to a non-Bengali font). libass + fontsdir + absolute path shapes
-  // Bangla conjuncts correctly (harfbuzz) and its cache is family-keyed, so we
-  // give NotoSansBengali a UNIQUE family name via a copied .conf so the cache
-  // can never collide with an old non-Bengali 'Noto Sans Bengali' entry.
+  // ── V33 captions: ASS subtitles (libass+harfbuzz, BOTH verified in this
+  // ffmpeg build's configure line). V32 shipped broken conjuncts (হো-টেল): the
+  // 200KB "NotoSansBengali.ttf" on disk was a 96-cmap-glyph subset whose GSUB
+  // has NO half-forms — uharfbuzz proved ক্ষ/স্ট/দ্ব/হ্ম shape to bare consonants
+  // with it, while the real full Noto Bold (418 glyphs) produces b-beng.half,
+  // s-beng.half4, d-beng.half3. Fix: FULL Noto Sans Bengali Bold renamed to a
+  // UNIQUE family "HostamarBangla" (fontTools name-table edit) so fontconfig
+  // can never resolve a stale "Noto Sans Bengali" entry, and the ASS style
+  // references that exact family. fontsdir carries the file. ──
   const assPath = join(WORK_DIR, `${videoId}_captions.ass`)
   const clipDurs = []   // NOT [0,0,...] — pushing onto a pre-sized array lands
                         // durations at index 6+ while the caption loop reads
@@ -257,35 +277,44 @@ async function run(job) {
     const s = (sec % 60).toFixed(2).padStart(5, '0')
     return `${h}:${m}:${s}`
   }
-  let acc = 0
-  const capLines = []
   const totalCapCount = Math.min(clipFiles.length, 6)
-  const CAP_TEXTS = [
-    'একঘেয়ে জীবন থেকে একটু বিরতি দরকার?',
-    'চলুন, বগুড়া থেকে কক্সবাজার',
-    'সমুদ্র সৈকত, হোটেল, ব্রেকফাস্ট',
-    'কাপল/ফ্যামিলি বিচ মুহূর্ত',
-    'ইনানী | হিমছড়ি ঘোরাঘুরি',
-    'স্পেশ্যাল প্যাকেজ — এখনই বুক করুন!',
-  ]
-  for (let i = 0; i < totalCapCount; i++) {
-    const s0 = acc
-    const s1 = acc + clipDurs[i]
-    acc = s1
-    capLines.push(`Dialogue: 0,${cs(s0)},${cs(s1)},BanglaCap,,0,0,0,,${CAP_TEXTS[i] || ''}`)
+  // V33: caption timings come from the VO's OWN word-boundary VTT (edge-tts
+  // --write-subtitles), NOT clip durations — captions can never desync from
+  // the voice, and the last cue lands where the VO actually ends (~26s), with
+  // music-only outro to 30s. Fallback to clip timings if the VTT is missing.
+  let capLines = []
+  const vttText = existsSync(voVtt) ? readFileSync(voVtt, 'utf8') : ''
+  capLines = vttCuesToAss(vttText, totalCapCount, cs)
+  if (capLines.length === 0) {
+    console.warn('[worker] VO VTT empty/missing — falling back to clip-timed captions')
+    let acc = 0
+    const CAP_TEXTS = [
+      'একঘেয়ে জীবন থেকে একটু বিরতি দরকার?',
+      'চলুন, বগুড়া থেকে কক্সবাজার',
+      'সমুদ্র সৈকত, হোটেল, ব্রেকফাস্ট',
+      'কাপল/ফ্যামিলি বিচ মুহূর্ত',
+      'ইনানী | হিমছড়ি ঘোরাঘুরি',
+      'স্পেশ্যাল প্যাকেজ — এখনই বুক করুন!',
+    ]
+    for (let i = 0; i < totalCapCount; i++) {
+      const s0 = acc
+      const s1 = acc + clipDurs[i]
+      acc = s1
+      capLines.push(`Dialogue: 0,${cs(s0)},${cs(s1)},BanglaCap,,0,0,0,,${CAP_TEXTS[i] || ''}`)
+    }
   }
-  const FONT_FILE_ABS = join(COMFY_ROOT, 'fonts', 'NotoSansBengali.ttf')
+  const FONT_FILE_ABS = join(COMFY_ROOT, 'fonts', 'HostamarBangla-Bold.ttf')
   const assContent = [
     '[Script Info]',
     'ScriptType: v4.00+',
-    `PlayResX: 720`,
-    `PlayResY: 1280`,
-    'WrapStyle: 2',
+    `PlayResX: 1080`,
+    `PlayResY: 1920`,
+    'WrapStyle: 0',   // 0 = smart wrap (WrapStyle 2 = no auto-wrap → long VO cues overflow 920px of usable width)
     'ScaledBorderAndShadow: yes',
     '',
     '[V4+ Styles]',
     `Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding`,
-    'Style: BanglaCap,Noto Sans Bengali,54,&H00FFFFFF,&H000000FF,&H00282828,&H88000000,0,0,0,0,100,100,0,0,1,2.4,1,2,60,60,90,1',
+    'Style: BanglaCap,HostamarBangla,72,&H00FFFFFF,&H000000FF,&H00282828,&H88000000,-1,0,0,0,100,100,0,0,1,3,1,2,80,80,140,1',
     '',
     '[Events]',
     ...capLines,
@@ -305,38 +334,104 @@ async function run(job) {
   execFileSync(FF, ['-y', '-i', vo, '-i', music, '-filter_complex',
     '[0:a]volume=1.0[a];[1:a]volume=0.35[b];[a][b]amix=inputs=2:duration=longest[aout]',
     '-map', '[aout]', '-c:a', 'aac', '-b:a', '192k', mixed], { stdio: 'inherit' })
-  // V32 final: NO transpose (V31 sideways bug — rotating landscape content
-  // can never make it upright). Upright 720x1280 canvas: blur-background pad.
-  // ASS captions burned by libass. Filter-safe paths: forward slashes + the
-  // drive-letter colon escaped (a bare ':' would split the filter args).
+
+  // ── V33 Real-ESRGAN upscale (RTX 5060 via Vulkan, -g 0): 384x224 frames →
+  // 1536x896 (~0.85s/frame measured with ComfyUI resident; 726 frames ≈ 10min).
+  // Frame-dir batch mode; output reassembled by the final encode below.
+  const ESR = join(process.env.WORKER_ESR_DIR || 'C:\\Users\\User\\hostamar\\tools\\realesrgan', 'realesrgan-ncnn-vulkan.exe')
+  if (!existsSync(ESR)) throw new Error(`Real-ESRGAN not found at ${ESR} — run tools/realesrgan setup first`)
+  const esrDir = join(WORK_DIR, `${videoId}_esr`)
+  rmSync(join(esrDir, 'frames'), { recursive: true, force: true })
+  rmSync(join(esrDir, 'up'), { recursive: true, force: true })
+  mkdirSync(join(esrDir, 'frames'), { recursive: true })
+  mkdirSync(join(esrDir, 'up'), { recursive: true })
+  execFileSync(FF, ['-y', '-hide_banner', '-loglevel', 'error', '-i', combined,
+    join(esrDir, 'frames', 'f_%05d.png')], { stdio: 'inherit' })
+  console.log(`[worker] ESR: upscaling ${clipFiles.length} clips' frames → 1536x896 (GPU 0)`)
+  execFileSync(ESR, ['-i', join(esrDir, 'frames'), '-o', join(esrDir, 'up'),
+    '-s', '4', '-n', 'realesrgan-x4plus', '-g', '0'], { stdio: 'inherit' })
+  const upCount = readdirSync(join(esrDir, 'up')).filter((f) => f.endsWith('.png')).length
+  console.log(`[worker] ESR: ${upCount} frames upscaled`)
+  if (upCount === 0) throw new Error('ESR produced no frames')
+  // Reassemble the upscaled frames into the combined source for the final burn.
+  const combinedUp = join(WORK_DIR, `${videoId}_combined_up.mp4`)
+  execFileSync(FF, ['-y', '-hide_banner', '-loglevel', 'error',
+    '-framerate', '24', '-i', join(esrDir, 'up', 'f_%05d.png'),
+    '-c:v', 'h264_nvenc', '-preset', 'p4', '-cq', '19', '-pix_fmt', 'yuv420p', combinedUp], { stdio: 'inherit' })
+
+  // V33 final: ESR-upscaled 1536x896 frames → blur-pad upright 1080x1920 →
+  // ASS captions burned by libass+harfbuzz → nvenc h264 ~8M (sellable).
+  // No transpose (V31 sideways lesson). Filter-safe paths: forward slashes +
+  // drive-letter colon escaped (a bare ':' would split filter args).
   const fpath = (winPath) => winPath.replaceAll('\\', '/').replaceAll(':', '\\:')
-  execFileSync(FF, ['-y', '-i', combined, '-i', mixed, '-filter_complex',
-    `[0:v]scale=720:1280:force_original_aspect_ratio=decrease,setsar=1[fg];` +
-    `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,gblur=sigma=28,eq=brightness=-0.12[bg];` +
+  execFileSync(FF, ['-y', '-i', combinedUp, '-i', mixed, '-filter_complex',
+    `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,setsar=1[fg];` +
+    `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,gblur=sigma=40,eq=brightness=-0.12[bg];` +
     `[bg][fg]overlay=(W-w)/2:(H-h)/2,` +
     `subtitles=filename='${fpath(assPath)}':fontsdir='${fpath(fontsDirAbs)}'[v]`,
     '-map', '[v]', '-map', '1:a',
-    // Vercel serverless gateway caps request bodies at ~4.5MB — a 30s 720x1280
-    // final must stay under it to pass /api/videos/upload/complete (verified
-    // live: 413 at 5MB / crf18+3.5M). 1.0M video bitrate ≈ 4.1MB total.
-    '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-maxrate', '1.0M', '-bufsize', '2M',
+    // V33: presigned B2 direct PUT (route: /api/videos/upload/presign) — the
+    // final no longer squeezes under Vercel's ~4.5MB body cap. 1080x1920@8M
+    // for 30s ≈ 25-30MB. nvenc (RTX 5060 hardware encoder, ~0.4s/clip) over
+    // libx264 CPU (6 cores, ~1s/clip but 10x slower at 1080x1920 scale).
+    '-c:v', 'h264_nvenc', '-preset', 'p4', '-rc', 'vbr', '-cq', '21',
+    '-b:v', '8M', '-maxrate', '12M', '-bufsize', '16M',
     '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-r', '30',
     '-c:a', 'copy', '-movflags', '+faststart', final], { stdio: 'inherit' })
   console.log(`[worker] final: ${final} (${existsSync(final) ? Math.round(statSync(final).size / 1e6) : '?'}MB)`)
 
-  // Upload via the API (multipart) — B2 creds stay server-side.
+  // Upload — V33: presigned B2 direct PUT (finals are now 25-30MB, over the
+  // ~4.5MB Vercel body cap). The worker asks /api/videos/upload/presign for a
+  // one-time PUT URL (B2 creds never leave the server), pushes the bytes to
+  // B2 itself, then flips the rows via /api/videos/upload/complete path B
+  // ({secret, videoId, b2Key}). Falls back to multipart if presign 404s (old
+  // deploy) so the worker never hard-fails mid-pipeline.
   // (ESM note: fs stat functions are ALREADY imported at the top — never
   // `require()` in a .mjs; the 2026-09-02 last-mile crash was exactly this.)
   const buf = readFileSync(final)
-  const form = new FormData()
-  form.append('secret', SECRET)
-  form.append('videoId', videoId)
-  form.append('stats', JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', clips: clipFiles.length }))
-  form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
-  const up = await fetch(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form, signal: AbortSignal.timeout(120000) })
-  const upJson = await up.json().catch(() => ({}))
-  if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
-  console.log(`[worker] DONE videoId=${videoId} → ${upJson.url}`)
+  const stats = JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8-esr-v33', clips: clipFiles.length, upscale: 'realesrgan-x4plus 1536x896→1080x1920' })
+  let uploadedViaPresign = false
+  try {
+    const pr = await fetch(`${APP}/api/videos/upload/presign`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: SECRET, videoId, fileSize: buf.length }),
+      signal: AbortSignal.timeout(30000),
+    })
+    if (pr.ok) {
+      const pj = await pr.json()
+      if (pj?.ok && pj?.url) {
+        const put = await fetch(pj.url, {
+          method: 'PUT', headers: { 'Content-Type': 'video/mp4' }, body: buf,
+          signal: AbortSignal.timeout(300000),
+        })
+        if (!put.ok) throw new Error(`B2 PUT ${put.status}`)
+        const fin = await fetch(`${APP}/api/videos/upload/complete`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: SECRET, videoId, b2Key: pj.key, stats: JSON.parse(stats) }),
+          signal: AbortSignal.timeout(30000),
+        })
+        const fj = await fin.json().catch(() => ({}))
+        if (!fin.ok || !fj.ok) throw new Error(`upload/complete ${fin.status}: ${JSON.stringify(fj).slice(0, 200)}`)
+        console.log(`[worker] DONE videoId=${videoId} (presigned B2 PUT, ${Math.round(buf.length / 1e6)}MB) → ${fj.url}`)
+        uploadedViaPresign = true
+      }
+    } else if (pr.status !== 404) {
+      console.warn(`[worker] presign ${pr.status} — falling back to multipart`)
+    }
+  } catch (e) {
+    console.warn(`[worker] presigned upload failed (${String(e?.message || e).slice(0, 120)}) — falling back to multipart`)
+  }
+  if (!uploadedViaPresign) {
+    const form = new FormData()
+    form.append('secret', SECRET)
+    form.append('videoId', videoId)
+    form.append('stats', stats)
+    form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
+    const up = await fetch(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form, signal: AbortSignal.timeout(120000) })
+    const upJson = await up.json().catch(() => ({}))
+    if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
+    console.log(`[worker] DONE videoId=${videoId} → ${upJson.url}`)
+  }
   return true
 }
 
