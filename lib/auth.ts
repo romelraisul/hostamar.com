@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import type { NextRequest } from 'next/server'
 
-const JWT_SECRET=(process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || (process.env.CI || process.env.NEXT_PHASE || process.env.VERCEL ? 'jwt-secret-absent-at-build-time' : (process.env.NODE_ENV==='production' ? (()=>{throw new Error('JWT_SECRET/NEXTAUTH_SECRET missing')})() : 'hostamar-jwt-secret-change-in-production'))) as string
+const JWT_SECRET=(process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || (process.env.NEXT_PHASE || process.env.CI ? 'jwt-secret-absent-at-build-time' : (process.env.NODE_ENV==='production' ? (()=>{throw new Error('JWT_SECRET/NEXTAUTH_SECRET missing')})() : 'hostamar-jwt-secret-change-in-production'))) as string
 
 export async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword)
