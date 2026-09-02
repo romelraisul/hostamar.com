@@ -54,13 +54,17 @@ export async function processVideoNow(videoId: string, topic: string, budgetMs =
 
     // 4) ALWAYS transition — completed with whatever we have (honest: gradient
     //    slides until provider keys land, same HONEST/LIVE pattern as reel/TTS).
+    //    V29: also persist the manifest inline in `script` so the dashboard can
+    //    render the reel-style preview WITHOUT fetching B2 (works even if the
+    //    B2 upload was skipped). url holds the B2 manifest URL when uploaded.
+    const scriptJson = JSON.stringify({ manifest: true, slides: images, captions, durationSec: 12, perSlideMs: 3000, videoId, topic, createdAt: manifest.createdAt })
     await prisma.video.update({
       where: { id: videoId },
       data: {
         status: 'completed',
         url: url || `manifest://local/${videoId}`,
         thumbnailUrl: images[0]?.startsWith('data:') ? images[0] : null,
-        script: JSON.stringify(captions),
+        script: scriptJson,
         updatedAt: new Date(),
       },
     }).catch((e: any) => console.warn('[video-pipeline] status update failed:', String(e?.message || e).slice(0, 120)))

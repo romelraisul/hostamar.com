@@ -16,8 +16,14 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   const fb = {
     configured: Boolean(process.env.FACEBOOK_PAGE_ACCESS_TOKEN),
-    status: process.env.FACEBOOK_PAGE_ACCESS_TOKEN ? 'LIVE — fb tools post + real permalink checks' : 'UNAUTHENTICATED (honest 0cr) — owner: facebook.com → Graph API Explorer → Page token → Vercel env FACEBOOK_PAGE_ACCESS_TOKEN',
+    // V29 WORDING FIX: "LIVE" meant the FB TOOLS' platform-health branch flips —
+    // it NEVER meant customer videos auto-publish. Publishing is MANUAL ONLY
+    // (explicit click via /dashboard/marketing). Owner's token, owner's page.
+    status: process.env.FACEBOOK_PAGE_ACCESS_TOKEN
+      ? 'Configured — Hostamar FB tools work for OUR OWN Page (health-check, post-if-owner-clicks). Customer videos are NEVER auto-published.'
+      : 'Platform FB token: missing (honest 0cr). Adding it only enables Hostamar-page tooling — NOT customer auto-publish. Customer marketing is a separate manual module (/dashboard/marketing).',
     runbook: 'docs/v19-audit.md',
+    autoPublish: 'NONE — all publishing is manual, per-video, per-click',
   }
   const gsc = {
     configured: Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
