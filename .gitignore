@@ -173,3 +173,8 @@ docker/tv-station/videos/free/
 .env.vercel.backup
 .env.backup.json
 .env.bak*
+
+# V33: Real-ESRGAN binary + models (45MB exe + 67MB models — tools/realesrgan/README.md)
+tools/realesrgan/*.exe
+tools/realesrgan/*.dll
+tools/realesrgan/models/

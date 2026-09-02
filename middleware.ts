@@ -163,6 +163,7 @@ export async function middleware(request: NextRequest) {
     '/api/videos/queue/next',   // V30 local Hunyuan worker pull — x-worker-secret (fail-closed at route)
     '/api/videos/queue/fail',  // V30 local Hunyuan worker failure callback — same secret
     '/api/videos/upload/complete', // V30 worker completion callback (multipart file push) — same secret
+    '/api/videos/upload/presign', // V33 worker B2 direct PUT (4K finals exceed the ~4.5MB Vercel body cap) — same secret, fail-closed at route
     '/api/cloud/heartbeat',     // V31 PC-as-Cloud tracker heartbeat — x-worker-secret (fail-closed at route)
   ]
   if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
