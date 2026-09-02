@@ -60,6 +60,27 @@ export async function POST(req: NextRequest) {
     }
 
     // Re-run the pipeline (bounded single-pass; transitions always).
+    // V30: when the local Hunyuan worker mode is ON, retry RE-QUEUES the row
+    // for the 8B motion render instead of running the gradient fallback. When
+    // the worker is offline (no COMFYUI_WORKER_SECRET), fall back to the
+    // serverless pipeline so the row always transitions.
+    if (process.env.COMFYUI_WORKER_SECRET) {
+      await prisma.videoQueue
+        .updateMany({
+          where: { videoId: video.id, status: { in: ['pending', 'processing', 'failed', 'completed'] } },
+          data: { status: 'pending', renderStatus: null, renderError: null, attempts: 0, processedAt: null },
+        })
+        .catch(() => null)
+      await prisma.video
+        .update({ where: { id: video.id }, data: { status: 'processing', url: '', updatedAt: new Date() } })
+        .catch(() => null)
+      return NextResponse.json({
+        ok: true,
+        videoId: video.id,
+        status: 'processing',
+        note: 're-queued for local HunyuanVideo 1.5 8B worker — real motion render (PC on = ~2-4 min/clip)',
+      })
+    }
     const result = await processVideoNow(video.id, video.topic || video.title || 'Hostamar video')
     return NextResponse.json({
       ok: result.ok,

@@ -1,0 +1,106 @@
+{
+  "1": {
+    "class_type": "HyVideoModelLoader",
+    "inputs": {
+      "model": "split_files\\diffusion_models\\hunyuan_video_720_fp8_e4m3fn.safetensors",
+      "base_precision": "bf16",
+      "quantization": "fp8_e4m3fn_fast",
+      "load_device": "offload_device",
+      "block_swap_args": [
+        "40",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "HyVideoVAELoader",
+    "inputs": {
+      "model_name": "hunyuan_video_vae_bf16.safetensors",
+      "precision": "bf16"
+    }
+  },
+  "16": {
+    "class_type": "DownloadAndLoadHyVideoTextEncoder",
+    "inputs": {
+      "llm_model": "Kijai/llava-llama-3-8b-text-encoder-tokenizer",
+      "clip_model": "disabled",
+      "precision": "bf16"
+    }
+  },
+  "30": {
+    "class_type": "HyVideoTextEncode",
+    "inputs": {
+      "prompt": "Bangladeshi Eid marketing video, shop owner smiling, vibrant 6y7 y78",
+      "text_encoders": [
+        "16",
+        0
+      ]
+    }
+  },
+  "3": {
+    "class_type": "HyVideoSampler",
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "hyvid_embeds": [
+        "30",
+        0
+      ],
+      "width": 384,
+      "height": 216,
+      "num_frames": 145,
+      "steps": 10,
+      "embedded_guidance_scale": 6.0,
+      "flow_shift": 9.0,
+      "seed": 42,
+      "force_offload": true,
+      "scheduler": "FlowMatchDiscreteScheduler"
+    }
+  },
+  "5": {
+    "class_type": "HyVideoDecode",
+    "inputs": {
+      "vae": [
+        "7",
+        0
+      ],
+      "samples": [
+        "3",
+        0
+      ],
+      "enable_vae_tiling": true,
+      "temporal_tiling_sample_size": 16,
+      "spatial_tile_sample_min_size": 128,
+      "auto_tile_size": false
+    }
+  },
+  "34": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": [
+        "5",
+        0
+      ],
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "hostamar_cmtmt2jteyldrvv",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "pingpong": false,
+      "save_output": true
+    }
+  },
+  "40": {
+    "class_type": "HyVideoBlockSwap",
+    "inputs": {
+      "double_blocks_to_swap": 20,
+      "single_blocks_to_swap": 20,
+      "offload_txt_in": true,
+      "offload_img_in": true
+    }
+  }
+}

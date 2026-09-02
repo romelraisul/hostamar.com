@@ -160,6 +160,9 @@ export async function middleware(request: NextRequest) {
     '/api/auth/oidc/callback',  // OIDC code exchange (cross-site redirect from IdP)
     '/api/scim/v2',             // SCIM 2.0 — Bearer-token server-to-server (no session cookie)
     '/api/admin/agent/cron',    // Founder OS cron — x-cron-secret (hostamar-cron-2026)
+    '/api/videos/queue/next',   // V30 local Hunyuan worker pull — x-worker-secret (fail-closed at route)
+    '/api/videos/queue/fail',  // V30 local Hunyuan worker failure callback — same secret
+    '/api/videos/upload/complete', // V30 worker completion callback (multipart file push) — same secret
   ]
   if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()

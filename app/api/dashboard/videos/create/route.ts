@@ -106,24 +106,30 @@ export async function POST(request: NextRequest) {
       }
     }).catch(() => null)
 
-    // V28: process INLINE (serverless) — the queue was designed for a local
-    // render worker that never runs (nothing consumes it; the home machine is
-    // not always on). Rows stuck in processing forever was the bug. This call
-    // transitions the row to completed/failed within the same request, using
-    // the ai-video provider chain with honest gradient fallback (V25 pattern).
-    // Non-blocking for the response: kick it off, let the response return the
-    // processing state — BUT with a bounded await so the row NEVER stays stuck
-    // (wait up to 35s; the pipeline itself is single-pass within the budget).
-    try {
-      const { processVideoNow } = await import('@/lib/video-pipeline')
-      await Promise.race([
-        processVideoNow(video.id, topic),
-        new Promise((res) => setTimeout(res, 35_000)),
-      ])
-    } catch (e: any) {
-      console.warn('[videos/create] inline processing warn:', String(e?.message || e).slice(0, 120))
-      // 35s elapsed without transition → heal pass (retry route or list route
-      // auto-heal) will finish it; the row is at most minutes stale, never forever.
+    // V30: QUEUE-FIRST. The local HunyuanVideo 1.5 8B worker (this PC, ComfyUI
+    // @127.0.0.1:8188, re-installed after the 2026-09-02 disk cleanup) consumes
+    // VideoQueue rows via /api/videos/queue/next every 10s and produces a real
+    // 30s 9:16 motion video. When the worker mode is ENABLED
+    // (COMFYUI_WORKER_SECRET set in this deployment) we SKIP inline processing
+    // entirely — the row stays `processing` until the worker renders and calls
+    // /api/videos/upload/complete. When the secret is UNSET (worker offline /
+    // plain serverless deployment), the V28 inline pipeline runs as fallback so
+    // the row NEVER strands (V28 lesson: always transition).
+    if (process.env.COMFYUI_WORKER_SECRET) {
+      // Worker mode: leave both rows pending/processing for the local 8B render.
+      console.log('[videos/create] worker mode — queue row pending for local Hunyuan 8B worker')
+    } else {
+      try {
+        const { processVideoNow } = await import('@/lib/video-pipeline')
+        await Promise.race([
+          processVideoNow(video.id, topic),
+          new Promise((res) => setTimeout(res, 35_000)),
+        ])
+      } catch (e: any) {
+        console.warn('[videos/create] inline processing warn:', String(e?.message || e).slice(0, 120))
+        // 35s elapsed without transition → heal pass (retry route or list route
+        // auto-heal) will finish it; the row is at most minutes stale, never forever.
+      }
     }
 
     // Log activity with credit info
