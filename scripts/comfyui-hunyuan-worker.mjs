@@ -55,7 +55,7 @@ const APP = process.env.WORKER_APP_URL || 'https://hostamar.com'
 const COMFY = process.env.COMFYUI_URL || 'http://127.0.0.1:8188'
 const POLL_MS = Number(process.env.WORKER_POLL_MS || 10000)
 const PY = process.env.WORKER_PYTHON || 'C:\\Users\\User\\qwen\\python_embeded\\python.exe'
-const FF = process.env.WORKER_FFMPEG || 'C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe'
+const FF = process.env.WORKER_FFMPEG || 'C:\\Users\\User\\qwen\\python_embeded\\Lib\\site-packages\\imageio_ffmpeg\\binaries\\ffmpeg-win-x86_64-v7.1.exe'
 const COMFY_ROOT = process.env.WORKER_COMFYUI_DIR || 'C:\\ComfyUI_Download\\ComfyUI'
 const OUT_DIR = join(COMFY_ROOT, 'output')
 const WORK_DIR = join(OUT_DIR, '_worker')
@@ -179,6 +179,20 @@ async function run(job) {
   const scenes = buildScenes(`${title || ''} ${topic || ''}`)
   const clipFiles = []
   const seed = Math.floor(Math.random() * 1_000_000)
+
+  // ── FULL-RESULT disk-reuse (V31 last-mile fix, 2026-09-02) ──
+  // If a previous run already produced the FINAL post-processed file (all 5
+  // clips + concat + VO + music + captions + transpose) and only the B2
+  // upload crashed (e.g. the 2026-09-02 `require is not defined` crash), do
+  // NOT re-render or even re-concat — go straight to upload. Zero GPU spend.
+  const finalPath = join(WORK_DIR, `${videoId}_final.mp4`)
+  if (existsSync(finalPath) && statSync(finalPath).size > 10_000) {
+    console.log(`[worker] DISK-REUSE — final already on disk (${statSync(finalPath).size} bytes), skipping render+concat+post, going straight to upload`)
+    await uploadFinal(finalPath, videoId)
+    console.log(`[worker] DONE videoId=${videoId} (reused final: ${finalPath})`)
+    return true
+  }
+
   for (let i = 0; i < scenes.length; i++) {
     const prefix = `hsworker_${videoId}_${i + 1}`
     // Disk-reuse: a clip already rendered for this video (previous worker run,
@@ -255,9 +269,11 @@ async function run(job) {
     `[0:v]transpose=1,${vfilters.join(',')}[v]`, '-map', '[v]', '-map', '1:a',
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p',
     '-c:a', 'copy', '-movflags', '+faststart', final], { stdio: 'inherit' })
-  console.log(`[worker] final: ${final} (${existsSync(final) ? Math.round(require('node:fs').statSync(final).size / 1e6) : '?'}MB)`)
+  console.log(`[worker] final: ${final} (${existsSync(final) ? Math.round(statSync(final).size / 1e6) : '?'}MB)`)
 
   // Upload via the API (multipart) — B2 creds stay server-side.
+  // (ESM note: fs stat functions are ALREADY imported at the top — never
+  // `require()` in a .mjs; the 2026-09-02 last-mile crash was exactly this.)
   const buf = readFileSync(final)
   const form = new FormData()
   form.append('secret', SECRET)
@@ -269,6 +285,22 @@ async function run(job) {
   if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
   console.log(`[worker] DONE videoId=${videoId} → ${upJson.url}`)
   return true
+}
+
+// Upload a FINAL file that already exists on disk (full-result disk-reuse:
+// crashed-after-postprocess recovery — render/concat/post are skipped, only
+// the B2 push + row flip happen).
+async function uploadFinal(final, videoId) {
+  const buf = readFileSync(final)
+  const form = new FormData()
+  form.append('secret', SECRET)
+  form.append('videoId', videoId)
+  form.append('stats', JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', reused: true }))
+  form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
+  const up = await fetch(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form, signal: AbortSignal.timeout(120000) })
+  const upJson = await up.json().catch(() => ({}))
+  if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
+  console.log(`[worker] UPLOADED final ${Math.round(buf.length / 1e6)}MB → ${upJson.url}`)
 }
 
 async function fail(job, err) {
