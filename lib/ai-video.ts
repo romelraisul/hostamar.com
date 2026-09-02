@@ -134,7 +134,7 @@ export async function generateBanglaVoiceover(
  * Upload a buffer to B2 (bucket hostamar-prod) and return the public URL.
  * Returns '' on failure (callers treat as optional enhancement, never fatal).
  */
-export async function uploadToB2(buffer: Buffer, key: string): Promise<string> {
+export async function uploadToB2(buffer: Buffer, key: string, contentType?: string): Promise<string> {
   try {
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
     const client = new S3Client({
@@ -145,10 +145,12 @@ export async function uploadToB2(buffer: Buffer, key: string): Promise<string> {
         secretAccessKey: process.env.B2_APPLICATION_KEY || '',
       },
     })
+    const type = contentType || (key.endsWith('.json') ? 'application/json' : key.endsWith('.webm') ? 'video/webm' : key.endsWith('.png') ? 'image/png' : key.endsWith('.mp4') ? 'video/mp4' : 'application/octet-stream')
     await client.send(new PutObjectCommand({
       Bucket: process.env.B2_BUCKET || 'hostamar-prod',
       Key: key,
       Body: buffer,
+      ContentType: type,
     }))
     return `https://f005.backblazeb2.com/file/${process.env.B2_BUCKET || 'hostamar-prod'}/${key}`
   } catch (e: any) {
