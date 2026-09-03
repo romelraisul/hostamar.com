@@ -3,7 +3,7 @@
 //   TG_API_ID=... TG_API_HASH=... node scripts/tg-gen-session.mjs
 // Keep TG_SESSION_STRING as secret as DATABASE_URL (it IS the account).
 import { TelegramClient } from 'telegram'
-import { StringSession } from 'telegram/sessions'
+import { StringSession } from 'telegram/sessions/index.js'
 import readline from 'node:readline/promises'
 import { stdin as input, stdout as output } from 'node:process'
 

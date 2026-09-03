@@ -21,7 +21,7 @@
 // /api/drive/upload dedup metadata or manually).
 // ============================================================================
 import { TelegramClient } from 'telegram'
-import { StringSession } from 'telegram/sessions'
+import { StringSession } from 'telegram/sessions/index.js'
 import { createHash } from 'node:crypto'
 import { createWriteStream, existsSync, statSync, unlinkSync, mkdirSync } from 'node:fs'
 import { spawn } from 'node:child_process'
