@@ -48,14 +48,29 @@ export async function getTelegramClient(): Promise<TelegramClient> {
 }
 
 /**
- * Resolve the storage channel and verify the session can actually write to
- * it (creator/admin only). Returns the channel entity.
+ * Resolve the storage channel. A fresh StringSession carries NO entity cache,
+ * so getEntity(-100…) fails until the account's dialogs have been fetched at
+ * least once (private channels have no @username to resolve). Warm-up: try
+ * direct, on failure scan getDialogs (the session account created/joined the
+ * channel, so it's there), cache it, then retry.
  */
 export async function ensureChannel() {
   const client = await getTelegramClient()
   const raw = String(process.env.TG_CHANNEL_ID || '')
-  const entity = await client.getEntity(raw.startsWith('-100') ? Number(raw) : raw)
-  return entity
+  try {
+    return await client.getEntity(raw.startsWith('-100') ? Number(raw) : raw)
+  } catch {
+    const wanted = new Set([raw, raw.replace('-100', '')])
+    const dialogs = await client.getDialogs({ limit: 200 })
+    for (const d of dialogs) {
+      const e: any = (d as any).entity ?? d
+      const idStr = e?.id?.toString?.() ?? String(e?.id ?? '')
+      if (wanted.has(idStr)) return e
+    }
+    throw new Error(
+      `Channel ${raw} not found in this account's dialogs — create/join hostamar-drive-storage with the session's account first`,
+    )
+  }
 }
 
 /** Run an op with FloodWait handling — sleep(429.retry_after) then retry once. */
