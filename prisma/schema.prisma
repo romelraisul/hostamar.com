@@ -1607,3 +1607,46 @@ model CloudState {
   services    Json?
   updatedAt   DateTime @updatedAt
 }
+
+// ── V34 Hostamar Drive — Telegram MTProto as unlimited storage ──
+// GramJS User-API client (NOT Bot API: 2GB bot cap + 1h getFile expiry +
+// no streaming). MTProto = 2GB free / 4GB Premium per message, permanent
+// file references, Range-streamable. Metadata lives in Neon; bytes live in
+// the private channel TG_CHANNEL_ID.
+model DriveFolder {
+  id        String        @id @default(cuid())
+  ownerId   String
+  name      String
+  parentId  String?
+  parent    DriveFolder?  @relation("FolderToFolder", fields: [parentId], references: [id])
+  children  DriveFolder[] @relation("FolderToFolder")
+  files     DriveFile[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([ownerId, parentId])
+}
+
+model DriveFile {
+  id                String       @id @default(cuid())
+  ownerId           String
+  folderId          String?
+  folder            DriveFolder? @relation(fields: [folderId], references: [id])
+  fileName          String
+  fileSize          BigInt
+  mimeType          String
+  fileHash          String? // SHA256 dedup — hash hit returns existing id, zero re-upload
+  telegramChannelId String
+  telegramMessageId Int
+  telegramFileId    String? // cached file ref (may rotate; re-resolve on 404)
+  chunkCount        Int          @default(1)
+  chunkGroupId      String? // >2GB files: 1.9GB chunk messages share this id
+  shareToken        String? // /drive/s/[id]?token= (1h signed access)
+  shareTokenExpires DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([ownerId, folderId])
+  @@index([fileHash])
+  @@index([chunkGroupId])
+}

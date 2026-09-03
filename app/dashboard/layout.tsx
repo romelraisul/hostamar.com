@@ -127,6 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard/ai-services', icon: Sparkles, label: 'AI Store', labelBn: 'AI স্টোর', badge: '50+', description: '50+ AI সার্ভিস — Instagram, FB Ads, YouTube' },
     { href: '/dashboard/chat', icon: MessageCircle, label: 'AI Chat', labelBn: 'AI চ্যাট', badge: '120', description: '120 মডেল ফ্রি' },
     { href: '/dashboard/videos', icon: Video, label: 'Videos', labelBn: 'ভিডিও', badge: '37', description: 'আমার ভিডিও' },
+    { href: '/dashboard/drive', icon: HardDrive, label: 'Drive', labelBn: 'ড্রাইভ', badge: '∞', description: 'Hostamar Drive — Telegram-backed আনলিমিটেড স্টোরেজ' },
     { href: '/dashboard/game', icon: Gamepad2, label: 'Game', labelBn: 'গেম', description: 'গেম হোস্টিং' },
     { href: '/dashboard/ide', icon: Code2, label: 'IDE', labelBn: 'IDE', description: 'ব্রাউজার IDE' },
     { href: '/dashboard/services', icon: Server, label: 'Services', labelBn: 'সার্ভিস', description: 'VPS/RDP' },
