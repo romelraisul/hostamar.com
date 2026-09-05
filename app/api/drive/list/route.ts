@@ -27,7 +27,12 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: 'desc' }, take: 100,
         select: { id: true, fileName: true, fileSize: true, mimeType: true, folderId: true, createdAt: true },
       })
-      return NextResponse.json({ ok: true, files, folders: [] })
+      // BigInt-safe JSON
+      return NextResponse.json({
+        ok: true,
+        files: files.map((f) => ({ ...f, fileSize: f.fileSize == null ? null : String(f.fileSize) })),
+        folders: [],
+      })
     }
 
     const [folders, files, agg] = await Promise.all([
@@ -46,8 +51,14 @@ export async function GET(req: NextRequest) {
         _sum: { fileSize: true },
       }),
     ])
+    // BigInt-safe JSON: Prisma fileSize is BigInt — stringify per row.
+    const filesJson = files.map((f) => ({
+      ...f,
+      fileSize: f.fileSize == null ? null : String(f.fileSize),
+    }))
+    if (q) return NextResponse.json({ ok: true, files: filesJson, folders: [] })
     return NextResponse.json({
-      ok: true, folders, files,
+      ok: true, folders, files: filesJson,
       usedBytes: String(agg._sum.fileSize || 0),
       unlimited: true, // Telegram channel storage
     })
