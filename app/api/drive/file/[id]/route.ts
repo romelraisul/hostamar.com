@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth-utils'
 import { telegramConfigured } from '@/lib/telegram/client'
-import { downloadMessageBuffer, deleteMessages } from '@/lib/telegram/download'
+import { deleteMessages } from '@/lib/telegram/download'
 
 /**
  * /api/drive/file/[id] — V34 Hostamar Drive.
@@ -58,36 +58,89 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       : [{ telegramMessageId: file.telegramMessageId, fileSize: file.fileSize }]
     if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const buffers: Buffer[] = []
-    for (const r of rows) buffers.push(await downloadMessageBuffer(r.telegramMessageId))
-    const full = Buffer.concat(buffers)
-
-    const range = req.headers.get('range')
+    const totalSize = Number(rows.reduce((a: bigint | number, r) => BigInt(a) + BigInt(r.fileSize), 0))
+    const contentType = file.mimeType || 'application/octet-stream'
+    const disposition = `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`
     const baseHeaders: Record<string, string> = {
-      'Content-Type': file.mimeType || 'application/octet-stream',
+      'Content-Type': contentType,
       'Accept-Ranges': 'bytes',
-      'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+      'Content-Disposition': disposition,
       'Cache-Control': 'private, max-age=0, must-revalidate',
     }
-    if (range) {
-      const m = range.match(/bytes=(\d+)-(\d*)/)
-      if (m) {
-        const start = Number(m[1])
-        const end = m[2] ? Math.min(Number(m[2]), full.length - 1) : full.length - 1
-        if (start >= full.length || start > end) {
-          return new NextResponse(null, { status: 416, headers: { 'Content-Range': `bytes */${full.length}` } })
-        }
-        const slice = full.subarray(start, end + 1)
-        return new NextResponse(new Uint8Array(slice), {
-          status: 206,
-          headers: {
-            ...baseHeaders,
-            'Content-Range': `bytes ${start}-${end}/${full.length}`,
-            'Content-Length': String(slice.length),
-          },
-        })
-      }
+
+    // Parse Range: bytes=start-end (end optional). Single-chunk + Range →
+    // MTProto offset/limit fetch (only the requested bytes cross the wire).
+    // Multi-chunk or no-Range → sequential stream of full bytes.
+    const range = req.headers.get('range')
+    const m = range?.match(/bytes=(\d+)-(\d*)/)
+    const start = m ? Number(m[1]) : 0
+    const end = m ? (m[2] ? Math.min(Number(m[2]), totalSize - 1) : totalSize - 1) : totalSize - 1
+    if (start >= totalSize || start > end) {
+      return new NextResponse(null, { status: 416, headers: { 'Content-Range': `bytes */${totalSize}` } })
     }
+
+    const { iterMessageBytes } = await import('@/lib/telegram/download')
+
+    if (m && rows.length === 1) {
+      // FAST PATH — Range on single message: read exactly [start, end].
+      // iterDownload returns whole 512KB chunks; slice to the exact byte span.
+      const parts: Buffer[] = []
+      let got = 0
+      await iterMessageBytes(rows[0].telegramMessageId, (chunk) => {
+        if (got >= end - start + 1) return
+        parts.push(chunk)
+        got += chunk.length
+      }, { offset: start, limit: end - start + 1 })
+      const slice = Buffer.concat(parts).subarray(0, end - start + 1)
+      return new NextResponse(new Uint8Array(slice), {
+        status: 206,
+        headers: {
+          ...baseHeaders,
+          'Content-Range': `bytes ${start}-${end}/${totalSize}`,
+          'Content-Length': String(slice.length),
+        },
+      })
+    }
+
+    if (m && rows.length > 1) {
+      // Range across a chunk group — stream all parts, slice in-flight.
+      const sliceLen = end - start + 1
+      let pos = 0
+      let emitted = 0
+      const parts: Buffer[] = []
+      for (const r of rows) {
+        const partSize = Number(r.fileSize)
+        if (pos + partSize <= start) { pos += partSize; continue }
+        const withinStart = Math.max(0, start - pos)
+        await iterMessageBytes(r.telegramMessageId, (chunk, off) => {
+          const abs = pos + off
+          const from = Math.max(abs, start)
+          const to = Math.min(abs + chunk.length - 1, end)
+          if (from <= to && emitted < sliceLen) {
+            parts.push(chunk.subarray(from - abs, to - abs + 1))
+            emitted += to - from + 1
+          }
+        })
+        pos += partSize
+        if (emitted >= sliceLen) break
+      }
+      const slice = Buffer.concat(parts)
+      return new NextResponse(new Uint8Array(slice), {
+        status: 206,
+        headers: {
+          ...baseHeaders,
+          'Content-Range': `bytes ${start}-${end}/${totalSize}`,
+          'Content-Length': String(slice.length),
+        },
+      })
+    }
+
+    // No Range — full sequential stream of all chunks (single or multi).
+    const parts: Buffer[] = []
+    for (const r of rows) {
+      await iterMessageBytes(r.telegramMessageId, (chunk) => { parts.push(chunk) })
+    }
+    const full = Buffer.concat(parts)
     return new NextResponse(new Uint8Array(full), {
       status: 200,
       headers: { ...baseHeaders, 'Content-Length': String(full.length) },
