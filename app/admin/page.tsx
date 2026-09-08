@@ -391,10 +391,24 @@ function ModelsTab() {
     opencode: { label: 'OpenCode Zen', model: 'hy3-free', color: '#A78BFA' },
   }
 
+  // CEO TokenRouter tiers — routing brain (local-wsl → kaggle → edge → zoo)
+  const [router, setRouter] = useState<any>(null)
+  useEffect(() => {
+    jfetch('/api/models/health').then(setRouter).catch(() => setRouter(null))
+    const t = setInterval(() => { if (!document.hidden) jfetch('/api/models/health').then(setRouter).catch(()=>{}) }, 15000)
+    return () => clearInterval(t)
+  }, [])
+  const tierStyle: Record<string,string> = {
+    'up': 'border-[#10B981]/40 bg-[#0E7C3A]/10',
+    'booting': 'border-amber-500/40 bg-amber-500/10',
+    'planned': 'border-zinc-800 bg-zinc-900/40',
+    'down': 'border-red-500/40 bg-red-500/10',
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div><h2 className="text-lg font-bold text-white">Models</h2><p className="text-xs text-zinc-500">GET /api/gateway/models · {gatewayUrl ? <code className="font-mono text-zinc-400">{gatewayUrl}</code> : 'gateway'}{lastUpdated && <span className="ml-2 text-zinc-600">· updated {lastUpdated.toLocaleTimeString()}</span>}</p></div>
+        <div><h2 className="text-lg font-bold text-white">Models <span className="text-xs font-normal text-zinc-500">· CEO TokenRouter</span></h2><p className="text-xs text-zinc-500">GET /api/gateway/models · {gatewayUrl ? <code className="font-mono text-zinc-400">{gatewayUrl}</code> : 'gateway'}{lastUpdated && <span className="ml-2 text-zinc-600">· updated {lastUpdated.toLocaleTimeString()}</span>}</p></div>
         <div className="flex items-center gap-2">
           {source && <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${source==='live' ? 'bg-[#0E7C3A]/20 text-[#10B981] border-[#10B981]/30' : 'bg-amber-500/10 text-amber-300 border-amber-500/30'}`}>{source==='live' ? '● live' : '● offline (cached catalog)'}</span>}
           <button onClick={()=>{load(); loadAi()}} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
@@ -411,6 +425,36 @@ function ModelsTab() {
           <div className={`rounded-xl border p-3 flex items-center gap-3 ${ai.comfyui?.up ? 'bg-[#0E7C3A]/10 border-[#10B981]/30' : 'bg-red-500/10 border-red-500/30'}`}>
             <span className={`w-2.5 h-2.5 rounded-full ${ai.comfyui?.up ? 'bg-[#10B981] animate-pulse' : 'bg-red-500'}`}/>
             <div><div className="text-xs font-semibold text-white">ComfyUI {ai.comfyui?.up ? 'online' : 'offline'}</div><div className="text-[10px] text-zinc-500 font-mono">{ai.comfyui?.gpu ? `${ai.comfyui.gpu.vramFreeMB}/${ai.comfyui.gpu.vramTotalMB} MB VRAM free` : ai.comfyui?.url}</div></div>
+          </div>
+        </div>
+      )}
+
+      {/* CEO TokenRouter — tier routing table */}
+      {router && (
+        <div className="rounded-2xl bg-black border border-[#38BDF8]/20 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-sm font-bold text-white">TokenRouter — CEO রাউটিং ব্রেইন</div>
+              <div className="text-[11px] text-zinc-500">lib/tokenrouter.ts · অগ্রাধিকার: local-wsl → kaggle → edge → zoo · 15s polling /api/models/health</div>
+            </div>
+            <div className="text-[10px] text-zinc-600 font-mono">{router.summary?.up}/{router.summary?.total} tier up</div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            {(router.tiers || []).map((t: any, i: number) => (
+              <div key={t.model} className={`rounded-xl border p-3 ${tierStyle[t.status] || tierStyle.planned}`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-zinc-600">#{i+1} {t.tier}</span>
+                  <span className={`w-2 h-2 rounded-full ${t.status==='up' ? 'bg-[#10B981] animate-pulse' : t.status==='booting' ? 'bg-amber-400 animate-pulse' : 'bg-zinc-700'}`}/>
+                </div>
+                <div className="text-xs font-bold text-white mt-1.5 font-mono truncate">{t.model}</div>
+                <div className="text-[10px] text-zinc-500 mt-1 font-mono">{t.url}</div>
+                <div className="text-[10px] mt-1 text-zinc-500">{t.creditCost === 0 ? '০ credit (local)' : `${t.creditCost} cr/1k tok`}</div>
+                {t.note && <div className="text-[10px] mt-1.5 text-zinc-600 leading-snug">{t.note}</div>}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 text-[10px] text-zinc-600">
+            Failover: auto — tier down হলে পরেরটা answer দেয়। Zoo (KiloCode→NVIDIA→TokenRouter→OpenCode) PC off-এও চলে। Credit mapping: DB catalog = দামের সত্য, এই টেবিল = রাউটিং সত্য।
           </div>
         </div>
       )}
