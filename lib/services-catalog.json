@@ -2453,5 +2453,74 @@
     "icon": "🎨",
     "isActive": true,
     "createdAt": "2026-09-09T04:30:00.000000Z"
+  },
+  {
+    "benefit": "Any topic explained simply in Bangla+English — ELI5 to expert in one click",
+    "benefitBn": "যেকোনো বিষয় সহজ বাংলায়+ইংরেজিতে ব্যাখ্যা — এক ক্লিকে শিশু থেকে এক্সপার্ট লেভেল",
+    "category": "Content Creator",
+    "categoryBn": "কনটেন্ট ক্রিয়েটর",
+    "createdAt": "2026-09-09T10:00:00.000000Z",
+    "creditCost": 10,
+    "dollarRange": "$5",
+    "icon": "💡",
+    "id": "s109",
+    "inputs": {
+      "level": {
+        "label": "Level",
+        "options": [
+          "শিশু (ELI5)",
+          "স্কুল",
+          "কলেজ",
+          "এক্সপার্ট"
+        ],
+        "required": true,
+        "type": "select"
+      },
+      "topic": {
+        "label": "Topic / Link / Text",
+        "placeholder": "যেকোনো বিষয়, লিংক বা টেক্সট পেস্ট করো",
+        "required": true,
+        "type": "string"
+      }
+    },
+    "isActive": true,
+    "model": "hostamar-lite",
+    "name": "Understand Anything",
+    "nameBn": "যেকোনো কিছু বুঝো",
+    "perfectFor": "Students & Curious minds",
+    "perfectForBn": "ছাত্র ও জানতে-চাওয়া মানুষ",
+    "promptTemplate": "Explain {{topic}} at level {{level}}. Use simple Bangla first, then key English terms. Structure: 1-line answer, everyday analogy, 3 key points, 1 example from Bangladesh, what to learn next. No jargon without explanation."
+  },
+  {
+    "benefit": "Full SEO audit of any site — meta, speed, sitemap + Bangla-SEO checklist",
+    "benefitBn": "যেকোনো সাইটের সম্পূর্ণ SEO অডিট — মেটা, স্পিড, সাইটম্যাপ + বাংলা-SEO চেকলিস্ট",
+    "category": "Business",
+    "categoryBn": "বিজনেস ও মার্কেটিং",
+    "createdAt": "2026-09-09T10:00:00.000000Z",
+    "creditCost": 30,
+    "dollarRange": "$19",
+    "icon": "🔍",
+    "id": "s110",
+    "inputs": {
+      "competitor": {
+        "label": "Competitor URL (optional)",
+        "placeholder": "https://competitor.com",
+        "required": false,
+        "type": "string"
+      },
+      "url": {
+        "label": "Website URL",
+        "placeholder": "https://example.com",
+        "required": true,
+        "type": "string"
+      }
+    },
+    "isActive": true,
+    "model": "hostamar-own",
+    "name": "OpenSEO Audit",
+    "nameBn": "ওপেনএসইও অডিট",
+    "perfectFor": "Shop owners & Bloggers",
+    "perfectForBn": "দোকানদার ও ব্লগার",
+    "promptTemplate": "SEO-audit this site: {{url}} (competitor: {{competitor}}). Report: title/meta length check, H1-H3 structure, image alt coverage, page-speed suspects, sitemap/robots presence, Bangla-keyword opportunities, Google Business Profile tips for Bangladesh, top 5 fixes ordered by impact. Output as a checklist with pass/fail per item."
   }
 ]
