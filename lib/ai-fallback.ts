@@ -58,7 +58,9 @@ export async function callBestModel(
     });
     if (!r.ok) throw new Error(`kilocode ${r.status}`);
     const j: any = await r.json();
-    const txt = j.choices?.[0]?.message?.content;
+    // V36.47 FIX: qwen3.5 thinking models return reasoning in .reasoning not .content
+    const choice = j.choices?.[0]?.message;
+    const txt = (choice?.content?.length > 4 ? choice.content : null) || (choice?.reasoning?.length > 4 ? choice.reasoning : null);
     if (!txt || txt.length < 5) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilocode' };
   };
@@ -74,7 +76,8 @@ export async function callBestModel(
     });
     if (!r.ok) throw new Error(`edge ${r.status}`);
     const j: any = await r.json();
-    const txt = j.choices?.[0]?.message?.content;
+    const choice = j.choices?.[0]?.message;
+    const txt = (choice?.content?.length > 4 ? choice.content : null) || (choice?.reasoning?.length > 4 ? choice.reasoning : null);
     if (!txt || txt.length < 5) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilo-edge' };
   };
