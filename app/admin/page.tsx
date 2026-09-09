@@ -405,6 +405,26 @@ function ModelsTab() {
     'down': 'border-red-500/40 bg-red-500/10',
   }
 
+  // Kaggle On-Demand (Vercel-style) — IDLE=COMPLETE=0 GPU hours
+  const [kg, setKg] = useState<any>(null)
+  const [kgBusy, setKgBusy] = useState<string | null>(null)
+  const loadKg = () => jfetch('/api/kaggle/status').then(setKg).catch(() => setKg(null))
+  useEffect(() => {
+    loadKg()
+    const t = setInterval(() => { if (!document.hidden) loadKg() }, 30000)
+    return () => clearInterval(t)
+  }, [])
+  const kgAction = async (notebook: string, action: 'start' | 'stop') => {
+    setKgBusy(notebook + ':' + action)
+    try {
+      const r = await fetch(`/api/kaggle/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notebook }) })
+      if (r.status === 429) alert('কোটা গেট: ২৫h/30h ব্যবহৃত — START বন্ধ, Edge fallback এ যাও।')
+      loadKg()
+    } finally { setKgBusy(null) }
+  }
+  const kgStateDot: Record<string,string> = { IDLE: 'bg-zinc-600', RUNNING: 'bg-[#10B981] animate-pulse', STARTING: 'bg-amber-400 animate-pulse', STOPPING: 'bg-amber-400', ERROR: 'bg-red-500' }
+  const h = (s: number) => Math.round(s / 3600)
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -425,6 +445,52 @@ function ModelsTab() {
           <div className={`rounded-xl border p-3 flex items-center gap-3 ${ai.comfyui?.up ? 'bg-[#0E7C3A]/10 border-[#10B981]/30' : 'bg-red-500/10 border-red-500/30'}`}>
             <span className={`w-2.5 h-2.5 rounded-full ${ai.comfyui?.up ? 'bg-[#10B981] animate-pulse' : 'bg-red-500'}`}/>
             <div><div className="text-xs font-semibold text-white">ComfyUI {ai.comfyui?.up ? 'online' : 'offline'}</div><div className="text-[10px] text-zinc-500 font-mono">{ai.comfyui?.gpu ? `${ai.comfyui.gpu.vramFreeMB}/${ai.comfyui.gpu.vramTotalMB} MB VRAM free` : ai.comfyui?.url}</div></div>
+          </div>
+        </div>
+      )}
+
+      {/* Kaggle On-Demand — Vercel-style serverless GPUs (account safe) */}
+      {kg && (
+        <div className="rounded-2xl bg-black border border-[#38BDF8]/20 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-sm font-bold text-white">Kaggle On-Demand — অ্যাকাউন্ট সেফ মোড (Vercel-এর মতো)</div>
+              <div className="text-[11px] text-zinc-500">IDLE = COMPLETE = ০ GPU ঘণ্টা · দরকার হলে START · ১০ মিনিট idle → auto STOP · ২৫h/30h গেট</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-zinc-600 font-mono">GPU {h(kg.quota?.gpuUsedSec || 0)}h / {h(kg.quota?.gpuTotalSec || 30)}h</div>
+              <div className="h-1.5 w-28 rounded-full bg-zinc-800 mt-1 overflow-hidden">
+                <div className={`h-full rounded-full ${(kg.quota?.gpuUsedSec||0)/(kg.quota?.gpuTotalSec||1) > 25/30 ? 'bg-red-500' : 'bg-[#10B981]'}`} style={{ width: `${Math.min(100, ((kg.quota?.gpuUsedSec||0)/(kg.quota?.gpuTotalSec||1))*100)}%` }} />
+              </div>
+              {kg.quota?.startDisabled && <div className="text-[9px] text-red-400 mt-0.5">quota gate: START disabled</div>}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {(kg.notebooks || []).map((n: any) => (
+              <div key={n.notebook} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-zinc-500">{n.notebook}</span>
+                  <span className={`w-2 h-2 rounded-full ${kgStateDot[n.state] || 'bg-zinc-700'}`} />
+                </div>
+                <div className="text-[10px] mt-1 text-zinc-400 font-mono">{n.state}</div>
+                <div className="flex gap-1.5 mt-2">
+                  <button
+                    onClick={() => kgAction(n.notebook, 'start')}
+                    disabled={n.state !== 'IDLE' || kgBusy === `${n.notebook}:start` || kg.quota?.startDisabled}
+                    className="flex-1 rounded-lg bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:opacity-30 disabled:cursor-not-allowed text-white text-[10px] font-bold py-1.5"
+                  >{kgBusy === `${n.notebook}:start` ? '⏳' : '▶ START'}</button>
+                  <button
+                    onClick={() => kgAction(n.notebook, 'stop')}
+                    disabled={n.state === 'IDLE' || kgBusy === `${n.notebook}:stop`}
+                    className="flex-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed text-white text-[10px] font-bold py-1.5"
+                  >{kgBusy === `${n.notebook}:stop` ? '⏳' : '⏹ STOP'}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 text-[10px] text-zinc-600">
+            রুল: IDLE-এ COMPLETE স্টেট — ০ খরচ · request আসলে START (CreateKernelSession), max 8h30m পরে auto COMPLETE · 10m idle → CancelKernelSession (সত্যিকারের STOP, GPU তৎক্ষণাৎ মুক্ত) · Secrets শুধু Kaggle Secrets-এ · লগ-এ abuse দেখলে instant STOP।
+            Auto-start: local-wsl down হলে TokenRouter qwen27b backup on-demand চালু করবে।
           </div>
         </div>
       )}
