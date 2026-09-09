@@ -2,12 +2,12 @@ import Link from 'next/link'
 import StoreCatalog from '@/components/store/StoreCatalog'
 
 export const metadata = {
-  title: 'Store — Hostamar-এর সব ১০৮+ সার্ভিস | 1cr=1TK',
+  title: 'Store — Hostamar-এর সব ১১০+ সার্ভিস | 1cr=1TK',
   description:
-    'Hostamar Store — সব AI সার্ভিস এক জায়গায়: 108 ক্যাটালগ সার্ভিস (লাইভ) + CoinLab BD #107 + M3E Canvas Vibe-Coding #108। সাইনআপে 6000 ক্রেডিট ফ্রি, 1 ক্রেডিট = 1 টাকা।',
-  keywords: ['Hostamar store', 'AI services Bangladesh', '১০৮ সার্ভিস', 'M3E Canvas', 'AI service price Bangladesh'],
+    'Hostamar Store — সব AI সার্ভিস এক জায়গায়: 110 ক্যাটালগ সার্ভিস (লাইভ) + CoinLab BD #107 + M3E Canvas #108 + Understand Anything #109 + OpenSEO #110। সাইনআপে 6000 ক্রেডিট ফ্রি, 1 ক্রেডিট = 1 টাকা।',
+  keywords: ['Hostamar store', 'AI services Bangladesh', '১১০ সার্ভিস', 'M3E Canvas', 'OpenSEO', 'AI service price Bangladesh'],
   openGraph: {
-    title: 'Hostamar Store — 108+ AI সার্ভিস, 1cr=1TK',
+    title: 'Hostamar Store — 110+ AI সার্ভিস, 1cr=1TK',
     description: 'সব সার্ভিস পাবলিক — দেখুন, তুলনা করুন, সাইনআপ করে অর্ডার করুন।',
   },
 }
@@ -63,6 +63,40 @@ export default function StorePage() {
             Canvas-এ মকআপ বানাও, Copy Prompt টাপ করো, Qwen 3.6 + Hermes লোকাল AI-তে Next.js + Tailwind কোড। Figma-মান ১০x দ্রুত, ০ টাকায়।
           </p>
         </Link>
+        <Link href="/store/understand-anything" className="rounded-2xl border-2 bg-white p-5 hover:border-[#0E7C3A] transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold rounded-full bg-[#F8FAFC] border px-3 py-1" style={{ color: GREEN }}>নতুন — সার্ভিস #109</span>
+            <span className="text-xs font-bold rounded-full bg-[#0E7C3A] text-white px-3 py-1">১০cr — সবচেয়ে সস্তা</span>
+          </div>
+          <div className="font-bold mt-2">Understand Anything — যেকোনো বিষয় সহজ বাংলায়</div>
+          <p className="text-sm text-zinc-600 mt-1">
+            টপিক, লিংক বা টেক্সট দাও — শিশু থেকে এক্সপার্ট লেভেলে ব্যাখ্যা। লাইট মডেলে চলে, পুরনো মোবাইলেও দ্রুত।
+          </p>
+        </Link>
+        <Link href="/store/openseo" className="rounded-2xl border-2 bg-white p-5 hover:border-[#0E7C3A] transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold rounded-full bg-[#F8FAFC] border px-3 py-1" style={{ color: GREEN }}>নতুন — সার্ভিস #110</span>
+            <span className="text-xs font-bold rounded-full bg-[#0E7C3A] text-white px-3 py-1">দোকানদার স্পেশাল</span>
+          </div>
+          <div className="font-bold mt-2">OpenSEO Audit — তোমার সাইটের SEO চেকআপ</div>
+          <p className="text-sm text-zinc-600 mt-1">
+            মেটা, স্পিড, সাইটম্যাপ + বাংলা-কীওয়ার্ড সুযোগ — ইমপ্যাক্ট-অনুযায়ী টপ-৫ ফিক্স, পাস/ফেল চেকলিস্টে।
+          </p>
+        </Link>
+      </div>
+
+      {/* 7-product bundle */}
+      <div className="mt-4 rounded-2xl border-2 bg-[#0E7C3A] text-white p-5 md:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-xs font-bold tracking-widest text-emerald-200">৭ প্রোডাক্ট বান্ডেল — এক অ্যাকাউন্টে সব</div>
+            <div className="font-bold text-lg mt-1">AI Video + Hosting + AI Chat + AI Browser + Game + Dev IDE + Studio</div>
+            <p className="text-sm text-emerald-100 mt-1">৬০০০ ফ্রি ক্রেডিট দিয়ে শুরু — বান্ডেলে আলাদা কেনার চেয়ে ৩০% কম ক্রেডিটে সব প্রোডাক্ট আনলক।</p>
+          </div>
+          <Link href="/pricing" className="inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-bold shrink-0" style={{ color: GREEN }}>
+            বান্ডেল দেখো →
+          </Link>
+        </div>
       </div>
 
       {/* how it works */}
