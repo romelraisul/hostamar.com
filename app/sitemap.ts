@@ -40,6 +40,9 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/store', changeFrequency: 'daily', priority: 0.9 },
   // V36.25: M3E Canvas #108 public service page
   { path: '/store/m3e-canvas', changeFrequency: 'weekly', priority: 0.7 },
+  // V36.32: #109 Understand Anything + #110 OpenSEO
+  { path: '/store/understand-anything', changeFrequency: 'weekly', priority: 0.7 },
+  { path: '/store/openseo', changeFrequency: 'weekly', priority: 0.7 },
   { path: '/labs', changeFrequency: 'weekly', priority: 0.7 },
   { path: '/coinlab', changeFrequency: 'daily', priority: 0.9 },
   { path: '/coinlab/coin/bitcoin', changeFrequency: 'weekly', priority: 0.7 },

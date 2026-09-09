@@ -37,6 +37,10 @@ export default function TvPage() {
   const [youtubeLiveId, setYoutubeLiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [totalChannels, setTotalChannels] = useState(0);
+  // V36.32: aspect mode — desktop 16:9 landscape, mobile 9:16 portrait.
+  // 'auto' follows the actual video dimensions on loadedmetadata.
+  const [aspect, setAspect] = useState<'auto' | '16:9' | '9:16'>('auto');
+  const [isPortrait, setIsPortrait] = useState(false);
   const osdTimer = useRef<NodeJS.Timeout | null>(null);
 
   const current = channels[currentIdx] || channels[0];
@@ -263,7 +267,19 @@ export default function TvPage() {
       <main className="max-w-[1280px] mx-auto px-3 md:px-6 py-4 md:py-6 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 md:gap-6">
         {/* TV */}
         <div ref={containerRef} className="relative rounded-[18px] md:rounded-[22px] bg-[#0f1113] border border-white/[0.07] p-2 md:p-3 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
-          <div className="relative rounded-[14px] overflow-hidden bg-black aspect-video">
+          <div className={`relative rounded-[14px] overflow-hidden bg-black ${aspect === '9:16' || (aspect === 'auto' && isPortrait) ? 'aspect-[9/16] max-h-[75vh] mx-auto w-full sm:max-w-[420px]' : 'aspect-video'}`}>
+            {/* V36.32 aspect toggle: desktop 16:9 / mobile 9:16 / auto */}
+            <div className="absolute top-2 right-2 z-40 flex gap-1">
+              {(['auto', '16:9', '9:16'] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => { setAspect(m); showOSD(`ASPECT ${m.toUpperCase()}`); }}
+                  className={`mono text-[10px] px-2 py-1 rounded-md border ${aspect === m ? 'bg-white text-black border-white font-bold' : 'bg-black/60 text-zinc-300 border-white/20'}`}
+                >
+                  {m === 'auto' ? 'AUTO' : m}
+                </button>
+              ))}
+            </div>
             {!power ? (
               <div className="absolute inset-0 bg-[#060708] flex items-center justify-center">
                 <div className="text-center"><Power className="w-10 h-10 text-zinc-700 mx-auto mb-2" /><p className="mono text-xs text-zinc-600">STANDBY — Press POWER on remote</p></div>
@@ -285,7 +301,8 @@ export default function TvPage() {
                 <div className="text-center p-6"><Tv className="w-12 h-12 text-zinc-600 mx-auto mb-3" /><p className="mono text-xs text-zinc-400">{error}</p><button onClick={load} className="mt-3 px-4 py-2 rounded-lg bg-white/10 text-xs">Retry</button></div>
               </div>
             ) : (
-              <video ref={videoRef} controls={false} autoPlay muted playsInline className="w-full h-full object-contain" poster="/og-image.png" />
+              <video ref={videoRef} controls={false} autoPlay muted playsInline className="w-full h-full object-contain" poster="/og-image.png"
+                onLoadedMetadata={(e) => setIsPortrait(e.currentTarget.videoHeight > e.currentTarget.videoWidth)} />
             )}
             {/* Tap for Sound badge — muted state */}
             {muted && power && source === 'iptv' && !error && (
