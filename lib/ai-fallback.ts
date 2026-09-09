@@ -114,10 +114,15 @@ export async function callBestModel(
     try {
       const res = await fn();
       if (res.text && res.text.length > 10) {
-        console.log('ai-fallback success', res.provider, res.model);
+        // V36.47 DEBUG: log which provider actually answered
+        console.log(`[ai-fallback] PROVIDER_OK provider=${res.provider} model=${res.model} textlen=${res.text.length}`);
         return res;
       }
-    } catch { continue; }
+    } catch (e) {
+      // V36.47 DEBUG: log each failure
+      console.log(`[ai-fallback] PROVIDER_FAIL ${(e as Error).message}`);
+      continue;
+    }
   }
 
   // 5. FINAL UNLIMITED FALLBACK — knowledge base, no LLM needed, always works, Bangla+English
