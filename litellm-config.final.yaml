@@ -16,11 +16,13 @@ model_list:
       model: ollama/qwen3.5:4b
       api_base: http://host.docker.internal:11434
       timeout: 1200
+      think: false    # V36.32: qwen3.5 thinking blocks arrive empty via litellm; direct answers only
   - model_name: hostamar-lite          # old mobile / old computer tier (2.7GB, fastest)
     litellm_params:
       model: ollama/qwen3.5:2b
       api_base: http://host.docker.internal:11434
       timeout: 600
+      think: false    # V36.32: same qwen3.5 thinking-block fix
   - model_name: hostamar-own-coder      # local coder
     litellm_params:
       model: ollama/qwen3.6:latest
