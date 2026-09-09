@@ -98,6 +98,20 @@ Format as JSON:
  * Using Google TTS (free) or ElevenLabs (better quality)
  */
 export async function generateVoiceOver(text: string, outputPath: string): Promise<string> {
+  // Option 0 (V36.32): Reel AI voice layer — Sarvam Bulbul v2 (Bangla native)
+  // → Fish S1 (clone-grade, 10x cheaper) → ElevenLabs v3 (expressive).
+  // Falls through to the legacy options if no provider keys are set.
+  if (process.env.SARVAM_API_KEY || process.env.FISH_AUDIO_API_KEY || process.env.ELEVENLABS_API_KEY) {
+    const { generateVoice } = await import('@/lib/voice-layer')
+    const result = await generateVoice({
+      text,
+      lang: /[\u0980-\u09FF]/.test(text) ? 'bn' : 'en',
+      emotion: 'neutral',
+    })
+    await fs.writeFile(outputPath, Buffer.from(result.audioBase64, 'base64'))
+    return outputPath
+  }
+
   // Option 1: Google TTS (free, basic)
   if (env.USE_GOOGLE_TTS === 'true') {
     const { TextToSpeechClient } = await import('@google-cloud/text-to-speech');
