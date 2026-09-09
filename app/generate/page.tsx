@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { VIDEO_TEMPLATES } from '@/lib/video-templates'
+import { getDeviceTier } from '@/lib/device-tier'
 
 const PRIMARY = '#0E7C3A'
 const ACCENT = '#F59E0B'
@@ -38,6 +40,16 @@ export default function VideoGeneratePage() {
   const [videoUrl, setVideoUrl] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // V36.33: template prefill (?template=eid-01) + device-tier brain banner
+  const [tierInfo, setTierInfo] = useState<{ labelBn: string; recommendationBn: string; brain: string } | null>(null)
+  useEffect(() => {
+    setTierInfo(getDeviceTier())
+    const tid = new URLSearchParams(window.location.search).get('template')
+    if (tid) {
+      const t = VIDEO_TEMPLATES.find((x) => x.id === tid)
+      if (t) { setPromptBn(t.prompt); setAspect(t.aspect) }
+    }
+  }, [])
 
   const start = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,6 +92,14 @@ export default function VideoGeneratePage() {
           </div>
           <div className="text-xs text-zinc-600">InVideo $17/mo vs <span className="font-bold text-[#0E7C3A]">Hostamar ৳0 FREE</span> • Pictory $19 vs ৳0 • Veed $12 vs ৳0</div>
         </div>
+        {/* V36.33 device-tier banner: old device -> cloud brain */}
+        {tierInfo && (
+          <div className="mt-3 rounded-2xl border border-[#0E7C3A]/30 bg-[#0E7C3A]/5 px-5 py-3 text-xs text-zinc-700 flex flex-wrap items-center gap-2">
+            <span className="font-bold text-[#0E7C3A]">📱 {tierInfo.labelBn}</span>
+            <span>{tierInfo.recommendationBn}</span>
+            <span className="px-2 py-0.5 rounded-full bg-white border font-mono">brain: {tierInfo.brain}</span>
+          </div>
+        )}
       </section>
 
       <section className="mx-auto max-w-[1180px] px-4 md:px-6 mt-6">
