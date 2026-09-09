@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
     authUser = null
   }
 
-  const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined)
+  // V36.48: support ?debug=1 to return full chain trace
+  const debug = new URL(req.url).searchParams.get('debug') === '1';
+  const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined, debug);
 
   let usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   let creditsCharged = 0
@@ -75,12 +77,13 @@ export async function POST(req: NextRequest) {
   const headers: Record<string, string> = {
     'X-AI-Provider': result.provider,
     'X-AI-Model': result.model,
+    'Cache-Control': 'no-store', // V36.48: prevent caching causing header/body mismatch
   }
   if (result.provider === 'knowledge-base-fallback') {
-    headers['X-AI-Fallback-Reason'] = 'all-providers-failed'
+    headers['X-AI-Fallback-Reason'] = 'all-providers-failed';
   }
 
-  return NextResponse.json({
+  const response: any = {
     id: `chatcmpl-${Date.now().toString(36)}`,
     object: 'chat.completion',
     created: Math.floor(Date.now() / 1000),
@@ -97,14 +100,22 @@ export async function POST(req: NextRequest) {
     credits: authUser ? { charged: creditsCharged, remaining: creditsRemaining } : undefined,
     pricing: authUser ? pricing : undefined,
     ok: true,
-  }, { headers })
+  };
+
+  // V36.48: when ?debug=1, include full chain trace in response body
+  if (debug && result.trace) {
+    response.trace = result.trace;
+    response.debug = true;
+  }
+
+  return NextResponse.json(response, { headers });
 }
 
 export async function GET() {
   return NextResponse.json({
     ok: true,
     endpoint: '/api/v1/chat/completions',
-    usage: 'POST {model, messages[], max_tokens} — OpenAI compatible',
+    usage: 'POST {model, messages[], max_tokens} — OpenAI compatible. Add &debug=1 for full chain trace.',
     auth: 'optional — public works, authed users get credit accounting',
   })
 }

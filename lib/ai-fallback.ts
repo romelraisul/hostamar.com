@@ -12,13 +12,17 @@
  * request returns a well-formed response — the function can never be killed
  * mid-flight by its own chain.
  */
+type FallbackTrace = { provider: string; status: string; error?: string; elapsedMs?: number };
+
 export async function callBestModel(
   messages: { role: string; content: string }[],
   systemPrompt: string,
   selectedModel?: string,
-): Promise<{ text: string; model: string; provider: string }> {
+  debug = false,
+): Promise<{ text: string; model: string; provider: string; trace?: FallbackTrace[] }> {
   const system = { role: 'system', content: systemPrompt };
   const allMessages = [system, ...messages];
+  const trace: FallbackTrace[] = [];
 
   // Context-size awareness: total payload chars → approx tokens (/4).
   // Small contexts keep MAX_TOKENS 600 (fast); huge contexts (Hermes-style
@@ -110,25 +114,26 @@ export async function callBestModel(
   }
 
   for (const fn of attempts) {
-    // V26: budget gate — if the wall-clock budget is nearly spent, stop
-    // attempting and fall to the deterministic knowledge base. This is the
-    // 504 fix: the function always finishes inside its own maxDuration.
-    if (remainingMs() < 5_000) break;
+    if (remainingMs() < 5_000) {
+      trace.push({ provider: 'budget', status: 'exhausted', error: 'wall-clock budget spent' });
+      break;
+    }
+    const t0 = Date.now();
     try {
       const res = await fn();
       if (res.text && res.text.length > 10) {
-        // V36.47 DEBUG: log which provider actually answered
-        console.log(`[ai-fallback] PROVIDER_OK provider=${res.provider} model=${res.model} textlen=${res.text.length}`);
+        trace.push({ provider: res.provider, status: 'ok', elapsedMs: Date.now() - t0 });
+        if (debug) return { ...res, trace };
         return res;
       }
+      trace.push({ provider: res.provider, status: 'empty', elapsedMs: Date.now() - t0 });
     } catch (e) {
-      // V36.47 DEBUG: log each failure
-      console.log(`[ai-fallback] PROVIDER_FAIL ${(e as Error).message}`);
+      trace.push({ provider: 'unknown', status: 'error', error: (e as Error).message, elapsedMs: Date.now() - t0 });
       continue;
     }
   }
 
-  // 5. FINAL UNLIMITED FALLBACK — knowledge base, no LLM needed, always works, Bangla+English
+  // 5. FINAL UNLIMITED FALLBACK
   const lastUser = messages[messages.length - 1]?.content?.toLowerCase() || '';
   let fallback = '';
   if (lastUser.includes('bkash') || lastUser.includes('বিকাশ') || lastUser.includes('payment') || lastUser.includes('পেমেন্ট') || lastUser.includes('trx')) {
@@ -142,5 +147,6 @@ export async function callBestModel(
   } else {
     fallback = `Hostamar Support: ৫০+ AI সার্ভিস, 120 মডেল চ্যাট, ব্রাউজার IDE, ক্লাউড হোস্টিং, TV ৫০ চ্যানেল — সাইনআপে 6000cr বোনাস (1cr = 1TK = ১ ভবিষ্যৎ HOST কয়েন)। কী জানতে চান?`;
   }
-  return { text: fallback, model: 'knowledge-base-fallback', provider: 'fallback' };
+  trace.push({ provider: 'knowledge-base', status: 'fallback', error: 'all-providers-failed' });
+  return { text: fallback, model: 'knowledge-base-fallback', provider: 'fallback', trace };
 }
