@@ -38,6 +38,9 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/ossu/curriculum', changeFrequency: 'weekly', priority: 0.5 },
   { path: '/download', changeFrequency: 'daily', priority: 0.9 },
   { path: '/store', changeFrequency: 'daily', priority: 0.9 },
+  // V36.25: M3E Canvas #108 public service page
+  { path: '/store/m3e-canvas', changeFrequency: 'weekly', priority: 0.7 },
+  { path: '/labs', changeFrequency: 'weekly', priority: 0.7 },
   { path: '/coinlab', changeFrequency: 'daily', priority: 0.9 },
   { path: '/coinlab/coin/bitcoin', changeFrequency: 'weekly', priority: 0.7 },
   { path: '/coinlab/coin/ethereum', changeFrequency: 'weekly', priority: 0.7 },

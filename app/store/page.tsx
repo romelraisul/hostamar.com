@@ -2,12 +2,12 @@ import Link from 'next/link'
 import StoreCatalog from '@/components/store/StoreCatalog'
 
 export const metadata = {
-  title: 'Store — Hostamar-এর সব ১০৬+ সার্ভিস | 1cr=1TK',
+  title: 'Store — Hostamar-এর সব ১০৮+ সার্ভিস | 1cr=1TK',
   description:
-    'Hostamar Store — সব AI সার্ভিস এক জায়গায়: 106 ক্যাটালগ সার্ভিস (লাইভ) + CoinLab BD ক্রিপ্টো রিসার্চ হাব (#107)। সাইনআপে 6000 ক্রেডিট ফ্রি, 1 ক্রেডিট = 1 টাকা।',
-  keywords: ['Hostamar store', 'AI services Bangladesh', '১০৬ সার্ভিস', 'AI service price Bangladesh'],
+    'Hostamar Store — সব AI সার্ভিস এক জায়গায়: 108 ক্যাটালগ সার্ভিস (লাইভ) + CoinLab BD #107 + M3E Canvas Vibe-Coding #108। সাইনআপে 6000 ক্রেডিট ফ্রি, 1 ক্রেডিট = 1 টাকা।',
+  keywords: ['Hostamar store', 'AI services Bangladesh', '১০৮ সার্ভিস', 'M3E Canvas', 'AI service price Bangladesh'],
   openGraph: {
-    title: 'Hostamar Store — 106+ AI সার্ভিস, 1cr=1TK',
+    title: 'Hostamar Store — 108+ AI সার্ভিস, 1cr=1TK',
     description: 'সব সার্ভিস পাবলিক — দেখুন, তুলনা করুন, সাইনআপ করে অর্ডার করুন।',
   },
 }
@@ -41,7 +41,7 @@ export default function StorePage() {
         </div>
       </div>
 
-      {/* CoinLab feature banner */}
+      {/* CoinLab + M3E Canvas feature banners */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
         <Link href="/coinlab" className="rounded-2xl border-2 bg-white p-5 hover:border-[#0E7C3A] transition-colors">
           <div className="flex items-center justify-between">
@@ -53,14 +53,26 @@ export default function StorePage() {
             ৪ পিলার (Research Hub • Earn Lab • Build Lab • Community), ৭-সেকশন টেমপ্লেট, Top-100 টার্গেট, নিজের কয়েন বানানোর Build Lab।
           </p>
         </Link>
-        <div className="rounded-2xl border bg-[#F8FAFC] p-5">
-          <div className="text-xs font-semibold tracking-widest text-zinc-500">কিভাবে কাজ করে</div>
+        <Link href="/store/m3e-canvas" className="rounded-2xl border-2 bg-white p-5 hover:border-[#0E7C3A] transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold rounded-full bg-[#F8FAFC] border px-3 py-1" style={{ color: GREEN }}>নতুন — সার্ভিস #108</span>
+            <span className="text-xs font-bold rounded-full text-white px-3 py-1" style={{ background: '#E4312B' }}>GOLDMINE</span>
+          </div>
+          <div className="font-bold mt-2">M3E Canvas Vibe-Coding — ডিজাইন → প্রম্পট → লোকাল AI কোড</div>
+          <p className="text-sm text-zinc-600 mt-1">
+            Canvas-এ মকআপ বানাও, Copy Prompt টাপ করো, Qwen 3.6 + Hermes লোকাল AI-তে Next.js + Tailwind কোড। Figma-মান ১০x দ্রুত, ০ টাকায়।
+          </p>
+        </Link>
+      </div>
+
+      {/* how it works */}
+      <div className="mt-4 rounded-2xl border bg-[#F8FAFC] p-5">
+        <div className="text-xs font-semibold tracking-widest text-zinc-500">কিভাবে কাজ করে</div>
           <ol className="mt-3 space-y-2 text-sm text-zinc-700">
             <li>1. সাইনআপ — 6000 ক্রেডিট ফ্রি (1cr = 1TK)</li>
             <li>2. সার্ভিস বাছুন — নিচের কার্ডে দাম ক্রেডিটে দেখানো</li>
             <li>3. ড্যাশবোর্ড → সার্ভিস → অর্ডার → ডেলিভারি ড্যাশবোর্ডে</li>
           </ol>
-        </div>
       </div>
 
       {/* Live catalog grid (client component, public API) */}
