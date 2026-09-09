@@ -92,3 +92,37 @@ export function resolveRoute(prefer?: Tier): RouteTarget {
 export function failover(mode: 'auto' | { pin: Tier }): RouteTarget {
   return mode === 'auto' ? resolveRoute() : resolveRoute(mode.pin)
 }
+
+// ── On-Demand Kaggle integration (V36.31) ─────────────────────────────────
+// Server-side only: needs KAGGLE_API_TOKEN + 10s budget. The CEO strip and
+// /api/kaggle/* routes use lib/kaggle-on-demand.ts directly.
+
+/**
+ * On-Demand aware failover: walk tier order; a kaggle tier that is IDLE gets
+ * an on-demand START (CreateKernelSession) before routing gives up on it.
+ * Local-wsl down -> qwen27b backup brain starts on demand, quota-gated 25h/30h.
+ */
+export async function failoverOnDemand(prefer?: Tier): Promise<RouteTarget & { demandAction?: string }> {
+  const { quota, notebookStatus, startNotebook } = await import('@/lib/kaggle-on-demand')
+  const order: Tier[] = [prefer || 'local-wsl', 'kaggle', 'edge', 'zoo']
+  for (const t of order) {
+    const live = TOKENROUTER.filter((r) => r.tier === t && r.status === 'up')
+    if (live.length) return live[0]
+    if (t === 'kaggle') {
+      try {
+        const q = await quota()
+        if (!q.startDisabled) {
+          const st = await notebookStatus('qwen27b')
+          if (st.state === 'IDLE') {
+            await startNotebook('qwen27b')
+            const backup = TOKENROUTER.find((r) => r.model === 'qwen3.8-27b')
+            if (backup) return { ...backup, demandAction: 'on-demand started: qwen27b backup brain' }
+          }
+        }
+      } catch {
+        // quota/rpc fail — fall through to next tier (edge/zoo)
+      }
+    }
+  }
+  return TOKENROUTER[TOKENROUTER.length - 1] // zoo always up (cloud)
+}
