@@ -129,6 +129,9 @@ export async function middleware(request: NextRequest) {
     // Customer OpenAI-compatible base URL (hostamar.com/api/v1) — public:
     // models list + chat completions via unlimited free-fallback chain.
     // CLIs set OPENAI_BASE_URL=https://hostamar.com/api/v1.
+    // V36.49: the BASE path itself is public too — /api/v1?debug=1 is the
+    // documented gateway verify URL (route.ts returns endpoint info + trace).
+    '/api/v1',
     '/api/v1/models',
     '/api/v1/chat/completions',
     '/api/showcase',
