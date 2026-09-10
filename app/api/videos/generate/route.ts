@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
       }
       const cid = fallback?.id || fallbackId
       const vid = `cmt${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`
-      let videoUrl = `/showcase/${vid}.mp4`
-      let thumbnail = `/showcase/${vid}.jpg`
+      let videoUrl = `/videos/${vid}.mp4`
+      let thumbnail = `/videos/${vid}.jpg`
       let comfy = false
       try {
         const gwRes = await fetch("http://127.0.0.1:3000/v1/videos/generate", { method:"POST", headers:{"Content-Type":"application/json","X-Hostamar-Tunnel":"hostamar-prod-new"}, body: JSON.stringify({ title: body.title||"6y7", topic: body.topic||"y78", language: body.language||"bn", videoId: vid }) } as any).catch(()=>null) as any

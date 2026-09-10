@@ -102,10 +102,12 @@ export default function TvHero() {
       }
     }, 15000)
 
+    // LCP: let the poster paint first — start the stream when the browser is idle
+    const startStream = (): (() => void) | undefined => {
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = url
       video.play().catch(() => {})
-      return
+      return undefined
     }
     if (Hls.isSupported()) {
       const hls = new Hls({
@@ -138,6 +140,18 @@ export default function TvHero() {
         hls.destroy(); hlsRef.current = null
       }
     }
+    return undefined
+    }
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      let cleanup: (() => void) | undefined
+      const id = (window as unknown as { requestIdleCallback: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback(() => { cleanup = startStream() }, { timeout: 2500 })
+      return () => {
+        (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id)
+        if (cleanup) cleanup()
+        else if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null }
+      }
+    }
+    return startStream()
   }, [current, channels.length, phase])
 
   const enableSound = useCallback(() => {
@@ -205,11 +219,11 @@ export default function TvHero() {
 
         {channels.length > 1 && (
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10 items-center">
-            <button onClick={(e) => { e.stopPropagation(); goPrev(); }} className="bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-full text-xs">◀</button>
+            <button onClick={(e) => { e.stopPropagation(); goPrev(); }} aria-label="Previous channel" className="bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-full text-xs">◀</button>
             {channels.slice(0, 20).map((_, i) => (
-              <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); setLogoError(false); }} className={`w-1.5 h-1.5 rounded-full transition ${i === idx ? 'bg-white scale-125' : 'bg-white/40'}`} />
+              <button key={i} aria-label={`Go to channel ${i + 1}`} onClick={(e) => { e.stopPropagation(); setIdx(i); setLogoError(false); }} className="w-6 h-6 flex items-center justify-center rounded-full"><span className={`block w-1.5 h-1.5 rounded-full transition ${i === idx ? 'bg-white scale-125' : 'bg-white/40'}`} /></button>
             ))}
-            <button onClick={(e) => { e.stopPropagation(); goNext(); }} className="bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-full text-xs">▶</button>
+            <button onClick={(e) => { e.stopPropagation(); goNext(); }} aria-label="Next channel" className="bg-black/60 hover:bg-black/80 text-white w-6 h-6 rounded-full text-xs">▶</button>
           </div>
         )}
       </div>
