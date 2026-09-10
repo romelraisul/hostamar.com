@@ -165,7 +165,7 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;700&display=swap"
           rel="stylesheet"
         />
-        <link rel="preload" as="image" href="/og-image.png" fetchPriority="high" />
+        <link rel="preload" as="image" href="/og-poster.webp" fetchPriority="high" />
         <link rel="preconnect" href="https://images.pluto.tv" />
         <meta name="theme-color" content="#3b82f6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
