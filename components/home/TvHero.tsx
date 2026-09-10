@@ -195,7 +195,7 @@ export default function TvHero() {
   return (
     <div className="rounded-2xl overflow-hidden border-2 border-[#0E7C3A]">
       <div className="relative aspect-video bg-black" onClick={enableSound}>
-        <video ref={videoRef} className="w-full h-full object-cover" muted autoPlay playsInline controls={false} poster="/og-image.png" />
+        <video ref={videoRef} className="w-full h-full object-cover" muted autoPlay playsInline controls={false} poster="/og-poster.webp" />
 
         <div className="absolute top-3 right-3 bg-black/60 text-white px-3 py-1 text-xs font-bold tracking-wider z-10 pointer-events-none">HOSTAMAR.COM/TV</div>
         <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse z-10"><span className="w-2 h-2 bg-white rounded-full" /> LIVE</div>
