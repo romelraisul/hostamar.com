@@ -443,6 +443,27 @@ export default function TvPage() {
           {/* Ad slot — dynamic text ads */}
           <AdTicker variant="sidebar" channelId={current?.id} />
 
+          {/* OUR VIDEOS — zero-key OpenMontage renders, made with free infra */}
+          <div className="rounded-2xl border border-white/[0.07] bg-[#0c0e10] p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="mono text-xs font-bold tracking-widest text-zinc-400">OUR VIDEOS</h3>
+              <span className="mono text-[10px] px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-300">$0 MADE</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { f: 'receipt-explainer.mp4', t: 'Receipt Explainer' },
+                { f: 'code-to-screen.mp4', t: 'Code to Screen' },
+                { f: 'focusflow-pitch.mp4', t: 'Focusflow Pitch' },
+                { f: 'world-in-numbers.mp4', t: 'World in Numbers' },
+              ].map((v) => (
+                <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
+                  <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
+                  <div className="px-2 py-1.5 mono text-[10px] text-zinc-300 truncate">{v.t}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 mono text-[11px] leading-relaxed text-zinc-400">
             <span className="text-white font-bold">How it works:</span> Vercel kills streams after 10s → your PC (port 3001) via Cloudflare Tunnel tv.hostamar.com proxies HLS to bypass CORS. Viewers stay on <span className="text-emerald-400">hostamar.com/tv</span> with our ads even when you go Live on YouTube/Facebook — auto SOURCE switches to branded LIVE.
             <div className="mt-2 text-[10px]">IPTV: <span className="text-zinc-300">iptv-org/iptv countries/bd.m3u 8000+ free-to-air</span> — parse via <span className="text-zinc-300">scripts/fetch-channels.js</span> on YOUR PC.</div>
