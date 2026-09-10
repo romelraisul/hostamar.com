@@ -47,7 +47,8 @@ export async function callBestModel(
   const isHostamarModel = wanted.startsWith('hostamar-');
 
   type Res = { text: string; model: string; provider: string };
-  const attempts: Array<() => Promise<Res>> = [];
+  type Attempt = { name: string; fn: () => Promise<Res> };
+  const attempts: Attempt[] = [];
 
   const kilocodeCall = (m: string) => async (): Promise<Res> => {
     if (!process.env.KILOCODE_API_KEY) throw new Error('no kilocode key');
@@ -92,28 +93,28 @@ export async function callBestModel(
       // Proprietary SKU: ride BOTH capacity slots (kilo-auto + longcat) so a
       // single slot hiccup can't degrade the branded reply. Direct + edge per slot.
       for (const slot of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
-        attempts.push(async () => {
+        attempts.push({ name: `kilocode:${slot}`, fn: async () => {
           const r = await kilocodeCall(slot)();
           return { text: r.text, model: wanted, provider: wanted };
-        });
-        attempts.push(async () => {
+        }});
+        attempts.push({ name: `edge:${slot}`, fn: async () => {
           const r = await edgeCall(slot)();
           return { text: r.text, model: wanted, provider: wanted };
-        });
+        }});
       }
     } else {
-      attempts.push(kilocodeCall(wanted));
-      attempts.push(edgeCall(wanted));
+      attempts.push({ name: `kilocode:${wanted}`, fn: kilocodeCall(wanted) });
+      attempts.push({ name: `edge:${wanted}`, fn: edgeCall(wanted) });
     }
   }
 
   // Capacity fallback order (reports the ACTUAL model used in the response)
   for (const m of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
-    attempts.push(kilocodeCall(m));
-    attempts.push(edgeCall(m));
+    attempts.push({ name: `kilocode:${m}`, fn: kilocodeCall(m) });
+    attempts.push({ name: `edge:${m}`, fn: edgeCall(m) });
   }
 
-  for (const fn of attempts) {
+  for (const { name, fn } of attempts) {
     if (remainingMs() < 5_000) {
       trace.push({ provider: 'budget', status: 'exhausted', error: 'wall-clock budget spent' });
       break;
@@ -122,13 +123,13 @@ export async function callBestModel(
     try {
       const res = await fn();
       if (res.text && res.text.length > 10) {
-        trace.push({ provider: res.provider, status: 'ok', elapsedMs: Date.now() - t0 });
+        trace.push({ provider: name, status: 'ok', elapsedMs: Date.now() - t0 });
         if (debug) return { ...res, trace };
         return res;
       }
-      trace.push({ provider: res.provider, status: 'empty', elapsedMs: Date.now() - t0 });
+      trace.push({ provider: name, status: 'empty', elapsedMs: Date.now() - t0 });
     } catch (e) {
-      trace.push({ provider: 'unknown', status: 'error', error: (e as Error).message, elapsedMs: Date.now() - t0 });
+      trace.push({ provider: name, status: 'error', error: (e as Error).message, elapsedMs: Date.now() - t0 });
       continue;
     }
   }
