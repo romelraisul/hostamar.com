@@ -214,7 +214,7 @@ export default function App() {
                     <div className="mt-1 text-[12px] text-zinc-500">9:16 • 24s • বাংলা ভয়েস</div>
                     <div className="mt-3 flex gap-1.5">
                       <div className="h-1.5 flex-1 rounded-full bg-zinc-100 overflow-hidden"><div className="h-full w-[70%] rounded-full" style={{background:GREEN}}></div></div>
-                      <span className="text-[10px] text-zinc-400">Popular</span>
+                      <span className="text-[10px] text-zinc-500">Popular</span>
                     </div>
                   </div>
                 </div>
