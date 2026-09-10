@@ -121,7 +121,7 @@ export default function App() {
                 <div className="h-9 w-9 rounded-full bg-zinc-900 text-white flex items-center justify-center">▶</div>
                 <div className="flex-1">
                   <div className="flex gap-[2px] items-end h-[18px]">
-                    {Array.from({length:22}).map((_,i)=><div key={i} className="w-[3px] rounded-full bg-zinc-300" style={{height:`${4+Math.sin(i*1.3)*6+Math.random()*8}px`, background: i>8 && i<16 ? GREEN : undefined}}></div>)}
+                    {Array.from({length:22}).map((_,i)=><div key={i} className="w-[3px] rounded-full bg-zinc-300" style={{height:`${4+Math.sin(i*1.3)*6+((Math.sin(i*12.9898)*43758.5453)%1+1)%1*8}px`, background: i>8 && i<16 ? GREEN : undefined}}></div>)}
                   </div>
                   <div className="text-[11px] text-zinc-500 mt-1 bangla">“এবারের ঈদ কালেকশনে ৫০% ছাড়!” • Female - Nafisa</div>
                 </div>
@@ -255,7 +255,7 @@ export default function App() {
                 </div>
                 <div className="mt-4 flex items-baseline gap-2">
                   <span className="text-[36px] font-bold tracking-tight">৳2,000</span><span className="text-zinc-500 text-[13px]">/মাস</span>
-                  <span className="ml-2 text-[12px] line-through text-zinc-400">৳2,800</span>
+                  <span className="ml-2 text-[12px] line-through text-zinc-500">৳2,800</span>
                 </div>
                 <ul className="mt-6 space-y-2.5 text-[13px]">
                   {["১০টি ভিডিও / মাস","৫GB হোস্টিং ফ্রি","Chat Pro + ভয়েস","Browser + IDE অ্যাক্সেস","1080p, No watermark","bKash অটো-রিনিউ"].map(f=>(
