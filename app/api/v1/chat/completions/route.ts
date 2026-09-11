@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { callBestModel } from '@/lib/ai-fallback'
 import { streamChatCompletion } from '@/lib/ai-stream'
+import { recordSurveillance } from '@/lib/surveillance'
 import { getAuthUser } from '@/lib/auth'
 import { deductCredits } from '@/lib/credits'
 import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
@@ -52,6 +53,16 @@ export async function POST(req: NextRequest) {
   // V36.48: support ?debug=1 to return full chain trace
   const debug = new URL(req.url).searchParams.get('debug') === '1';
   const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined, debug);
+
+  // V65 Layer 5: sampled abuse/distillation logging (never breaks chat).
+  await recordSurveillance({
+    clientIp: getClientIpEdge(req),
+    userAgent: req.headers.get('user-agent'),
+    userId: authUser?.id || null,
+    model: result.model,
+    prompt: String(messages[messages.length - 1]?.content || ''),
+    responseLen: result.text?.length || 0,
+  }).catch(() => null);
 
   let usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   let creditsCharged = 0
