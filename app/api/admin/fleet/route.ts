@@ -14,6 +14,8 @@ const EMPLOYEES = [
   'Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill', 'Sage',
   // V61 business lanes (hire: 2026-09-11) — fleet = 14
   'Nova', 'Forge', 'Pulse', 'Orion', 'Vertex', 'Harbor', 'Ledger', 'Scout',
+  // V65/V66: Layer-5 triage + trend forecast — fleet = 16
+  'Warden', 'Oracle',
 ] as const
 
 async function isAdmin(req: NextRequest): Promise<boolean> {
