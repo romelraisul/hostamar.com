@@ -122,6 +122,7 @@ export async function middleware(request: NextRequest) {
     '/api/tv/agent',
     '/api/admin/seed-tv-channels',
     '/api/cron/tv-stability',
+    '/api/cron/surveillance', // V65 Layer 5 — self-guards via x-vercel-cron/CRON_SECRET at the route
     '/api/support/chat',
     '/api/chat/support',
     '/api/chat',
