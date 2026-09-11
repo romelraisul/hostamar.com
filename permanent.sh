@@ -109,6 +109,8 @@ if ! docker ps --format '{{.Names}}' | grep -q '^litellm-play$'; then
     -e KILOCODE_API_KEY="${KILOCODE_API_KEY:-}" \
     -e KILOCODE_BASE_URL="${KILOCODE_BASE_URL:-https://api.kilo.ai/api/gateway}" \
     -e TG_DB=/tmp/guard_history.db \
+    -e BAI_API_KEY="${BAI_API_KEY:-}" \
+    -e ORCA_API_KEY="${ORCA_API_KEY:-}" \
     -e TG_ARCHIVE_PATH=/tmp/guard_archive.jsonl \
     --add-host host.docker.internal:host-gateway \
     --entrypoint /bin/bash \
