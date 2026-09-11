@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 // ── helpers ──────────────────────────────────────────────────────────
-const TABS = ['overview','users','credits','transactions','models','products','hosting'] as const
+const TABS = ['overview','users','credits','transactions','models','fleet','products','hosting'] as const
 type Tab = typeof TABS[number]
 
 function fmt(n: number | undefined | null) { return (n ?? 0).toLocaleString() }
@@ -603,6 +603,161 @@ function ProductsTab() {
 }
 
 // ── Hosting ──────────────────────────────────────────────────────────
+// ── V50 Fleet tab — AI employees: reports + chat + storage stream ────
+const FLEET_META: Record<string, { lane: string; color: string }> = {
+  Atlas: { lane: 'Hosting — 7 containers, site, uploader, disks', color: '#10B981' },
+  Echo: { lane: 'Chat/AI — Brain :4000 15 models, tunnels, ComfyUI', color: '#38BDF8' },
+  Reel: { lane: 'Video — renders, ComfyUI 384×216 recipe, ffprobe', color: '#A78BFA' },
+  Bazaar: { lane: 'Store — Medusa 116 products, catalog', color: '#F59E0B' },
+  Quill: { lane: 'Content/TV — HTTP media verify, playlist', color: '#EC4899' },
+}
+
+function FleetTab() {
+  const [fleet, setFleet] = useState<any>(null)
+  const [err, setErr] = useState('')
+  const [chatWith, setChatWith] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    try { setFleet(await jfetch('/api/admin/fleet?limit=10')) } catch (e: any) { setErr(e.message) }
+  }, [])
+  useEffect(() => { load() }, [load])
+  useLivePoll(load, 15000) // live stream: refresh reports + storage every 15s
+
+  const storage = fleet?.storage
+  const tb = storage ? (Number(storage.telegramBytes) / 1024**4) : 0
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-white">AI Employees <span className="text-xs text-normal text-zinc-500">· V48 fleet</span></h2>
+          <p className="text-xs text-zinc-500">GET /api/admin/fleet · reports from Hermes cron shifts · 15s live poll</p>
+        </div>
+        <button onClick={load} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
+      </div>
+      {err && <div className="text-xs text-red-400">{err}</div>}
+
+      {/* Storage strip: Telegram Drive (B2 hot cache in front) */}
+      <div className="rounded-xl bg-black border border-zinc-800 p-3 flex flex-wrap gap-3 items-center">
+        <div className="text-xs font-semibold text-white">Hostamar Drive — B2 hot cache + Telegram ∞</div>
+        <div className="text-xs text-zinc-400">Telegram files: <span className="font-mono text-[#10B981]">{storage ? storage.telegramFiles.toLocaleString() : '—'}</span></div>
+        <div className="text-xs text-zinc-400">Telegram bytes: <span className="font-mono text-[#10B981]">{tb > 1 ? `${tb.toFixed(2)} TB` : (Number(storage?.telegramBytes||0)/1024**3).toFixed(1)+' GB'}</span></div>
+        <div className="text-[10px] text-zinc-600">DriveFile rows in Neon · B2 10GB hot cache in front · 2GB/file Telegram cold tier</div>
+      </div>
+
+      {/* Employee cards */}
+      <div className="grid md:grid-cols-2 gap-3">
+        {(fleet?.employees || []).map((e: any) => {
+          const meta = FLEET_META[e.name] || { lane: '', color: '#10B981' }
+          const r = e.lastReport
+          const healthy = r?.verdict ? r.verdict.toUpperCase().includes('HEALTHY') : null
+          return (
+            <div key={e.name} className="rounded-xl bg-black border border-zinc-800 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${healthy === null ? 'bg-zinc-600' : healthy ? 'bg-[#10B981] animate-pulse' : 'bg-red-500'}`}/>
+                  <div>
+                    <div className="text-sm font-bold text-white">{e.name}</div>
+                    <div className="text-[11px] text-zinc-500">{meta.lane}</div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-zinc-600 font-mono">{r ? new Date(r.runAt).toLocaleString() : 'no report yet'}</div>
+              </div>
+              {r ? (
+                <div className="mt-2 space-y-1 text-xs">
+                  <div className="text-zinc-300"><span className="text-[#10B981] font-semibold">FINISHED:</span> {r.finished || '—'}</div>
+                  <div className="text-zinc-300"><span className="text-amber-400 font-semibold">COULDNT:</span> {r.couldnt || '—'}</div>
+                  <div className="text-zinc-300"><span className="text-red-400 font-semibold">NEEDS YOU:</span> {r.needsYou || '—'}</div>
+                </div>
+              ) : <div className="mt-2 text-xs text-zinc-600">Waiting for first shift report…</div>}
+              <button onClick={() => setChatWith(chatWith === e.name ? null : e.name)} className="mt-3 w-full py-1.5 rounded-lg border border-zinc-700 text-xs text-zinc-300 hover:border-[#10B981] hover:text-white transition">
+                {chatWith === e.name ? 'Close chat' : `Chat with ${e.name}`}
+              </button>
+              {chatWith === e.name && <EmployeeChat employee={e.name} />}
+            </div>
+          )
+        })}
+        {!fleet && <div className="text-xs text-zinc-500">Loading fleet…</div>}
+      </div>
+
+      {/* Recent reports live log */}
+      <div className="rounded-xl bg-black border border-zinc-800 p-3">
+        <div className="text-xs font-semibold text-white mb-2">Recent shift reports</div>
+        <div className="space-y-1 max-h-64 overflow-y-auto">
+          {(fleet?.recent || []).map((r: any, i: number) => (
+            <div key={i} className="text-[11px] font-mono text-zinc-400 border-b border-zinc-900 py-1">
+              <span className="text-zinc-600">{new Date(r.runAt).toLocaleTimeString()}</span> <span className="text-white">{r.employee}</span> — {r.verdict || '—'} · {r.finished || ''}{r.needsYou ? ` · NEEDS YOU: ${r.needsYou}` : ''}
+            </div>
+          ))}
+          {fleet && (!fleet.recent || fleet.recent.length === 0) && <div className="text-[11px] text-zinc-600">No reports yet — employees post on each shift.</div>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Employee chat — talks to the Brain gateway (local first, cloud fallback).
+// LiteLLM :4000 has open CORS (access-control-allow-origin: *) so the browser
+// can call the local gateway directly when the admin is on the PC's browser;
+// cloud fallback covers remote access.
+function EmployeeChat({ employee }: { employee: string }) {
+  const [messages, setMessages] = useState<{ role: 'user' | 'employee'; text: string; time: string }[]>([
+    { role: 'employee', text: `${employee} here. Ask me "What did you do today?" — I own this lane, I remember my shifts.`, time: new Date().toLocaleTimeString() },
+  ])
+  const [input, setInput] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const send = async () => {
+    if (!input.trim() || busy) return
+    const text = input
+    setMessages((m) => [...m, { role: 'user', text, time: new Date().toLocaleTimeString() }])
+    setInput(''); setBusy(true)
+    const endpoints = ['http://localhost:4000/v1', 'https://ai.hostamar.com/v1']
+    let reply = `${employee}: Brain unreachable from this browser (local gateway off?) — reports above are from my saved shifts.`
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(`${ep}/chat/completions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'kilocode-fast',
+            messages: [
+              { role: 'system', content: `You are ${employee}, a Hostamar AI employee who OWNS this lane (not a task). Answer as the employee, referencing your lane duties. Keep it under 120 words. Report style: FINISHED/COULDNT/NEEDS YOU.` },
+              { role: 'user', content: text },
+            ],
+            max_tokens: 300,
+          }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const c = data.choices?.[0]?.message?.content
+          if (c && c.trim()) { reply = c.trim(); break }
+        }
+      } catch { /* try next endpoint */ }
+    }
+    setMessages((m) => [...m, { role: 'employee', text: reply, time: new Date().toLocaleTimeString() }])
+    setBusy(false)
+  }
+
+  return (
+    <div className="mt-3 rounded-lg bg-zinc-950 border border-zinc-800 p-2">
+      <div className="max-h-48 overflow-y-auto space-y-1.5 mb-2">
+        {messages.map((m, i) => (
+          <div key={i} className={`text-xs p-1.5 rounded ${m.role === 'user' ? 'bg-[#0E7C3A]/20 ml-8' : 'bg-zinc-900 mr-8'}`}>
+            <div className="text-[9px] text-zinc-500">{m.role === 'user' ? 'You' : employee} · {m.time}</div>
+            <div className="text-zinc-200 whitespace-pre-wrap">{m.text}</div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-1.5">
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()}
+          placeholder={`Ask ${employee}…`} className="flex-1 text-xs px-2 py-1.5 rounded bg-black border border-zinc-800 text-white outline-none focus:border-[#10B981]"/>
+        <button onClick={send} disabled={busy} className="text-xs px-3 py-1.5 rounded bg-[#0E7C3A] text-white disabled:opacity-50">{busy ? '…' : 'Send'}</button>
+      </div>
+    </div>
+  )
+}
+
 function HostingTab() {
   const [status, setStatus] = useState<any>(null)
   const [servers, setServers] = useState<any[]>([])
@@ -788,6 +943,7 @@ export default function AdminDashboard() {
             { id:'credits', label:'ক্রেডিট', icon: Coins },
             { id:'transactions', label:'লেনদেন', icon: Receipt },
             { id:'models', label:'মডেল·১২০', icon: Cpu },
+            { id:'fleet', label:'ফ্লিট·৫', icon: Activity },
             { id:'products', label:'প্রোডাক্ট·৫০+', icon: Package },
             { id:'hosting', label:'হোস্টিং', icon: Server },
           ].map(t=>(
@@ -804,6 +960,7 @@ export default function AdminDashboard() {
           {active==='credits' && <CreditsTab/>}
           {active==='transactions' && <TransactionsTab/>}
           {active==='models' && <ModelsTab/>}
+          {active==='fleet' && <FleetTab/>}
           {active==='products' && <ProductsTab/>}
           {active==='hosting' && <HostingTab/>}
         </div>
