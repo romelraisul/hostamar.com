@@ -610,6 +610,7 @@ const FLEET_META: Record<string, { lane: string; color: string }> = {
   Reel: { lane: 'Video — renders, ComfyUI 384×216 recipe, ffprobe', color: '#A78BFA' },
   Bazaar: { lane: 'Store — Medusa 116 products, catalog', color: '#F59E0B' },
   Quill: { lane: 'Content/TV — HTTP media verify, playlist', color: '#EC4899' },
+  Sage: { lane: 'Second Brain — nightly synthesis, wiki + /ask', color: '#F43F5E' },
 }
 
 function FleetTab() {
