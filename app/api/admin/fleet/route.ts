@@ -10,7 +10,11 @@ import { verifyToken } from '@/lib/auth'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const EMPLOYEES = ['Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill', 'Sage', 'Harbor'] as const
+const EMPLOYEES = [
+  'Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill', 'Sage',
+  // V61 business lanes (hire: 2026-09-11) — fleet = 14
+  'Nova', 'Forge', 'Pulse', 'Orion', 'Vertex', 'Harbor', 'Ledger', 'Scout',
+] as const
 
 async function isAdmin(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get('auth_token')?.value
