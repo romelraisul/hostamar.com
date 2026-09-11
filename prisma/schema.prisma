@@ -1650,3 +1650,21 @@ model DriveFile {
   @@index([fileHash])
   @@index([chunkGroupId])
 }
+
+// V50 — AI Employee Fleet reports (Atlas/Echo/Reel/Bazaar/Quill).
+// Hermes cron employees write their shift report here; admin panel Fleet tab
+// reads it. One row per completed shift (job_id + run_at unique).
+model FleetReport {
+  id          String   @id @default(cuid())
+  employee    String   // Atlas | Echo | Reel | Bazaar | Quill
+  jobId       String   // hermes cron job_id
+  verdict     String?  // HEALTHY | ALERT | etc
+  finished    String?  // report "FINISHED" section
+  couldnt     String?  // report "COULDNT" section
+  needsYou    String?  // report "NEEDS YOU" section
+  raw         String?  // full report text
+  runAt       DateTime @default(now())
+
+  @@index([employee, runAt(sort: Desc)])
+  @@index([jobId])
+}
