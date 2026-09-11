@@ -11,6 +11,7 @@ model_list:
       timeout: 1800
       max_retries: 4
       retry_after: 5
+      think: false    # V36.66: qwen3 thinking blocks arrive empty via litellm (same as V36.32); direct answers only
   - model_name: hostamar-own-fast       # edge
     litellm_params:
       model: ollama/qwen3.5:4b
@@ -49,11 +50,71 @@ model_list:
   # KiloCode gateway. Token-guarded. Secret via env.
   - model_name: kilocode-fast
     litellm_params:
-      model: openai/kilo-fast
+      model: openai/kilo-auto/free
       api_base: os.environ/KILOCODE_BASE_URL
       api_key: os.environ/KILOCODE_API_KEY
       timeout: 240
       max_retries: 0
+
+  # B.AI gateway (V47 2026-09-11). Free models, key via env.
+  - model_name: bai/glm-5.3-flash
+    litellm_params:
+      model: openai/glm-5.3-flash
+      api_base: https://api.b.ai/v1
+      api_key: os.environ/BAI_API_KEY
+      timeout: 300
+      max_retries: 1
+  - model_name: bai/qwen3.8-flash
+    litellm_params:
+      model: openai/qwen3.8-flash
+      api_base: https://api.b.ai/v1
+      api_key: os.environ/BAI_API_KEY
+      timeout: 300
+      max_retries: 1
+  - model_name: bai/minimax-m3
+    litellm_params:
+      model: openai/minimax-m3
+      api_base: https://api.b.ai/v1
+      api_key: os.environ/BAI_API_KEY
+      timeout: 300
+      max_retries: 1
+  - model_name: bai/kimi-k3
+    litellm_params:
+      model: openai/kimi-k3
+      api_base: https://api.b.ai/v1
+      api_key: os.environ/BAI_API_KEY
+      timeout: 300
+      max_retries: 1
+
+  # Orcarouter gateway (V47 2026-09-11). Free-tier models, key via env.
+  - model_name: orca/free
+    litellm_params:
+      model: openai/orcarouter/free
+      api_base: https://api.orcarouter.ai/v1
+      api_key: os.environ/ORCA_API_KEY
+      timeout: 300
+      max_retries: 1
+  - model_name: orca/glm-5.3-flash-free
+    litellm_params:
+      model: openai/z-ai/glm-5.3-flash-free
+      api_base: https://api.orcarouter.ai/v1
+      api_key: os.environ/ORCA_API_KEY
+      timeout: 300
+      max_retries: 1
+  - model_name: orca/hy3-free
+    litellm_params:
+      model: openai/tencent/hy3-free
+      api_base: https://api.orcarouter.ai/v1
+      api_key: os.environ/ORCA_API_KEY
+      timeout: 300
+      max_retries: 1
+  - model_name: orca/deepseek-v4-flash-free
+    litellm_params:
+      model: openai/deepseek/deepseek-v4-flash-free
+      api_base: https://api.orcarouter.ai/v1
+      api_key: os.environ/ORCA_API_KEY
+      timeout: 300
+      max_retries: 1
 
 # Fallback chain: local first (always), then cloud.
 router_settings:
@@ -64,6 +125,14 @@ router_settings:
     - glm-5.2: ["hostamar-own"]
     - minimax-m3: ["hostamar-own"]
     - kilocode-fast: ["hostamar-own-coder", "hostamar-own"]
+    - bai/glm-5.3-flash: ["orca/free", "hostamar-own"]
+    - bai/qwen3.8-flash: ["orca/free", "hostamar-own"]
+    - bai/minimax-m3: ["hostamar-own"]
+    - bai/kimi-k3: ["hostamar-own"]
+    - orca/free: ["hostamar-own"]
+    - orca/glm-5.3-flash-free: ["hostamar-own"]
+    - orca/hy3-free: ["hostamar-own"]
+    - orca/deepseek-v4-flash-free: ["hostamar-own"]
   context_window_fallbacks:
     - glm-5.2: ["hostamar-own"]
 
@@ -78,19 +147,3 @@ litellm_settings:
   drop_params: true
   request_timeout: 600
   num_threads: 8
-  set_verbose: false
-  # Token guard is wired via guard_callback.py self-registering on import
-  # (see guard/entrypoint-litellm.sh). No `callbacks:` key needed here.
-
-# Token guard config (read by guard_callback.GuardCallback on init)
-hostamar_guard:
-  enabled: true
-  per_sec: 8
-  per_min: 2000
-  per_day: 400000
-  providers:
-    nvidia: { base: https://integrate.api.nvidia.com/v1,   model_prefix: openai/ }
-    kilocode: { base: os.environ/KILOCODE_BASE_URL,         model_prefix: openai/ }
-  db_path: /tmp/guard_history.db
-  archive_path: /tmp/guard_archive.jsonl
-
