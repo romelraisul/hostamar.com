@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { callBestModel } from '@/lib/ai-fallback'
+import { streamChatCompletion } from '@/lib/ai-stream'
 import { getAuthUser } from '@/lib/auth'
 import { deductCredits } from '@/lib/credits'
 import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
@@ -39,6 +40,13 @@ export async function POST(req: NextRequest) {
     authUser = await getAuthUser(req)
   } catch {
     authUser = null
+  }
+
+  // V62: true SSE streaming — OpenAI clients that ask for stream:true get real
+  // `data:` frames with finish_reason and [DONE]; the buffered path below is
+  // untouched for non-streaming callers.
+  if (body.stream === true) {
+    return streamChatCompletion(body, authUser)
   }
 
   // V36.48: support ?debug=1 to return full chain trace
