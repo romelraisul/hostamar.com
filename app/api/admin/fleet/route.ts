@@ -10,7 +10,7 @@ import { verifyToken } from '@/lib/auth'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const EMPLOYEES = ['Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill'] as const
+const EMPLOYEES = ['Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill', 'Sage'] as const
 
 async function isAdmin(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get('auth_token')?.value
