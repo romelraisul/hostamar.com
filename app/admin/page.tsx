@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 // ── helpers ──────────────────────────────────────────────────────────
-const TABS = ['overview','users','credits','transactions','models','fleet','products','hosting'] as const
+const TABS = ['overview','users','credits','transactions','models','fleet','second-brain','guard','drive','products','hosting'] as const
 type Tab = typeof TABS[number]
 
 function fmt(n: number | undefined | null) { return (n ?? 0).toLocaleString() }
@@ -759,6 +759,127 @@ function EmployeeChat({ employee }: { employee: string }) {
   )
 }
 
+// ── V55 Second Brain tab — synthesized WHY answers via local query layer ──
+function SecondBrainTab() {
+  const [state, setState] = useState<any>(null)
+  const [q, setQ] = useState('')
+  const [answer, setAnswer] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(async () => {
+    try { setState(await jfetch('/api/admin/second-brain')) } catch { setState(null) }
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  const ask = async () => {
+    if (!q.trim() || busy) return
+    setBusy(true); setAnswer(null)
+    try {
+      const r = await fetch('/api/admin/second-brain', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q }),
+      })
+      const d = await r.json()
+      setAnswer(d.answer || d.hint || 'no answer')
+    } catch (e: any) { setAnswer(`error: ${e.message}`) }
+    setBusy(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-white">Second Brain <span className="text-xs font-normal text-zinc-500">· Raw → Wiki → Synthesis</span></h2>
+          <p className="text-xs text-zinc-500">SAGE 12:05 nightly synthesis · wiki pages: {(state?.wikiPages || []).join(' · ')}</p>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs border ${state?.askOnline ? 'text-[#10B981] border-[#10B981]/30 bg-[#0E7C3A]/10' : 'text-amber-300 border-amber-500/30 bg-amber-500/10'}`}>
+          {state?.askOnline ? '● query layer online' : '● query layer local-only'}
+        </span>
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-3">
+        <div className="text-xs text-zinc-500 mb-2">{state?.note || 'loading…'}</div>
+        <div className="flex gap-2">
+          <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && ask()}
+            placeholder="WHY প্রশ্ন করো — e.g. auth module এ বারবার bug কেন?"
+            className="flex-1 text-sm px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-white outline-none focus:border-[#10B981]"/>
+          <button onClick={ask} disabled={busy} className="px-4 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm disabled:opacity-50">{busy ? '…' : 'Ask'}</button>
+        </div>
+        {answer && <div className="mt-3 text-sm text-zinc-200 whitespace-pre-wrap rounded-lg bg-zinc-900 p-3 border border-zinc-800">{answer}</div>}
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-3 text-xs text-zinc-400">
+        <div className="font-semibold text-white mb-1">Pipeline</div>
+        raw floor (vision · consensus · 5 fleet shifts · guardian.log) → synthesize.mjs (nightly) → wiki/ pre-digested pages + synthesis.md A↔B connections → /ask RAG via local Brain. CLI quality loop: <code className="font-mono text-zinc-300">dynamic_context.py "q" --quality</code> (critic &gt;0.95, up to 5 passes).
+      </div>
+    </div>
+  )
+}
+
+// ── V55 Guard tab — zero-cost scammer guard state ──
+function GuardTab() {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-white">Guard <span className="text-xs font-normal text-zinc-500">· zero-cost · no Sixtyfour until $2k+/mo</span></h2>
+        <p className="text-xs text-zinc-500">Policy: risk-high → Telegram review + Approve/Reject — never silent auto-block</p>
+      </div>
+      <div className="grid md:grid-cols-3 gap-3">
+        <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="text-sm font-bold text-white">Layer A — Bot/Disposable</div>
+          <div className="text-xs text-amber-300 mt-1">NEEDS YOU: TURNSTILE_SECRET_KEY (free signup)</div>
+          <div className="text-xs text-zinc-500 mt-2">Cloudflare Turnstile on signup · Vercel Firewall · bot score &lt;30 → review · Tor/VPN/bot IP block. Until key is set: skip-note, never blocks.</div>
+        </div>
+        <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="text-sm font-bold text-white">Layer B — Email/Phone</div>
+          <div className="text-xs text-[#10B981] mt-1">● fully functional</div>
+          <div className="text-xs text-zinc-500 mt-2">disposable-email-domains (10k list) · libphonenumber validity · Holehe/Sherlock on review only. Self-test 4/4: disposable+bot→high/review · clean→low/allow · invalid→medium/flag.</div>
+        </div>
+        <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="text-sm font-bold text-white">Layer C — Wallet</div>
+          <div className="text-xs text-amber-300 mt-1">NEEDS YOU: ETHERSCAN_API_KEY (free signup)</div>
+          <div className="text-xs text-zinc-500 mt-2">wallet age &lt;7d · tx &lt;5 · Tornado/mixer funding · Dexscreener top-10 holder %/liquidity lock. Code: hostamar-platform/ansible/roles/guard/files/guard.mjs</div>
+        </div>
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-3 text-xs text-zinc-400">
+        <div className="font-semibold text-white mb-1">Progressive profiling (marketing, free)</div>
+        Signup collects email only → later one small question (business type) → Gravatar pic/name. Clearbit ($500/mo) not needed. Sixtyfour only at $2k+/mo revenue for the 2-3% high-risk cases. Rules baked into wiki/security-guard.md (second brain).
+      </div>
+    </div>
+  )
+}
+
+// ── V55 Drive tab — B2 hot + Telegram cold Hostamar Drive ──
+function DriveTab() {
+  const [fleet, setFleet] = useState<any>(null)
+  useEffect(() => { jfetch('/api/admin/fleet?limit=1').then(setFleet).catch(() => setFleet(null)) }, [])
+  const storage = fleet?.storage
+  const bytes = storage ? Number(storage.telegramBytes || 0) : 0
+  const gb = (bytes / 1024**3).toFixed(1)
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-white">Hostamar Drive <span className="text-xs font-normal text-zinc-500">· B2 10GB hot + Telegram ∞ cold</span></h2>
+        <p className="text-xs text-zinc-500">drive flow: check B2 → miss → fetch Telegram → cache B2 · survives PC-off via Cloudflare Worker + B2 + Vercel + Alwaysdata VPS</p>
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-4 flex flex-wrap gap-6">
+        <div>
+          <div className="text-2xl font-black text-[#10B981]">{storage ? Number(storage.telegramFiles).toLocaleString() : '—'}</div>
+          <div className="text-xs text-zinc-500">Telegram DriveFile rows (Neon)</div>
+        </div>
+        <div>
+          <div className="text-2xl font-black text-[#10B981]">{storage ? `${gb} GB` : '—'}</div>
+          <div className="text-xs text-zinc-500">Total stored bytes (Telegram cold tier)</div>
+        </div>
+        <div>
+          <div className="text-2xl font-black text-zinc-400">10 GB</div>
+          <div className="text-xs text-zinc-500">B2 hot cache (small files: renders, playlist, consensus, wiki)</div>
+        </div>
+        <div className="text-xs text-zinc-600 self-end">2GB/file Telegram chunking · guardian uploader ticking · both links live</div>
+      </div>
+    </div>
+  )
+}
+
 function HostingTab() {
   const [status, setStatus] = useState<any>(null)
   const [servers, setServers] = useState<any[]>([])
@@ -945,6 +1066,9 @@ export default function AdminDashboard() {
             { id:'transactions', label:'লেনদেন', icon: Receipt },
             { id:'models', label:'মডেল·১২০', icon: Cpu },
             { id:'fleet', label:'ফ্লিট·৫', icon: Activity },
+            { id:'second-brain', label:'সেকেন্ড-ব্রেইন', icon: Search },
+            { id:'guard', label:'গার্ড', icon: Shield },
+            { id:'drive', label:'ড্রাইভ', icon: HardDrive },
             { id:'products', label:'প্রোডাক্ট·৫০+', icon: Package },
             { id:'hosting', label:'হোস্টিং', icon: Server },
           ].map(t=>(
@@ -962,6 +1086,9 @@ export default function AdminDashboard() {
           {active==='transactions' && <TransactionsTab/>}
           {active==='models' && <ModelsTab/>}
           {active==='fleet' && <FleetTab/>}
+          {active==='second-brain' && <SecondBrainTab/>}
+          {active==='guard' && <GuardTab/>}
+          {active==='drive' && <DriveTab/>}
           {active==='products' && <ProductsTab/>}
           {active==='hosting' && <HostingTab/>}
         </div>
