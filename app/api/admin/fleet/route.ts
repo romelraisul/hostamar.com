@@ -84,6 +84,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unknown employee' }, { status: 400 })
   }
 
+  // V50 dedupe guard: same employee+jobId pushing identical raw within 10 min
+  // is a retry/double-push, not a new shift — return the existing row instead.
+  const raw = body.raw ? String(body.raw).slice(0, 8000) : null
+  const recent = await prisma.fleetReport.findFirst({
+    where: { employee, jobId: String(body.jobId || '').slice(0, 64), raw },
+    orderBy: { runAt: 'desc' },
+  })
+  if (recent && Date.now() - recent.runAt.getTime() < 10 * 60 * 1000) {
+    return NextResponse.json({ ok: true, id: recent.id, deduped: true })
+  }
+
   const row = await prisma.fleetReport.create({
     data: {
       employee,
@@ -92,7 +103,7 @@ export async function POST(req: NextRequest) {
       finished: body.finished ? String(body.finished).slice(0, 2000) : null,
       couldnt: body.couldnt ? String(body.couldnt).slice(0, 2000) : null,
       needsYou: body.needsYou ? String(body.needsYou).slice(0, 2000) : null,
-      raw: body.raw ? String(body.raw).slice(0, 8000) : null,
+      raw,
       runAt: body.runAt ? new Date(body.runAt) : new Date(),
     },
   })
