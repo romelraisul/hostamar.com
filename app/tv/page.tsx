@@ -451,6 +451,7 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'receipt-agentcloud.mp4', t: 'Agent Cloud Receipt' },
                 { f: 'receipt-explainer.mp4', t: 'Receipt Explainer' },
                 { f: 'code-to-screen.mp4', t: 'Code to Screen' },
                 { f: 'focusflow-pitch.mp4', t: 'Focusflow Pitch' },
