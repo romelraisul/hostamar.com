@@ -18,26 +18,15 @@
  */
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendSurveillanceAlert } from '@/lib/surveillance-alert'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
 const CRON_SECRET = process.env.CRON_SECRET || ''
 
-async function alert(text: string): Promise<void> {
-  const token = process.env.SURVEILLANCE_TELEGRAM_TOKEN
-  const chatId = process.env.SURVEILLANCE_TELEGRAM_CHAT_ID
-  if (!token || !chatId) return
-  try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: `🛡 Layer5: ${text}`.slice(0, 3500) }),
-      signal: AbortSignal.timeout(10_000),
-    })
-  } catch {
-    /* alerting is best-effort */
-  }
+async function alert(text: string): Promise<{ sent: boolean; via: string }> {
+  return sendSurveillanceAlert(text)
 }
 
 export async function GET(req: NextRequest) {
@@ -90,7 +79,7 @@ export async function GET(req: NextRequest) {
 
   // Keep the forensic table small (Vercel free Postgres friendly).
   await prisma.$executeRaw`DELETE FROM "RequestLog" WHERE "createdAt" < NOW() - INTERVAL '14 days'`
-  await alert(flagged.length ? flagged.join('\n') : 'clean — no abuse signatures in last 24h')
+  const delivery = await alert(flagged.length ? flagged.join('\n') : 'clean — no abuse signatures in last 24h')
 
   return Response.json({
     ok: true,
@@ -99,5 +88,6 @@ export async function GET(req: NextRequest) {
     deviceFarms: deviceFarm.length,
     hotRiskUsers: hot.length,
     alerts: flagged,
+    alertDelivery: delivery,
   })
 }
