@@ -451,6 +451,7 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'receipt-gpu.mp4', t: 'GPU Spot Market' },
                 { f: 'receipt-agentcloud.mp4', t: 'Agent Cloud Receipt' },
                 { f: 'receipt-sovereign.mp4', t: 'Sovereign Video OS' },
                 { f: 'receipt-explainer.mp4', t: 'Receipt Explainer' },
