@@ -670,6 +670,12 @@ model Conversation {
   customer Customer  @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages Message[]
 
+  // V8 memory lifecycle (runtime DDL in lib/kai9000/memory-lifecycle.ts
+  // applies these to prod; schema kept in sync so prisma generate types them)
+  memories       Json?   @default("{}")
+  hitCountMap    Json?   @default("{}")
+  promotedPrompt String? @default("")
+
   @@index([userId, createdAt])
 }
 
