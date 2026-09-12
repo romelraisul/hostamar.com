@@ -467,6 +467,7 @@ export default function TvPage() {
                 { f: 'receipt-contextgraph.mp4', t: 'Context Graph Receipt' },
                 { f: 'receipt-automonetize.mp4', t: 'Auto-Monetize Receipt' },
                 { f: 'receipt-fullstack.mp4', t: 'Full Stack Receipt' },
+                { f: 'receipt-prices.mp4', t: 'Creative Studio Prices' },
               ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
