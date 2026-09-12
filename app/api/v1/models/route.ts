@@ -17,22 +17,40 @@ const EDGE_MODELS_URL = process.env.EDGE_GATEWAY_URL
   : 'https://hostamar-ai-gateway.romelraisul.workers.dev/v1/models'
 
 import { MODELS_95 } from '@/lib/gateway/95-models'
+import { fetchAllFreeModels } from '@/lib/free-model-router'
+
+export const maxDuration = 15
 
 export async function GET(_req: NextRequest) {
-  // Tier 1: worker KV — the same 120-model catalog ai.hostamar.com serves
-  try {
-    const r = await fetch(EDGE_MODELS_URL, { signal: AbortSignal.timeout(4000), cache: 'no-store' })
-    if (r.ok) {
-      const d: any = await r.json()
-      if (Array.isArray(d?.data) && d.data.length) {
-        return NextResponse.json(
-          { object: 'list', data: d.data, source: d.source || 'kv' },
-          { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
-        )
-      }
-    }
-  } catch {
-    /* fall through */
+  // V74: KV catalog + live free-model discovery in parallel — the 120-model
+  // catalog is enriched with the hourly free shortlist (kilo/openrouter/
+  // opencode zen/tokenrouter) so /api/v1 lists ALL free top-quality models.
+  const [edgeP, freeP] = await Promise.all([
+    fetch(EDGE_MODELS_URL, { signal: AbortSignal.timeout(4000), cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : null))
+      .catch(() => null),
+    fetchAllFreeModels().catch(() => [] as Awaited<ReturnType<typeof fetchAllFreeModels>>),
+  ])
+  if (edgeP && Array.isArray(edgeP?.data) && edgeP.data.length) {
+    const kvIds = new Set(edgeP.data.map((m: any) => m.id))
+    const extras = (freeP || [])
+      .filter(m => !kvIds.has(m.id) && !kvIds.has(`kilo/${m.id}`))
+      .slice(0, 50)
+      .map(m => ({
+        id: m.id,
+        object: 'model',
+        owned_by: m.provider,
+        display_name: m.id,
+        context: m.context,
+        context_length: m.context,
+        free: true,
+        quality_score: m.quality_score,
+        price: 0,
+      }))
+    return NextResponse.json(
+      { object: 'list', data: [...edgeP.data, ...extras], source: edgeP.source || 'kv', freeAdded: extras.length },
+      { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
+    )
   }
   // Tier 2: generated catalog — always available offline
   const data = (MODELS_95 as any[]).map(m => ({
