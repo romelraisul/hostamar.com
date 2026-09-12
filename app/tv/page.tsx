@@ -460,6 +460,7 @@ export default function TvPage() {
                 { f: 'focusflow-pitch.mp4', t: 'Focusflow Pitch' },
                 { f: 'world-in-numbers.mp4', t: 'World in Numbers' },
                 { f: 'receipt-privacy.mp4', t: 'Privacy Cloud Receipt' },
+                { f: 'receipt-observability.mp4', t: 'Observability Receipt' },
               ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
