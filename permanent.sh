@@ -28,6 +28,13 @@ if [ -f "$BUILD/.env.docker" ]; then
   # shellcheck disable=SC1090
   set -a; . "$BUILD/.env.docker"; set +a
 fi
+# V74: untracked provider-key file (chmod 600, gitignored) — nvidia/kilo/bai/
+# orca/tokenrouter keys. Recovered from the live container so a recreate
+# never silently loses them.
+if [ -f "$BUILD/.env.providers" ]; then
+  # shellcheck disable=SC1090
+  set -a; . "$BUILD/.env.providers"; set +a
+fi
 
 #------- STEP 1b: ensure external docker network exists ----------------
 # docker-compose.yml declares hostamar-network as external; create if missing
@@ -62,15 +69,21 @@ else
   log "postgres: NOT ready AND no DATABASE_URL_CLOUD — routes will 500 until DB up"
 fi
 
-#------- STEP 2: ensure host Ollama is running ------------------------
-if ! curl -s --max-time 3 http://localhost:11434/api/tags >/dev/null 2>&1; then
-  log "ollama: host down, starting..."
-  OLLAMA_KEEP_ALIVE=5m nohup ollama serve >/tmp/ollama.log 2>&1 &
-  sleep 4
-fi
-if curl -s --max-time 3 http://localhost:11434/api/tags >/dev/null 2>&1; then
-  log "ollama: up — loading locked models (idempotent cp)"
-  python3 - <<'PY'
+#------- STEP 2: host Ollama (V74: DISABLED by default) ----------------
+# V74 2026-09-13: ollama was the RAM/Disk 100% root cause — kilocode 429 fell
+# back to hostamar-own-coder = ollama/qwen3.6:latest (26GB disk->RAM load,
+# vmmemWSL 21.6GB, Disk 7000%). All litellm fallbacks now route to cloud
+# free tiers (tokenrouter/orca). Do NOT auto-start ollama at boot; opt in
+# explicitly with FORCE_OLLAMA=1 for deliberate local-model work.
+if [ "${FORCE_OLLAMA:-0}" = "1" ]; then
+  if ! curl -s --max-time 3 http://localhost:11434/api/tags >/dev/null 2>&1; then
+    log "ollama: FORCE_OLLAMA=1 — starting..."
+    OLLAMA_KEEP_ALIVE=5m nohup ollama serve >/tmp/ollama.log 2>&1 &
+    sleep 4
+  fi
+  if curl -s --max-time 3 http://localhost:11434/api/tags >/dev/null 2>&1; then
+    log "ollama: up — loading locked models (idempotent cp)"
+    python3 - <<'PY'
 import json, subprocess, sys
 locked = json.load(open('/home/romel/hostamar-build/perma-locked.json'))
 for m in locked.get('models', []):
@@ -86,8 +99,11 @@ for m in locked.get('models', []):
     subprocess.run(['ollama','cp', src, dst], check=False)
 print('locked models ensured')
 PY
+  else
+    log "ollama: STILL DOWN after forced start — local fallback unavailable"
+  fi
 else
-  log "ollama: STILL DOWN after boot attempt — local fallback unavailable"
+  log "ollama: V74 skip (FORCE_OLLAMA not set) — cloud free tiers are the fallback"
 fi
 
 #------- STEP 3: bring up litellm-play (the dead container) ----------

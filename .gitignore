@@ -178,3 +178,4 @@ docker/tv-station/videos/free/
 tools/realesrgan/*.exe
 tools/realesrgan/*.dll
 tools/realesrgan/models/
+.env.providers
