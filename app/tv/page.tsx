@@ -461,6 +461,7 @@ export default function TvPage() {
                 { f: 'world-in-numbers.mp4', t: 'World in Numbers' },
                 { f: 'receipt-privacy.mp4', t: 'Privacy Cloud Receipt' },
                 { f: 'receipt-observability.mp4', t: 'Observability Receipt' },
+                { f: 'receipt-eubdcloud.mp4', t: 'EU-BD Cloud Receipt' },
               ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
