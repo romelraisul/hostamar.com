@@ -463,6 +463,7 @@ export default function TvPage() {
                 { f: 'receipt-observability.mp4', t: 'Observability Receipt' },
                 { f: 'receipt-eubdcloud.mp4', t: 'EU-BD Cloud Receipt' },
                 { f: 'receipt-memory.mp4', t: 'Agent Memory Receipt' },
+                { f: 'receipt-gpumarket.mp4', t: 'GPU Spot Market' },
               ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
