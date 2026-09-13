@@ -478,6 +478,7 @@ export default function TvPage() {
                 { f: 'receipt-renderapi.mp4', t: 'Render API Receipt' },
                 { f: 'receipt-pipelines.mp4', t: 'Video Pipelines Receipt' },
                 { f: 'receipt-security.mp4', t: 'Security Receipt' },
+                { f: 'receipt-cdn.mp4', t: 'CDN Receipt' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
