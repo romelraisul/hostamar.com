@@ -477,7 +477,8 @@ export default function TvPage() {
                 { f: 'receipt-tv.mp4', t: 'Hostamar TV Receipt' },
                 { f: 'receipt-renderapi.mp4', t: 'Render API Receipt' },
                 { f: 'receipt-pipelines.mp4', t: 'Video Pipelines Receipt' },
-              ].map((v) => (
+                { f: 'receipt-security.mp4', t: 'Security Receipt' },
+                ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
                   <div className="px-2 py-1.5 mono text-[10px] text-zinc-300 truncate">{v.t}</div>
