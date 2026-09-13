@@ -124,7 +124,7 @@ export async function middleware(request: NextRequest) {
     '/api/cron/tv-stability',
     '/api/cron/surveillance', // V65 Layer 5 — self-guards via x-vercel-cron/CRON_SECRET at the route
     '/api/cron/heartbeat', // V8 Phase B — self-guards via x-vercel-cron/CRON_SECRET at the route
-    '/api/orchestrator', // V86: Cloudflare Worker orchestrator proxy — public
+    '/api/orchestrator', // V86: Cloudflare Worker orchestrator proxy (catch-all)
     '/api/social/publish', // V86: Social publishing API — public
     '/api/support/chat',
     '/api/chat/support',
