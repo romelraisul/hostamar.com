@@ -174,3 +174,7 @@ tools/realesrgan/*.dll
 tools/realesrgan/models/
 .env.providers
 .tv-agent-secret.local
+
+# TV + video renders (must NOT be ignored — .vercelignore mirrors this)
+!public/tv/*.mp4
+!public/videos/*.mp4
