@@ -474,6 +474,7 @@ export default function TvPage() {
                 { f: 'receipt-orchestrator.mp4', t: 'Serverless Orchestrator Receipt' },
                 { f: 'receipt-infrastructure.mp4', t: 'Infrastructure Receipt' },
                 { f: 'receipt-brain.mp4', t: 'AI Brain Receipt' },
+                { f: 'receipt-tv.mp4', t: 'Hostamar TV Receipt' },
               ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
