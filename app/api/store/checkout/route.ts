@@ -28,6 +28,7 @@ export const runtime = 'nodejs'
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
+import { waitUntil } from '@vercel/functions'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
@@ -91,14 +92,16 @@ export async function POST(req: NextRequest) {
     // FORGE: post-order side effects = receipt email (honest dialog), instant
     // Telegram owner-ping (lib/surveillance-alert ladder, zero new creds), and
     // Neon Lead mirror (source store-checkout → CRM/HARBOR sees the buyer).
-    // 09-15 03:25: these three ran SEQUENTIALLY — prod checkout measured 7.9s
-    // with the buyer watching a spinner AFTER the order already existed.
-    // They share no state → run concurrently, each self-capped, each swallowing
-    // its own errors: a side effect can never fail a paid order.
+    // 09-15 03:25: ran SEQUENTIALLY → 7.9s spinner after the order existed → Promise.all.
+    // 09-15 04:10: still 8.7s prod (order ~2.5s via bridge + Telegram ladder's
+    // 6s race cap awaited). Order is DONE at this point — buyer owes nothing
+    // more than the order id. Fire side effects with waitUntil (Vercel keeps
+    // the function warm until they settle) and respond instantly. receiptSent
+    // can no longer be known at response time → dialog says "sending", not "sent".
     const item: any = order.items?.[0]
     const title = item?.variant?.product?.title || item?.title || variant_id
 
-    const [receiptSent] = await Promise.all([
+    waitUntil(Promise.all([
       (async () => {
         try {
           const { sendSystemAlertEmail } = await import('@/lib/email')
@@ -146,13 +149,12 @@ export async function POST(req: NextRequest) {
           })
         } catch (e: any) { console.warn('[store/checkout] lead mirror:', e?.message?.slice(0, 120)) }
       })(),
-    ])
+    ]))
 
     return NextResponse.json({
       orderId: order.id,
       status: order.status || 'pending',
       amountBdt,
-      receiptSent,
     })
   } catch (e: any) {
     console.error('[store/checkout]', e?.message)
