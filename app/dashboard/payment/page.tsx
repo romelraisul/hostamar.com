@@ -267,6 +267,10 @@ export default function PaymentPage() {
                   </button>
                 ))}
               </div>
+              <p className="mt-3 text-xs text-gray-500">
+                bKash / Nagad / Rocket: <strong className="text-gray-400">Send Money (Cash Out নয়)</strong> our
+                personal number — use the green Send-Money panel above, then submit the TrxID there.
+              </p>
             </div>
 
             {/* QR Code Display - Show when method is selected */}

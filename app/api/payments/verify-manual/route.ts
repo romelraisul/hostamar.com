@@ -6,6 +6,7 @@ import { getAuthUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { planCredits } from '@/lib/pricing'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { notify } from '@/lib/support/telegram'
 import {
   TRXID_REGEX,
   PENDING_EXPIRY_MINUTES,
@@ -128,6 +129,22 @@ export async function POST(req: NextRequest) {
     // Try instant auto-match against SMS log
     const autoVerified = await tryAutoMatch(verification.id).catch(() => false)
 
+    // Notify the owner (best-effort, non-blocking) so a manual payment gets
+    // eyes immediately. Reuses the support/ops Telegram channels already used
+    // by lib/support/incident.ts — silently no-ops when Telegram is unconfigured.
+    void notify(
+      'ops',
+      [
+        '💳 Manual payment submitted',
+        `${m} ৳${amt}`,
+        `Plan: ${plan || '—'}`,
+        `TrxID: ${trx}`,
+        `Sender: ${String(senderNumber).replace(/\s/g, '')}`,
+        `Customer: ${user.email || user.id}`,
+        `VerificationID: ${verification.id}`,
+      ].join('\n'),
+    ).catch(() => {})
+
     return NextResponse.json({
       ok: true,
       verificationId: verification.id,
@@ -136,7 +153,7 @@ export async function POST(req: NextRequest) {
       autoVerified,
       message: autoVerified
         ? 'পেমেন্ট অটো-ভেরিফাইড! ক্রেডিট যোগ হয়েছে।'
-        : 'TrxID জমা হয়েছে। SMS ম্যাচ বা অ্যাডমিন অ্যাপ্রুভালের জন্য অপেক্ষা করুন (১৫ মিনিট)।',
+        : 'TrxID জমা হয়েছে ✅ — SMS ম্যাচ হলে সাথে সাথেই ক্রেডিট যোগ হবে; না হলে অ্যাডমিন ২৪ ঘণ্টার মধ্যে যাচাই করে প্ল্যান চালু করবে।',
     })
   } catch (err) {
     console.error('[verify-manual] error:', err)

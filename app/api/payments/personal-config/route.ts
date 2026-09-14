@@ -17,6 +17,9 @@ export async function GET(req: NextRequest) {
   }
 
   const nums = getPersonalNumbers()
+  // Stable per-customer reference the buyer can put in the Send-Money note so
+  // the owner can match the payment without asking around.
+  const reference = `PM-${user.id.slice(-6).toUpperCase()}`
   return NextResponse.json({
     enabled: nums.enabled,
     numbers: {
@@ -24,8 +27,9 @@ export async function GET(req: NextRequest) {
       nagad: nums.NAGAD,
       rocket: nums.ROCKET,
     },
+    reference,
     instructions: nums.enabled
-      ? 'নিচের নাম্বারে Send Money করুন, তারপর TrxID জমা দিন।'
+      ? `নিচের যেকোনো নাম্বারে Send Money (Cash Out নয়) করুন — নোটে Reference ${reference} লিখুন — তারপর TrxID জমা দিন।`
       : 'Personal payments are currently disabled.',
   })
 }

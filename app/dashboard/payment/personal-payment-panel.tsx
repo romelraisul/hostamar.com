@@ -7,6 +7,7 @@ type PersonalConfig = {
   enabled: boolean;
   numbers: { bkash: string | null; nagad: string | null; rocket: string | null };
   instructions: string;
+  reference?: string;
 };
 
 type MethodKey = 'bkash' | 'nagad' | 'rocket';
@@ -112,6 +113,30 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
 
       <p className="text-sm text-zinc-400">{config.instructions}</p>
 
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-300">
+          ⚠️ Send Money only — Cash Out নয়
+        </span>
+        {config.reference && (
+          <span className="rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-zinc-300">
+            Reference: <span className="font-mono text-emerald-400">{config.reference}</span>
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => copyNumber(config.reference as string, 'ref')}
+              className="ml-1 cursor-pointer text-zinc-500 hover:text-zinc-300"
+              title="Copy reference"
+            >
+              {copiedNum === 'ref' ? (
+                <Check className="inline w-3 h-3 text-emerald-400" />
+              ) : (
+                <Copy className="inline w-3 h-3" />
+              )}
+            </span>
+          </span>
+        )}
+      </div>
+
       {/* 3 method cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {(Object.keys(METHOD_META) as MethodKey[]).map((key) => {
@@ -162,7 +187,7 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
       {selected && activeNumber && (
         <div className="space-y-3 border-t border-zinc-800 pt-4">
           <div className="text-sm text-zinc-300">
-            <span className="text-zinc-500">ধাপ ১:</span> এই নম্বরে Send Money করুন —{' '}
+            <span className="text-zinc-500">ধাপ ১:</span> এই নম্বরে <strong>Send Money</strong> (Cash Out নয়) করুন —{' '}
             <span className="font-mono text-emerald-400">{activeNumber}</span>
             {amount ? <> — পরিমাণ <span className="text-white font-semibold">৳{amount}</span></> : null}
           </div>
