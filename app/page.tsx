@@ -294,23 +294,23 @@ export default function HomePage() {
         <section className="bp-sec bp-sec-alt" id="reviews">
           <div className="bp-wrap">
             <div className="bp-sec-head">
-              <h2>ব্যবসায়ীরা কী বলে</h2>
+              <h2>BETA — এখন কী পাচ্ছেন</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
               <div className="bp-quote">
-                <blockquote>২ মিনিটে ঈদের প্রোমো বানালাম। আগের ডিজাইনার ভিডিওর চেয়ে সেই সপ্তাহে ৩ গুণ বেশি অর্ডার এলো। bKash পেমেন্ট সাথে হয়ে গেল</blockquote>
-                <cite><b>রাশেদ</b> <br />ফ্যাশন স্টোর মালিক, ঢাকা</cite>
+                <blockquote>ছবি আপলোড করুন — AI স্ক্রিপ্ট, বাংলা ভয়েসওভার, সাবটাইটেল ও লোগো যোগ করে মার্কেটিং ভিডিও বানায়।</blockquote>
+                <cite><b>AI ভিডিও মেকার</b> <br />BETA ফিচার</cite>
               </div>
               <div className="bp-quote">
-                <blockquote>ইংরেজি টুল ব্যবহার করতে পারি না। এখানে বাংলায় লিখলেই ভয়েস বানিয়ে দেয়। আমার কেক রিল এখন লোকাল মনে হয়</blockquote>
-                <cite><b>ফাতেমা</b> <br />হোম বেকারি, চট্টগ্রাম</cite>
+                <blockquote>হোস্টিং, ভিডিও, চ্যাট, ব্রাউজার ও IDE — এক সাবস্ক্রিপশনে, এক ড্যাশবোর্ডে।</blockquote>
+                <cite><b>সব-ইন-ওয়ান</b> <br />BETA ফিচার</cite>
               </div>
               <div className="bp-quote">
-                <blockquote>হোস্টিং + ভিডিও এক বিলে। দুইটা সাবস্ক্রিপশন বাতিল করে দিলাম। মাসে প্রায় ৳৩,০০০ বাঁচলো</blockquote>
-                <cite><b>ইমরান</b> <br />ইলেকট্রনিক্স রিসেলার, বগুড়া</cite>
+                <blockquote>bKash / Nagad / Rocket Send Money দিয়ে পেমেন্ট — ম্যানুয়ালি ভেরিফাই করে একাউন্ট একটিভ করা হয়।</blockquote>
+                <cite><b>লোকাল পেমেন্ট</b> <br />BETA ফিচার</cite>
               </div>
             </div>
-            <p className="bp-disclosure">নাম পরিবর্তিত করা হয়েছে; রিয়েল ইউজার রিভিউ সংগ্রহ চলমান</p>
+            <p className="bp-disclosure">BETA: রিয়েল ইউজার রিভিউ এখনো সংগ্রহাধীন — উপরের বর্ণনা পণ্যের ফিচার, কোনো কাস্টমারের উক্তি নয়।</p>
           </div>
         </section>
 
