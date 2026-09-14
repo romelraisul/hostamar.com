@@ -156,10 +156,6 @@ router_settings:
     - orca/deepseek-v4-flash-free: ["tokenrouter/auto"]
     - tokenrouter/auto: ["orca/free", "bai/glm-5.3-flash"]
     - tokenrouter/nemotron-nano-free: ["tokenrouter/auto"]
-    - hostamar-own: ["tokenrouter/auto"]
-    - hostamar-own-fast: ["tokenrouter/auto"]
-    - hostamar-lite: ["tokenrouter/auto"]
-    - hostamar-own-coder: ["tokenrouter/auto"]
   context_window_fallbacks:
     - glm-5.2: ["tokenrouter/auto"]
 
