@@ -100,6 +100,7 @@ export async function middleware(request: NextRequest) {
     '/api/auth/csrf',
     '/api/auth/session',
     '/api/support-chat',   // public Ollama L1 support
+    '/api/contact',   // public contact/lead form — durable lead capture (rate-limited at the route)
     '/api/payment/verify',   // payment gateway callback — must be reachable without a session
     '/api/binance-price',
     '/api/market-adjust',
