@@ -86,10 +86,36 @@ export async function POST(req: NextRequest) {
 
     const order = out.order || out
     if (!order?.id) throw new Error(out.type === 'state' ? 'cart requires payment capture retry' : 'no order returned')
+    const amountBdt = Math.round((order.total ?? cart.total ?? 0) / 100)
+
+    // FORGE: the /store dialog claims "রসিদ আপনার ইমেইলে পাঠানো হয়েছে" — until now
+    // that was false: Medusa's notification-local only records a DB row, NO email is
+    // ever sent. Real receipt goes out from here (Vercel has SMTP_* + nodemailer
+    // already wired in lib/email.ts). Never fails the order — 5s cap, fire + report.
+    let receiptSent = false
+    try {
+      const { sendSystemAlertEmail } = await import('@/lib/email')
+      const r: any = await Promise.race([
+        sendSystemAlertEmail(email, name,
+          `অর্ডার #${order.display_id ?? order.id.slice(-6)} গৃহীত — Send Money দিন`,
+          `ধন্যবাদ ${name}!<br><br>` +
+          `আপনার অর্ডার: <b>${order.id}</b><br>` +
+          `পরিমাণ: <b>৳${amountBdt.toLocaleString('en-BD')}</b><br><br>` +
+          `এখন <b>Send Money</b> (Cash Out নয়): bKash/Nagad/Rocket <b>01822417463</b> — এই নাম্বারে ঠিক ৳${amountBdt.toLocaleString('en-BD')} পাঠান।<br><br>` +
+          `পাঠানোর পর <b>TrxID সহ এই ইমেইলে রিপ্লাই দিন</b> (অর্ডার আইডি উল্লেখ রাখবেন) — তাহলেই কাজ শুরু।`),
+        new Promise((res) => setTimeout(() => res({ success: false, error: 'send-timeout' }), 3000)),
+      ])
+      receiptSent = !!r?.success
+      if (!receiptSent) console.warn('[store/checkout] receipt not sent:', r?.error)
+    } catch (e: any) {
+      console.warn('[store/checkout] receipt error:', e?.message)
+    }
+
     return NextResponse.json({
       orderId: order.id,
       status: order.status || 'pending',
-      amountBdt: Math.round((order.total ?? cart.total ?? 0) / 100),
+      amountBdt,
+      receiptSent,
     })
   } catch (e: any) {
     console.error('[store/checkout]', e?.message)
