@@ -9,7 +9,7 @@ const SMTP_HOST = env.SMTP_HOST
 const SMTP_PORT = parseInt(env.SMTP_PORT || '587')
 const SMTP_USER = env.SMTP_USER
 const SMTP_PASS = env.SMTP_PASS
-const SMTP_FROM = env.SMTP_FROM || 'noreply@hostamar.com'
+const SMTP_FROM = env.SMTP_FROM || SMTP_USER || 'noreply@hostamar.com'
 const BREVO_SMTP_KEY = env.BREVO_SMTP_KEY
 const BREVO_SMTP_HOST = env.BREVO_SMTP_HOST
 const BREVO_SMTP_PORT = parseInt(env.BREVO_SMTP_PORT || '587')
@@ -101,6 +101,24 @@ async function sendMail(to: string, subject: string, html: string) {
       console.error('[Email] Brevo REST API failed:', error)
       return { success: false, fallback: false, error: String(error) }
     }
+  }
+
+  // SMTP fallback / primary path when BREVO_API_KEY is not configured.
+  // NOTE: this branch used to be missing entirely — sendMail() returned
+  // undefined, so with no BREVO_API_KEY nothing was ever sent. Prod now sets
+  // SMTP_HOST/SMTP_PORT, so this is the live send path.
+  const smtp = getTransporter()
+  if (!smtp) {
+    console.warn('[Email] No transport configured (need SMTP_HOST+SMTP_USER+SMTP_PASS or BREVO_*); logging-only')
+    return { success: false, fallback: true, error: 'no_transport_configured' }
+  }
+  try {
+    const info = await smtp.sendMail({ from: SMTP_FROM, to, subject, html })
+    return { success: true, fallback: false, messageId: info && info.messageId }
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('[Email] SMTP send failed:', msg)
+    return { success: false, fallback: false, error: msg }
   }
 }
 
