@@ -169,7 +169,7 @@ export const FAQS: Faq[] = [
     id: 'agent-mcp-tools',
     cat: 'chat',
     q: 'আমার AI agent কি Hostamar-এর টুল সরাসরি ব্যবহার করতে পারে?',
-    a: 'হ্যাঁ — আমাদের ১০৯টি টুল MCP দিয়ে agent-callable: agent নিজেই ভিডিও রেন্ডার, ট্রান্সক্রাইব, ডাবিং, পোস্ট চালাতে পারে, কোনো human UI লাগে না। আজ HN-এ AgentDrive/Botbin দেখুন — সবাই এখন infra agent-first বানাচ্ছে; আমরা শুরু থেকেই তাই।',
+    a: 'হ্যাঁ — আমাদের ১০৯টি টুল MCP দিয়ে agent-callable: agent নিজেই ভিডিও রেন্ডার, ট্রান্সক্রাইব, ডাবিং, পোস্ট চালাতে পারে, কোনো human UI লাগে না। HN-এ AgentDrive/Botbin দেখুন — সবাই এখন infra agent-first বানাচ্ছে; আমরা শুরু থেকেই তাই।',
     link: { href: '/contact', label: 'MCP টুল ক্যাটালগ জানুন' },
   },
 
