@@ -32,7 +32,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   if (!pk) throw new Error('MEDUSA_PK not set')
   const res = await fetch(`${base}/store${path}`, {
     ...init,
-    headers: { 'x-publishable-api-key': pk, ...(init?.json ? { 'Content-Type': 'application/json' } : {}) },
+    headers: { 'x-publishable-api-key': pk, 'user-agent': 'HostamarStorefront/1.0 (Vercel SSR)', ...(init?.json ? { 'Content-Type': 'application/json' } : {}) },
     body: init?.json ? JSON.stringify(init.json) : undefined,
     signal: AbortSignal.timeout(25_000),
   })
