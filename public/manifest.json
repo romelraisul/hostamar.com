@@ -4,12 +4,17 @@
   "description": "Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE - All in one platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#3b82f6",
+  "background_color": "#FBF4E4",
+  "theme_color": "#0E7C3A",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "en",
-  "categories": ["business", "productivity", "entertainment", "developer tools"],
+  "lang": "bn",
+  "categories": [
+    "business",
+    "productivity",
+    "entertainment",
+    "developer tools"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",

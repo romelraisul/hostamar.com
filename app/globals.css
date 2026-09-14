@@ -448,3 +448,8 @@ body.bp-theme h1,body.bp-theme h2,body.bp-theme h3{letter-spacing:0}
 }
 
 
+
+/* bn: poster card chrome (border + hard shadow, no padding — for app surfaces) */
+.bp-card{background:var(--bp-card);border:2px solid var(--bp-ink);border-radius:14px;box-shadow:3px 3px 0 var(--bp-ink)}
+.bp-card-hover{transition:transform .25s var(--bp-ease),box-shadow .25s var(--bp-ease)}
+.bp-card-hover:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--bp-ink)}
