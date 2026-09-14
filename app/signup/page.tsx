@@ -144,13 +144,18 @@ export default function SignupPage() {
       // SameSite=Strict) — no client-side persistence at all.
       try{ localStorage.removeItem('hostamar_ref') }catch{}
       await signIn('credentials', { email, password, redirect: false })
-      // FORGE: preserve checkout intent — a visitor who hit "Continue to
-      // payment" while anonymous lands on /signup?intent=checkout (see
-      // components/CheckoutButton.tsx 401 branch). After auto-login, go
-      // straight to the payment page instead of the dashboard.
+      // FORGE: preserve checkout intent across signup — visitors arriving
+      // from /pricing CTAs (?plan=starter) or the checkout modal
+      // (?intent=checkout, see components/CheckoutButton.tsx 401 branch) go
+      // straight to the payment page with their plan pre-selected instead of
+      // losing the choice on /dashboard.
       try {
-        const intent = new URLSearchParams(window.location.search).get('intent')
-        if (intent === 'checkout') { router.push('/dashboard/payment'); return }
+        const sp = new URLSearchParams(window.location.search)
+        const plan = ['starter', 'pro', 'business'].includes(sp.get('plan') || '') ? sp.get('plan') : ''
+        if (sp.get('intent') === 'checkout' || plan) {
+          router.push(plan ? `/dashboard/payment?plan=${plan}` : '/dashboard/payment')
+          return
+        }
       } catch {}
       router.push('/dashboard')
     } catch {

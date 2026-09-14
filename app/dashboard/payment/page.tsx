@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Phone, CreditCard, AlertCircle, Loader2, ArrowLeft, Shield, Copy, CheckCircle2, XCircle, Clock, Send, Wallet, Smartphone, Banknote } from 'lucide-react';
 import NextImage from 'next/image';
@@ -50,6 +50,14 @@ export default function PaymentPage() {
   const [copied, setCopied] = useState(false);
 
   const isPhoneMethod = selectedMethod === 'bkash' || selectedMethod === 'nagad' || selectedMethod === 'rocket';
+
+  // FORGE: honor ?plan= carried over from /pricing → /signup → here so the
+  // buyer's plan choice survives the login wall (one less re-click).
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const p = sp.get('plan') as Plan | null
+    if (p && p in PLANS) setSelectedPlan(p)
+  }, [])
 
   const handleCreatePayment = async () => {
     if (!selectedPlan || !selectedMethod) return;
