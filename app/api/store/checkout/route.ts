@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: any) {
     console.error('[store/checkout]', e?.message)
-    // FORGE debug: msg visible until first prod 200, then tighten (guardrail: no secret leak — e.message has none)
-    return NextResponse.json({ error: 'Checkout unavailable.', detail: String(e?.message).slice(0, 300) }, { status: 502 })
+    // FORGE debug: 200+detail so Cloudflare does not swallow the body; REVERT to 502 after root-cause.
+    return NextResponse.json({ error: 'debug', detail: String(e?.message).slice(0, 260) })
   }
 }
