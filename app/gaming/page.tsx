@@ -51,7 +51,7 @@ export default function App() {
   const rollDice = () => setDice(Math.floor(Math.random()*6)+1);
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 selection:bg-[#0E7C3A]/20 overflow-x-hidden">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917] selection:bg-[#0E7C3A]/20 overflow-x-hidden bp-theme">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
         h1,h2,h3,.bangla { font-family: "Hind Siliguri", system-ui, sans-serif; }
