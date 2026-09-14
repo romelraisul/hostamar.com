@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { Search, ChevronDown, MessageCircle, Mail, Phone, Clock } from 'lucide-react'
 import { FAQS, FAQ_CATS, type FaqCat } from '@/lib/faqs'
 
+const CATS = FAQ_CATS
+
 const WHATSAPP = 'https://wa.me/8801822417463?text=হ্যাঁ,%20আমি%20সাহায্য%20চাই'
 const EMAIL = 'mailto:support@hostamar.com'
 const CALL = 'tel:+880****7463'
