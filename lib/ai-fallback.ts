@@ -59,7 +59,7 @@ export async function callBestModel(
 
   // ── V26 wall-clock budget ────────────────────────────────────────────────
   const CHAIN_BUDGET_MS = Number(process.env.AI_CHAIN_BUDGET_MS || 42_000);
-  const PER_ATTEMPT_CAP_MS = 30_000;
+  const PER_ATTEMPT_CAP_MS = 18_000; // ECHO 22:2x: 30s let one slow kilocode attempt eat 71% of the 42s chain -> edge (needs 16s worst-case: 8s+8s internal) got killed -> 3rd FALLBACK today. 18s covers edge worst-case, leaves 24s for rest.
   const chainStart = Date.now();
   const remainingMs = () => CHAIN_BUDGET_MS - (Date.now() - chainStart);
   const attemptTimeoutMs = () => Math.max(3_000, Math.min(PER_ATTEMPT_CAP_MS, remainingMs()));
