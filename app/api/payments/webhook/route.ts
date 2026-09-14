@@ -279,11 +279,14 @@ async function activateSubscription(
   gateway: string,
 ) {
   const planKey = (payment.planName || 'starter').toLowerCase()
-  const planMap: Record<string, { plan: string; videos: number; storage: number; price: number }> = {
-    starter:  { plan: 'STARTER',  videos: 20,  storage: 10,  price: 500  },
-    growth:   { plan: 'GROWTH',   videos: 30,  storage: 50,  price: 2000 },
-    pro:      { plan: 'PRO',      videos: 999, storage: 100, price: 3500 },
-    business: { plan: 'BUSINESS', videos: 999, storage: 500, price: 5000 },
+  // V-price-unification: subscription.price records payment.amount (what was
+  // actually paid) — the old hardcoded 500/2000/3500/5000 table contradicted
+  // checkout (599/1299/2999). Provisioning quotas unchanged.
+  const planMap: Record<string, { plan: string; videos: number; storage: number }> = {
+    starter:  { plan: 'STARTER',  videos: 20,  storage: 10  },
+    growth:   { plan: 'GROWTH',   videos: 30,  storage: 50  },
+    pro:      { plan: 'PRO',      videos: 999, storage: 100 },
+    business: { plan: 'BUSINESS', videos: 999, storage: 500 },
   }
   const planInfo = planMap[planKey] || planMap['starter']
 
@@ -294,7 +297,7 @@ async function activateSubscription(
       status: 'active',
       videosPerMonth: planInfo.videos,
       storageGB: planInfo.storage,
-      price: planInfo.price,
+      price: payment.amount,
       nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },
     create: {
@@ -303,7 +306,7 @@ async function activateSubscription(
       status: 'active',
       videosPerMonth: planInfo.videos,
       storageGB: planInfo.storage,
-      price: planInfo.price,
+      price: payment.amount,
       currency: 'BDT',
       billingCycle: 'monthly',
       nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),

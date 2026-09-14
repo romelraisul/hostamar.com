@@ -37,7 +37,7 @@ export const PRODUCTS: Product[] = [
     taglineBn: 'একটা প্রম্পট দিন, ৯০ সেকেন্ডে ভিডিও পান',
     taglineEn: 'One prompt → 90-second finished video',
     description:
-      'বাংলায় স্ক্রিপ্ট + ভয়েস + ক্যাপশন — সব অটো। ফ্রিল্যান্স এডিটরের চেয়ে ৭০% সস্তায়। মাসে ১০টা ভিডিও মাত্র ৳২,০০০।',
+      'বাংলায় স্ক্রিপ্ট + ভয়েস + ক্যাপশন — সব অটো। ফ্রিল্যান্স এডিটরের চেয়ে ৭০% সস্তায়। Starter ৳৫৯৯/মাস (lib/pricing.ts)।',
     features: [
       'বাংলা স্ক্রিপ্ট থেকে ভিডিও পর্যন্ত ফুল-অটো',
       '৪K export, watermark ছাড়া',
@@ -58,7 +58,7 @@ export const PRODUCTS: Product[] = [
       '৫০+ রেডিমেড বাংলা ভিডিও টেমপ্লেট — Q3 2026',
     ],
     competitorGap:
-      'বাংলাদেশে AI Video প্ল্যাটফর্ম — Runway/Sora ২০$/মাসের বিপরীতে মাত্র ৳২,০০০/মাস।',
+      'বাংলাদেশে AI Video প্ল্যাটফর্ম — Runway/Sora ২০$/মাসের বিপরীতে মাত্র ৳৫৯৯/মাস (Starter, lib/pricing.ts)।',
     demoUrl: '/generate',
   },
   {

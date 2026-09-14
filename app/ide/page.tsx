@@ -19,7 +19,7 @@ import {
 const GREEN = '#0E7C3A'
 
 // All facts grounded in repo: app/dev/page.tsx (Monaco, Pyodide pandas/numpy/
-// matplotlib, hostamar.dev free subdomain+SSL, Team Live Share, Starter ৳2000
+// matplotlib, hostamar.dev free subdomain+SSL, Team Live Share, Starter ৳599
 // includes IDE), app/features/page.tsx (Monaco/Pyodide/one-click hostamar.dev),
 // hosting/about (BDIX 20ms). CTA -> /generate + hostamar.dev (real), not an
 // invented ide.hostamar.com subdomain.
@@ -218,7 +218,7 @@ export default function IDEPage() {
             <div>
               <h3 className="text-[20px] font-bold">দাম</h3>
               <p className="bangla text-[14px] text-zinc-300 mt-1 leading-[1.6]">
-                Free: 1GB / ২ প্রজেক্ট · Starter ৳2000: unlimited + 20GB hosting + IDE।
+                Free: 1GB / ২ প্রজেক্ট · Starter ৳599: unlimited + 20GB hosting + IDE।
                 <br />
                 একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট।
               </p>

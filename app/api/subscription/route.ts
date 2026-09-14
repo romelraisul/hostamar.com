@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
         { status: 402 }
       )
     }
+    // V-price-unification: record the amount actually paid (authoritative),
+    // never a hardcoded plan table.
+    const paidAmount: number = (verifiedTxn?.amount ?? verifiedPayment?.amount ?? 0) as number
 
     const limits = {
       STARTER: { videoLimit: 10, quality: '1080p', watermark: false },
@@ -74,7 +77,7 @@ export async function POST(req: NextRequest) {
         status: 'ACTIVE',
         videosPerMonth: planLimits.videoLimit,
         storageGB: planKey === 'ENTERPRISE' ? 100 : planKey === 'BUSINESS' ? 50 : 10,
-        price: planKey === 'STARTER' ? 2000 : planKey === 'BUSINESS' ? 3500 : 6000,
+        price: paidAmount,
         currency: 'BDT',
         billingCycle: 'monthly',
         nextBillingDate: endDate,
@@ -92,7 +95,7 @@ export async function POST(req: NextRequest) {
       data: {
         customerId: user.id,
         plan: planKey,
-        amount: planKey === 'STARTER' ? 2000 : planKey === 'BUSINESS' ? 3500 : 6000,
+        amount: paidAmount,
         currency: 'BDT',
         status: 'completed',
       }

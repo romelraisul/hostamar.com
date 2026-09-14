@@ -74,7 +74,7 @@ export default function SubscriptionPage() {
     {
       id: 'starter',
       name: 'Starter',
-      price: '৳2,000',
+      price: '৳599',
       period: '/month',
       features: ['20 videos/month', '1080p quality', '10 templates', 'Priority support'],
       current: subscription?.currentPlan === 'STARTER',
@@ -83,19 +83,21 @@ export default function SubscriptionPage() {
     {
       id: 'business',
       name: 'Business',
-      price: '৳3,500',
+      price: '৳2,999',
       period: '/month',
       features: ['Unlimited videos', '4K quality', 'All templates', 'API access', 'Custom branding'],
       current: subscription?.currentPlan === 'BUSINESS',
       popular: false
     },
     {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: '৳6,000',
+      // Enterprise removed 2026-09-14: no checkout path sells it and its old
+      // ৳6,000 price had no authoritative source (audit: pricing contradiction).
+      id: 'pro',
+      name: 'Pro',
+      price: '৳1,299',
       period: '/month',
-      features: ['Unlimited videos', '4K quality', 'All features', '24/7 support', 'We post for you'],
-      current: subscription?.currentPlan === 'ENTERPRISE',
+      features: ['30 videos/month', '4K quality', '50GB NVMe hosting', 'API access', 'Priority support'],
+      current: subscription?.currentPlan === 'PRO',
       popular: false
     }
   ]

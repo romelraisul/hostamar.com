@@ -11,8 +11,8 @@ const GREEN = "#0E7C3A";
 const RED = "#F59E0B";
 
 // Homepage structured data — Product + real Offers (mirrors app/pricing) + FAQPage.
-// No AggregateRating: we surface the 4.8★ badge as a UI trust mark only, not as
-// unbacked schema.org review data.
+// No AggregateRating anywhere: the old 4.8/500-review data was unverifiable and
+// was removed in the 2026-09-14 honesty pass (UI badges too).
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 const homeJsonLd = {
   '@context': 'https://schema.org',
@@ -21,11 +21,11 @@ const homeJsonLd = {
   description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক সাবস্ক্রিপশনে।',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
-    { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Business', price: '3500', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Enterprise', price: '6000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-  ],
-  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '2000', highPrice: '6000', priceCurrency: 'BDT' },
+    { '@type': 'Offer', name: 'Starter', price: '599', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Pro', price: '1299', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Business', price: '2999', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+      ],
+  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '599', highPrice: '2999', priceCurrency: 'BDT' },
   mainEntity: FAQS.slice(0, 6).map((f) => ({
     '@type': 'Question',
     name: f.q,
@@ -74,7 +74,7 @@ export default function App() {
         <section className="mt-8 rounded-[24px] border border-zinc-200 bg-white overflow-hidden">
           <div className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3 bg-[#F8FAFC] border-b border-zinc-200">
             <span className="text-sm font-bold">☁️ BDIX হোস্টিং — 5GB ফ্রি • 20ms Dhaka PoP • 99.9% SLA</span>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-[#2563EB] text-white font-semibold">HostSeba ৳2220/yr No AI vs Hostamar ৳2000/yr AI সহ</span>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-[#2563EB] text-white font-semibold">HostSeba: No AI vs Hostamar: AI সহ — bKash/Nagad</span>
           </div>
           <div className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm text-zinc-600">bKash • Nagad • Rocket — অটো পেমেন্ট • LiteSpeed + LSCache + JetBackup</span>
@@ -86,13 +86,13 @@ export default function App() {
         {/* 10% Tools — Chat + IDE only */}
         <section className="mt-4 grid sm:grid-cols-2 gap-4">
           <a href="/chat" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
-            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳1000/mo early bundle</div>
+            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳0 দিয়ে শুরু — ফ্রি ক্রেডিট</div>
             <div className="mt-1 font-bold">💬 AI চ্যাট — ৳0 100msg/day</div>
             <video src="/api/showcase/3/video" className="mt-2 w-full h-24 object-cover rounded-xl border border-[#0E7C3A]/20" muted loop playsInline />
             <div className="text-sm text-zinc-600 mt-1">বাংলা ভয়েস ইনপুট • Messenger till 11pm • SupportWidget live</div>
           </a>
           <a href="/dev" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
-            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳1000/mo early bundle</div>
+            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳0 দিয়ে শুরু — ফ্রি ক্রেডিট</div>
             <div className="mt-1 font-bold">🧑‍💻 Dev IDE — ৳0</div>
             <div className="text-sm text-zinc-600 mt-1">Replit $25 vs Hostamar ৳0 • Live editor • /studio</div>
           </a>
@@ -254,8 +254,8 @@ export default function App() {
                   <span className="text-[11px] font-medium text-zinc-500">SME দের পছন্দ</span>
                 </div>
                 <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-[36px] font-bold tracking-tight">৳2,000</span><span className="text-zinc-500 text-[13px]">/মাস</span>
-                  <span className="ml-2 text-[12px] line-through text-zinc-500">৳2,800</span>
+                  <span className="text-[36px] font-bold tracking-tight">৳599</span><span className="text-zinc-500 text-[13px]">/মাস</span>
+                  
                 </div>
                 <ul className="mt-6 space-y-2.5 text-[13px]">
                   {["১০টি ভিডিও / মাস","৫GB হোস্টিং ফ্রি","Chat Pro + ভয়েস","Browser + IDE অ্যাক্সেস","1080p, No watermark","bKash অটো-রিনিউ"].map(f=>(
@@ -273,7 +273,7 @@ export default function App() {
                 <h3 className="font-semibold">Business</h3>
                 <span className="text-[11px] px-2 py-1 rounded-full bg-white/10 border border-white/10">এজেন্সি</span>
               </div>
-              <div className="mt-4 flex items-baseline gap-1"><span className="text-[36px] font-bold tracking-tight">৳3,500</span><span className="text-white/50 text-[13px]">/মাস</span></div>
+              <div className="mt-4 flex items-baseline gap-1"><span className="text-[36px] font-bold tracking-tight">৳2,999</span><span className="text-white/50 text-[13px]">/মাস</span></div>
               <ul className="mt-6 space-y-2.5 text-[13px] text-white/70">
                 {["৩০টি ভিডিও / মাস","২০GB হোস্টিং ফ্রি","সব প্রোডাক্ট আনলিমিটেড","Game টুর্নামেন্ট হোস্টিং","4K এক্সপোর্ট + API","টিম ৫ জন + প্রায়োরিটি সাপোর্ট"].map(f=><li key={f} className="flex gap-2"><span className="text-white/30">—</span><span className="bangla">{f}</span></li>)}
               </ul>
