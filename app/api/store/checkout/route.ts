@@ -88,63 +88,65 @@ export async function POST(req: NextRequest) {
     if (!order?.id) throw new Error(out.type === 'state' ? 'cart requires payment capture retry' : 'no order returned')
     const amountBdt = Math.round((order.total ?? cart.total ?? 0) / 100)
 
-    // FORGE: the /store dialog claims "রসিদ আপনার ইমেইলে পাঠানো হয়েছে" — until now
-    // that was false: Medusa's notification-local only records a DB row, NO email is
-    // ever sent. Real receipt goes out from here (Vercel has SMTP_* + nodemailer
-    // already wired in lib/email.ts). Never fails the order — 5s cap, fire + report.
-    let receiptSent = false
-    try {
-      const { sendSystemAlertEmail } = await import('@/lib/email')
-      const r: any = await Promise.race([
-        sendSystemAlertEmail(email, name,
-          `অর্ডার #${order.display_id ?? order.id.slice(-6)} গৃহীত — Send Money দিন`,
-          `ধন্যবাদ ${name}!<br><br>` +
-          `আপনার অর্ডার: <b>${order.id}</b><br>` +
-          `পরিমাণ: <b>৳${amountBdt.toLocaleString('en-BD')}</b><br><br>` +
-          `এখন <b>Send Money</b> (Cash Out নয়): bKash/Nagad/Rocket <b>01822417463</b> — এই নাম্বারে ঠিক ৳${amountBdt.toLocaleString('en-BD')} পাঠান।<br><br>` +
-          `পাঠানোর পর <b>TrxID সহ এই ইমেইলে রিপ্লাই দিন</b> (অর্ডার আইডি উল্লেখ রাখবেন) — তাহলেই কাজ শুরু।`),
-        new Promise((res) => setTimeout(() => res({ success: false, error: 'send-timeout' }), 3000)),
-      ])
-      receiptSent = !!r?.success
-      if (!receiptSent) console.warn('[store/checkout] receipt not sent:', r?.error)
-    } catch (e: any) {
-      console.warn('[store/checkout] receipt error:', e?.message)
-    }
-
+    // FORGE: post-order side effects = receipt email (honest dialog), instant
+    // Telegram owner-ping (lib/surveillance-alert ladder, zero new creds), and
+    // Neon Lead mirror (source store-checkout → CRM/HARBOR sees the buyer).
+    // 09-15 03:25: these three ran SEQUENTIALLY — prod checkout measured 7.9s
+    // with the buyer watching a spinner AFTER the order already existed.
+    // They share no state → run concurrently, each self-capped, each swallowing
+    // its own errors: a side effect can never fail a paid order.
     const item: any = order.items?.[0]
     const title = item?.variant?.product?.title || item?.title || variant_id
-    // FORGE 09-15: instant Telegram ping to owner on every new order — on the manual
-    // send-money path the owner's reply speed IS the conversion rate, and until now an
-    // order was silent until someone opened admin. Reuses lib/surveillance-alert's
-    // proven delivery ladder (rung 1 surveillance-bot live-verified in prod 09-14) =
-    // zero new credentials. 6s cap, can never fail the order.
-    try {
-      const { sendSurveillanceAlert } = await import('@/lib/surveillance-alert')
-      await Promise.race([
-        sendSurveillanceAlert(`🛒 ORDER #${order.display_id ?? order.id.slice(-6)} — ${title} ৳${amountBdt} | ${name} | ${phone || 'no phone'} | ${email} | ${order.id}`),
-        new Promise((res) => setTimeout(res, 6000)),
-      ])
-    } catch { /* owner ping is best-effort; order already exists */ }
 
-    // FORGE 09-15: mirror the buyer into Neon Lead (source: store-checkout) so the
-    // paying-customer pipeline (HARBOR outreach, CRM views, /admin leads) sees orders
-    // without scraping Telegram. Best-effort: prisma is optional-deps-safe here;
-    // a lead-mirror failure must NEVER fail a paid order.
-    try {
-      const { prisma } = await import('@/lib/prisma')
-      await prisma.lead.create({
-        data: {
-          name,
-          email,
-          phone: phone || null,
-          source: 'store-checkout',
-          status: 'new',
-          score: 50, // an order = hottest lead tier
-          tags: `order:${order.id};৳${amountBdt}`,
-          notes: `Ordered from /store: ${title} — ৳${amountBdt}. Medusa order ${order.id}.`,
-        },
-      }).catch((e: any) => console.warn('[store/checkout] lead mirror:', e?.message?.slice(0, 120)))
-    } catch { /* prisma not configured — orders still fine */ }
+    const [receiptSent] = await Promise.all([
+      (async () => {
+        try {
+          const { sendSystemAlertEmail } = await import('@/lib/email')
+          const r: any = await Promise.race([
+            sendSystemAlertEmail(email, name,
+              `অর্ডার #${order.display_id ?? order.id.slice(-6)} গৃহীত — Send Money দিন`,
+              `ধন্যবাদ ${name}!<br><br>` +
+              `আপনার অর্ডার: <b>${order.id}</b><br>` +
+              `পরিমাণ: <b>৳${amountBdt.toLocaleString('en-BD')}</b><br><br>` +
+              `এখন <b>Send Money</b> (Cash Out নয়): bKash/Nagad/Rocket <b>01822417463</b> — এই নাম্বারে ঠিক ৳${amountBdt.toLocaleString('en-BD')} পাঠান।<br><br>` +
+              `পাঠানোর পর <b>TrxID সহ এই ইমেইলে রিপ্লাই দিন</b> (অর্ডার আইডি উল্লেখ রাখবেন) — তাহলেই কাজ শুরু।`),
+            new Promise((res) => setTimeout(() => res({ success: false, error: 'send-timeout' }), 3000)),
+          ])
+          const ok = !!r?.success
+          if (!ok) console.warn('[store/checkout] receipt not sent:', r?.error)
+          return ok
+        } catch (e: any) {
+          console.warn('[store/checkout] receipt error:', e?.message)
+          return false
+        }
+      })(),
+      (async () => {
+        try {
+          const { sendSurveillanceAlert } = await import('@/lib/surveillance-alert')
+          await Promise.race([
+            sendSurveillanceAlert(`🛒 ORDER #${order.display_id ?? order.id.slice(-6)} — ${title} ৳${amountBdt} | ${name} | ${phone || 'no phone'} | ${email} | ${order.id}`),
+            new Promise((res) => setTimeout(res, 6000)),
+          ])
+        } catch { /* owner ping is best-effort; order already exists */ }
+      })(),
+      (async () => {
+        try {
+          const { prisma } = await import('@/lib/prisma')
+          await prisma.lead.create({
+            data: {
+              name,
+              email,
+              phone: phone || null,
+              source: 'store-checkout',
+              status: 'new',
+              score: 50, // an order = hottest lead tier
+              tags: `order:${order.id};৳${amountBdt}`,
+              notes: `Ordered from /store: ${title} — ৳${amountBdt}. Medusa order ${order.id}.`,
+            },
+          })
+        } catch (e: any) { console.warn('[store/checkout] lead mirror:', e?.message?.slice(0, 120)) }
+      })(),
+    ])
 
     return NextResponse.json({
       orderId: order.id,
