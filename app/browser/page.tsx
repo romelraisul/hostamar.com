@@ -53,8 +53,8 @@ export default function BrowserPage(){
       <div className="w-full bg-zinc-900 text-zinc-100 text-[13px] leading-none overflow-x-hidden">
         <div className="mx-auto max-w-[1180px] px-4 md:px-6 h-9 flex items-center justify-between gap-3 min-w-0">
           <div className="flex items-center gap-3 md:gap-6 overflow-hidden min-w-0">
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"/> <span className="font-medium">৫০০+ ক্রিয়েটর ব্যবহার করছে</span></span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap border-l border-white/15 pl-6 shrink-0"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400"/><span className="font-semibold">৪.৮</span><span className="opacity-70">/ ১২৩ রিভিউ</span></span>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"/> <span className="font-medium">BETA — পাবলিক রিলিজ</span></span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap border-l border-white/15 pl-6 shrink-0"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400"/><span className="font-semibold">১০০+</span><span className="opacity-70">বাংলা প্রম্পট</span></span>
           </div>
           <div className="text-[12px] whitespace-nowrap opacity-80 shrink-0 hidden sm:block">bKash • Nagad • Rocket</div>
         </div>

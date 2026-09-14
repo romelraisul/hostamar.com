@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { callBestModel } from '@/lib/ai-fallback'
+import { streamChatCompletion } from '@/lib/ai-stream'
+import { recordSurveillance } from '@/lib/surveillance'
 import { getAuthUser } from '@/lib/auth'
 import { deductCredits } from '@/lib/credits'
 import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
@@ -8,25 +10,10 @@ import prisma from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 55
 
-/**
- * POST /api/v1/chat/completions — PUBLIC OpenAI-compatible endpoint.
- * Same-domain customer base URL (works with OPENAI_BASE_URL=https://hostamar.com/api/v1
- * for codex/claude/hermes CLIs and the dashboard chat) — serverless, always-on:
- * runs the lib/ai-fallback.ts unlimited chain (vercel-gateway → litellm →
- * nvidia → groq → openrouter → knowledge-base), NOT the home-VPS tunnel.
- *
- * Auth model:
- *  - No auth → allowed (rate-limited naturally by the free fallback chain),
- *    no credit deduction (public support tier).
- *  - Authed customer (cookie or Bearer JWT) → credit spend: 1 credit per
- *    request min, plus usage-based (total_tokens/1000, min 1) via deductCredits,
- *    with CreditTransaction audit row and INSUFFICIENT → 402 + bKash link.
- */
 const SYSTEM_PROMPT =
   'You are Hostamar AI — an assistant for Bangladeshi businesses. Reply in Bangla or English matching the user. Hostamar offers 50+ AI services (video, logo, ads, social), 6000 FREE credits, bKash personal payment 01822417463, plans Starter ৳599 / Pro ৳1299 / Business ৳2999. Be concise and helpful.'
 
 export async function POST(req: NextRequest) {
-  // RATE LIMIT (audit HIGH fix): 100 req/min/IP zero-cost in-process window.
   const rl = slidingWindow(`chat:${getClientIpEdge(req)}`, 100, 60_000)
   if (!rl.ok) {
     return NextResponse.json(
@@ -42,14 +29,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { message: 'Invalid JSON', code: 400 } }, { status: 400 })
   }
 
+  // V100: keep tool-flow messages — an assistant turn carrying tool_calls has
+  // content:null and tool results arrive as role:'tool'; dropping either
+  // breaks the agentic loop on the second request of a tool round-trip.
   const messages: Array<{ role: string; content: string }> = Array.isArray(body.messages)
-    ? body.messages.filter((m: any) => m?.content)
+    ? body.messages.filter((m: any) => m?.content || m?.tool_calls || m?.role === 'tool')
     : []
   if (!messages.length) {
     return NextResponse.json({ error: { message: 'messages[] required', code: 400 } }, { status: 400 })
   }
 
-  // Optional auth — public works, authed users get credit accounting
   let authUser: any = null
   try {
     authUser = await getAuthUser(req)
@@ -57,20 +46,52 @@ export async function POST(req: NextRequest) {
     authUser = null
   }
 
-  // FULL FREE (v11): chat is free for everyone — no pre-spend check, no 402,
-  // balance never changes.
+  // V100: agentic (OpenAI tools) passthrough — forwarded verbatim into the
+  // upstream chain. Anonymous callers stay freemium (capped to 600 max_tokens
+  // in the chain); rate limit / auth / credits / surveillance all unchanged.
+  const toolsPayload =
+    Array.isArray(body.tools) && body.tools.length
+      ? {
+          tools: body.tools,
+          ...(body.tool_choice !== undefined ? { tool_choice: body.tool_choice } : {}),
+          ...(body.parallel_tool_calls !== undefined ? { parallel_tool_calls: body.parallel_tool_calls } : {}),
+          anonymous: !authUser,
+        }
+      : undefined
 
-  const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined)
+  // V62: true SSE streaming — OpenAI clients that ask for stream:true get real
+  // `data:` frames with finish_reason and [DONE]; the buffered path below is
+  // untouched for non-streaming callers.
+  if (body.stream === true) {
+    return streamChatCompletion(body, authUser)
+  }
 
-  // PAID TOKEN BILLING (V12): market price per model + real token counts.
-  // 1cr = 1TK = 1 future HOST coin. Race-safe deduct via lib/credits.
+  // V36.48: support ?debug=1 to return full chain trace
+  const debug = new URL(req.url).searchParams.get('debug') === '1';
+  const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined, debug, toolsPayload);
+
+  // V100: when the upstream answered with tool_calls, meter the serialized
+  // arguments as completion tokens (same length/4 metering as today).
+  const toolCalls = result.message?.tool_calls
+  const completionText: string = result.text || (toolCalls?.length ? JSON.stringify(toolCalls) : '')
+
+  // V65 Layer 5: sampled abuse/distillation logging (never breaks chat).
+  await recordSurveillance({
+    clientIp: getClientIpEdge(req),
+    userAgent: req.headers.get('user-agent'),
+    userId: authUser?.id || null,
+    model: result.model,
+    prompt: String(messages[messages.length - 1]?.content || ''),
+    responseLen: result.text?.length || 0,
+  }).catch(() => null);
+
   let usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
   let creditsCharged = 0
   let creditsRemaining: number | null = null
   let pricing: any = null
   if (authUser) {
     const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
-    const completionTokens = Math.ceil((result.text?.length || 0) / 4)
+    const completionTokens = Math.ceil(completionText.length / 4)
     const totalTokens = promptTokens + completionTokens
     usage = { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: totalTokens }
 
@@ -83,17 +104,26 @@ export async function POST(req: NextRequest) {
       creditsCharged = credits
       creditsRemaining = (spend as any).creditsRemaining
     } else if (spend && (spend as any).error === 'INSUFFICIENT_CREDITS') {
-      // Deliver the answer but flag the balance (never silently lose a reply)
       creditsCharged = 0
       creditsRemaining = (spend as any).balance ?? null
     }
   } else {
     const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
-    const completionTokens = Math.ceil((result.text?.length || 0) / 4)
+    const completionTokens = Math.ceil(completionText.length / 4)
     usage = { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: promptTokens + completionTokens }
   }
 
-  return NextResponse.json({
+  // V36.47 DEBUG: Add provider header so we can see which provider actually answered
+  const headers: Record<string, string> = {
+    'X-AI-Provider': result.provider,
+    'X-AI-Model': result.model,
+    'Cache-Control': 'no-store', // V36.48: prevent caching causing header/body mismatch
+  }
+  if (result.provider === 'knowledge-base-fallback') {
+    headers['X-AI-Fallback-Reason'] = 'all-providers-failed';
+  }
+
+  const response: any = {
     id: `chatcmpl-${Date.now().toString(36)}`,
     object: 'chat.completion',
     created: Math.floor(Date.now() / 1000),
@@ -102,22 +132,33 @@ export async function POST(req: NextRequest) {
     choices: [
       {
         index: 0,
-        message: { role: 'assistant', content: result.text },
-        finish_reason: 'stop',
+        // V100: upstream tool_calls answer → relay the assistant message
+        // VERBATIM (content stays null/empty) with finish_reason "tool_calls";
+        // never synthesize plain content over a tool call.
+        message: toolCalls?.length ? result.message : { role: 'assistant', content: result.text },
+        finish_reason: toolCalls?.length ? 'tool_calls' : 'stop',
       },
     ],
     usage,
     credits: authUser ? { charged: creditsCharged, remaining: creditsRemaining } : undefined,
     pricing: authUser ? pricing : undefined,
     ok: true,
-  })
+  };
+
+  // V36.48: when ?debug=1, include full chain trace in response body
+  if (debug && result.trace) {
+    response.trace = result.trace;
+    response.debug = true;
+  }
+
+  return NextResponse.json(response, { headers });
 }
 
 export async function GET() {
   return NextResponse.json({
     ok: true,
     endpoint: '/api/v1/chat/completions',
-    usage: 'POST {model, messages[], max_tokens} — OpenAI compatible',
+    usage: 'POST {model, messages[], max_tokens, tools?, tool_choice?, stream?} — OpenAI compatible. Add &debug=1 for full chain trace.',
     auth: 'optional — public works, authed users get credit accounting',
   })
 }

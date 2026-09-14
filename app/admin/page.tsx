@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 // ── helpers ──────────────────────────────────────────────────────────
-const TABS = ['overview','users','credits','transactions','models','products','hosting'] as const
+const TABS = ['overview','users','credits','transactions','models','fleet','second-brain','guard','drive','products','hosting'] as const
 type Tab = typeof TABS[number]
 
 function fmt(n: number | undefined | null) { return (n ?? 0).toLocaleString() }
@@ -391,10 +391,44 @@ function ModelsTab() {
     opencode: { label: 'OpenCode Zen', model: 'hy3-free', color: '#A78BFA' },
   }
 
+  // CEO TokenRouter tiers — routing brain (local-wsl → kaggle → edge → zoo)
+  const [router, setRouter] = useState<any>(null)
+  useEffect(() => {
+    jfetch('/api/models/health').then(setRouter).catch(() => setRouter(null))
+    const t = setInterval(() => { if (!document.hidden) jfetch('/api/models/health').then(setRouter).catch(()=>{}) }, 15000)
+    return () => clearInterval(t)
+  }, [])
+  const tierStyle: Record<string,string> = {
+    'up': 'border-[#10B981]/40 bg-[#0E7C3A]/10',
+    'booting': 'border-amber-500/40 bg-amber-500/10',
+    'planned': 'border-zinc-800 bg-zinc-900/40',
+    'down': 'border-red-500/40 bg-red-500/10',
+  }
+
+  // Kaggle On-Demand (Vercel-style) — IDLE=COMPLETE=0 GPU hours
+  const [kg, setKg] = useState<any>(null)
+  const [kgBusy, setKgBusy] = useState<string | null>(null)
+  const loadKg = () => jfetch('/api/kaggle/status').then(setKg).catch(() => setKg(null))
+  useEffect(() => {
+    loadKg()
+    const t = setInterval(() => { if (!document.hidden) loadKg() }, 30000)
+    return () => clearInterval(t)
+  }, [])
+  const kgAction = async (notebook: string, action: 'start' | 'stop') => {
+    setKgBusy(notebook + ':' + action)
+    try {
+      const r = await fetch(`/api/kaggle/${action}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notebook }) })
+      if (r.status === 429) alert('কোটা গেট: ২৫h/30h ব্যবহৃত — START বন্ধ, Edge fallback এ যাও।')
+      loadKg()
+    } finally { setKgBusy(null) }
+  }
+  const kgStateDot: Record<string,string> = { IDLE: 'bg-zinc-600', RUNNING: 'bg-[#10B981] animate-pulse', STARTING: 'bg-amber-400 animate-pulse', STOPPING: 'bg-amber-400', ERROR: 'bg-red-500' }
+  const h = (s: number) => Math.round(s / 3600)
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div><h2 className="text-lg font-bold text-white">Models</h2><p className="text-xs text-zinc-500">GET /api/gateway/models · {gatewayUrl ? <code className="font-mono text-zinc-400">{gatewayUrl}</code> : 'gateway'}{lastUpdated && <span className="ml-2 text-zinc-600">· updated {lastUpdated.toLocaleTimeString()}</span>}</p></div>
+        <div><h2 className="text-lg font-bold text-white">Models <span className="text-xs font-normal text-zinc-500">· CEO TokenRouter</span></h2><p className="text-xs text-zinc-500">GET /api/gateway/models · {gatewayUrl ? <code className="font-mono text-zinc-400">{gatewayUrl}</code> : 'gateway'}{lastUpdated && <span className="ml-2 text-zinc-600">· updated {lastUpdated.toLocaleTimeString()}</span>}</p></div>
         <div className="flex items-center gap-2">
           {source && <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${source==='live' ? 'bg-[#0E7C3A]/20 text-[#10B981] border-[#10B981]/30' : 'bg-amber-500/10 text-amber-300 border-amber-500/30'}`}>{source==='live' ? '● live' : '● offline (cached catalog)'}</span>}
           <button onClick={()=>{load(); loadAi()}} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
@@ -411,6 +445,82 @@ function ModelsTab() {
           <div className={`rounded-xl border p-3 flex items-center gap-3 ${ai.comfyui?.up ? 'bg-[#0E7C3A]/10 border-[#10B981]/30' : 'bg-red-500/10 border-red-500/30'}`}>
             <span className={`w-2.5 h-2.5 rounded-full ${ai.comfyui?.up ? 'bg-[#10B981] animate-pulse' : 'bg-red-500'}`}/>
             <div><div className="text-xs font-semibold text-white">ComfyUI {ai.comfyui?.up ? 'online' : 'offline'}</div><div className="text-[10px] text-zinc-500 font-mono">{ai.comfyui?.gpu ? `${ai.comfyui.gpu.vramFreeMB}/${ai.comfyui.gpu.vramTotalMB} MB VRAM free` : ai.comfyui?.url}</div></div>
+          </div>
+        </div>
+      )}
+
+      {/* Kaggle On-Demand — Vercel-style serverless GPUs (account safe) */}
+      {kg && (
+        <div className="rounded-2xl bg-black border border-[#38BDF8]/20 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-sm font-bold text-white">Kaggle On-Demand — অ্যাকাউন্ট সেফ মোড (Vercel-এর মতো)</div>
+              <div className="text-[11px] text-zinc-500">IDLE = COMPLETE = ০ GPU ঘণ্টা · দরকার হলে START · ১০ মিনিট idle → auto STOP · ২৫h/30h গেট</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-zinc-600 font-mono">GPU {h(kg.quota?.gpuUsedSec || 0)}h / {h(kg.quota?.gpuTotalSec || 30)}h</div>
+              <div className="h-1.5 w-28 rounded-full bg-zinc-800 mt-1 overflow-hidden">
+                <div className={`h-full rounded-full ${(kg.quota?.gpuUsedSec||0)/(kg.quota?.gpuTotalSec||1) > 25/30 ? 'bg-red-500' : 'bg-[#10B981]'}`} style={{ width: `${Math.min(100, ((kg.quota?.gpuUsedSec||0)/(kg.quota?.gpuTotalSec||1))*100)}%` }} />
+              </div>
+              {kg.quota?.startDisabled && <div className="text-[9px] text-red-400 mt-0.5">quota gate: START disabled</div>}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {(kg.notebooks || []).map((n: any) => (
+              <div key={n.notebook} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-zinc-500">{n.notebook}</span>
+                  <span className={`w-2 h-2 rounded-full ${kgStateDot[n.state] || 'bg-zinc-700'}`} />
+                </div>
+                <div className="text-[10px] mt-1 text-zinc-400 font-mono">{n.state}</div>
+                <div className="flex gap-1.5 mt-2">
+                  <button
+                    onClick={() => kgAction(n.notebook, 'start')}
+                    disabled={n.state !== 'IDLE' || kgBusy === `${n.notebook}:start` || kg.quota?.startDisabled}
+                    className="flex-1 rounded-lg bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:opacity-30 disabled:cursor-not-allowed text-white text-[10px] font-bold py-1.5"
+                  >{kgBusy === `${n.notebook}:start` ? '⏳' : '▶ START'}</button>
+                  <button
+                    onClick={() => kgAction(n.notebook, 'stop')}
+                    disabled={n.state === 'IDLE' || kgBusy === `${n.notebook}:stop`}
+                    className="flex-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed text-white text-[10px] font-bold py-1.5"
+                  >{kgBusy === `${n.notebook}:stop` ? '⏳' : '⏹ STOP'}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 text-[10px] text-zinc-600">
+            রুল: IDLE-এ COMPLETE স্টেট — ০ খরচ · request আসলে START (CreateKernelSession), max 8h30m পরে auto COMPLETE · 10m idle → CancelKernelSession (সত্যিকারের STOP, GPU তৎক্ষণাৎ মুক্ত) · Secrets শুধু Kaggle Secrets-এ · লগ-এ abuse দেখলে instant STOP।
+            Auto-start: local-wsl down হলে TokenRouter qwen27b backup on-demand চালু করবে।
+          </div>
+        </div>
+      )}
+
+      {/* CEO TokenRouter — tier routing table */}
+      {router && (
+        <div className="rounded-2xl bg-black border border-[#38BDF8]/20 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-sm font-bold text-white">TokenRouter — CEO রাউটিং ব্রেইন</div>
+              <div className="text-[11px] text-zinc-500">lib/tokenrouter.ts · অগ্রাধিকার: local-wsl → kaggle → edge → zoo · 15s polling /api/models/health</div>
+            </div>
+            <div className="text-[10px] text-zinc-600 font-mono">{router.summary?.up}/{router.summary?.total} tier up</div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            {(router.tiers || []).map((t: any, i: number) => (
+              <div key={t.model} className={`rounded-xl border p-3 ${tierStyle[t.status] || tierStyle.planned}`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-zinc-600">#{i+1} {t.tier}</span>
+                  <span className={`w-2 h-2 rounded-full ${t.status==='up' ? 'bg-[#10B981] animate-pulse' : t.status==='booting' ? 'bg-amber-400 animate-pulse' : 'bg-zinc-700'}`}/>
+                </div>
+                <div className="text-xs font-bold text-white mt-1.5 font-mono truncate">{t.model}</div>
+                <div className="text-[10px] text-zinc-500 mt-1 font-mono">{t.url}</div>
+                <div className="text-[10px] mt-1 text-zinc-500">{t.creditCost === 0 ? '০ credit (local)' : `${t.creditCost} cr/1k tok`}</div>
+                {t.note && <div className="text-[10px] mt-1.5 text-zinc-600 leading-snug">{t.note}</div>}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 text-[10px] text-zinc-600">
+            Failover: auto — tier down হলে পরেরটা answer দেয়। Zoo (KiloCode→NVIDIA→TokenRouter→OpenCode) PC off-এও চলে। Credit mapping: DB catalog = দামের সত্য, এই টেবিল = রাউটিং সত্য।
           </div>
         </div>
       )}
@@ -493,6 +603,283 @@ function ProductsTab() {
 }
 
 // ── Hosting ──────────────────────────────────────────────────────────
+// ── V50 Fleet tab — AI employees: reports + chat + storage stream ────
+const FLEET_META: Record<string, { lane: string; color: string }> = {
+  Atlas: { lane: 'Hosting — 7 containers, site, uploader, disks', color: '#10B981' },
+  Echo: { lane: 'Chat/AI — Brain :4000 15 models, tunnels, ComfyUI', color: '#38BDF8' },
+  Reel: { lane: 'Video — renders, ComfyUI 384×216 recipe, ffprobe', color: '#A78BFA' },
+  Bazaar: { lane: 'Store — Medusa 116 products, catalog', color: '#F59E0B' },
+  Quill: { lane: 'Content/TV — HTTP media verify, playlist', color: '#EC4899' },
+  Sage: { lane: 'Second Brain — nightly synthesis, wiki + /ask', color: '#F43F5E' },
+}
+
+function FleetTab() {
+  const [fleet, setFleet] = useState<any>(null)
+  const [err, setErr] = useState('')
+  const [chatWith, setChatWith] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    try { setFleet(await jfetch('/api/admin/fleet?limit=10')) } catch (e: any) { setErr(e.message) }
+  }, [])
+  useEffect(() => { load() }, [load])
+  useLivePoll(load, 15000) // live stream: refresh reports + storage every 15s
+
+  const storage = fleet?.storage
+  const tb = storage ? (Number(storage.telegramBytes) / 1024**4) : 0
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-white">AI Employees <span className="text-xs text-normal text-zinc-500">· V48 fleet</span></h2>
+          <p className="text-xs text-zinc-500">GET /api/admin/fleet · reports from Hermes cron shifts · 15s live poll</p>
+        </div>
+        <button onClick={load} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
+      </div>
+      {err && <div className="text-xs text-red-400">{err}</div>}
+
+      {/* Storage strip: Telegram Drive (B2 hot cache in front) */}
+      <div className="rounded-xl bg-black border border-zinc-800 p-3 flex flex-wrap gap-3 items-center">
+        <div className="text-xs font-semibold text-white">Hostamar Drive — B2 hot cache + Telegram ∞</div>
+        <div className="text-xs text-zinc-400">Telegram files: <span className="font-mono text-[#10B981]">{storage ? storage.telegramFiles.toLocaleString() : '—'}</span></div>
+        <div className="text-xs text-zinc-400">Telegram bytes: <span className="font-mono text-[#10B981]">{tb > 1 ? `${tb.toFixed(2)} TB` : (Number(storage?.telegramBytes||0)/1024**3).toFixed(1)+' GB'}</span></div>
+        <div className="text-[10px] text-zinc-600">DriveFile rows in Neon · B2 10GB hot cache in front · 2GB/file Telegram cold tier</div>
+      </div>
+
+      {/* Employee cards */}
+      <div className="grid md:grid-cols-2 gap-3">
+        {(fleet?.employees || []).map((e: any) => {
+          const meta = FLEET_META[e.name] || { lane: '', color: '#10B981' }
+          const r = e.lastReport
+          const healthy = r?.verdict ? r.verdict.toUpperCase().includes('HEALTHY') : null
+          return (
+            <div key={e.name} className="rounded-xl bg-black border border-zinc-800 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${healthy === null ? 'bg-zinc-600' : healthy ? 'bg-[#10B981] animate-pulse' : 'bg-red-500'}`}/>
+                  <div>
+                    <div className="text-sm font-bold text-white">{e.name}</div>
+                    <div className="text-[11px] text-zinc-500">{meta.lane}</div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-zinc-600 font-mono">{r ? new Date(r.runAt).toLocaleString() : 'no report yet'}</div>
+              </div>
+              {r ? (
+                <div className="mt-2 space-y-1 text-xs">
+                  <div className="text-zinc-300"><span className="text-[#10B981] font-semibold">FINISHED:</span> {r.finished || '—'}</div>
+                  <div className="text-zinc-300"><span className="text-amber-400 font-semibold">COULDNT:</span> {r.couldnt || '—'}</div>
+                  <div className="text-zinc-300"><span className="text-red-400 font-semibold">NEEDS YOU:</span> {r.needsYou || '—'}</div>
+                </div>
+              ) : <div className="mt-2 text-xs text-zinc-600">Waiting for first shift report…</div>}
+              <button onClick={() => setChatWith(chatWith === e.name ? null : e.name)} className="mt-3 w-full py-1.5 rounded-lg border border-zinc-700 text-xs text-zinc-300 hover:border-[#10B981] hover:text-white transition">
+                {chatWith === e.name ? 'Close chat' : `Chat with ${e.name}`}
+              </button>
+              {chatWith === e.name && <EmployeeChat employee={e.name} />}
+            </div>
+          )
+        })}
+        {!fleet && <div className="text-xs text-zinc-500">Loading fleet…</div>}
+      </div>
+
+      {/* Recent reports live log */}
+      <div className="rounded-xl bg-black border border-zinc-800 p-3">
+        <div className="text-xs font-semibold text-white mb-2">Recent shift reports</div>
+        <div className="space-y-1 max-h-64 overflow-y-auto">
+          {(fleet?.recent || []).map((r: any, i: number) => (
+            <div key={i} className="text-[11px] font-mono text-zinc-400 border-b border-zinc-900 py-1">
+              <span className="text-zinc-600">{new Date(r.runAt).toLocaleTimeString()}</span> <span className="text-white">{r.employee}</span> — {r.verdict || '—'} · {r.finished || ''}{r.needsYou ? ` · NEEDS YOU: ${r.needsYou}` : ''}
+            </div>
+          ))}
+          {fleet && (!fleet.recent || fleet.recent.length === 0) && <div className="text-[11px] text-zinc-600">No reports yet — employees post on each shift.</div>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Employee chat — talks to the Brain gateway (local first, cloud fallback).
+// LiteLLM :4000 has open CORS (access-control-allow-origin: *) so the browser
+// can call the local gateway directly when the admin is on the PC's browser;
+// cloud fallback covers remote access.
+function EmployeeChat({ employee }: { employee: string }) {
+  const [messages, setMessages] = useState<{ role: 'user' | 'employee'; text: string; time: string }[]>([
+    { role: 'employee', text: `${employee} here. Ask me "What did you do today?" — I own this lane, I remember my shifts.`, time: new Date().toLocaleTimeString() },
+  ])
+  const [input, setInput] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const send = async () => {
+    if (!input.trim() || busy) return
+    const text = input
+    setMessages((m) => [...m, { role: 'user', text, time: new Date().toLocaleTimeString() }])
+    setInput(''); setBusy(true)
+    const endpoints = ['http://localhost:4000/v1', 'https://ai.hostamar.com/v1']
+    let reply = `${employee}: Brain unreachable from this browser (local gateway off?) — reports above are from my saved shifts.`
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(`${ep}/chat/completions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'kilocode-fast',
+            messages: [
+              { role: 'system', content: `You are ${employee}, a Hostamar AI employee who OWNS this lane (not a task). Answer as the employee, referencing your lane duties. Keep it under 120 words. Report style: FINISHED/COULDNT/NEEDS YOU.` },
+              { role: 'user', content: text },
+            ],
+            max_tokens: 300,
+          }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const c = data.choices?.[0]?.message?.content
+          if (c && c.trim()) { reply = c.trim(); break }
+        }
+      } catch { /* try next endpoint */ }
+    }
+    setMessages((m) => [...m, { role: 'employee', text: reply, time: new Date().toLocaleTimeString() }])
+    setBusy(false)
+  }
+
+  return (
+    <div className="mt-3 rounded-lg bg-zinc-950 border border-zinc-800 p-2">
+      <div className="max-h-48 overflow-y-auto space-y-1.5 mb-2">
+        {messages.map((m, i) => (
+          <div key={i} className={`text-xs p-1.5 rounded ${m.role === 'user' ? 'bg-[#0E7C3A]/20 ml-8' : 'bg-zinc-900 mr-8'}`}>
+            <div className="text-[9px] text-zinc-500">{m.role === 'user' ? 'You' : employee} · {m.time}</div>
+            <div className="text-zinc-200 whitespace-pre-wrap">{m.text}</div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-1.5">
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()}
+          placeholder={`Ask ${employee}…`} className="flex-1 text-xs px-2 py-1.5 rounded bg-black border border-zinc-800 text-white outline-none focus:border-[#10B981]"/>
+        <button onClick={send} disabled={busy} className="text-xs px-3 py-1.5 rounded bg-[#0E7C3A] text-white disabled:opacity-50">{busy ? '…' : 'Send'}</button>
+      </div>
+    </div>
+  )
+}
+
+// ── V55 Second Brain tab — synthesized WHY answers via local query layer ──
+function SecondBrainTab() {
+  const [state, setState] = useState<any>(null)
+  const [q, setQ] = useState('')
+  const [answer, setAnswer] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(async () => {
+    try { setState(await jfetch('/api/admin/second-brain')) } catch { setState(null) }
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  const ask = async () => {
+    if (!q.trim() || busy) return
+    setBusy(true); setAnswer(null)
+    try {
+      const r = await fetch('/api/admin/second-brain', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q }),
+      })
+      const d = await r.json()
+      setAnswer(d.answer || d.hint || 'no answer')
+    } catch (e: any) { setAnswer(`error: ${e.message}`) }
+    setBusy(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-white">Second Brain <span className="text-xs font-normal text-zinc-500">· Raw → Wiki → Synthesis</span></h2>
+          <p className="text-xs text-zinc-500">SAGE 12:05 nightly synthesis · wiki pages: {(state?.wikiPages || []).join(' · ')}</p>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs border ${state?.askOnline ? 'text-[#10B981] border-[#10B981]/30 bg-[#0E7C3A]/10' : 'text-amber-300 border-amber-500/30 bg-amber-500/10'}`}>
+          {state?.askOnline ? '● query layer online' : '● query layer local-only'}
+        </span>
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-3">
+        <div className="text-xs text-zinc-500 mb-2">{state?.note || 'loading…'}</div>
+        <div className="flex gap-2">
+          <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && ask()}
+            placeholder="WHY প্রশ্ন করো — e.g. auth module এ বারবার bug কেন?"
+            className="flex-1 text-sm px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-white outline-none focus:border-[#10B981]"/>
+          <button onClick={ask} disabled={busy} className="px-4 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm disabled:opacity-50">{busy ? '…' : 'Ask'}</button>
+        </div>
+        {answer && <div className="mt-3 text-sm text-zinc-200 whitespace-pre-wrap rounded-lg bg-zinc-900 p-3 border border-zinc-800">{answer}</div>}
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-3 text-xs text-zinc-400">
+        <div className="font-semibold text-white mb-1">Pipeline</div>
+        raw floor (vision · consensus · 5 fleet shifts · guardian.log) → synthesize.mjs (nightly) → wiki/ pre-digested pages + synthesis.md A↔B connections → /ask RAG via local Brain. CLI quality loop: <code className="font-mono text-zinc-300">dynamic_context.py "q" --quality</code> (critic &gt;0.95, up to 5 passes).
+      </div>
+    </div>
+  )
+}
+
+// ── V55 Guard tab — zero-cost scammer guard state ──
+function GuardTab() {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-white">Guard <span className="text-xs font-normal text-zinc-500">· zero-cost · no Sixtyfour until $2k+/mo</span></h2>
+        <p className="text-xs text-zinc-500">Policy: risk-high → Telegram review + Approve/Reject — never silent auto-block</p>
+      </div>
+      <div className="grid md:grid-cols-3 gap-3">
+        <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="text-sm font-bold text-white">Layer A — Bot/Disposable</div>
+          <div className="text-xs text-amber-300 mt-1">NEEDS YOU: TURNSTILE_SECRET_KEY (free signup)</div>
+          <div className="text-xs text-zinc-500 mt-2">Cloudflare Turnstile on signup · Vercel Firewall · bot score &lt;30 → review · Tor/VPN/bot IP block. Until key is set: skip-note, never blocks.</div>
+        </div>
+        <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="text-sm font-bold text-white">Layer B — Email/Phone</div>
+          <div className="text-xs text-[#10B981] mt-1">● fully functional</div>
+          <div className="text-xs text-zinc-500 mt-2">disposable-email-domains (10k list) · libphonenumber validity · Holehe/Sherlock on review only. Self-test 4/4: disposable+bot→high/review · clean→low/allow · invalid→medium/flag.</div>
+        </div>
+        <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="text-sm font-bold text-white">Layer C — Wallet</div>
+          <div className="text-xs text-amber-300 mt-1">NEEDS YOU: ETHERSCAN_API_KEY (free signup)</div>
+          <div className="text-xs text-zinc-500 mt-2">wallet age &lt;7d · tx &lt;5 · Tornado/mixer funding · Dexscreener top-10 holder %/liquidity lock. Code: hostamar-platform/ansible/roles/guard/files/guard.mjs</div>
+        </div>
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-3 text-xs text-zinc-400">
+        <div className="font-semibold text-white mb-1">Progressive profiling (marketing, free)</div>
+        Signup collects email only → later one small question (business type) → Gravatar pic/name. Clearbit ($500/mo) not needed. Sixtyfour only at $2k+/mo revenue for the 2-3% high-risk cases. Rules baked into wiki/security-guard.md (second brain).
+      </div>
+    </div>
+  )
+}
+
+// ── V55 Drive tab — B2 hot + Telegram cold Hostamar Drive ──
+function DriveTab() {
+  const [fleet, setFleet] = useState<any>(null)
+  useEffect(() => { jfetch('/api/admin/fleet?limit=1').then(setFleet).catch(() => setFleet(null)) }, [])
+  const storage = fleet?.storage
+  const bytes = storage ? Number(storage.telegramBytes || 0) : 0
+  const gb = (bytes / 1024**3).toFixed(1)
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-white">Hostamar Drive <span className="text-xs font-normal text-zinc-500">· B2 10GB hot + Telegram ∞ cold</span></h2>
+        <p className="text-xs text-zinc-500">drive flow: check B2 → miss → fetch Telegram → cache B2 · survives PC-off via Cloudflare Worker + B2 + Vercel + Alwaysdata VPS</p>
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-4 flex flex-wrap gap-6">
+        <div>
+          <div className="text-2xl font-black text-[#10B981]">{storage ? Number(storage.telegramFiles).toLocaleString() : '—'}</div>
+          <div className="text-xs text-zinc-500">Telegram DriveFile rows (Neon)</div>
+        </div>
+        <div>
+          <div className="text-2xl font-black text-[#10B981]">{storage ? `${gb} GB` : '—'}</div>
+          <div className="text-xs text-zinc-500">Total stored bytes (Telegram cold tier)</div>
+        </div>
+        <div>
+          <div className="text-2xl font-black text-zinc-400">10 GB</div>
+          <div className="text-xs text-zinc-500">B2 hot cache (small files: renders, playlist, consensus, wiki)</div>
+        </div>
+        <div className="text-xs text-zinc-600 self-end">2GB/file Telegram chunking · guardian uploader ticking · both links live</div>
+      </div>
+    </div>
+  )
+}
+
 function HostingTab() {
   const [status, setStatus] = useState<any>(null)
   const [servers, setServers] = useState<any[]>([])
@@ -678,6 +1065,10 @@ export default function AdminDashboard() {
             { id:'credits', label:'ক্রেডিট', icon: Coins },
             { id:'transactions', label:'লেনদেন', icon: Receipt },
             { id:'models', label:'মডেল·১২০', icon: Cpu },
+            { id:'fleet', label:'ফ্লিট·৫', icon: Activity },
+            { id:'second-brain', label:'সেকেন্ড-ব্রেইন', icon: Search },
+            { id:'guard', label:'গার্ড', icon: Shield },
+            { id:'drive', label:'ড্রাইভ', icon: HardDrive },
             { id:'products', label:'প্রোডাক্ট·৫০+', icon: Package },
             { id:'hosting', label:'হোস্টিং', icon: Server },
           ].map(t=>(
@@ -694,6 +1085,10 @@ export default function AdminDashboard() {
           {active==='credits' && <CreditsTab/>}
           {active==='transactions' && <TransactionsTab/>}
           {active==='models' && <ModelsTab/>}
+          {active==='fleet' && <FleetTab/>}
+          {active==='second-brain' && <SecondBrainTab/>}
+          {active==='guard' && <GuardTab/>}
+          {active==='drive' && <DriveTab/>}
           {active==='products' && <ProductsTab/>}
           {active==='hosting' && <HostingTab/>}
         </div>

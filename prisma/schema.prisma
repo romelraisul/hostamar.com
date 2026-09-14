@@ -670,6 +670,12 @@ model Conversation {
   customer Customer  @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages Message[]
 
+  // V8 memory lifecycle (runtime DDL in lib/kai9000/memory-lifecycle.ts
+  // applies these to prod; schema kept in sync so prisma generate types them)
+  memories       Json?   @default("{}")
+  hitCountMap    Json?   @default("{}")
+  promotedPrompt String? @default("")
+
   @@index([userId, createdAt])
 }
 
@@ -1649,4 +1655,22 @@ model DriveFile {
   @@index([ownerId, folderId])
   @@index([fileHash])
   @@index([chunkGroupId])
+}
+
+// V50 — AI Employee Fleet reports (Atlas/Echo/Reel/Bazaar/Quill).
+// Hermes cron employees write their shift report here; admin panel Fleet tab
+// reads it. One row per completed shift (job_id + run_at unique).
+model FleetReport {
+  id          String   @id @default(cuid())
+  employee    String   // Atlas | Echo | Reel | Bazaar | Quill
+  jobId       String   // hermes cron job_id
+  verdict     String?  // HEALTHY | ALERT | etc
+  finished    String?  // report "FINISHED" section
+  couldnt     String?  // report "COULDNT" section
+  needsYou    String?  // report "NEEDS YOU" section
+  raw         String?  // full report text
+  runAt       DateTime @default(now())
+
+  @@index([employee, runAt(sort: Desc)])
+  @@index([jobId])
 }

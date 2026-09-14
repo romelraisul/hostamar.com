@@ -4,6 +4,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { getProduct } from '@/lib/products'
+import { VIDEO_TEMPLATES, TEMPLATE_NICHES } from '@/lib/video-templates'
 
 // Voice agent is client-only (WebRTC) — never SSR.
 const VoiceAgentClient = dynamic(() => import('@/components/voice/VoiceAgentClient'), { ssr: false })
@@ -16,7 +17,9 @@ export default function VideoPage() {
   const p = getProduct('ai-video')!
   const [voiceOpen, setVoiceOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [niche, setNiche] = useState('all')
   useEffect(() => setMounted(true), [])
+  const shown = niche === 'all' ? VIDEO_TEMPLATES : VIDEO_TEMPLATES.filter((t) => t.niche === niche)
 
   return (
     <div className="bg-[#FCFCF9] text-zinc-900 antialiased">
@@ -76,6 +79,36 @@ export default function VideoPage() {
               <div className="text-xs opacity-60">টেমপ্লেট</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 100 ready prompt templates — niche filter, one tap to generate */}
+      <section className="mx-auto max-w-[1180px] px-4 pb-16 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold">১০০+ রেডি টেমপ্লেট</h2>
+            <p className="mt-1 text-sm text-zinc-600">নিশ বাছো → টেমপ্লেটে ট্যাপ করো → /generate-এ প্রম্পট রেডি</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setNiche('all')} className={`rounded-full px-4 py-1.5 text-sm font-medium border ${niche === 'all' ? 'text-white border-transparent' : 'bg-white'}`} style={niche === 'all' ? { background: GREEN } : {}}>সব ({VIDEO_TEMPLATES.length})</button>
+            {TEMPLATE_NICHES.map((n) => (
+              <button key={n} onClick={() => setNiche(n)} className={`rounded-full px-4 py-1.5 text-sm font-medium border ${niche === n ? 'text-white border-transparent' : 'bg-white'}`} style={niche === n ? { background: GREEN } : {}}>
+                {VIDEO_TEMPLATES.find((t) => t.niche === n)?.nicheBn}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          {shown.map((t) => (
+            <Link key={t.id} href={`/generate?template=${t.id}`} className="rounded-2xl border border-zinc-200 bg-white p-4 hover:border-[#0E7C3A] transition-colors">
+              <div className="flex items-center justify-between text-xs">
+                <span className="rounded-full bg-[#F8FAFC] border px-2.5 py-0.5 font-medium">{t.nicheBn}</span>
+                <span className="text-zinc-500">{t.aspect} • {t.secs}s</span>
+              </div>
+              <div className="mt-2 font-semibold text-[15px] leading-snug">{t.titleBn}</div>
+              <div className="mt-1 text-xs text-zinc-500 line-clamp-2">{t.prompt}</div>
+            </Link>
+          ))}
         </div>
       </section>
 

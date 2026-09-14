@@ -125,11 +125,11 @@ export default function HeroC() {
             </span>
             <span className="hidden sm:inline h-4 w-px bg-[#E2E8F0]" />
             <span className="text-[#475569]">
-              <span className="font-bold text-[#0F172A]">500+</span> ক্রিয়েটর • <span className="text-[#F59E0B]">★★★★★</span> 4.8 (212)
+              <span className="font-bold text-[#0F172A]">১০০+</span> বাংলা টেমপ্লেট • <span className="text-[#F59E0B]">BETA</span> — ৬০০০ ফ্রি ক্রেডিট
             </span>
           </div>
           <div className="text-[11px] text-[#64748B] text-center sm:text-right">
-            ৳২২০০ No AI (HostSeba) vs <span className="font-semibold text-[#0F172A]">৳২,০০০ AI সহ</span> — ৩× ভ্যালু
+            No AI (অন্য হোস্ট) vs <span className="font-semibold text-[#0F172A]">AI সহ</span> — bKash/Nagad/Rocket
           </div>
         </div>
       </div>

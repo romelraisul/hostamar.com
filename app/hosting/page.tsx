@@ -12,7 +12,7 @@ const COMPARE = [
   { f: 'Free SSL', ex: 'Paid', h: 'Free ✓' },
   { f: 'Daily Backup', ex: 'Paid', h: 'Free ✓' },
   { f: 'Support', ex: '24h', h: '12 min ✓' },
-  { f: 'Price', ex: '৳800', h: '৳0–৳2000 bundle ✓' },
+  { f: 'Price', ex: '৳800', h: '৳0 ফ্রি টায়ার ✓' },
 ]
 
 const BENTO = [
@@ -129,7 +129,7 @@ export default function HostingPage() {
         <div className="rounded-[24px] border border-zinc-200 bg-white overflow-hidden">
           <div className="px-6 py-4 border-b bg-zinc-50 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-bold">ExonHost vs Hostamar — ৳0 বান্ডেলে কী পান</h2>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-[#2563EB] text-white font-semibold">HostSeba ৳2220/yr No AI vs Hostamar ৳2000/yr AI সহ</span>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-[#2563EB] text-white font-semibold">HostSeba: No AI vs Hostamar: AI সহ — bKash/Nagad</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[520px]">

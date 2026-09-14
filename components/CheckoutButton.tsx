@@ -271,6 +271,14 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
                   </ol>
                 )}
 
+                {/* Manual-flow support path: if activation stalls, the customer
+                    has a human fallback (WhatsApp via /contact) with the TrxID. */}
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Already paid but not activated?{' '}
+                  <a href="/contact" className="font-medium underline">Contact support (WhatsApp)</a>{' '}
+                  with your TrxID — we verify and activate manually.
+                </div>
+
                 {/* Live status */}
                 <div className="rounded-lg border p-3 text-sm dark:border-slate-700">
                   {status === 'pending' && (

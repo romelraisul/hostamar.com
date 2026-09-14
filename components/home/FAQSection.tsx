@@ -9,7 +9,7 @@ const faqsEn = [
   },
   {
     q: 'Will my video have a watermark?',
-    a: 'The free plan adds a small watermark. Starter (৳2,000/mo) and above export clean 1080p with no watermark.',
+    a: 'The free plan adds a small watermark. Starter (৳599/mo) and above export clean 1080p with no watermark.',
   },
   {
     q: 'Do I need to know English to make videos?',
@@ -24,7 +24,7 @@ const faqsBn = [
   },
   {
     q: 'ভিডিওতে ওয়াটারমার্ক থাকবে?',
-    a: 'ফ্রি প্ল্যানে ছোট ওয়াটারমার্ক থাকে। Starter (৳২,০০০/মাস) ও তার ওপরে ১০৮০p ক্লিন এক্সপোর্ট, কোনো ওয়াটারমার্ক নয়।',
+    a: 'ফ্রি প্ল্যানে ছোট ওয়াটারমার্ক থাকে। Starter (৳৫৯৯/মাস) ও তার ওপরে ১০৮০p ক্লিন এক্সপোর্ট, কোনো ওয়াটারমার্ক নয়।',
   },
   {
     q: 'ভিডিও বানাতে ইংরেজি জানতে হবে?',

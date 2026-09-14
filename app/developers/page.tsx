@@ -313,7 +313,7 @@ export default function DevelopersPage() {
             </div>
             <div className="rounded-xl border-2 border-[#0E7C3A] p-4">
               <h3 className="font-medium">Pro</h3>
-              <p className="mt-1 text-2xl font-bold">৳500<span className="text-sm font-normal text-zinc-500">/mo</span></p>
+              <p className="mt-1 text-2xl font-bold">৳599<span className="text-sm font-normal text-zinc-500">/mo</span></p>
               <ul className="mt-3 space-y-1 text-sm text-zinc-600">
                 <li>• 100 images/day</li>
                 <li>• 10 videos/day</li>
@@ -323,7 +323,7 @@ export default function DevelopersPage() {
             </div>
             <div className="rounded-xl border border-zinc-200 p-4">
               <h3 className="font-medium">Business</h3>
-              <p className="mt-1 text-2xl font-bold">৳2,000<span className="text-sm font-normal text-zinc-500">/mo</span></p>
+              <p className="mt-1 text-2xl font-bold">৳2,999<span className="text-sm font-normal text-zinc-500">/mo</span></p>
               <ul className="mt-3 space-y-1 text-sm text-zinc-600">
                 <li>• Unlimited images</li>
                 <li>• 50 videos/day</li>
