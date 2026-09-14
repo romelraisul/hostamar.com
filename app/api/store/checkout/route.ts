@@ -111,6 +111,21 @@ export async function POST(req: NextRequest) {
       console.warn('[store/checkout] receipt error:', e?.message)
     }
 
+    // FORGE 09-15: instant Telegram ping to owner on every new order — on the manual
+    // send-money path the owner's reply speed IS the conversion rate, and until now an
+    // order was silent until someone opened admin. Reuses lib/surveillance-alert's
+    // proven delivery ladder (rung 1 surveillance-bot live-verified in prod 09-14) =
+    // zero new credentials. 6s cap, can never fail the order.
+    try {
+      const { sendSurveillanceAlert } = await import('@/lib/surveillance-alert')
+      const item: any = order.items?.[0]
+      const title = item?.variant?.product?.title || item?.title || variant_id
+      await Promise.race([
+        sendSurveillanceAlert(`🛒 ORDER #${order.display_id ?? order.id.slice(-6)} — ${title} ৳${amountBdt} | ${name} | ${phone || 'no phone'} | ${email} | ${order.id}`),
+        new Promise((res) => setTimeout(res, 6000)),
+      ])
+    } catch { /* owner ping is best-effort; order already exists */ }
+
     return NextResponse.json({
       orderId: order.id,
       status: order.status || 'pending',
