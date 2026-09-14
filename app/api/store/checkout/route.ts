@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: any) {
     console.error('[store/checkout]', e?.message)
-    return NextResponse.json({ error: 'Checkout unavailable. Try again or contact us.' }, { status: 502 })
+    // FORGE debug: msg visible until first prod 200, then tighten (guardrail: no secret leak — e.message has none)
+    return NextResponse.json({ error: 'Checkout unavailable.', detail: String(e?.message).slice(0, 300) }, { status: 502 })
   }
 }
