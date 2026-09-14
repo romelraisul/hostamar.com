@@ -167,7 +167,7 @@ export default function AppFooter() {
                 {isBn ? '৭ দিনের মানি-ব্যাক' : '7-day money-back'}
               </span>
               <span className="rounded-full border border-zinc-200 px-2 py-0.5">
-                {isBn ? 'ভ্যাট সহ' : 'VAT incl.'}
+                {isBn ? 'ম্যানুয়াল সেন্ড মানি' : 'Manual send-money'}
               </span>
             </div>
           </div>
