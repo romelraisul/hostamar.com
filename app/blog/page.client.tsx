@@ -138,7 +138,7 @@ export default function BlogPage() {
             <div className="sticky top-[96px] space-y-4">
               <div className="rounded-2xl border border-zinc-200 bg-white p-5">
                 <p className="text-[15px] font-bold">বাংলায় AI টিপস পান</p>
-                <p className="mt-1 text-[13px] text-zinc-500">সাপ্তাহিক ১ ইমেইল, কোনো স্প্যাম নয়। ৳২,০০০ আপসেলের জন্য লিস্ট বাড়ান।</p>
+                <p className="mt-1 text-[13px] text-zinc-500">সাপ্তাহিক ১ ইমেইল, কোনো স্প্যাম নয়। ৳৫৯৯ আপসেলের জন্য লিস্ট বাড়ান।</p>
                 {subbed ? (
                   <p className="mt-4 rounded-xl bg-[#0E7C3A]/8 px-4 py-3 text-[14px] font-semibold text-[#0E7C3A]">✓ সাবস্ক্রাইব করা হয়েছে!</p>
                 ) : (

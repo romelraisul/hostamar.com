@@ -94,7 +94,7 @@ const productJsonLd = {
     {
       '@type': 'Offer',
       name: 'Starter',
-      price: '2000',
+      price: '599',
       priceCurrency: 'BDT',
       priceValidUntil: '2026-12-31',
       description: '100 AI videos, 10GB NVMe, .com free',
@@ -102,16 +102,13 @@ const productJsonLd = {
     {
       '@type': 'Offer',
       name: 'Pro',
-      price: '3500',
+      price: '1299',
       priceCurrency: 'BDT',
       description: 'Unlimited AI videos, 20GB NVMe, API',
     },
   ],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    reviewCount: '500',
-  },
+  // AggregateRating removed 2026-09-14: no verifiable review source yet
+  // (fabricated 4.8/500 was flagged by the production audit).
 }
 
 const orgJsonLd = {

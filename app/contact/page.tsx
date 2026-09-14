@@ -331,12 +331,12 @@ export default function ContactPage() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 rounded-full bg-[#0E7C3A]/10 px-3 py-1.5">
                 <Star className="h-4 w-4 fill-[#0E7C3A] text-[#0E7C3A]" />
-                <span className="text-[14px] font-bold text-[#0E7C3A]">4.8</span>
+                <span className="text-[14px] font-bold text-[#0E7C3A]">BETA</span>
               </div>
-              <span className="bangla text-[13px] text-zinc-600">৫০০+ ক্রিয়েটর বিশ্বাস করে</span>
+              <span className="bangla text-[13px] text-zinc-600">বাংলাদেশে তৈরি — bKash/Nagad সাপোর্ট</span>
             </div>
             <p className="bangla text-[13px] leading-5 text-zinc-500">
-              বাংলাদেশের ৫০০+ ক্রিয়েটর ও এজেন্সি HostAmar ব্যবহার করছে — ভিডিও, হোস্টিং, চ্যাট সব এক জায়গায়।
+              বাংলাদেশের SME, ক্রিয়েটর ও এজেন্সিদের জন্য HostAmar — ভিডিও, হোস্টিং, চ্যাট সব এক জায়গায়।
             </p>
             <div className="flex flex-wrap gap-2">
               {['Video', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming'].map((p) => (

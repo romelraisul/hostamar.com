@@ -358,7 +358,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="rounded-xl bg-[#F8FAFC] border p-4 text-sm">
                   <div className="font-semibold">ExonHost ~৳834/mo vs Hostamar ৳0 bundle</div>
-                  <div className="text-[#64748B]">HostSeba ৳2220 No AI vs Hostamar ৳2000 AI সহ • LiteSpeed + JetBackup 7pts • bKash auto</div>
+                  <div className="text-[#64748B]">HostSeba: No AI vs Hostamar: AI সহ • LiteSpeed + JetBackup 7pts • bKash auto</div>
                 </div>
                 <Link href="/dashboard/hosting" className="flex items-center justify-center gap-2 rounded-full bg-[#2563EB] text-white font-bold py-3">Open Hosting →</Link>
               </div>
