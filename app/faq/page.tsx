@@ -4,6 +4,8 @@
 // version: search, category filter, '/' shortcut, auto-open, JSON-LD, real
 // WhatsApp/email/call links. Only presentation restyled.
 
+import BazaarNav from '@/components/home/BazaarNav'
+import BazaarFooter from '@/components/home/BazaarFooter'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Search, ChevronDown, MessageCircle, Mail, Phone, Clock } from 'lucide-react'
@@ -57,6 +59,7 @@ export default function FaqPage() {
 
   return (
     <div className="bp-theme">
+      <BazaarNav />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="bp-page-hero">
@@ -166,6 +169,7 @@ export default function FaqPage() {
           </div>
         </div>
       </section>
+    <BazaarFooter />
     </div>
   );
 }
