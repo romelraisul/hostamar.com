@@ -111,6 +111,8 @@ export async function POST(req: NextRequest) {
       console.warn('[store/checkout] receipt error:', e?.message)
     }
 
+    const item: any = order.items?.[0]
+    const title = item?.variant?.product?.title || item?.title || variant_id
     // FORGE 09-15: instant Telegram ping to owner on every new order — on the manual
     // send-money path the owner's reply speed IS the conversion rate, and until now an
     // order was silent until someone opened admin. Reuses lib/surveillance-alert's
@@ -118,13 +120,31 @@ export async function POST(req: NextRequest) {
     // zero new credentials. 6s cap, can never fail the order.
     try {
       const { sendSurveillanceAlert } = await import('@/lib/surveillance-alert')
-      const item: any = order.items?.[0]
-      const title = item?.variant?.product?.title || item?.title || variant_id
       await Promise.race([
         sendSurveillanceAlert(`🛒 ORDER #${order.display_id ?? order.id.slice(-6)} — ${title} ৳${amountBdt} | ${name} | ${phone || 'no phone'} | ${email} | ${order.id}`),
         new Promise((res) => setTimeout(res, 6000)),
       ])
     } catch { /* owner ping is best-effort; order already exists */ }
+
+    // FORGE 09-15: mirror the buyer into Neon Lead (source: store-checkout) so the
+    // paying-customer pipeline (HARBOR outreach, CRM views, /admin leads) sees orders
+    // without scraping Telegram. Best-effort: prisma is optional-deps-safe here;
+    // a lead-mirror failure must NEVER fail a paid order.
+    try {
+      const { prisma } = await import('@/lib/prisma')
+      await prisma.lead.create({
+        data: {
+          name,
+          email,
+          phone: phone || null,
+          source: 'store-checkout',
+          status: 'new',
+          score: 50, // an order = hottest lead tier
+          tags: `order:${order.id};৳${amountBdt}`,
+          notes: `Ordered from /store: ${title} — ৳${amountBdt}. Medusa order ${order.id}.`,
+        },
+      }).catch((e: any) => console.warn('[store/checkout] lead mirror:', e?.message?.slice(0, 120)))
+    } catch { /* prisma not configured — orders still fine */ }
 
     return NextResponse.json({
       orderId: order.id,
