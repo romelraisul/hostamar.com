@@ -157,6 +157,13 @@ export const FAQS: Faq[] = [
     a: 'আমাদের ১৬ এজেন্ট "trust dial" মডেলে চলে — কোন টুল নিজে থেকে চলবে, কোনটিতে অনুমোদন লাগবে, তা ঠিক করা থাকে; প্রতিটি রানের রিপোর্ট Fleet ট্যাবে অডিট ট্রেইল হিসেবে জমা হয়। সম্প্রতি RubyGems-এ rogue AI agent অ্যাটাকের পর graduated approval-ই এই খাতের নতুন মান হয়ে যাচ্ছে।',
     link: { href: '/contact', label: 'এজেন্ট হোস্টিং জানুন' },
   },
+  {
+    id: 'agent-memory',
+    cat: 'chat',
+    q: 'এজেন্ট কি আগের কথা মনে রাখে?',
+    a: 'হ্যাঁ — Agent Cloud-এর এজেন্টদের persist করা memory আছে (chat memory, skill, wiki, code graph)। কন্টেইনার রিস্টার্ট বা সেশন শেষ হলেও কনটেক্সট হারায় না; cron করে চালানো এজেন্টের এটাই সবচেয়ে বড় ঝামেলা, আমরা সেটা নিজে সামলাই।',
+    link: { href: '/contact', label: 'মেমরি হোস্টিং জানুন' },
+  },
 
   // Gaming
   {
