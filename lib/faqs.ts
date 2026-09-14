@@ -149,6 +149,14 @@ export const FAQS: Faq[] = [
     a: 'লিংক পেস্ট করুন, ট্রান্সক্রিপ্ট এক্সট্র্যাক্ট + বাংলা সামারি পাবেন ১০ সেকেন্ডে।',
     link: { href: '/browser', label: 'গাইড' },
   },
+  {
+    // ORACLE V66 2026-09-14 20:50 — rides HN #1 story (RubyGems rogue agents, 90pts) + same-day "trust dial" launches (Prmptree 49697407, Vigilator 49695678)
+    id: 'agent-trust-dial',
+    cat: 'chat',
+    q: 'AI agent আনঅ্যাটেনডেড চালালে নিরাপদ?',
+    a: 'আমাদের ১৬ এজেন্ট "trust dial" মডেলে চলে — কোন টুল নিজে থেকে চলবে, কোনটিতে অনুমোদন লাগবে, তা ঠিক করা থাকে; প্রতিটি রানের রিপোর্ট Fleet ট্যাবে অডিট ট্রেইল হিসেবে জমা হয়। সম্প্রতি RubyGems-এ rogue AI agent অ্যাটাকের পর graduated approval-ই এই খাতের নতুন মান হয়ে যাচ্ছে।',
+    link: { href: '/contact', label: 'এজেন্ট হোস্টিং জানুন' },
+  },
 
   // Gaming
   {
