@@ -63,6 +63,31 @@ export async function POST(req: NextRequest) {
   const [first, ...rest] = name.split(' ')
 
   try {
+    // FORGE probe: GET /health + POST /carts from Vercel egress (isolate CF challenge: IP vs method vs headers)
+    if (req.headers.get('x-forge-probe')) {
+      const base = process.env.MEDUSA_URL || 'https://store.hostamar.com'
+      const out: any = {}
+      const g = await fetch(`${base}/health`, { signal: AbortSignal.timeout(15000) })
+      out.get_health = g.status
+      const p = await fetch(`${base}/store/carts`, {
+        method: 'POST',
+        headers: {
+          'x-publishable-api-key': process.env.MEDUSA_PK || '',
+          'content-type': 'application/json',
+          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+          accept: 'application/json, text/plain, */*',
+          origin: 'https://hostamar.com',
+          referer: 'https://hostamar.com/store',
+          'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-site', 'sec-fetch-dest': 'empty',
+        },
+        body: JSON.stringify({ region_id: REGION }),
+        signal: AbortSignal.timeout(15000),
+      })
+      const t = await p.text()
+      out.post_carts = p.status
+      out.post_body = t.slice(0, 60)
+      return NextResponse.json(out)
+    }
     const { cart } = await medusa('/carts', { method: 'POST', json: { region_id: REGION } })
     await medusa(`/carts/${cart.id}/line-items`, { method: 'POST', json: { variant_id, quantity } })
     await medusa(`/carts/${cart.id}`, {
