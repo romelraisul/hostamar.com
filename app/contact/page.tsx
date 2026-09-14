@@ -1,18 +1,21 @@
 'use client'
 
+// Bazaar Poster contact page (Direction C, 2026-09). ALL logic preserved:
+// /api/email/test submission with status states, clipboard copy of the support
+// email, file-name capture, agreement gate, real phone/WhatsApp/office data.
+// Only presentation restyled.
+
 import { useState } from 'react'
 import Link from 'next/link'
 import {
   Mail, Phone, MapPin, MessageSquare, Copy, Check,
-  MessageCircle, ShieldCheck, Clock, Star, Zap, Globe, Gamepad2,
+  MessageCircle, ShieldCheck, Clock, Star, Zap, Globe,
   Upload, Send,
 } from 'lucide-react'
 
-const GREEN = '#0E7C3A'
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@hostamar.com'
 const PHONE = '+8809696517463'
 const PHONE_DISPLAY = '+880 9696 517463'
-const WHATSAPP = '+8801822417463'
 const WHATSAPP_URL = 'https://wa.me/8801822417463'
 
 const TOPICS = [
@@ -25,7 +28,7 @@ const TOPICS = [
 
 const QUICK_HELP = [
   { href: '/pricing', icon: ShieldCheck, title: 'bKash পেমেন্ট হয়নি?', body: 'ট্রাঞ্জেকশন আইডি দিয়ে ৩০ সেকেন্ডে অ্যাকাউন্ট অ্যাকটিভ করুন।' },
-  { href: '/video', icon: Zap, title: 'ভিডিওতে বাংলা ভাঙছে?', body: 'ফন্ট সেটিংস ঠিক করে ৪K রেন্ডার করুন — গাইড দেখুন।' },
+  { href: '/video', icon: Zap, title: 'ভিডিওতে বাংলা ভাঙছে?', body: 'ফন্ট সেটিংস ঠিক করে ৪K রেন্ডার করুন, গাইড দেখুন।' },
   { href: '/browser', icon: Globe, title: 'ব্রাউজার স্লো?', body: 'ক্যাশে ক্লিয়ার ও এক্সটেনশন চেক করুন।' },
 ]
 
@@ -83,107 +86,90 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900">
-      {/* Hero */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pt-12 md:pt-16 pb-8 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium text-zinc-600 mb-5">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0E7C3A] opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0E7C3A]" />
+    <div className="bp-theme">
+      <div className="bp-page-hero" style={{ textAlign: 'center' }}>
+        <div className="bp-wrap" style={{ maxWidth: 760, marginInline: 'auto' }}>
+          <span className="bp-stamp" style={{ marginBottom: '.8rem' }}>
+            <span className="bp-live-dot" aria-hidden="true" />লাইভ চ্যাট ২৪/৭, রিয়েল হিউম্যান
           </span>
-          লাইভ চ্যাট ২৪/৭ — রিয়েল হিউম্যান
+          <h1 style={{ maxWidth: 'none', marginInline: 'auto' }}>
+            আমরা শুনছি, <span style={{ color: 'var(--bp-green)' }}>বাংলায় উত্তর দিচ্ছি</span>
+          </h1>
+          <p style={{ marginInline: 'auto' }}>
+            bKash টাকা গেল কিন্তু একাউন্ট একটিভ হলো না? ভিডিওতে বাংলা ভাঙছে? সরাসরি আমাদের বাংলাদেশ টিমকে লিখুন।
+            <b> ১২ মিনিটে উত্তর পাবেন।</b>
+          </p>
         </div>
-        <h1 className="text-[32px] md:text-[46px] font-bold tracking-[-0.03em] leading-[1.08]">
-          আমরা শুনছি, <span style={{ color: GREEN }}>বাংলায় উত্তর দিচ্ছি</span>
-        </h1>
-        <p className="bangla mt-4 text-[15px] md:text-[17px] text-zinc-500 max-w-[620px] mx-auto">
-          bKash টাকা গেল কিন্তু একাউন্ট একটিভ হলো না? ভিডিওতে বাংলা ভাঙছে? সরাসরি আমাদের বাংলাদেশ টিমকে লিখুন।
-          <span className="font-semibold text-zinc-800"> ১২ মিনিটে উত্তর পাবেন।</span>
-        </p>
-      </section>
+      </div>
 
-      {/* Main grid: contact options + form */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-10">
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* LEFT — real contact options */}
-          <div className="rounded-[24px] border border-zinc-200 bg-white p-6 md:p-8">
-            <h2 className="bangla text-[20px] font-semibold mb-1">সরাসরি যোগাযোগ</h2>
-            <p className="bangla text-[13px] text-zinc-500 mb-6">আপনার সুবিধামতো যেকোনো মাধ্যম বেছে নিন</p>
+      <section className="bp-sec">
+        <div className="bp-wrap bp-contact-grid">
+          {/* LEFT — contact channels */}
+          <div className="bp-tile">
+            <h2 className="bp-h2" style={{ fontSize: '1.25rem' }}>সরাসরি যোগাযোগ</h2>
+            <p className="bp-muted" style={{ fontSize: '.88rem', marginBottom: '1.1rem' }}>আপনার সুবিধামতো যেকোনো মাধ্যম বেছে নিন</p>
 
-            <div className="space-y-4">
+            <div style={{ display: 'grid', gap: '.8rem' }}>
               {/* Email + copy */}
-              <div className="flex items-center gap-4 rounded-2xl border border-zinc-200 p-4">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#0E7C3A]/10">
-                  <Mail className="h-5 w-5 text-[#0E7C3A]" />
+              <div className="bp-info-row">
+                <span className="bp-info-ic"><Mail size={19} strokeWidth={1.7} aria-hidden="true" /></span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p className="bp-muted" style={{ fontSize: '.78rem' }}>ইমেইল</p>
+                  <p style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis' }}>{SUPPORT_EMAIL}</p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="bangla text-[12px] text-zinc-500">ইমেইল</p>
-                  <p className="font-semibold truncate">{SUPPORT_EMAIL}</p>
-                </div>
-                <button onClick={copyEmail} className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-2 text-[13px] font-medium hover:bg-zinc-50 transition">
-                  {copied ? <Check className="h-3.5 w-3.5 text-[#0E7C3A]" /> : <Copy className="h-3.5 w-3.5" />}
+                <button onClick={copyEmail} className="bp-btn bp-btn-ghost" style={{ padding: '.45rem .9rem', fontSize: '.85rem' }}>
+                  {copied ? <Check size={14} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-green)' }} /> : <Copy size={14} strokeWidth={1.7} aria-hidden="true" />}
                   {copied ? 'কপি হয়েছে' : 'কপি'}
                 </button>
               </div>
 
               {/* Phone + call */}
-              <div className="flex items-center gap-4 rounded-2xl border border-zinc-200 p-4">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#0E7C3A]/10">
-                  <Phone className="h-5 w-5 text-[#0E7C3A]" />
+              <div className="bp-info-row">
+                <span className="bp-info-ic"><Phone size={19} strokeWidth={1.7} aria-hidden="true" /></span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p className="bp-muted" style={{ fontSize: '.78rem' }}>ফোন</p>
+                  <p style={{ fontWeight: 700 }}>{PHONE_DISPLAY}</p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="bangla text-[12px] text-zinc-500">ফোন</p>
-                  <p className="font-semibold">{PHONE_DISPLAY}</p>
-                </div>
-                <a href={`tel:${PHONE}`} className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-2 text-[13px] font-medium hover:bg-zinc-50 transition">
-                  কল করুন
-                </a>
+                <a href={`tel:${PHONE}`} className="bp-btn bp-btn-ghost" style={{ padding: '.45rem .9rem', fontSize: '.85rem' }}>কল করুন</a>
               </div>
 
               {/* WhatsApp */}
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
-                 className="flex items-center gap-4 rounded-2xl bg-[#25D366] p-4 text-white transition hover:brightness-95">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/20">
-                  <MessageCircle className="h-5 w-5" />
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="bp-wa">
+                <span className="bp-wa-ic"><MessageCircle size={19} strokeWidth={1.7} aria-hidden="true" /></span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: '.78rem', opacity: .85 }}>WhatsApp</p>
+                  <p style={{ fontWeight: 700 }}>+880 1822 417463</p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12px] text-white/80">WhatsApp</p>
-                  <p className="font-semibold">+880 1822 417463</p>
-                </div>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-2 text-[13px] font-medium">
-                  চ্যাট করুন
-                </span>
+                <span className="bp-wa-cta">চ্যাট করুন</span>
               </a>
 
               {/* Location + live chat */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-zinc-200 p-4">
-                  <div className="flex items-center gap-2 text-[#0E7C3A]">
-                    <MapPin className="h-4 w-4" />
-                    <span className="bangla text-[12px] font-medium">অফিস</span>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.8rem' }}>
+                <div className="bp-mini-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', color: 'var(--bp-green)' }}>
+                    <MapPin size={15} strokeWidth={1.7} aria-hidden="true" />
+                    <span style={{ fontSize: '.78rem', fontWeight: 600 }}>অফিস</span>
                   </div>
-                  <p className="bangla mt-2 text-[13px] text-zinc-700 leading-5">ঢাকা + বগুড়া<br/>স্যাট-বৃহঃ ১০টা–৭টা</p>
+                  <p style={{ fontSize: '.85rem', marginTop: '.45rem', lineHeight: 1.5 }}>ঢাকা + বগুড়া<br />শনি-বৃহঃ সকাল ১০টা - সন্ধ্যা ৭টা</p>
                 </div>
-                <div className="rounded-2xl border border-zinc-200 p-4">
-                  <div className="flex items-center gap-2 text-[#0E7C3A]">
-                    <MessageSquare className="h-4 w-4" />
-                    <span className="bangla text-[12px] font-medium">লাইভ চ্যাট</span>
+                <div className="bp-mini-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', color: 'var(--bp-green)' }}>
+                    <MessageSquare size={15} strokeWidth={1.7} aria-hidden="true" />
+                    <span style={{ fontSize: '.78rem', fontWeight: 600 }}>লাইভ চ্যাট</span>
                   </div>
-                  <p className="bangla mt-2 text-[13px] text-zinc-700 leading-5">২৪/৭ চালু<br/>রিয়েল হিউম্যান</p>
+                  <p style={{ fontSize: '.85rem', marginTop: '.45rem', lineHeight: 1.5 }}>২৪/৭ চালু<br />রিয়েল হিউম্যান</p>
                 </div>
               </div>
 
-              {/* Verified merchant badges */}
-              <div className="rounded-2xl border border-zinc-200 bg-[#FCFCF9] p-4">
-                <div className="flex items-center gap-2 text-[#0E7C3A] mb-3">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span className="bangla text-[12px] font-medium">Verified Merchant</span>
+              {/* Verified merchant */}
+              <div className="bp-mini-card" style={{ background: 'var(--bp-paper-2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', color: 'var(--bp-green)' }}>
+                  <ShieldCheck size={15} strokeWidth={1.7} aria-hidden="true" />
+                  <span style={{ fontSize: '.78rem', fontWeight: 600 }}>Verified Merchant</span>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="bp-stamp-row" style={{ marginTop: '.6rem', gap: '.5rem' }}>
                   {['bKash', 'Nagad', 'Rocket'].map((m) => (
-                    <span key={m} className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-zinc-700">
-                      {m}
-                    </span>
+                    <span key={m} className="bp-stamp" style={{ padding: '.3rem .8rem', fontSize: '.85rem' }}>{m}</span>
                   ))}
                 </div>
               </div>
@@ -191,162 +177,144 @@ export default function ContactPage() {
           </div>
 
           {/* RIGHT — form */}
-          <div className="rounded-[24px] border border-zinc-200 bg-white p-6 md:p-8">
-            <h2 className="bangla text-[20px] font-semibold mb-1">মেসেজ পাঠান</h2>
-            <p className="bangla text-[13px] text-zinc-500 mb-6">টপিক বাছাই করলে সঠিক টিমকে ১২ মিনিটে পেয়ে যাবেন</p>
+          <div className="bp-tile">
+            <h2 className="bp-h2" style={{ fontSize: '1.25rem' }}>মেসেজ পাঠান</h2>
+            <p className="bp-muted" style={{ fontSize: '.88rem', marginBottom: '1.1rem' }}>টপিক বাছাই করলে সঠিক টিমকে ১২ মিনিটে পেয়ে যাবেন</p>
 
             {status === 'success' ? (
-              <div className="rounded-2xl border border-[#0E7C3A]/30 bg-[#0E7C3A]/5 p-6 text-center">
-                <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-[#0E7C3A] text-white">
-                  <Check className="h-6 w-6" />
-                </div>
-                <p className="bangla text-[15px] font-semibold text-zinc-800">মেসেজ পৌঁছে গেছে!</p>
-                <p className="bangla mt-1 text-[13px] text-zinc-500">Avg reply 12 min • No bot, real human</p>
+              <div className="bp-form-ok">
+                <div className="bp-form-ok-ic"><Check size={22} strokeWidth={2} aria-hidden="true" /></div>
+                <p style={{ fontWeight: 700, fontSize: '1.05rem' }}>মেসেজ পৌঁছে গেছে!</p>
+                <p className="bp-muted" style={{ fontSize: '.88rem', marginTop: '.2rem' }}>Avg reply 12 min, No bot, real human</p>
               </div>
             ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="bangla block text-[13px] font-medium text-zinc-700 mb-1.5">বিষয়</label>
-                <select
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-[14px] focus:border-[#0E7C3A] focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20"
-                >
-                  {TOPICS.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="bangla block text-[13px] font-medium text-zinc-700 mb-1.5">নাম</label>
-                  <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-[14px] focus:border-[#0E7C3A] focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20"
-                    placeholder="আপনার নাম" />
+              <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1rem' }}>
+                <div className="bp-form-field">
+                  <label htmlFor="cf-topic">বিষয়</label>
+                  <select
+                    id="cf-topic"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                  >
+                    {TOPICS.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
                 </div>
-                <div>
-                  <label className="bangla block text-[13px] font-medium text-zinc-700 mb-1.5">ইমেইল</label>
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-[14px] focus:border-[#0E7C3A] focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20"
-                    placeholder="name@email.com" />
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="bp-form-field">
+                    <label htmlFor="cf-name">নাম</label>
+                    <input id="cf-name" type="text" required value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম" />
+                  </div>
+                  <div className="bp-form-field">
+                    <label htmlFor="cf-email">ইমেইল</label>
+                    <input id="cf-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@email.com" />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="bangla block text-[13px] font-medium text-zinc-700 mb-1.5">ফোন <span className="text-zinc-400">(ঐচ্ছিক)</span></label>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-[14px] focus:border-[#0E7C3A] focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20"
-                  placeholder="+880 1XXX XXXXXX" />
-              </div>
+                <div className="bp-form-field">
+                  <label htmlFor="cf-phone">ফোন <span className="bp-muted">(ঐচ্ছিক)</span></label>
+                  <input id="cf-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+880 1XXX XXXXXX" />
+                </div>
 
-              <div>
-                <label className="bangla block text-[13px] font-medium text-zinc-700 mb-1.5">মেসেজ</label>
-                <textarea rows={4} required value={message} onChange={(e) => setMessage(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-[14px] focus:border-[#0E7C3A] focus:outline-none focus:ring-2 focus:ring-[#0E7C3A]/20"
-                  placeholder="সমস্যাটি লিখুন — যেমন: bKash ট্রাঞ্জেকশন করেছি কিন্তু একাউন্ট একটিভ হচ্ছে না" />
-              </div>
+                <div className="bp-form-field">
+                  <label htmlFor="cf-msg">মেসেজ</label>
+                  <textarea id="cf-msg" rows={4} required value={message} onChange={(e) => setMessage(e.target.value)}
+                    placeholder="সমস্যাটি লিখুন, যেমন: bKash ট্রাঞ্জেকশন করেছি কিন্তু একাউন্ট একটিভ হচ্ছে না" />
+                </div>
 
-              <div>
-                <label className="bangla block text-[13px] font-medium text-zinc-700 mb-1.5">স্ক্রিনশট <span className="text-zinc-400">(ঐচ্ছিক)</span></label>
-                <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-zinc-300 bg-[#FCFCF9] px-4 py-3 text-[13px] text-zinc-600 hover:border-[#0E7C3A]">
-                  <Upload className="h-4 w-4" />
-                  {fileName ? <span className="bangla truncate text-zinc-800">{fileName}</span> : 'স্ক্রিনশট আপলোড করুন (ভিডিওতে বাংলা ভাঙলে সাহায্য করে)'}
-                  <input type="file" accept="image/*" className="hidden"
-                    onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
+                <div className="bp-form-field">
+                  <label htmlFor="cf-file">স্ক্রিনশট <span className="bp-muted">(ঐচ্ছিক)</span></label>
+                  <label className="bp-upload" htmlFor="cf-file">
+                    <Upload size={15} strokeWidth={1.7} aria-hidden="true" />
+                    {fileName ? <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{fileName}</span> : 'স্ক্রিনশট আপলোড করুন (ভিডিওতে বাংলা ভাঙলে সাহায্য করে)'}
+                    <input id="cf-file" type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
+                  </label>
+                </div>
+
+                <label className="bp-agree">
+                  <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+                  <span>আমি টার্মস &amp; কন্ডিশন মেনে নিচ্ছি।</span>
                 </label>
-              </div>
 
-              <label className="flex items-start gap-2.5 text-[13px] text-zinc-600">
-                <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-[#0E7C3A] focus:ring-[#0E7C3A]" />
-                <span className="bangla">আমি টার্মস & কন্ডিশন মেনে নিচ্ছি।</span>
-              </label>
+                {status === 'error' && (
+                  <div className="bp-form-err">{errorMsg}</div>
+                )}
 
-              {status === 'error' && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-600">{errorMsg}</div>
-              )}
-
-              <button type="submit" disabled={status === 'sending'}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0E7C3A] px-4 py-3 text-[14px] font-semibold text-white transition hover:bg-[#0c6a31] disabled:opacity-60">
-                <Send className="h-4 w-4" />
-                {status === 'sending' ? 'পাঠানো হচ্ছে…' : 'মেসেজ পাঠান'}
-              </button>
-              <p className="bangla text-center text-[11px] text-zinc-500">Avg reply 12 min • No bot, real human</p>
-            </form>
+                <button type="submit" disabled={status === 'sending'} className="bp-btn bp-btn-primary" style={{ width: '100%' }}>
+                  <Send size={15} strokeWidth={1.7} aria-hidden="true" />
+                  {status === 'sending' ? 'পাঠানো হচ্ছে…' : 'মেসেজ পাঠান'}
+                </button>
+                <p className="bp-muted" style={{ textAlign: 'center', fontSize: '.78rem' }}>Avg reply 12 min, No bot, real human</p>
+              </form>
             )}
-
           </div>
         </div>
       </section>
 
-      {/* Quick help cards — deflect ~40% tickets */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-10">
-        <div className="grid gap-4 md:grid-cols-3">
+      {/* Quick help */}
+      <section className="bp-sec" style={{ paddingTop: 0 }}>
+        <div className="bp-wrap bp-quick-grid">
           {QUICK_HELP.map((c) => {
             const Ic = c.icon
             return (
-              <Link key={c.href} href={c.href}
-                    className="group rounded-[20px] border border-zinc-200 bg-white p-5 transition hover:border-[#0E7C3A]/40 hover:shadow-[0_12px_32px_-16px_rgba(14,124,58,0.25)]">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#0E7C3A]/10 text-[#0E7C3A]">
-                    <Ic className="h-5 w-5" />
-                  </div>
-                  <h3 className="bangla text-[15px] font-semibold">{c.title}</h3>
+              <Link key={c.href} href={c.href} className="bp-tile" style={{ textDecoration: 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.7rem' }}>
+                  <span className="bp-info-ic" style={{ width: 38, height: 38 }}><Ic size={18} strokeWidth={1.7} aria-hidden="true" /></span>
+                  <h3 style={{ fontSize: '1rem', marginBottom: 0 }}>{c.title}</h3>
                 </div>
-                <p className="bangla mt-3 text-[13px] leading-5 text-zinc-500">{c.body}</p>
+                <p style={{ marginTop: '.7rem', fontSize: '.9rem' }}>{c.body}</p>
               </Link>
             )
           })}
         </div>
       </section>
 
-      {/* Local trust: office + hours + social proof */}
-      <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-16">
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Office map placeholder */}
-          <div className="md:col-span-2 rounded-[24px] border border-zinc-200 bg-white p-6">
-            <div className="flex items-center gap-2 text-[#0E7C3A] mb-1">
-              <MapPin className="h-4 w-4" />
-              <span className="bangla text-[14px] font-medium">আমাদের অফিস</span>
+      {/* Office + proof */}
+      <section className="bp-sec" style={{ paddingTop: 0 }}>
+        <div className="bp-wrap bp-office-grid">
+          <div className="bp-tile" style={{ gridColumn: 'span 2' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', color: 'var(--bp-green)' }}>
+              <MapPin size={15} strokeWidth={1.7} aria-hidden="true" />
+              <span style={{ fontSize: '.9rem', fontWeight: 600 }}>আমাদের অফিস</span>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-zinc-200 bg-[#FCFCF9] p-4">
-                <p className="bangla text-[13px] font-semibold text-zinc-800">ঢাকা</p>
-                <p className="bangla mt-1 text-[12px] text-zinc-500">মিরপুর, ঢাকা — ১২১৬</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.8rem', marginTop: '.8rem' }}>
+              <div className="bp-mini-card">
+                <p style={{ fontWeight: 700, fontSize: '.92rem' }}>ঢাকা</p>
+                <p className="bp-muted" style={{ fontSize: '.82rem', marginTop: '.2rem' }}>মিরপুর, ঢাকা - ১২১৬</p>
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-[#FCFCF9] p-4">
-                <p className="bangla text-[13px] font-semibold text-zinc-800">বগুড়া</p>
-                <p className="bangla mt-1 text-[12px] text-zinc-500">সাতমাথা, বগুড়া — ৫৮০০</p>
+              <div className="bp-mini-card">
+                <p style={{ fontWeight: 700, fontSize: '.92rem' }}>বগুড়া</p>
+                <p className="bp-muted" style={{ fontSize: '.82rem', marginTop: '.2rem' }}>সাতমাথা, বগুড়া - ৫৮০০</p>
               </div>
             </div>
-            <div className="mt-3 flex items-center gap-2 rounded-2xl bg-zinc-900 p-4 text-white">
-              <Clock className="h-4 w-4 text-[#0E7C3A]" />
-              <span className="bangla text-[13px]">Sat–Thu ১০am–৭pm • Friday বন্ধ</span>
+            <div className="bp-hours">
+              <Clock size={15} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-amber)' }} />
+              <span>শনি-বৃহঃ সকাল ১০টা - সন্ধ্যা ৭টা, শুক্রবার বন্ধ</span>
             </div>
           </div>
 
-          {/* Social proof */}
-          <div className="flex flex-col justify-center gap-4 rounded-[24px] border border-zinc-200 bg-white p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 rounded-full bg-[#0E7C3A]/10 px-3 py-1.5">
-                <Star className="h-4 w-4 fill-[#0E7C3A] text-[#0E7C3A]" />
-                <span className="text-[14px] font-bold text-[#0E7C3A]">4.8</span>
-              </div>
-              <span className="bangla text-[13px] text-zinc-600">৫০০+ ক্রিয়েটর বিশ্বাস করে</span>
+          <div className="bp-tile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '.9rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+              <span className="bp-stamp" style={{ padding: '.3rem .8rem', fontSize: '.9rem' }}>
+                <Star size={14} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-amber)', fill: 'var(--bp-amber)' }} />
+                4.8
+              </span>
+              <span className="bp-muted" style={{ fontSize: '.88rem' }}>৫০০+ ক্রিয়েটর বিশ্বাস করে</span>
             </div>
-            <p className="bangla text-[13px] leading-5 text-zinc-500">
-              বাংলাদেশের ৫০০+ ক্রিয়েটর ও এজেন্সি HostAmar ব্যবহার করছে — ভিডিও, হোস্টিং, চ্যাট সব এক জায়গায়।
+            <p className="bp-muted" style={{ fontSize: '.88rem', lineHeight: 1.6 }}>
+              বাংলাদেশের ৫০০+ ক্রিয়েটর ও এজেন্সি Hostamar ব্যবহার করছে, ভিডিও, হোস্টিং, চ্যাট সব এক জায়গায়।
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="bp-stamp-row" style={{ gap: '.4rem' }}>
               {['Video', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming'].map((p) => (
-                <span key={p} className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-600">{p}</span>
+                <span key={p} className="bp-stamp" style={{ padding: '.22rem .7rem', fontSize: '.8rem' }}>{p}</span>
               ))}
             </div>
           </div>
         </div>
       </section>
-
     </div>
   )
 }

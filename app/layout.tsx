@@ -1,4 +1,5 @@
 import './globals.css'
+import './bazaar.css'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
@@ -162,7 +163,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <meta name="theme-color" content="#3b82f6" />
@@ -187,7 +188,7 @@ export default async function RootLayout({
                   dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
                 />
       </head>
-      <body>
+      <body className="bp-theme">
         <Providers>
           <LocaleProvider locale={locale}>
           <ChromeGuard>{children}</ChromeGuard>
