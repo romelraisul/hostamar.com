@@ -17,8 +17,10 @@ export const runtime = 'nodejs'
 //
 // Body: { variant_id, quantity?, email, name, address1, city, postcode? }
 // Response: { orderId, amountBdt, status }
-// Auth: none (public — like /api/contact / /api/services/catalog). Rate-limited.
-// Env: MEDUSA_URL (default https://store.hostamar.com), MEDUSA_PK (publishable key).
+//   Auth: none (public — like /api/contact / /api/services/catalog). Rate-limited.
+// Env: MEDUSA_URL (default = CF Workers bridge, workers.dev egress is not
+// challenged; store.hostamar.com zone WAF 403s Vercel SSR egress — see 09-14 shift),
+// MEDUSA_PK (publishable key).
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -63,31 +65,6 @@ export async function POST(req: NextRequest) {
   const [first, ...rest] = name.split(' ')
 
   try {
-    // FORGE probe: GET /health + POST /carts from Vercel egress (isolate CF challenge: IP vs method vs headers)
-    if (req.headers.get('x-forge-probe')) {
-      const base = process.env.MEDUSA_URL || 'https://store.hostamar.com'
-      const out: any = {}
-      const g = await fetch(`${base}/health`, { signal: AbortSignal.timeout(15000) })
-      out.get_health = g.status
-      const p = await fetch(`${base}/store/carts`, {
-        method: 'POST',
-        headers: {
-          'x-publishable-api-key': process.env.MEDUSA_PK || '',
-          'content-type': 'application/json',
-          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
-          accept: 'application/json, text/plain, */*',
-          origin: 'https://hostamar.com',
-          referer: 'https://hostamar.com/store',
-          'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-site', 'sec-fetch-dest': 'empty',
-        },
-        body: JSON.stringify({ region_id: REGION }),
-        signal: AbortSignal.timeout(15000),
-      })
-      const t = await p.text()
-      out.post_carts = p.status
-      out.post_body = t.slice(0, 60)
-      return NextResponse.json(out)
-    }
     const { cart } = await medusa('/carts', { method: 'POST', json: { region_id: REGION } })
     await medusa(`/carts/${cart.id}/line-items`, { method: 'POST', json: { variant_id, quantity } })
     await medusa(`/carts/${cart.id}`, {
@@ -110,7 +87,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: any) {
     console.error('[store/checkout]', e?.message)
-    // FORGE debug: 200+detail so Cloudflare does not swallow the body; REVERT to 502 after root-cause.
-    return NextResponse.json({ error: 'debug', detail: String(e?.message).slice(0, 260) })
+    return NextResponse.json({ error: 'Checkout unavailable. Try again or contact us.' }, { status: 502 })
   }
 }
