@@ -7,11 +7,12 @@ import Link from 'next/link'
 import { PRODUCTS } from '@/lib/products'
 import {
   LayoutDashboard, Users, ShoppingCart, TrendingUp, DollarSign, Activity, Video, Server, CreditCard,
-  CheckCircle, Clock, AlertCircle, RefreshCw, Search, Eye, MoreVertical, Shield, Coins, Receipt, Cpu, Package, Globe, Zap, HardDrive, CpuIcon
+  CheckCircle, Clock, AlertCircle, RefreshCw, Radio, Search, Eye, MoreVertical, Shield, Coins, Receipt, Cpu, Package, Globe, Zap, HardDrive, CpuIcon
 } from 'lucide-react'
+import EmployeesTab from './components/ops/EmployeesTab'
 
 // ── helpers ──────────────────────────────────────────────────────────
-const TABS = ['overview','users','leads','credits','transactions','models','fleet','second-brain','guard','drive','products','hosting'] as const
+const TABS = ['overview','users','leads','credits','transactions','models','fleet','employees','second-brain','guard','drive','products','hosting'] as const
 type Tab = typeof TABS[number]
 
 function fmt(n: number | undefined | null) { return (n ?? 0).toLocaleString() }
@@ -1118,6 +1119,7 @@ export default function AdminDashboard() {
             { id:'transactions', label:'লেনদেন', icon: Receipt },
             { id:'models', label:'মডেল·১২০', icon: Cpu },
             { id:'fleet', label:'ফ্লিট·৫', icon: Activity },
+            { id:'employees', label:'এমপ্লয়িজ·১৬', icon: Radio },
             { id:'second-brain', label:'সেকেন্ড-ব্রেইন', icon: Search },
             { id:'guard', label:'গার্ড', icon: Shield },
             { id:'drive', label:'ড্রাইভ', icon: HardDrive },
@@ -1139,6 +1141,7 @@ export default function AdminDashboard() {
           {active==='transactions' && <TransactionsTab/>}
           {active==='models' && <ModelsTab/>}
           {active==='fleet' && <FleetTab/>}
+          {active==='employees' && <EmployeesTab/>}
           {active==='second-brain' && <SecondBrainTab/>}
           {active==='guard' && <GuardTab/>}
           {active==='drive' && <DriveTab/>}
