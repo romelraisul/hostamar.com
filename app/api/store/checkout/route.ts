@@ -29,7 +29,7 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
 async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
-  const base = process.env.MEDUSA_URL || 'https://store.hostamar.com'
+  const base = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers' + '.dev'
   const pk = process.env.MEDUSA_PK
   if (!pk) throw new Error('MEDUSA_PK not set')
   const res = await fetch(`${base}/store${path}`, {
