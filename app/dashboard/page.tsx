@@ -70,7 +70,7 @@ function CreditMeter({ credits, loading }: { credits: number; loading: boolean }
 function RecentCard({ videos }: { videos: RecentVideo[] }) {
   const { t } = useLocale()
   return (
-    <div className="rounded-2xl border bg-white shadow-sm overflow-hidden">
+    <div className="bp-card overflow-hidden">
       <div className="px-5 py-4 border-b flex items-center justify-between">
         <h3 className="font-semibold text-[#0F172A] flex items-center gap-2"><Clock className="w-4 h-4 text-[#64748B]" /> Recent Projects</h3>
         <Link href="/dashboard/videos" className="text-xs font-semibold text-[#2563EB] hover:underline">View all →</Link>
@@ -367,7 +367,7 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Chat — AI চ্যাট বাংলা</h3><span className="text-xs bg-zinc-900 text-white px-2.5 py-1 rounded-full">1cr/msg • 100/day</span></div>
                 <div className="rounded-xl border bg-[#F8FAFC] p-4">
-                  <div className="flex gap-2"><span className="w-8 h-8 rounded-full bg-[#0E7C3A] text-white grid place-items-center text-xs">AI</span><div className="rounded-2xl bg-white border px-4 py-3 text-sm shadow-sm max-w-[85%]">হ্যালো! আমি Hostamar AI — বাংলায় সাহায্য করি।</div></div>
+                  <div className="flex gap-2"><span className="w-8 h-8 rounded-full bg-[#0E7C3A] text-white grid place-items-center text-xs">AI</span><div className="bp-card px-4 py-3 text-sm shadow-sm max-w-[85%]">হ্যালো! আমি Hostamar AI — বাংলায় সাহায্য করি।</div></div>
                   <div className="mt-3 rounded-xl bg-white border p-3 text-xs text-[#64748B]">Tawk.to FREE fallback + Hostamar AI assist • Messenger till 11pm</div>
                 </div>
                 <div className="flex gap-2"><input placeholder="মেসেজ লিখুন..." className="flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:border-[#0E7C3A]" /><button className="px-5 py-3 rounded-xl bg-[#0E7C3A] text-white font-bold">Send</button></div>

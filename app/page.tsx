@@ -87,8 +87,8 @@ export default function HomePage() {
               bKash, Nagad, Rocket
             </span>
             <span className="bp-stamp">
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ fill: 'var(--bp-amber)', stroke: 'none' }}><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.9l-5.3 2.7 1-5.8-4.2-4.1 5.9-.9L12 3.5z" /></svg>
-              ৪.৮ রেটিং
+              <svg className="bp-stamp-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 8.5A2.5 2.5 0 0 0 7.1 21h9.8a2.5 2.5 0 0 0 2.1-3.5L14 9V3" /></svg>
+              BETA, নতুন ফিচার চলছে
             </span>
           </div>
         </section>
