@@ -489,6 +489,7 @@ export default function TvPage() {
                 { f: 'receipt-bkash.mp4', t: 'bKash Payments Receipt' },
                 { f: 'receipt-uptime.mp4', t: 'Uptime Receipt' },
                 { f: 'receipt-teldrive.mp4', t: 'Teldrive Receipt' },
+                { f: 'receipt-monitor.mp4', t: 'Monitor Receipt' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
