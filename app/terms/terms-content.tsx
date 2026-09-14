@@ -52,8 +52,8 @@ const SECTIONS = [
     no: '4',
     title: 'Payment & Billing',
     icon: Scale,
-    body: 'All prices are in Bangladeshi Taka (BDT) and include applicable VAT. We accept bKash, Nagad, and Rocket. Paid plans auto-renew; you may cancel anytime before the next cycle. Failed payments retry per our retry policy; service may pause until dues clear. Upgrades take effect immediately (pro-rated); downgrades apply at next cycle.',
-    bn: 'দাম সব BDT-এ, ভ্যাট সহ। bKash / Nagad / Rocket দিয়ে পেমেন্ট — অটো-রিনিউ করে।',
+    body: 'All prices are in Bangladeshi Taka (BDT). We accept bKash, Nagad, and Rocket via manual Send Money. Paid plans auto-renew; you may cancel anytime before the next cycle. Failed payments retry per our retry policy; service may pause until dues clear. Upgrades take effect immediately (pro-rated); downgrades apply at next cycle.',
+    bn: 'দাম সব BDT-এ। bKash / Nagad / Rocket দিয়ে ম্যানুয়াল সেন্ড মানি — অটো-রিনিউ করে।',
   },
   {
     id: 'refunds',

@@ -213,7 +213,7 @@ export default function PricingPage() {
                   </a>
                   <TrxVerify plan={p} credits={p.credits} />
 
-                  {/* Stripe */}
+                  {/* Card checkout (Stripe/PayPal) — one shared handler */}
                   <button
                     onClick={() => startStripe(p.id)}
                     disabled={checkoutPlan !== null}
@@ -248,7 +248,7 @@ export default function PricingPage() {
         </div>
 
         <p className="bp-muted" style={{ marginTop: '1rem', textAlign: 'center', fontSize: '.78rem' }}>
-          bKash / Nagad / Rocket / Stripe / PayPal, ভ্যাট সহ ইনভয়েস, ৭ দিন মানি-ব্যাক
+          bKash / Nagad / Rocket সেন্ড মানি, কার্ড (Stripe/PayPal) — ৭ দিন মানি-ব্যাক
         </p>
       </section>
 
@@ -258,7 +258,7 @@ export default function PricingPage() {
           <div className="bp-scallop bp-scallop-flip" aria-hidden="true" />
           <div className="bp-cta-band">
             <h2 style={{ color: 'var(--bp-card)' }}>ফ্রিতে শুরু করুন, ৭ দিন মানি-ব্যাক</h2>
-            <p>SSL সুরক্ষিত, ভ্যাট সহ ইনভয়েস, যেকোনো সময় Cancel</p>
+            <p>SSL সুরক্ষিত, bKash / Nagad / Rocket দিয়ে পেমেন্ট, যেকোনো সময় Cancel</p>
             <Link href="/generate" className="bp-btn bp-btn-light">ফ্রিতে ভিডিও বানান, ৳০</Link>
           </div>
           <div className="bp-scallop" aria-hidden="true" />
