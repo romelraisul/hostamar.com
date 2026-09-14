@@ -9,8 +9,36 @@ export const maxDuration = 30
  * Routes:
  *   POST /api/social/publish — { platform: 'facebook'|'x'|'youtube', message: string, mediaUrl?: string }
  */
+/**
+ * Shared-secret guard. The endpoint is listed in middleware publicApiPaths
+ * (no cookie auth is possible for server-to-server callers), so it MUST
+ * fail closed here — otherwise it is an unauthenticated open relay to the
+ * Cloudflare Worker queue.
+ *
+ * Callers must send:  x-social-secret: <SOCIAL_PUBLISH_SECRET>
+ * If SOCIAL_PUBLISH_SECRET is unset we fall back to the existing
+ * FLEET_REPORT_SECRET (already provisioned in prod) so no new secret is
+ * required to close the hole.
+ */
+function socialSecret(): string {
+  return (process.env.SOCIAL_PUBLISH_SECRET || process.env.FLEET_REPORT_SECRET || '').trim()
+}
+
+function authorized(req: NextRequest): boolean {
+  const secret = socialSecret()
+  const provided = (req.headers.get('x-social-secret') || '').trim()
+  return !!secret && provided === secret
+}
+
 export async function POST(req: NextRequest) {
-  const body = await req.json()
+  if (!authorized(req)) {
+    return NextResponse.json(
+      { error: 'unauthorized', hint: 'send header x-social-secret' },
+      { status: 401 },
+    )
+  }
+
+  const body = await req.json().catch(() => ({}))
   const { platform, message, mediaUrl } = body
 
   if (!platform || !message) {
@@ -50,7 +78,8 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     message: 'Social publishing API',
-    usage: 'POST { platform, message, mediaUrl? }',
+    usage: 'POST { platform, message, mediaUrl? } with header x-social-secret',
     platforms: ['facebook', 'x', 'twitter', 'youtube'],
+    auth: 'header x-social-secret (SOCIAL_PUBLISH_SECRET, falls back to FLEET_REPORT_SECRET)',
   })
 }
