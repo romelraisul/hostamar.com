@@ -485,6 +485,7 @@ export default function TvPage() {
                 { f: 'receipt-commerce.mp4', t: 'Commerce Receipt' },
                 { f: 'receipt-secondbrain.mp4', t: 'Second Brain Receipt' },
                 { f: 'receipt-mcp.mp4', t: 'MCP Catalog Receipt' },
+                { f: 'receipt-surveillance.mp4', t: 'Surveillance Receipt' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
