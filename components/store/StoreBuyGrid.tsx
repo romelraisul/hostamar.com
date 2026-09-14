@@ -17,7 +17,9 @@ interface Prod { id: string; title: string; variantId: string; amountBdt: number
 type Phase = 'idle' | 'submitting' | 'done' | 'error'
 
 export default function StoreBuyGrid() {
-  const [prods, setProds] = useState<Prod[]>([])
+  const [all, setAll] = useState<Prod[]>([])
+  const [q, setQ] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const [open, setOpen] = useState<Prod | null>(null)
   const [phase, setPhase] = useState<Phase>('idle')
   const [orderId, setOrderId] = useState('')
@@ -28,11 +30,15 @@ export default function StoreBuyGrid() {
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d) => {
         const list: Prod[] = (d.products || []).filter((p: Prod) => p.amountBdt > 0)
-        // Top priced first; 12 flagship items max (the 110 clone-services share a slot).
-        setProds(list.sort((a, b) => b.amountBdt - a.amountBdt).slice(0, 12))
+        setAll(list.sort((a, b) => b.amountBdt - a.amountBdt))
       })
-      .catch(() => setProds([]))
+      .catch(() => setAll([]))
   }, [])
+
+  // Default = 12 flagships; search or "সব দেখাও" unlocks the other 111 (they
+  // had NO buy button — StoreCatalog below still routes to /signup).
+  const ql = q.trim().toLowerCase()
+  const shown = ql ? all.filter((p) => p.title.toLowerCase().includes(ql)) : showAll ? all : all.slice(0, 12)
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -62,14 +68,33 @@ export default function StoreBuyGrid() {
     }
   }
 
-  if (!prods.length) return null
+  if (!all.length) return null
 
   return (
     <div className="mt-12">
       <div className="text-xs font-semibold tracking-widest" style={{ color: GREEN }}>লাইভ অর্ডার — মেডুসা ক্যাটালগ</div>
       <h2 className="text-2xl font-bold mt-2">২ ক্লিকে অর্ডার — লগইন লাগবে না</h2>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="সার্চ করুন — voice, video, dubbing…"
+          aria-label="সার্ভিস সার্চ"
+          className="w-full sm:w-72 rounded-full border px-4 py-2 text-sm outline-none focus:border-[#0E7C3A]"
+        />
+        {!ql && all.length > 12 && (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="rounded-full border px-4 py-2 text-xs font-semibold hover:bg-zinc-50"
+            style={{ color: GREEN }}
+          >
+            {showAll ? 'শুধু টপ ১২ দেখাও' : `সব ${all.length}টি দেখাও`}
+          </button>
+        )}
+        {ql && <span className="text-xs text-zinc-500">{shown.length}টি ফলাফল</span>}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
-        {prods.map((p) => (
+        {shown.map((p) => (
           <div key={p.variantId} className="rounded-2xl border bg-white p-5 flex flex-col justify-between gap-4">
             <div className="font-bold text-sm leading-snug">{p.title}</div>
             <div>
