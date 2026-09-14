@@ -5,6 +5,8 @@
 // email, file-name capture, agreement gate, real phone/WhatsApp/office data.
 // Only presentation restyled.
 
+import BazaarNav from '@/components/home/BazaarNav'
+import BazaarFooter from '@/components/home/BazaarFooter'
 import { useState } from 'react'
 import Link from 'next/link'
 import {
@@ -87,6 +89,7 @@ export default function ContactPage() {
 
   return (
     <div className="bp-theme">
+      <BazaarNav />
       <div className="bp-page-hero" style={{ textAlign: 'center' }}>
         <div className="bp-wrap" style={{ maxWidth: 760, marginInline: 'auto' }}>
           <span className="bp-stamp" style={{ marginBottom: '.8rem' }}>
@@ -315,6 +318,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+    <BazaarFooter />
     </div>
   )
 }

@@ -1,3 +1,5 @@
+import BazaarNav from '@/components/home/BazaarNav'
+import BazaarFooter from '@/components/home/BazaarFooter'
 import { Metadata } from 'next'
 import Link from 'next/link'
 
@@ -30,6 +32,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="bp-theme">
+      <BazaarNav />
       <div className="bp-page-hero">
         <div className="bp-wrap">
           <h1>বাংলাদেশে তৈরি, বাংলাদেশের জন্য</h1>
@@ -112,6 +115,7 @@ export default function AboutPage() {
         </div>
         <div className="bp-scallop" aria-hidden="true" />
       </div>
+    <BazaarFooter />
     </div>
   );
 }
