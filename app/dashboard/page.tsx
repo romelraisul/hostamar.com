@@ -449,7 +449,7 @@ export default function DashboardPage() {
       <div className="sticky bottom-4 z-10">
         <div className="mx-auto max-w-3xl rounded-full bg-[#0F172A] text-white px-4 py-3 flex items-center justify-between gap-3 shadow-xl border border-white/10">
           <span className="text-sm"><span className="font-bold">{shownCredits.toLocaleString()} credit</span> • {COST_HINT[activeProduct] || '—'} per use</span>
-          <Link href={DASHBOARD_ROUTES[activeProduct] ?? '/dashboard'} className="shrink-0 rounded-full bg-[#0E7C3A] px-5 py-2 text-sm font-bold hover:bg-[#0c6a32] flex items-center gap-2">
+          <Link href={DASHBOARD_ROUTES[activeProduct] ?? '/dashboard'} className="shrink-0 rounded-full bg-[#0E7C3A] text-white px-5 py-2 text-sm font-bold hover:bg-[#0c6a32] flex items-center gap-2">
             Use now <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
