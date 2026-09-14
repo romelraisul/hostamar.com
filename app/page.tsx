@@ -75,12 +75,12 @@ export default function HomePage() {
         <section className="bp-sec" style={{ paddingBlock: '0.6rem 2rem' }} aria-label="আস্থার প্রমাণ">
           <div className="bp-wrap bp-stamp-row bp-rise bp-d3" style={{ justifyContent: 'center' }}>
             <span className="bp-stamp">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" /></svg>
-              BDIX ২০ms ঢাকা PoP
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
+              ৪৬টি লাইভ রেন্ডার — /tv
             </span>
             <span className="bp-stamp">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" /><path d="M9.5 12l2 2 3.5-4" /></svg>
-              ৯৯.৯% SLA
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6l-5 6 5 6M16 6l5 6-5 6" /></svg>
+              ১০৯ AI টুলস, এক API
             </span>
             <span className="bp-stamp">
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h4" /></svg>
@@ -191,10 +191,10 @@ export default function HomePage() {
                 <span className="bp-tag">ক্লাউড হোস্টিং</span>
                 <h3>হোস্টিং, ৫GB ফ্রি</h3>
                 <ul className="bp-check">
-                  <li>{CHECK}BDIX ২০ms লেটেন্সি, NVMe SSD</li>
-                  <li>{CHECK}বাংলা cPanel, ইংরেজি না বুঝলেও চলবে</li>
+                  <li>{CHECK}Vercel এজ + Cloudflare CDN, ফ্রি SSL</li>
+                  <li>{CHECK}বাংলা ড্যাশবোর্ড, ইংরেজি না বুঝলেও চলবে</li>
                   <li>{CHECK}ফ্রি SSL, অটো-ইনস্টল</li>
-                  <li>{CHECK}LiteSpeed + LSCache + JetBackup</li>
+                  <li>{CHECK}গিট পুশে লাইভ, জিরো-ডাউনটাইম ডিপ্লয়</li>
                 </ul>
                 <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
                   <Link href="/hosting" className="bp-btn bp-btn-ghost">হোস্টিং দেখুন</Link>
@@ -227,7 +227,7 @@ export default function HomePage() {
               <div className="bp-tile bp-span2">
                 <span className="bp-tag">গেমিং</span>
                 <h3>ক্লাউড গেমিং</h3>
-                <p>ঢাকা সার্ভারে ১৫ms লো পিং, ডাউনলোড ছাড়াই HTML5 গেম, টুর্নামেন্ট হোস্ট করুন</p>
+                <p>ডাউনলোড ছাড়াই HTML5 গেম, ব্রাউজারেই ইনস্ট্যান্ট লঞ্চ, টুর্নামেন্ট হোস্ট করুন</p>
                 <div style={{ marginTop: '.9rem' }}>
                   <Link href="/game" className="bp-btn bp-btn-ghost">গেম খেলুন</Link>
                 </div>
@@ -285,7 +285,7 @@ export default function HomePage() {
             <div className="bp-fine">
               <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" /></svg>সুরক্ষিত পেমেন্ট</span>
               <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" /></svg>৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
-              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6" /></svg>ভ্যাট সহ</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6" /></svg>bKash / Nagad / Rocket</span>
             </div>
           </div>
         </section>
