@@ -87,6 +87,13 @@ export async function callBestModel(
       }
     : {};
 
+// ECHO 2026-09-14: cheap chain-of-thought detector — kilo-auto/free (and any
+// future router swap) can emit reasoning INSIDE .content; that must never reach
+// customers. Treat as empty so the fallback chain moves on.
+function looksLikeCot(t: string): boolean {
+  return /(?:^|\n)\s*(?:Let me|First[,:] ?|I need to|The user)(?:\b| is)/i.test(t.slice(0, 200));
+}
+
   const kilocodeCall = (m: string) => async (): Promise<Res> => {
     if (!process.env.KILOCODE_API_KEY) throw new Error('no kilocode key');
     const base = process.env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway';
@@ -96,7 +103,10 @@ export async function callBestModel(
       // one attempt consume time the function doesn't have.
       signal: AbortSignal.timeout(attemptTimeoutMs()),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.KILOCODE_API_KEY}` },
-      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
+      // ECHO 2026-09-14 20:1x: kilo-auto/free is an AUTO-ROUTER that flipped to a
+      // model emitting chain-of-thought IN .content (public COT_LEAK 19:5x).
+      // thinking:disabled keeps content clean (verified vs api.kilo.ai 20:0x).
+      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, thinking: { type: 'disabled' }, ...toolFields }),
     });
     if (!r.ok) throw new Error(`kilocode ${r.status}`);
     const j: any = await r.json();
@@ -120,7 +130,7 @@ export async function callBestModel(
     const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
     const rawReasoning = typeof choice?.reasoning === 'string' ? choice.reasoning.trim() : '';
     const txt = rawTxt || rawReasoning || null;
-    if (!txt) throw new Error('empty');
+    if (!txt || (rawTxt && looksLikeCot(rawTxt))) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilocode' };
   };
 
@@ -131,7 +141,7 @@ export async function callBestModel(
       method: 'POST',
       signal: AbortSignal.timeout(attemptTimeoutMs()),
       headers: { 'Content-Type': 'application/json', 'x-internal-key': String(key) },
-      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
+      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, thinking: { type: 'disabled' }, ...toolFields }),
     });
     if (!r.ok) throw new Error(`edge ${r.status}`);
     const j: any = await r.json();
@@ -153,7 +163,7 @@ export async function callBestModel(
     const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
     const rawReasoning = typeof choice?.reasoning === 'string' ? choice.reasoning.trim() : '';
     const txt = rawTxt || rawReasoning || null;
-    if (!txt) throw new Error('empty');
+    if (!txt || (rawTxt && looksLikeCot(rawTxt))) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilo-edge' };
   };
 
