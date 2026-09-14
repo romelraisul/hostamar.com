@@ -206,7 +206,7 @@ export default function ChatPage(){
               </div>
             </div>
             <div className="bg-zinc-50 border-t lg:border-t-0 lg:border-l border-zinc-200 p-6 sm:p-8 min-w-0">
-              <div className="rounded-2xl bg-white border border-zinc-200 p-4 shadow-sm">
+              <div className="bp-card p-4 shadow-sm">
                 <div className="text-[12px] font-semibold text-zinc-500">WIDGET STATUS</div>
                 <div className="mt-3 space-y-2 text-[13px] font-mono">
                   <div className="flex justify-between"><span className="text-zinc-500">SupportWidget</span><span className="text-emerald-600">● live</span></div>

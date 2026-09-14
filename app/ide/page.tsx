@@ -151,7 +151,7 @@ export default function IDEPage() {
           {FEATURES.map((f) => {
             const Icon = f.icon
             return (
-              <div key={f.t} className="rounded-2xl bg-white border border-zinc-200 p-5">
+              <div key={f.t} className="bp-card p-5">
                 <Icon className="w-6 h-6 text-[#2563EB] mb-3" />
                 <div className="bangla text-[15px] font-semibold">{f.t}</div>
                 <div className="bangla text-[13px] text-zinc-600 leading-[1.6] mt-1.5">{f.d}</div>
@@ -178,7 +178,7 @@ export default function IDEPage() {
       {/* Comparison */}
       <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-12">
         <h2 className="text-[24px] md:text-[28px] font-bold mb-6">Replit / CodeSandbox / StackBlitz বনাম Hostamar</h2>
-        <div className="rounded-2xl bg-white border border-zinc-200 overflow-hidden">
+        <div className="bp-card overflow-hidden">
           <div className="grid grid-cols-3 bg-zinc-50 border-b border-zinc-200 text-[13px] font-semibold">
             <div className="p-3">ফিচার</div>
             <div className="p-3 text-center">তাদের</div>
@@ -203,7 +203,7 @@ export default function IDEPage() {
         <h2 className="text-[24px] md:text-[28px] font-bold mb-6">কারা ব্যবহার করে</h2>
         <div className="grid md:grid-cols-3 gap-4">
           {USES.map((u) => (
-            <div key={u.t} className="rounded-2xl bg-white border border-zinc-200 p-5">
+            <div key={u.t} className="bp-card p-5">
               <div className="bangla text-[16px] font-semibold">{u.t}</div>
               <div className="bangla text-[13px] text-zinc-600 leading-[1.6] mt-2">{u.d}</div>
             </div>
