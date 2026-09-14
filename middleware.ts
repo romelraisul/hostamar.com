@@ -106,6 +106,7 @@ export async function middleware(request: NextRequest) {
     '/api/market-adjust',
     '/api/services/catalog',
     '/api/store/checkout',   // public Medusa checkout bridge (rate-limited at the route)
+    '/api/store/products',   // public Medusa catalog bridge (variant_id + BDT price)
     '/api/ai-services/catalog',
     '/api/mcp',
     '/api/orca',
