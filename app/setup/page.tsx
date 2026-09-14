@@ -99,7 +99,7 @@ export default function SetupPage() {
         {/* Step 1: Mailpit (Self-hosted SMTP) */}
         <div className="bg-gray-800 rounded-xl p-6 mb-4 border border-gray-700">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-[#0E7C3A] flex items-center justify-center text-sm font-bold">1</div>
+            <div className="w-8 h-8 rounded-full bg-[#0E7C3A] text-white flex items-center justify-center text-sm font-bold">1</div>
             <Mail className="w-5 h-5 text-[#0E7C3A]" />
             <h2 className="text-xl font-semibold">Mailpit — SMTP Server</h2>
             <span className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded-full">Self-hosted ✓</span>
