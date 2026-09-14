@@ -139,7 +139,7 @@ export default {
       }
 
       // Zero-cost: only :free models allowed through the edge gateway
-      const isFreeModel = model.endsWith(":free") || model.includes("longcat") || model.includes("ox-alpha") || model.includes("-free");
+      const isFreeModel = model.endsWith(":free") || model.endsWith("/free") || model.includes("longcat") || model.includes("ox-alpha") || model.includes("-free"); // ECHO 21:1x: "/free" (kilo-auto/free) never matched -> every edge attempt 402'd
       if (!isFreeModel) {
         return Response.json({ error: { message: `PAID_BLOCKED: ${model} not on free tier`, code: 402 } }, { status: 402 });
       }
