@@ -1,16 +1,17 @@
 'use client'
 
+// Bazaar Poster FAQ (Direction C, 2026-09). All logic preserved from the previous
+// version: search, category filter, '/' shortcut, auto-open, JSON-LD, real
+// WhatsApp/email/call links. Only presentation restyled.
+
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { Search, ChevronDown, MessageCircle, Mail, Phone, Clock, HelpCircle } from 'lucide-react'
+import { Search, ChevronDown, MessageCircle, Mail, Phone, Clock } from 'lucide-react'
 import { FAQS, FAQ_CATS, type FaqCat } from '@/lib/faqs'
 
-const PRIMARY = '#2563EB'
 const WHATSAPP = 'https://wa.me/8801822417463?text=হ্যাঁ,%20আমি%20সাহায্য%20চাই'
 const EMAIL = 'mailto:support@hostamar.com'
 const CALL = 'tel:+880****7463'
-
-const CATS = FAQ_CATS
 
 export default function FaqPage() {
   const [query, setQuery] = useState('')
@@ -27,7 +28,6 @@ export default function FaqPage() {
     })
   }, [query, cat])
 
-  // `/` shortcut focuses search
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === '/' && !/input|textarea/i.test((e.target as HTMLElement)?.tagName || '')) {
@@ -39,7 +39,6 @@ export default function FaqPage() {
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
-  // live filter opens first result
   useEffect(() => {
     setOpenId(filtered.length ? filtered[0].id : null)
   }, [filtered])
@@ -55,127 +54,116 @@ export default function FaqPage() {
   }), [])
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900">
+    <div className="bp-theme">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* trust banner */}
-      <div className="w-full bg-[#0E7C3A] text-white text-[12px] md:text-[13px] leading-none">
-        <div className="mx-auto max-w-[1180px] px-4 md:px-6 h-9 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-4 md:gap-6 font-medium">
-            <span className="flex items-center gap-1.5"><HelpCircle className="w-3.5 h-3.5 opacity-90" /> ২৪/৭ সাপোর্ট</span>
-            <span className="hidden sm:inline-flex items-center gap-1.5">গড় উত্তর ১২ মিনিট</span>
-            <span className="inline-flex items-center gap-1.5">৪.৮ রেটিং</span>
+      <div className="bp-page-hero">
+        <div className="bp-wrap">
+          <h1>
+            সচরাচর <span style={{ color: 'var(--bp-green)' }}>জিজ্ঞাসা</span>
+          </h1>
+          <p>bKash, ভিডিও, হোস্টিং, চ্যাট, আপনার সব প্রশ্নের উত্তর বাংলায়। ২ ক্লিকে উত্তর পান</p>
+          <div className="bp-stamp-row" style={{ marginTop: '1.1rem' }}>
+            <span className="bp-stamp">২৪/৭ সাপোর্ট</span>
+            <span className="bp-stamp">গড় উত্তর ১২ মিনিট</span>
+            <span className="bp-stamp">৪.৮ রেটিং</span>
+            <span className="bp-stamp">Made for Bangladesh</span>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-semibold tracking-wide">🇧🇩 Made for Bangladesh</span>
         </div>
       </div>
 
-      {/* hero */}
-      <section className="mx-auto max-w-[1180px] px-4 md:px-6 pt-12 md:pt-16 pb-6 text-center">
-        <h1 className="bangla text-[32px] md:text-[46px] font-bold tracking-[-0.03em] leading-[1.08]">
-          সচরাচর <span style={{ color: PRIMARY }}>জিজ্ঞাসা</span>
-        </h1>
-        <p className="bangla mt-3 text-[15px] md:text-[17px] text-zinc-500 max-w-[620px] mx-auto">
-          bKash, ভিডিও, হোস্টিং, চ্যাট — আপনার সব প্রশ্নের উত্তর বাংলায়। ২ ক্লিকে উত্তর পান।
-        </p>
-      </section>
+      <section className="bp-sec" style={{ paddingTop: '1.6rem' }}>
+        <div className="bp-wrap">
+          <div className="relative">
+            <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 20, height: 20, color: 'var(--bp-ink-soft)', pointerEvents: 'none' }} aria-hidden="true" />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="প্রশ্ন খুঁजুন... যেমন bKash পেমেন্ট"
+              aria-label="প্রশ্ন খুঁজুন"
+              className="bp-search"
+            />
+            <kbd className="bp-kbd">/</kbd>
+          </div>
 
-      {/* search + pills */}
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="প্রশ্ন খুঁজুন... যেমন bKash পেমেন্ট"
-            className="w-full rounded-2xl border border-zinc-200 bg-white py-3.5 pl-12 pr-16 text-[15px] outline-none focus:border-[#0E7C3A] focus:ring-2 focus:ring-[#0E7C3A]/20"
-          />
-          <kbd className="absolute right-4 top-1/2 -translate-y-1/2 rounded border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-semibold text-zinc-400">/</kbd>
-        </div>
-        <div className="scrollbar-none mt-3 flex gap-2 overflow-x-auto pb-1">
-          {CATS.map((c) => (
-            <button key={c.key} onClick={() => setCat(c.key)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-[14px] font-medium transition ${cat === c.key ? 'bg-[#0E7C3A] text-white shadow' : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-100'}`}>
-              {c.label}
-            </button>
-          ))}
-        </div>
-      </div>
+          <div className="bp-pill-row">
+            {CATS.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setCat(c.key)}
+                className={`bp-pill ${cat === c.key ? 'bp-pill-on' : ''}`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
 
-      {/* list + sidebar */}
-      <div className="mx-auto max-w-[1180px] px-4 md:px-6 py-8">
-        <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-          <div>
-            <p className="bangla mb-3 text-[13px] font-medium text-zinc-400">{filtered.length} টি প্রশ্ন</p>
-            <div className="space-y-3">
-              {filtered.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center">
-                  <p className="bangla text-[15px] text-zinc-500">কোনো মিল পাওয়া যায়নি। নিচের WhatsApp / ইমেইল করুন।</p>
-                  <Link href="/contact" className="bangla mt-3 inline-block font-semibold text-[#0E7C3A]">যোগাযোগ করুন →</Link>
-                </div>
-              )}
-              {filtered.map((f) => {
-                const open = openId === f.id
-                return (
-                  <div key={f.id} className={`overflow-hidden rounded-2xl border bg-white transition ${open ? 'border-[#0E7C3A]/40 ring-1 ring-[#0E7C3A]/20' : 'border-zinc-200'}`}>
-                    <button onClick={() => setOpenId(open ? null : f.id)}
-                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left">
-                      <span className="bangla text-[15px] font-semibold leading-snug">{f.q}</span>
-                      <ChevronDown className={`h-5 w-5 shrink-0 text-zinc-400 transition-transform ${open ? 'rotate-180' : ''}`} />
-                    </button>
-                    {open && (
-                      <div className="px-5 pb-5">
-                        <p className="bangla text-[14px] leading-6 text-zinc-600">{f.a}</p>
+          <div className="bp-faq-grid">
+            <div>
+              <p className="bp-muted" style={{ fontSize: '.85rem', marginBottom: '.7rem' }}>{filtered.length} টি প্রশ্ন</p>
+              <div className="bp-faq">
+                {filtered.length === 0 && (
+                  <div className="bp-faq-empty">
+                    <p>কোনো মিল পাওয়া যায়নি। নিচের WhatsApp / ইমেইল করুন।</p>
+                    <Link href="/contact" style={{ fontWeight: 600, color: 'var(--bp-green)' }}>যোগাযোগ করুন</Link>
+                  </div>
+                )}
+                {filtered.map((f) => {
+                  const open = openId === f.id
+                  return (
+                    <details key={f.id} open={open} onToggle={(e) => { const el = e.currentTarget; if (el.open) setOpenId(f.id); else if (openId === f.id) setOpenId(null) }}>
+                      <summary>
+                        {f.q}
+                        <ChevronDown size={18} strokeWidth={1.7} aria-hidden="true" style={{ flex: 'none', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .25s var(--bp-ease)' }} />
+                      </summary>
+                      <p>
+                        {f.a}
                         {f.link && (
-                          <Link href={f.link.href} className="bangla mt-3 inline-flex items-center gap-1 text-[14px] font-semibold text-[#0E7C3A]">
-                            {f.link.label} →
+                          <Link href={f.link.href} style={{ display: 'inline-flex', marginTop: '.5rem', fontWeight: 600, color: 'var(--bp-green)' }}>
+                            {f.link.label}
                           </Link>
                         )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+                      </p>
+                    </details>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-          {/* SIDEBAR */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-[96px] space-y-4">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-                <p className="bangla text-[15px] font-bold">উত্তর পাননি?</p>
-                <p className="bangla mt-1 text-[13px] text-zinc-500">১২ মিনিটের মধ্যে রিয়েল মানুষ উত্তর দেয়।</p>
-                <div className="mt-4 space-y-2">
-                  <a href={WHATSAPP} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-xl bg-[#0E7C3A] px-4 py-3 text-[14px] font-semibold text-white transition hover:bg-[#0c6c33]">
-                    <MessageCircle className="h-5 w-5" /> WhatsApp করুন
+
+            <aside className="bp-faq-side">
+              <div className="bp-faq-side-card">
+                <p style={{ fontFamily: 'var(--font-bn)', fontWeight: 700, fontSize: '1rem', color: 'var(--bp-ink)' }}>উত্তর পাননি?</p>
+                <p style={{ fontSize: '.85rem', color: 'var(--bp-ink-soft)', marginTop: '.2rem' }}>১২ মিনিটের মধ্যে রিয়েল মানুষ উত্তর দেয়।</p>
+                <div style={{ display: 'grid', gap: '.5rem', marginTop: '.9rem' }}>
+                  <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="bp-btn bp-btn-primary" style={{ padding: '.7rem 1rem', fontSize: '.92rem' }}>
+                    <MessageCircle size={18} strokeWidth={1.7} aria-hidden="true" /> WhatsApp করুন
                   </a>
-                  <a href={EMAIL}
-                    className="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-[14px] font-semibold text-zinc-700 transition hover:bg-zinc-50">
-                    <Mail className="h-5 w-5 text-[#0E7C3A]" /> ইমেইল লিখুন
+                  <a href={EMAIL} className="bp-btn bp-btn-ghost" style={{ padding: '.7rem 1rem', fontSize: '.92rem' }}>
+                    <Mail size={18} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-green)' }} /> ইমেইল লিখুন
                   </a>
-                  <a href={CALL}
-                    className="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-[14px] font-semibold text-zinc-700 transition hover:bg-zinc-50">
-                    <Phone className="h-5 w-5 text-[#0E7C3A]" /> কল করুন
+                  <a href={CALL} className="bp-btn bp-btn-ghost" style={{ padding: '.7rem 1rem', fontSize: '.92rem' }}>
+                    <Phone size={18} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-green)' }} /> কল করুন
                   </a>
                 </div>
-                <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#0E7C3A]/8 p-3 text-[13px] text-zinc-600">
-                  <Clock className="h-4 w-4 text-[#0E7C3A]" />
-                  <span className="bangla">গড় উত্তর ১২ মিনিট • কোনো বট নয়</span>
+                <div className="bp-faq-side-note">
+                  <Clock size={16} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-green)' }} />
+                  <span>গড় উত্তর ১২ মিনিট, কোনো বট নয়</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-                <p className="bangla text-[15px] font-bold">জনপ্রিয় নিবন্ধ</p>
-                <ul className="mt-3 space-y-2 text-[14px]">
-                  <li><Link href="/hosting" className="bangla text-zinc-600 hover:text-[#2563EB]">হোস্টিং মাইগ্রেশন গাইড</Link></li>
-                  <li><Link href="/browser" className="bangla text-zinc-600 hover:text-[#2563EB]">YouTube summary গাইড</Link></li>
-                  <li><Link href="/pricing" className="bangla text-zinc-600 hover:text-[#2563EB]">প্ল্যান কীভাবে বাছবেন</Link></li>
+              <div className="bp-faq-side-card">
+                <p style={{ fontFamily: 'var(--font-bn)', fontWeight: 700, fontSize: '1rem', color: 'var(--bp-ink)' }}>জনপ্রিয় নিবন্ধ</p>
+                <ul style={{ display: 'grid', gap: '.45rem', marginTop: '.55rem', fontSize: '.92rem' }}>
+                  <li><Link href="/hosting">হোস্টিং মাইগ্রেশন গাইড</Link></li>
+                  <li><Link href="/browser">YouTube summary গাইড</Link></li>
+                  <li><Link href="/pricing">প্ল্যান কীভাবে বাছবেন</Link></li>
                 </ul>
               </div>
-            </div>
-          </aside>
+            </aside>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
-  )
+  );
 }
