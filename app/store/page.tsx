@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import StoreCatalog from '@/components/store/StoreCatalog'
+import StoreBuyGrid from '@/components/store/StoreBuyGrid'
 
 export const metadata = {
   title: 'Store — Hostamar-এর ১০০+ সার্ভিস | 1cr=1TK',
@@ -108,6 +109,9 @@ export default function StorePage() {
             <li>3. ড্যাশবোর্ড → সার্ভিস → অর্ডার → ডেলিভারি ড্যাশবোর্ডে</li>
           </ol>
       </div>
+
+      {/* Live 2-click buy grid — real Medusa catalog, no login (FORGE) */}
+      <StoreBuyGrid />
 
       {/* Live catalog grid (client component, public API) */}
       <StoreCatalog />
