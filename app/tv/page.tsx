@@ -37,6 +37,10 @@ export default function TvPage() {
   const [youtubeLiveId, setYoutubeLiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [totalChannels, setTotalChannels] = useState(0);
+  // V36.32: aspect mode — desktop 16:9 landscape, mobile 9:16 portrait.
+  // 'auto' follows the actual video dimensions on loadedmetadata.
+  const [aspect, setAspect] = useState<'auto' | '16:9' | '9:16'>('auto');
+  const [isPortrait, setIsPortrait] = useState(false);
   const osdTimer = useRef<NodeJS.Timeout | null>(null);
 
   const current = channels[currentIdx] || channels[0];
@@ -263,7 +267,19 @@ export default function TvPage() {
       <main className="max-w-[1280px] mx-auto px-3 md:px-6 py-4 md:py-6 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 md:gap-6">
         {/* TV */}
         <div ref={containerRef} className="relative rounded-[18px] md:rounded-[22px] bg-[#0f1113] border border-white/[0.07] p-2 md:p-3 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
-          <div className="relative rounded-[14px] overflow-hidden bg-black aspect-video">
+          <div className={`relative rounded-[14px] overflow-hidden bg-black ${aspect === '9:16' || (aspect === 'auto' && isPortrait) ? 'aspect-[9/16] max-h-[75vh] mx-auto w-full sm:max-w-[420px]' : 'aspect-video'}`}>
+            {/* V36.32 aspect toggle: desktop 16:9 / mobile 9:16 / auto */}
+            <div className="absolute top-2 right-2 z-40 flex gap-1">
+              {(['auto', '16:9', '9:16'] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => { setAspect(m); showOSD(`ASPECT ${m.toUpperCase()}`); }}
+                  className={`mono text-[10px] px-2 py-1 rounded-md border ${aspect === m ? 'bg-white text-black border-white font-bold' : 'bg-black/60 text-zinc-300 border-white/20'}`}
+                >
+                  {m === 'auto' ? 'AUTO' : m}
+                </button>
+              ))}
+            </div>
             {!power ? (
               <div className="absolute inset-0 bg-[#060708] flex items-center justify-center">
                 <div className="text-center"><Power className="w-10 h-10 text-zinc-700 mx-auto mb-2" /><p className="mono text-xs text-zinc-600">STANDBY — Press POWER on remote</p></div>
@@ -285,7 +301,8 @@ export default function TvPage() {
                 <div className="text-center p-6"><Tv className="w-12 h-12 text-zinc-600 mx-auto mb-3" /><p className="mono text-xs text-zinc-400">{error}</p><button onClick={load} className="mt-3 px-4 py-2 rounded-lg bg-white/10 text-xs">Retry</button></div>
               </div>
             ) : (
-              <video ref={videoRef} controls={false} autoPlay muted playsInline className="w-full h-full object-contain" poster="/og-image.png" />
+              <video ref={videoRef} controls={false} autoPlay muted playsInline className="w-full h-full object-contain" poster="/og-image.png"
+                onLoadedMetadata={(e) => setIsPortrait(e.currentTarget.videoHeight > e.currentTarget.videoWidth)} />
             )}
             {/* Tap for Sound badge — muted state */}
             {muted && power && source === 'iptv' && !error && (
@@ -425,6 +442,59 @@ export default function TvPage() {
 
           {/* Ad slot — dynamic text ads */}
           <AdTicker variant="sidebar" channelId={current?.id} />
+
+          {/* OUR VIDEOS — zero-key OpenMontage renders, made with free infra */}
+          <div className="rounded-2xl border border-white/[0.07] bg-[#0c0e10] p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="mono text-xs font-bold tracking-widest text-zinc-400">OUR VIDEOS</h3>
+              <span className="mono text-[10px] px-2 py-0.5 rounded-full bg-emerald-900 text-emerald-300">$0 MADE</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { f: 'receipt-hosting.mp4', t: 'Hostamar Hosting' },
+                { f: 'receipt-gpu.mp4', t: 'GPU Spot Market' },
+                { f: 'receipt-agentcloud.mp4', t: 'Agent Cloud Receipt' },
+                { f: 'receipt-sovereign.mp4', t: 'Sovereign Video OS' },
+                { f: 'receipt-explainer.mp4', t: 'Receipt Explainer' },
+                { f: 'code-to-screen.mp4', t: 'Code to Screen' },
+                { f: 'focusflow-pitch.mp4', t: 'Focusflow Pitch' },
+                { f: 'world-in-numbers.mp4', t: 'World in Numbers' },
+                { f: 'receipt-privacy.mp4', t: 'Privacy Cloud Receipt' },
+                { f: 'receipt-observability.mp4', t: 'Observability Receipt' },
+                { f: 'receipt-eubdcloud.mp4', t: 'EU-BD Cloud Receipt' },
+                { f: 'receipt-memory.mp4', t: 'Agent Memory Receipt' },
+                { f: 'receipt-gpumarket.mp4', t: 'GPU Spot Market' },
+                { f: 'receipt-contextgraph.mp4', t: 'Context Graph Receipt' },
+                { f: 'receipt-automonetize.mp4', t: 'Auto-Monetize Receipt' },
+                { f: 'receipt-fullstack.mp4', t: 'Full Stack Receipt' },
+                { f: 'receipt-prices.mp4', t: 'Creative Studio Prices' },
+                { f: 'receipt-workforce.mp4', t: 'AI Workforce Receipt' },
+                { f: 'receipt-bangla.mp4', t: 'Bangla Service Receipt' },
+                { f: 'receipt-gateway.mp4', t: 'Free AI Gateway Receipt' },
+                { f: 'receipt-orchestrator.mp4', t: 'Serverless Orchestrator Receipt' },
+                { f: 'receipt-infrastructure.mp4', t: 'Infrastructure Receipt' },
+                { f: 'receipt-brain.mp4', t: 'AI Brain Receipt' },
+                { f: 'receipt-tv.mp4', t: 'Hostamar TV Receipt' },
+                { f: 'receipt-renderapi.mp4', t: 'Render API Receipt' },
+                { f: 'receipt-pipelines.mp4', t: 'Video Pipelines Receipt' },
+                { f: 'receipt-security.mp4', t: 'Security Receipt' },
+                { f: 'receipt-cdn.mp4', t: 'CDN Receipt' },
+                { f: 'receipt-tunnel.mp4', t: 'Tunnel Receipt' },
+                { f: 'receipt-durability.mp4', t: 'Durability Receipt' },
+                { f: 'receipt-evaluation.mp4', t: 'Evaluation Receipt' },
+                { f: 'receipt-commerce.mp4', t: 'Commerce Receipt' },
+                { f: 'receipt-secondbrain.mp4', t: 'Second Brain Receipt' },
+                { f: 'receipt-mcp.mp4', t: 'MCP Catalog Receipt' },
+                { f: 'receipt-surveillance.mp4', t: 'Surveillance Receipt' },
+                { f: 'receipt-bkash.mp4', t: 'bKash Payments Receipt' },
+                ].map((v) => (
+                <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
+                  <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
+                  <div className="px-2 py-1.5 mono text-[10px] text-zinc-300 truncate">{v.t}</div>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 mono text-[11px] leading-relaxed text-zinc-400">
             <span className="text-white font-bold">How it works:</span> Vercel kills streams after 10s → your PC (port 3001) via Cloudflare Tunnel tv.hostamar.com proxies HLS to bypass CORS. Viewers stay on <span className="text-emerald-400">hostamar.com/tv</span> with our ads even when you go Live on YouTube/Facebook — auto SOURCE switches to branded LIVE.

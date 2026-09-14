@@ -1,0 +1,32 @@
+{
+  "id": "s108",
+  "name": "M3E Canvas Vibe-Coding",
+  "nameBn": "এম৩ই ক্যানভাস ভাইব-কোডিং",
+  "category": "Professional",
+  "categoryBn": "প্রফেশনাল টুল",
+  "creditCost": 40,
+  "dollarRange": "$25",
+  "benefit": "Figma-quality app mockups 10x faster via local AI + M3 Expressive canvas",
+  "benefitBn": "লোকাল AI + M3 Expressive ক্যানভাসে ১০ গুণ দ্রুত Figma-মানের অ্যাপ মকআপ",
+  "perfectFor": "Founders & Designers",
+  "perfectForBn": "ফাউন্ডার ও ডিজাইনার",
+  "promptTemplate": "Build this design exactly as production-ready code. Target: Web. Language: English UI. Tech: Next.js App Router + Tailwind CSS, mobile-first. Screens: {{screens}}. Theme seed: green #0E7C3A, red #E4312B, Material 3 palette, rounded shapes, Roboto Flex. Device frames: Desktop 1280x800 and Phone 412x892 side by side (90% users are mobile — phone frame primary). Pricing in Bangladeshi Taka: 0 / 2,000 / 3,500 with bKash + Nagad payment buttons. Output only clean code, no explanation. Design must match 100%.",
+  "model": "qwen3.6-hermes",
+  "inputs": {
+    "screens": {
+      "type": "string",
+      "label": "Screens to build (e.g. Template Gallery → Editor → Preview → Download)",
+      "placeholder": "Template Gallery, Eid offer, Pohela Boishakh, 11.11, Editor (text+logo upload), Preview, Download",
+      "required": true
+    },
+    "product": {
+      "type": "string",
+      "label": "Product / Flow",
+      "placeholder": "AI Video (4 screens) or Hero Pricing page or Hosting dashboard or LuckyStar Game",
+      "required": true
+    }
+  },
+  "icon": "🎨",
+  "isActive": true,
+  "createdAt": "2026-09-09T04:30:00.000000Z"
+}
