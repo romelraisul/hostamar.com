@@ -494,6 +494,7 @@ export default function TvPage() {
                 { f: 'receipt-mrr.mp4', t: 'First-10-Customers Receipt' },
                 { f: 'receipt-customer.mp4', t: 'First Customer Receipt' },
                 { f: 'receipt-agentcloudbn.mp4', t: 'Agent Cloud (BN) — ২,৯০০/মাস' },
+                { f: 'receipt-fleet.mp4', t: '17 এজেন্ট ফ্লীট — $0.00/মাস' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
