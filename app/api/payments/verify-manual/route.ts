@@ -17,6 +17,7 @@ import {
   ensurePersonalPaymentSchema,
   type PersonalMethod,
 } from '@/lib/payments/personal'
+import { recordOpsEvent, OPS_LANES } from '@/lib/ops-events'
 
 /**
  * POST /api/payments/verify-manual
@@ -124,6 +125,16 @@ export async function POST(req: NextRequest) {
         status: 'PENDING',
         expiresAt: new Date(Date.now() + PENDING_EXPIRY_MINUTES * 60 * 1000),
       },
+    })
+
+    // V70 Ops Center live feed (best-effort, never throws).
+    void recordOpsEvent({
+      lane: OPS_LANES.payments,
+      type: 'PAYMENT',
+      severity: 'info',
+      title: `TrxID submitted — ${plan || '—'} ৳${amt}`,
+      body: `${m} · ${trx} · ${String(senderNumber).replace(/\s/g, '')}`,
+      meta: { verificationId: verification.id, method: m, amount: amt, plan: plan || null },
     })
 
     // Try instant auto-match against SMS log

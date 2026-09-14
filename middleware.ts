@@ -148,6 +148,7 @@ export async function middleware(request: NextRequest) {
     '/api/ai/health',
     // V28 owner-check — public honest status board (no secrets in output).
     '/api/owner-check',
+    '/api/ops/control-sync', // V70 Hermes fleet control sync — self-guards via x-fleet-secret header at the route
   ]
   if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()

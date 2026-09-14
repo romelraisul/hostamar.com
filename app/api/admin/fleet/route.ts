@@ -3,9 +3,12 @@
 // POST {employee, jobId, verdict, finished, couldnt, needsYou, raw, secret}
 //      → insert a shift report (cron employees post via WSL; guarded by
 //        FLEET_REPORT_SECRET so only the local employee chain can write).
+// V70: POST also mirrors the shift into the Ops Center — a REPORT FleetEvent
+//      (live feed) + an upsert of FleetLaneStatus (lane grid). Best-effort.
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
+import { recordOpsEvent, verdictSeverity } from '@/lib/ops-events'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -113,5 +116,27 @@ export async function POST(req: NextRequest) {
       runAt: body.runAt ? new Date(body.runAt) : new Date(),
     },
   })
+
+  // V70 Ops Center: mirror the shift into the live feed + lane grid.
+  // Best-effort and fully isolated — a failure here must never fail the report.
+  const verdict = row.verdict
+  const snippet = (row.needsYou || row.finished) ? String(row.needsYou || row.finished).slice(0, 240) : null
+  const runAt = new Date()
+  await Promise.allSettled([
+    recordOpsEvent({
+      lane: employee,
+      type: 'REPORT',
+      severity: verdictSeverity(verdict),
+      title: `Shift report — ${employee}${verdict ? ` (${verdict})` : ''}`,
+      body: snippet,
+      meta: { jobId: row.jobId, verdict },
+    }),
+    prisma.fleetLaneStatus.upsert({
+      where: { employee },
+      create: { employee, lastRunAt: runAt, verdict, lastSnippet: snippet },
+      update: { lastRunAt: runAt, verdict, lastSnippet: snippet },
+    }),
+  ])
+
   return NextResponse.json({ ok: true, id: row.id })
 }

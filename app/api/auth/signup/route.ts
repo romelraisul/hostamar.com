@@ -70,6 +70,19 @@ export async function POST(request: NextRequest) {
         include: { business: true }
       })
 
+      // V70 Ops Center live feed (best-effort, never throws).
+      try {
+        const { recordOpsEvent, OPS_LANES } = await import('@/lib/ops-events')
+        void recordOpsEvent({
+          lane: OPS_LANES.signups,
+          type: 'SIGNUP',
+          severity: 'success',
+          title: 'New signup',
+          body: `${customer.email}`,
+          meta: { customerId: customer.id, businessName: businessName || null, refCode: refCode || null },
+        })
+      } catch {}
+
       if (refCode) {
         try {
           await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/referral`, {

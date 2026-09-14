@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 import { recommendPlan } from '@/lib/model-in-every-point'
+import { recordOpsEvent, OPS_LANES } from '@/lib/ops-events'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,6 +71,16 @@ export async function POST(req: NextRequest) {
   ])
   const customer = await prisma.customer.findUnique({ where: { id: user.id }, select: { credits: true } }).catch(() => null)
   const recommendation = await recommendPlan({ videos: videoCount, orders: orderCount, credits: Number(customer?.credits ?? 0) })
+
+  // V70 Ops Center live feed (best-effort, never throws).
+  void recordOpsEvent({
+    lane: OPS_LANES.orders,
+    type: 'ORDER',
+    severity: 'info',
+    title: `Service order — ${type}/${plan}`,
+    body: `৳${amount} · ${user.email || user.id}`,
+    meta: { transactionId: tx.id, type, plan, amount },
+  })
 
   return NextResponse.json({
     success: true,

@@ -1674,3 +1674,47 @@ model FleetReport {
   @@index([employee, runAt(sort: Desc)])
   @@index([jobId])
 }
+
+// ============================================================================
+// V70 — Employee Ops Center (2026-09-14): live ops event stream + per-lane
+// control + lane status. ADDITIVE ONLY.
+// Applied to live Neon via `prisma db execute` (CREATE TABLE IF NOT EXISTS)
+// and self-healed at runtime by lib/ops-events.ts ensureOpsSchema().
+// Row parity: FleetEvent = the live feed; FleetControl = pause/autonomy;
+// FleetLaneStatus = one row per employee for the lane grid.
+// ============================================================================
+model FleetEvent {
+  id        String   @id @default(cuid())
+  lane      String
+  type      String   // RUN | REPORT | LEAD | PAYMENT | ORDER | SIGNUP | ALERT | CONTROL
+  severity  String   @default("info")   // info | success | warn | alert
+  title     String
+  body      String?
+  meta      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([lane, createdAt(sort: Desc)])
+}
+
+model FleetControl {
+  id        String   @id @default(cuid())
+  employee  String   @unique
+  paused    Boolean  @default(false)
+  autonomy  String   @default("autonomous") // autonomous | supervised | halted
+  note      String?
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+}
+
+model FleetLaneStatus {
+  id          String    @id @default(cuid())
+  employee    String    @unique
+  role        String?
+  schedule    String?
+  lastRunAt   DateTime?
+  verdict     String?
+  streak      Int       @default(0)
+  lastSnippet String?
+  updatedAt   DateTime  @updatedAt
+}
