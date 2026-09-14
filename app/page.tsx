@@ -15,11 +15,11 @@ const homeJsonLd = {
   description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং, এক সাবস্ক্রিপশনে',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
-    { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Business', price: '3500', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Enterprise', price: '6000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Starter', price: '599', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Pro', price: '1299', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Business', price: '2999', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
   ],
-  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '2000', highPrice: '6000', priceCurrency: 'BDT' },
+  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '599', highPrice: '2999', priceCurrency: 'BDT' },
   mainEntity: FAQS.slice(0, 6).map((f) => ({
     '@type': 'Question',
     name: f.q,
