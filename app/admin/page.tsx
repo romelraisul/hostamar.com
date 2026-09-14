@@ -1110,7 +1110,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-black border border-[#0E7C3A]/20 rounded-2xl p-1.5 overflow-x-auto scrollbar-none">
+        <div className="flex flex-wrap gap-2 mb-6 bg-black border border-[#0E7C3A]/20 rounded-2xl p-1.5">
           {[
             { id:'overview', label:'ওভারভিউ', icon: LayoutDashboard },
             { id:'users', label:'ইউজারসমূহ', icon: Users },
