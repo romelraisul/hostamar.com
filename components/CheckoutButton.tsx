@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { useLocale } from '@/lib/locale-context'
 
 // ============================================================================
@@ -53,6 +54,7 @@ export interface CheckoutButtonProps {
 
 export default function CheckoutButton({ plan, className, label }: CheckoutButtonProps) {
   const { t } = useLocale()
+  const router = useRouter()
 
   const [open, setOpen] = useState(false)
   const [method, setMethod] = useState<PaymentMethod>('bkash')
@@ -126,6 +128,15 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
         }),
       })
       const data: CreateResponse = await res.json()
+      if (res.status === 401) {
+        // Not logged in — /api/payment/create is DB-backed (order + TrxID
+        // approval), so don't send a dead-end "Failed" error. Route the buyer
+        // to signup with intent preserved; signup auto-logins and lands on
+        // /dashboard (which offers Starter ৳599 / Pro ৳1,299 / Business ৳2,999).
+        stopPolling()
+        router.push(`/signup?intent=checkout&plan=${plan}`)
+        return
+      }
       if (!res.ok || !data.success || !data.trxId) {
         setError(data.error || 'Failed to create payment order')
         return
@@ -138,7 +149,7 @@ export default function CheckoutButton({ plan, className, label }: CheckoutButto
     } finally {
       setLoading(false)
     }
-  }, [plan, method, phone, walletAddress, startPolling])
+  }, [plan, method, phone, walletAddress, startPolling, router])
 
   const reset = useCallback(() => {
     stopPolling()

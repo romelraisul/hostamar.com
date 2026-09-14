@@ -144,6 +144,14 @@ export default function SignupPage() {
       // SameSite=Strict) — no client-side persistence at all.
       try{ localStorage.removeItem('hostamar_ref') }catch{}
       await signIn('credentials', { email, password, redirect: false })
+      // FORGE: preserve checkout intent — a visitor who hit "Continue to
+      // payment" while anonymous lands on /signup?intent=checkout (see
+      // components/CheckoutButton.tsx 401 branch). After auto-login, go
+      // straight to the payment page instead of the dashboard.
+      try {
+        const intent = new URLSearchParams(window.location.search).get('intent')
+        if (intent === 'checkout') { router.push('/dashboard/payment'); return }
+      } catch {}
       router.push('/dashboard')
     } catch {
       setError('সার্ভার সমস্যা। পুনরায় চেষ্টা করুন।')
