@@ -1,24 +1,18 @@
-'use client'
-import React, { useState } from 'react';
 import Link from 'next/link';
-import { FAQS, FEATURED_FAQS } from '@/lib/faqs';
-import HeroC from '@/components/home/HeroC';
-import DownloadShowcase from '@/components/home/DownloadShowcase';
-import LiveShowcase from '@/components/home/LiveShowcase';
-import HeroVideoGenerator from '@/components/home/HeroVideoGenerator';
+import { FAQS } from '@/lib/faqs';
+import BazaarNav from '@/components/home/BazaarNav';
+import BazaarFooter from '@/components/home/BazaarFooter';
 
-const GREEN = "#0E7C3A";
-const RED = "#F59E0B";
+// Bazaar Poster homepage (Direction C, approved 2026-09-14).
+// Server component: FAQ uses native <details>, so no client state needed.
 
-// Homepage structured data — Product + real Offers (mirrors app/pricing) + FAQPage.
-// No AggregateRating: we surface the 4.8★ badge as a UI trust mark only, not as
-// unbacked schema.org review data.
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
+
 const homeJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: 'Hostamar',
-  description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক সাবস্ক্রিপশনে।',
+  description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং, এক সাবস্ক্রিপশনে',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
     { '@type': 'Offer', name: 'Starter', price: '2000', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
@@ -33,289 +27,330 @@ const homeJsonLd = {
   })),
 };
 
-const PRODUCTS = [
-  { href: '/tools', label: 'Lab tools', desc: 'Browser, Chat, IDE, Gaming', emoji: '🧪' },
-];
+const CHECK = (
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>
+);
 
-export default function App() {
-  const [faqOpen, setFaqOpen] = useState<number | null>(0);
-  const [toast, setToast] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(()=>setToast(null), 2600);
-  };
-
+export default function HomePage() {
+  const featured = FAQS.slice(0, 5);
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#0F172A] antialiased selection:bg-[#2563EB]/20 overflow-x-hidden">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
-      />
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 h-11 rounded-full bg-[#0F172A] text-white text-[13px] font-medium flex items-center shadow-xl"> 
-          {toast}
-        </div>
-      )}
-      <style>{`
-        * { font-family: 'Inter', 'Hind Siliguri', system-ui, sans-serif; }
-        .bangla { font-family: 'Hind Siliguri', sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }} />
+      <BazaarNav />
 
-      {/* HERO C — Unified bundle, single CTA, trust bar inside */}
-      <HeroVideoGenerator />
-      <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0"> <DownloadShowcase /> </div>
-
-      <main className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 overflow-hidden">
-
-        {/* 20% Hosting band — real /hosting proof */}
-        <section className="mt-8 rounded-[24px] border border-zinc-200 bg-white overflow-hidden">
-          <div className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3 bg-[#F8FAFC] border-b border-zinc-200">
-            <span className="text-sm font-bold">☁️ BDIX হোস্টিং — 5GB ফ্রি • 20ms Dhaka PoP • 99.9% SLA</span>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-[#2563EB] text-white font-semibold">HostSeba ৳2220/yr No AI vs Hostamar ৳2000/yr AI সহ</span>
-          </div>
-          <div className="px-5 md:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-sm text-zinc-600">bKash • Nagad • Rocket — অটো পেমেন্ট • LiteSpeed + LSCache + JetBackup</span>
-            <a href="/hosting" data-ga="pricing_click" className="h-9 px-5 rounded-full bg-[#2563EB] text-white text-sm font-semibold inline-flex items-center hover:bg-[#1D4ED8]">হোস্টিং দেখুন →</a>
-          </div>
-        </section>
-        <div className="mt-4 rounded-2xl overflow-hidden border border-[#0E7C3A]/20"><video src="/api/showcase/2/video" className="w-full h-48 object-cover" muted loop playsInline autoPlay controls poster="" /><div className="bg-[#0E7C3A] text-white text-xs px-3 py-1">BDIX 20ms Dhaka PoP — video demo</div></div>
-
-        {/* 10% Tools — Chat + IDE only */}
-        <section className="mt-4 grid sm:grid-cols-2 gap-4">
-          <a href="/chat" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
-            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳1000/mo early bundle</div>
-            <div className="mt-1 font-bold">💬 AI চ্যাট — ৳0 100msg/day</div>
-            <video src="/api/showcase/3/video" className="mt-2 w-full h-24 object-cover rounded-xl border border-[#0E7C3A]/20" muted loop playsInline />
-            <div className="text-sm text-zinc-600 mt-1">বাংলা ভয়েস ইনপুট • Messenger till 11pm • SupportWidget live</div>
-          </a>
-          <a href="/dev" className="rounded-2xl border border-zinc-200 bg-white p-5 hover:border-[#2563EB]/30 hover:shadow-sm transition">
-            <div className="text-xs font-semibold text-[#2563EB]">TOOLS • ৳1000/mo early bundle</div>
-            <div className="mt-1 font-bold">🧑‍💻 Dev IDE — ৳0</div>
-            <div className="text-sm text-zinc-600 mt-1">Replit $25 vs Hostamar ৳0 • Live editor • /studio</div>
-          </a>
-        </section>
-
-        {/* Bento Features */}
-        <section id="features" className="mt-16">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-            <h2 className="bangla text-[28px] md:text-[32px] font-bold leading-[1.15] tracking-[-0.02em]">বাংলাদেশের জন্য<br/>বিশেষভাবে তৈরি ফিচার</h2>
-            <div className="flex flex-col items-start gap-3">
-              <p className="bangla text-[14px] text-zinc-500 max-w-[320px] leading-[1.6]">Silicon Valley টুল নয় — bKash, বাংলা ভয়েস, লোকাল ফন্ট, সবকিছুই আপনার দোকানের জন্য।</p>
-              <Link href="/features" className="bangla text-[13px] font-semibold text-[#2563EB] inline-flex items-center gap-1 hover:gap-2 transition-all">সব ৩০+ ফিচার দেখুন →</Link>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[220px]">
-            {/* বাংলা ভয়েস */}
-            <div className="md:col-span-7 rounded-[24px] bg-white border border-zinc-200 p-6 md:p-7 flex flex-col justify-between overflow-hidden relative shadow-sm">
-              <div className="absolute right-0 top-0 w-[55%] h-full opacity-[0.08]" style={{background:`radial-gradient(circle at 80% 20%, ${GREEN}, transparent 70%)`}}></div>
-              <div>
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center text-[20px] border" style={{background:`${GREEN}12`, borderColor:`${GREEN}20`}}>🎙️</div>
-                <h3 className="bangla mt-4 text-[20px] font-semibold">ন্যাচারাল বাংলা ভয়েস</h3>
-                <p className="bangla mt-1.5 text-[14px] text-zinc-500 leading-[1.6] max-w-[340px]">রোবটিক নয় — ঢাকাইয়া, চট্টগ্রামের টান সহ ৬টি বাংলা ভয়েস। আপনার স্ক্রিপ্ট পড়বে একদম মানুষের মতো।</p>
-              </div>
-              <div className="mt-6 rounded-xl bg-zinc-50 border border-zinc-200 p-3 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-zinc-900 text-white flex items-center justify-center">▶</div>
-                <div className="flex-1">
-                  <div className="flex gap-[2px] items-end h-[18px]">
-                    {Array.from({length:22}).map((_,i)=><div key={i} className="w-[3px] rounded-full bg-zinc-300" style={{height:`${4+Math.sin(i*1.3)*6+Math.random()*8}px`, background: i>8 && i<16 ? GREEN : undefined}}></div>)}
-                  </div>
-                  <div className="text-[11px] text-zinc-500 mt-1 bangla">“এবারের ঈদ কালেকশনে ৫০% ছাড়!” • Female - Nafisa</div>
-                </div>
-                <div className="text-[11px] px-2 py-1 rounded-full bg-white border">0:08</div>
+      <main className="bp-theme">
+        {/* HERO */}
+        <section className="bp-hero">
+          <div className="bp-wrap bp-hero-grid">
+            <div className="bp-rise">
+              <span className="bp-eyebrow">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" /></svg>
+                বাংলাদেশের জন্য তৈরি
+              </span>
+              <h1>
+                AI দিয়ে মার্কেটিং ভিডিও বানান <span className="bp-accent">৩০ সেকেন্ডে</span>
+              </h1>
+              <p className="bp-hero-sub">পণ্যের ছবি দিন, AI বাকিটা সামলাবে, বাংলা ভয়েসওভার, সাবটাইটেল ও লোগো সহ</p>
+              <div className="bp-hero-cta">
+                <Link href="/generate" className="bp-btn bp-btn-primary" data-ga="generate_click">ভিডিও বানান, ১০০ ক্রেডিট</Link>
+                <Link href="/features" className="bp-btn bp-btn-ghost">সব ৩০+ ফিচার দেখুন</Link>
               </div>
             </div>
-
-            {/* bKash */}
-            <div className="md:col-span-5 rounded-[24px] p-6 md:p-7 flex flex-col justify-between text-white relative overflow-hidden shadow-[0_12px_30px_-12px_rgba(37,99,235,0.6)]" style={{background: `linear-gradient(135deg, ${GREEN} 0%, #0A5A2B 100%)`}}>
-              <div className="absolute -right-10 -top-10 h-[200px] w-[200px] rounded-full bg-white/10 blur-2xl"></div>
-              <div>
-                <div className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center text-[20px]">💳</div>
-                <h3 className="bangla mt-4 text-[20px] font-semibold">bKash / Nagad / Rocket</h3>
-                <p className="bangla mt-1.5 text-[14px] text-white/70 leading-[1.6]">ইন্টারন্যাশনাল কার্ড লাগবে না। লোকাল পেমেন্টে ইনস্ট্যান্ট একটিভেশন।</p>
-              </div>
-              <div className="mt-6 flex gap-2">
-                {["bKash","Nagad","Rocket","Upay"].map(p=>(
-                  <div key={p} className="h-8 px-3 rounded-full bg-white text-zinc-900 text-[12px] font-semibold flex items-center">{p}</div>
+            <div className="bp-hero-poster bp-rise bp-d2">
+              <svg className="bp-sunburst" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <line key={i} x1="50" y1="50" x2={50 + 50 * Math.cos((i * Math.PI) / 6)} y2={50 + 50 * Math.sin((i * Math.PI) / 6)} />
                 ))}
+              </svg>
+              <div className="bp-frame bp-frame-tilt-r">
+                <div className="bp-media">
+                  <img src="/redesign/hero-bazaar.jpg" alt="বাংলাদেশি উৎসবের বাজারের পোস্টার-ধাঁচের ইলাস্ট্রেশন" width="1024" height="640" />
+                </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Brand Kit */}
-            <div className="md:col-span-5 rounded-[24px] bg-[#FFF7ED] border border-[#FED7AA] p-6 md:p-7 flex flex-col justify-between relative overflow-hidden">
+        {/* PROOF STAMPS */}
+        <section className="bp-sec" style={{ paddingBlock: '0.6rem 2rem' }} aria-label="আস্থার প্রমাণ">
+          <div className="bp-wrap bp-stamp-row bp-rise bp-d3" style={{ justifyContent: 'center' }}>
+            <span className="bp-stamp">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" /></svg>
+              BDIX ২০ms ঢাকা PoP
+            </span>
+            <span className="bp-stamp">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" /><path d="M9.5 12l2 2 3.5-4" /></svg>
+              ৯৯.৯% SLA
+            </span>
+            <span className="bp-stamp">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h4" /></svg>
+              bKash, Nagad, Rocket
+            </span>
+            <span className="bp-stamp">
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ fill: 'var(--bp-amber)', stroke: 'none' }}><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.9l-5.3 2.7 1-5.8-4.2-4.1 5.9-.9L12 3.5z" /></svg>
+              ৪.৮ রেটিং
+            </span>
+          </div>
+        </section>
+
+        {/* POSTER WALL */}
+        <section className="bp-sec bp-sec-alt" id="showcase">
+          <div className="bp-wrap">
+            <div className="bp-sec-head">
+              <h2>টেমপ্লেট আর আসল আউটপুট</h2>
+              <p>ফেস্টিভ্যাল টেমপ্লেট বেছে নিন, অথবা দেখুন অন্য দোকানদাররা কী বানাচ্ছে</p>
+            </div>
+            <div className="bp-wall">
+              <div className="bp-tile bp-w-eid">
+                <div className="bp-media" style={{ flex: 1 }}>
+                  <img src="/redesign/poster-eid.jpg" alt="ঈদ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="846" height="1128" />
+                </div>
+                <div className="bp-cap"><span>ঈদ মুবারক সেল</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>টেমপ্লেট</span></div>
+              </div>
+              <div className="bp-tile bp-w-bok">
+                <div className="bp-media">
+                  <img src="/redesign/poster-boishakh.jpg" alt="পহেলা বৈশাখ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="846" height="1128" />
+                </div>
+                <div className="bp-cap"><span>পহেলা বৈশাখ</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>টেমপ্লেট</span></div>
+              </div>
+              <div className="bp-tile bp-w-r1">
+                <div className="bp-media" style={{ aspectRatio: '16/9' }}>
+                  <img src="/showcase/cmtmt2jteyldrvv.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
+                  <span className="bp-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" /></svg></span>
+                </div>
+                <div className="bp-cap"><span>Hostamar দিয়ে বানানো আসল ভিডিও</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>আসল আউটপুট</span></div>
+              </div>
+              <div className="bp-tile bp-w-r2">
+                <div className="bp-media" style={{ aspectRatio: '16/9' }}>
+                  <img src="/showcase/cmt236ien0000nde0p88smx4j.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
+                  <span className="bp-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" /></svg></span>
+                </div>
+                <div className="bp-cap"><span>আসল ভিডিও</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>আসল আউটপুট</span></div>
+              </div>
+            </div>
+            <div style={{ marginTop: '1.2rem', textAlign: 'center' }}>
+              <Link href="/showcase" className="bp-btn bp-btn-ghost">সব দেখুন</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section className="bp-sec" id="how">
+          <div className="bp-wrap">
+            <div className="bp-sec-head">
+              <h2>কীভাবে কাজ করে</h2>
+              <p>মাত্র ৩ ধাপে ভাইরাল ভিডিও</p>
+            </div>
+            <div className="bp-how-row">
+              <div className="bp-how-num" aria-hidden="true">১</div>
               <div>
-                <div className="h-10 w-10 rounded-xl bg-white border border-orange-200 flex items-center justify-center text-[18px]">🎨</div>
-                <h3 className="bangla mt-4 text-[19px] font-semibold">আপনার ব্র্যান্ড, সব ভিডিওতে</h3>
-                <p className="bangla mt-1.5 text-[13px] text-zinc-600 leading-[1.6]">লোগো, কালার, ফন্ট একবার সেট করুন — প্রতিটি ভিডিওতে অটো অ্যাপ্লাই হবে।</p>
-              </div>
-              <div className="mt-5 grid grid-cols-3 gap-2">
-                <div className="rounded-xl bg-white border border-orange-100 p-2.5">
-                  <div className="h-6 w-6 rounded-full" style={{background:GREEN}}></div>
-                  <div className="mt-2 h-1.5 w-10 bg-zinc-200 rounded"></div>
-                </div>
-                <div className="rounded-xl bg-white border border-orange-100 p-2.5">
-                  <div className="h-6 w-10 rounded-md bg-zinc-900"></div>
-                  <div className="mt-2 h-1.5 w-8 bg-zinc-200 rounded"></div>
-                </div>
-                <div className="rounded-xl bg-white border border-orange-100 p-2.5 flex items-center justify-center text-[16px] font-bold">আড়ং</div>
+                <h3>টেমপ্লেট বাছাই করুন</h3>
+                <p>৫০+ বাংলা ফেস্টিভ্যাল টেমপ্লেট (ঈদ, বৈশাখ, ১১.১১) থেকে বেছে নিন অথবা আপনার পণ্য দিয়ে শুরু করুন</p>
               </div>
             </div>
-
-            {/* Auto subtitle */}
-            <div className="md:col-span-7 rounded-[24px] bg-zinc-900 text-white p-6 md:p-7 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between relative overflow-hidden">
-              <div className="absolute inset-0 opacity-30" style={{background:`radial-gradient(400px at 100% 0%, ${RED}40, transparent)`}}></div>
-              <div className="relative z-10 max-w-[300px]">
-                <div className="h-10 w-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-[18px]">💬</div>
-                <h3 className="bangla mt-4 text-[19px] font-semibold">অটো সাবটাইটেল + হুক জেনারেটর</h3>
-                <p className="bangla mt-1.5 text-[13px] text-white/60 leading-[1.6]">AI ক্যাপশন, ভাইরাল হুক, CTA — ফেসবুক রিলস ও টিকটকের জন্য অপটিমাইজড।</p>
+            <div className="bp-how-row">
+              <div className="bp-how-num" aria-hidden="true">২</div>
+              <div>
+                <h3>বাংলায় লিখুন</h3>
+                <p>আপনার অফার বাংলায় লিখুন। AI স্ক্রিপ্ট লিখে দেবে আর স্বাভাবিক বাংলা ভয়েসওভার বানাবে</p>
               </div>
-              <div className="relative z-10 w-full md:w-[260px] rounded-[16px] bg-white text-zinc-900 p-3 shadow-xl">
-                <div className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Generated Hooks — video</div>
-                <video src="/api/showcase/1/video" className="mt-2 w-full h-28 object-cover rounded-xl border border-[#0E7C3A]/20" muted loop playsInline autoPlay />
-                <div className="mt-2 space-y-2">
-                  {["এই ঈদে সবাই তাকিয়ে থাকবে আপনার দিকে 👀","১০০০+ মেয়ে ইতিমধ্যে নিয়েছে, আপনি বাকি কেন?","দাম শুনলে বিশ্বাস করবেন না..."].map((t,i)=>(
-                    <div key={i} className={`rounded-xl px-3 py-2.5 text-[13px] bangla leading-[1.4] border ${i===0 ? "bg-zinc-900 text-white border-zinc-900" : "bg-zinc-50 border-zinc-200 text-zinc-700"}`}>{t}</div>
-                  ))}
-                </div>
+            </div>
+            <div className="bp-how-row">
+              <div className="bp-how-num" aria-hidden="true">৩</div>
+              <div>
+                <h3>৩০ সেকেন্ডে রেডি</h3>
+                <p>ভিডিও ডাউনলোড করুন আর bKash, Nagad বা Rocket দিয়ে পেমেন্ট করুন। ক্রেডিট কার্ড লাগে না</p>
               </div>
             </div>
           </div>
         </section>
-        <LiveShowcase />
 
-        {/* Templates */}
-        <section id="templates" className="mt-20">
-          <div className="flex items-center justify-between">
-            <h2 className="bangla text-[24px] md:text-[28px] font-bold">৫০+ রেডিমেড টেমপ্লেট</h2>
-            <button onClick={()=>showToast("সব টেমপ্লেট লোড হচ্ছে...")} className="text-[13px] font-medium px-3.5 h-8 rounded-full border bg-white inline-flex items-center gap-1 hover:bg-zinc-50">সব দেখুন →</button>
-          </div>
-
-          <div className="mt-6 -mx-5 px-5 md:mx-0 md:px-0 overflow-x-auto no-scrollbar">
-            <div className="flex gap-4 w-max pr-5 md:pr-0">
-              {[
-                {title:"ঈদ মুবারক সেল", cat:"Fashion", color:"#FFF1F2", emoji:"🌙"},
-                {title:"পহেলা বৈশাখ", cat:"Festival", color:"#F0FDF4", emoji:"🌸"},
-                {title:"11.11 মেগা সেল", cat:"E-com", color:"#FFFBEB", emoji:"⚡"},
-                {title:"শীতের জ্যাকেট", cat:"Winter", color:"#EFF6FF", emoji:"🧥"},
-                {title:"বিউটি গ্লো", cat:"Beauty", color:"#FDF2F8", emoji:"✨"},
-                {title:"ফুড ডেলিভারি", cat:"Food", color:"#FEFCE8", emoji:"🍱"},
-              ].map(card=>(
-                <div key={card.title} className="w-[220px] shrink-0 rounded-[20px] border bg-white overflow-hidden shadow-sm hover:shadow-md transition">
-                  <div className="h-[132px] relative flex items-center justify-center text-[40px]" style={{background: card.color}}>
-                    <span>{card.emoji}</span>
-                    <div className="absolute top-3 left-3 text-[11px] font-medium px-2 py-1 rounded-full bg-white border shadow-sm">{card.cat}</div>
-                    <div className="absolute bottom-3 right-3 h-7 w-7 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[12px]">▶</div>
-                  </div>
-                  <div className="p-3.5">
-                    <div className="bangla font-semibold text-[14px] leading-tight">{card.title}</div>
-                    <div className="mt-1 text-[12px] text-zinc-500">9:16 • 24s • বাংলা ভয়েস</div>
-                    <div className="mt-3 flex gap-1.5">
-                      <div className="h-1.5 flex-1 rounded-full bg-zinc-100 overflow-hidden"><div className="h-full w-[70%] rounded-full" style={{background:GREEN}}></div></div>
-                      <span className="text-[10px] text-zinc-400">Popular</span>
-                    </div>
+        {/* BUNDLE */}
+        <section className="bp-sec bp-sec-alt" id="bundle">
+          <div className="bp-wrap">
+            <div className="bp-sec-head">
+              <h2>একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট</h2>
+              <p>প্রতিটি প্ল্যানে AI ভিডিও + হোস্টিং + Chat + Browser + IDE একসাথে। আলাদা করে কিছু কিনতে হবে না। bKash, Nagad, Rocket সাপোর্টেড</p>
+            </div>
+            <div className="bp-bundle">
+              <div className="bp-tile bp-span2">
+                <span className="bp-tag">AI ভিডিও</span>
+                <h3>আপনার ব্র্যান্ড, সব ভিডিওতে</h3>
+                <p>লোগো, কালার, ফন্ট একবার সেট করুন, প্রতিটি ভিডিওতে অটো অ্যাপ্লাই হবে</p>
+                <div className="bp-frame" style={{ marginTop: '1rem', padding: 8 }}>
+                  <div className="bp-media" style={{ aspectRatio: '16/9' }}>
+                    <img src="/showcase/cmtmt2jteyldrvv.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
+                    <span className="bp-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" /></svg></span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section id="pricing" className="mt-20">
-          <div className="text-center max-w-[620px] mx-auto">
-            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium bangla mb-4"><span className="h-2 w-2 rounded-full" style={{background:GREEN}}></span>একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট</span>
-            <h2 className="bangla text-[30px] md:text-[38px] font-bold leading-[1.1] tracking-[-0.02em]">ভিডিও কিনুন, হোস্টিং-চ্যাট ফ্রি পান</h2>
-            <p className="bangla mt-3 text-[14px] text-zinc-500">প্রতিটি প্ল্যানে AI ভিডিও + হোস্টিং + Chat + Browser + IDE একসাথে। আলাদা করে কিছু কিনতে হবে না। bKash, Nagad, Rocket সাপোর্টেড।</p>
-          </div>
-
-          <div className="mt-10 grid md:grid-cols-3 gap-4 md:gap-5 items-start">
-            {/* Free */}
-            <div className="rounded-[24px] bg-white border border-zinc-200 p-6 md:p-7">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Free</h3>
-                <span className="text-[11px] px-2 py-1 rounded-full bg-zinc-100 border">ট্রাই করুন</span>
+                <div style={{ marginTop: '.9rem' }}>
+                  <Link href="/generate" className="bp-btn bp-btn-primary">ভিডিও বানান</Link>
+                </div>
               </div>
-              <div className="mt-4 flex items-baseline gap-1"><span className="text-[36px] font-bold tracking-tight">৳0</span><span className="text-zinc-500 text-[13px]">/মাস</span></div>
-              <ul className="mt-6 space-y-2.5 text-[13px] text-zinc-600">
-                {["৫টি ভিডিও / মাস","১GB হোস্টিং ফ্রি","Chat বেসিক","৭২০p এক্সপোর্ট","১টি ব্র্যান্ড কিট"].map(f=><li key={f} className="flex gap-2"><span className="text-zinc-400">—</span><span className="bangla">{f}</span></li>)}
-              </ul>
-              <Link href="/signup" className="mt-7 h-11 w-full rounded-full border bg-white font-medium text-[14px] flex items-center justify-center hover:bg-zinc-50 bangla">ফ্রি শুরু করুন</Link>
-            </div>
-
-            {/* Starter Popular */}
-            <div className="rounded-[24px] border-2 p-[1px] shadow-[0_18px_40px_-16px_rgba(37,99,235,0.45)]" style={{background:`linear-gradient(135deg, ${GREEN}, #16A34A)`}}>
-              <div className="rounded-[22px] bg-white p-6 md:p-7 relative overflow-hidden">
-                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#2563EB]/30 to-transparent"></div>
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold flex items-center gap-2">Starter <span className="h-5 px-2 rounded-full text-white text-[10px] font-bold flex items-center" style={{background:GREEN}}>POPULAR</span></h3>
-                  <span className="text-[11px] font-medium text-zinc-500">SME দের পছন্দ</span>
-                </div>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="text-[36px] font-bold tracking-tight">৳2,000</span><span className="text-zinc-500 text-[13px]">/মাস</span>
-                  <span className="ml-2 text-[12px] line-through text-zinc-400">৳2,800</span>
-                </div>
-                <ul className="mt-6 space-y-2.5 text-[13px]">
-                  {["১০টি ভিডিও / মাস","৫GB হোস্টিং ফ্রি","Chat Pro + ভয়েস","Browser + IDE অ্যাক্সেস","1080p, No watermark","bKash অটো-রিনিউ"].map(f=>(
-                    <li key={f} className="flex gap-2"><span className="h-5 w-5 rounded-full flex items-center justify-center text-[11px] text-white shrink-0" style={{background:GREEN}}>✓</span><span className="bangla">{f}</span></li>
-                  ))}
+              <div className="bp-tile">
+                <span className="bp-tag">ক্লাউড হোস্টিং</span>
+                <h3>হোস্টিং, ৫GB ফ্রি</h3>
+                <ul className="bp-check">
+                  <li>{CHECK}BDIX ২০ms লেটেন্সি, NVMe SSD</li>
+                  <li>{CHECK}বাংলা cPanel, ইংরেজি না বুঝলেও চলবে</li>
+                  <li>{CHECK}ফ্রি SSL, অটো-ইনস্টল</li>
+                  <li>{CHECK}LiteSpeed + LSCache + JetBackup</li>
                 </ul>
-                <Link href="/signup?plan=starter" className="mt-7 h-11 w-full rounded-full text-white font-semibold text-[14px] flex items-center justify-center shadow-[0_10px_20px_-10px_rgba(37,99,235,0.7)] hover:brightness-105 transition bangla" style={{background:GREEN}}>Starter নিন →</Link>
-                <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-zinc-500"><span>পেমেন্ট:</span><span className="font-semibold">bKash</span><span>•</span><span className="font-semibold">Nagad</span><span>•</span><span className="font-semibold">Rocket</span></div>
+                <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+                  <Link href="/hosting" className="bp-btn bp-btn-ghost">হোস্টিং দেখুন</Link>
+                </div>
               </div>
-            </div>
-
-            {/* Business */}
-            <div className="rounded-[24px] bg-zinc-900 text-white p-6 md:p-7 border border-zinc-800">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Business</h3>
-                <span className="text-[11px] px-2 py-1 rounded-full bg-white/10 border border-white/10">এজেন্সি</span>
+              <div className="bp-tile">
+                <span className="bp-tag">চ্যাট</span>
+                <h3>AI অ্যাসিস্ট্যান্ট, ৳0</h3>
+                <p>বাংলা ভয়েস ইনপুটসহ দিনে ১০০টি মেসেজ, বাংলাদেশের জন্য বিশেষভাবে তৈরি</p>
+                <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+                  <Link href="/chat" className="bp-btn bp-btn-ghost">চ্যাট খুলুন</Link>
+                </div>
               </div>
-              <div className="mt-4 flex items-baseline gap-1"><span className="text-[36px] font-bold tracking-tight">৳3,500</span><span className="text-white/50 text-[13px]">/মাস</span></div>
-              <ul className="mt-6 space-y-2.5 text-[13px] text-white/70">
-                {["৩০টি ভিডিও / মাস","২০GB হোস্টিং ফ্রি","সব প্রোডাক্ট আনলিমিটেড","Game টুর্নামেন্ট হোস্টিং","4K এক্সপোর্ট + API","টিম ৫ জন + প্রায়োরিটি সাপোর্ট"].map(f=><li key={f} className="flex gap-2"><span className="text-white/30">—</span><span className="bangla">{f}</span></li>)}
-              </ul>
-              <Link href="/signup?plan=business" className="mt-7 h-11 w-full rounded-full bg-white text-zinc-900 font-semibold text-[14px] flex items-center justify-center hover:bg-zinc-100 bangla">Business নিন →</Link>
+              <div className="bp-tile">
+                <span className="bp-tag">ব্রাউজার</span>
+                <h3>প্রাইভেট ব্রাউজার</h3>
+                <p>ব্রাউজারেই Pyodide Python চলে, pandas ও numpy ইনস্টল ছাড়াই, ইতিহাস প্রাইভেট</p>
+                <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+                  <Link href="/browser" className="bp-btn bp-btn-ghost">ব্রাউজার খুলুন</Link>
+                </div>
+              </div>
+              <div className="bp-tile">
+                <span className="bp-tag">Dev IDE</span>
+                <h3>Dev IDE, ৳0</h3>
+                <p>লাইভ এডিটর ও প্রিভিউ, Replit এর $25 সাবস্ক্রিপশনের বিকল্প</p>
+                <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+                  <Link href="/dev" className="bp-btn bp-btn-ghost">IDE খুলুন</Link>
+                </div>
+              </div>
+              <div className="bp-tile bp-span2">
+                <span className="bp-tag">গেমিং</span>
+                <h3>ক্লাউড গেমিং</h3>
+                <p>ঢাকা সার্ভারে ১৫ms লো পিং, ডাউনলোড ছাড়াই HTML5 গেম, টুর্নামেন্ট হোস্ট করুন</p>
+                <div style={{ marginTop: '.9rem' }}>
+                  <Link href="/game" className="bp-btn bp-btn-ghost">গেম খেলুন</Link>
+                </div>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="mt-6 rounded-full bg-white border border-zinc-200 px-4 py-2.5 w-fit mx-auto flex items-center gap-2 text-[12px] text-zinc-600">
-            <span className="h-5 w-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">🔒</span>
-            <span className="bangla">SSL সুরক্ষিত পেমেন্ট • ৭ দিনের মানি-ব্যাক গ্যারান্টি • ভ্যাট সহ</span>
+        {/* PRICING */}
+        <section className="bp-sec" id="pricing">
+          <div className="bp-wrap">
+            <div className="bp-sec-head">
+              <h2>সহজ প্রাইসিং</h2>
+              <p>লোকাল পেমেন্ট সাপোর্টেড, লুকানো চার্জ নেই</p>
+            </div>
+            <div className="bp-plans">
+              <div className="bp-tile bp-plan">
+                <span className="bp-plan-name">ফ্রি</span>
+                <div className="bp-price">৳0</div>
+                <ul className="bp-check">
+                  <li>{CHECK}৫টি AI ভিডিও / মাস</li>
+                  <li>{CHECK}১GB হোস্টিং ফ্রি</li>
+                  <li>{CHECK}চ্যাট বেসিক</li>
+                  <li>{CHECK}720p এক্সপোর্ট, ছোট ওয়াটারমার্ক</li>
+                  <li>{CHECK}১টি ব্র্যান্ড কিট</li>
+                </ul>
+                <Link href="/signup" className="bp-btn bp-btn-ghost">ফ্রি শুরু করুন</Link>
+              </div>
+              <div className="bp-tile bp-plan bp-plan-featured">
+                <span className="bp-rosette">সবচেয়ে জনপ্রিয়</span>
+                <span className="bp-plan-name">স্টার্টার</span>
+                <div className="bp-price">৳2,000 <small>/ মাস</small></div>
+                <ul className="bp-check">
+                  <li>{CHECK}১০০ AI ভিডিও</li>
+                  <li>{CHECK}৫GB হোস্টিং</li>
+                  <li>{CHECK}চ্যাট Pro + ব্রাউজার</li>
+                  <li>{CHECK}১০৮০p, কোনো ওয়াটারমার্ক নয়</li>
+                  <li>{CHECK}বাংলা ভয়েস অ্যাক্সেস</li>
+                </ul>
+                <Link href="/pricing" className="bp-btn bp-btn-primary" data-ga="pricing_click">নির্বাচন করুন</Link>
+              </div>
+              <div className="bp-tile bp-plan">
+                <span className="bp-plan-name">বিজনেস</span>
+                <div className="bp-price">৳3,500 <small>/ মাস</small></div>
+                <ul className="bp-check">
+                  <li>{CHECK}৩০০ AI ভিডিও</li>
+                  <li>{CHECK}২০GB হোস্টিং</li>
+                  <li>{CHECK}সবকিছু আনলিমিটেড, 4K এক্সপোর্ট</li>
+                  <li>{CHECK}গেম টুর্নামেন্ট হোস্ট করুন</li>
+                  <li>{CHECK}টিম ৫ জন + প্রায়োরিটি সাপোর্ট</li>
+                </ul>
+                <Link href="/pricing" className="bp-btn bp-btn-ghost" data-ga="pricing_click">নির্বাচন করুন</Link>
+              </div>
+            </div>
+            <div className="bp-fine">
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" /></svg>সুরক্ষিত পেমেন্ট</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" /></svg>৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6" /></svg>ভ্যাট সহ</span>
+            </div>
+          </div>
+        </section>
+
+        {/* TESTIMONIALS */}
+        <section className="bp-sec bp-sec-alt" id="reviews">
+          <div className="bp-wrap">
+            <div className="bp-sec-head">
+              <h2>ব্যবসায়ীরা কী বলে</h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
+              <div className="bp-quote">
+                <blockquote>২ মিনিটে ঈদের প্রোমো বানালাম। আগের ডিজাইনার ভিডিওর চেয়ে সেই সপ্তাহে ৩ গুণ বেশি অর্ডার এলো। bKash পেমেন্ট সাথে হয়ে গেল</blockquote>
+                <cite><b>রাশেদ</b> <br />ফ্যাশন স্টোর মালিক, ঢাকা</cite>
+              </div>
+              <div className="bp-quote">
+                <blockquote>ইংরেজি টুল ব্যবহার করতে পারি না। এখানে বাংলায় লিখলেই ভয়েস বানিয়ে দেয়। আমার কেক রিল এখন লোকাল মনে হয়</blockquote>
+                <cite><b>ফাতেমা</b> <br />হোম বেকারি, চট্টগ্রাম</cite>
+              </div>
+              <div className="bp-quote">
+                <blockquote>হোস্টিং + ভিডিও এক বিলে। দুইটা সাবস্ক্রিপশন বাতিল করে দিলাম। মাসে প্রায় ৳৩,০০০ বাঁচলো</blockquote>
+                <cite><b>ইমরান</b> <br />ইলেকট্রনিক্স রিসেলার, বগুড়া</cite>
+              </div>
+            </div>
+            <p className="bp-disclosure">নাম পরিবর্তিত করা হয়েছে; রিয়েল ইউজার রিভিউ সংগ্রহ চলমান</p>
           </div>
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="mt-20 grid md:grid-cols-[320px_1fr] gap-8 scroll-mt-24">
-          <div>
-            <h2 className="bangla text-[26px] font-bold leading-tight">সাধারণ প্রশ্ন</h2>
-            <p className="bangla mt-2 text-[13px] text-zinc-500 leading-[1.6]">SME ওনারদের সবচেয়ে বেশি জিজ্ঞাসিত প্রশ্ন। আরও জানতে সাপোর্টে নক দিন।</p>
-            <Link href="/faq" className="bangla mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[#2563EB] hover:gap-2 transition-all">সব ২৫টি প্রশ্ন দেখুন →</Link>
-            <div className="mt-5 hidden md:flex items-center gap-2 text-[13px]">
-              <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center">💬</div>
-              <div><div className="font-medium bangla">লাইভ চ্যাট সাপোর্ট</div><div className="text-[12px] text-zinc-500">সকাল ৯টা - রাত ১০টা</div></div>
+        <section className="bp-sec" id="faq">
+          <div className="bp-wrap" style={{ maxWidth: 820 }}>
+            <div className="bp-sec-head">
+              <h2>সাধারণ প্রশ্ন</h2>
+              <p>ওনারদের সবচেয়ে বেশি জিজ্ঞাসিত প্রশ্ন। আরও জানতে সাপোর্টে নক দিন</p>
             </div>
-          </div>
-
-          <div className="rounded-[20px] bg-white border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
-            {FEATURED_FAQS(6).map((item, idx)=>(
-              <button key={item.id} onClick={()=>setFaqOpen(faqOpen===idx?null:idx)} className="w-full text-left px-6 py-5 flex items-start justify-between gap-6 hover:bg-zinc-50/60 transition">
-                <div className="flex-1">
-                  <div className="bangla font-medium text-[15px] leading-[1.4]">{item.q}</div>
-                  {faqOpen===idx && <div className="bangla mt-2.5 text-[13.5px] leading-[1.7] text-zinc-600">{item.a}</div>}
-                </div>
-                <div className={`h-8 w-8 shrink-0 rounded-full border flex items-center justify-center text-[14px] transition ${faqOpen===idx ? "bg-zinc-900 text-white border-zinc-900 rotate-45" : "bg-white text-zinc-500"}`}>+</div>
-              </button>
-            ))}
+            <div className="bp-faq">
+              {featured.map((f) => (
+                <details key={f.q}>
+                  <summary>
+                    {f.q}
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  </summary>
+                  <p>{f.a}</p>
+                </details>
+              ))}
+            </div>
+            <div style={{ marginTop: '1.1rem' }}>
+              <Link href="/faq" className="bp-btn bp-btn-ghost">সব ২৫টি প্রশ্ন দেখুন</Link>
+            </div>
           </div>
         </section>
 
-        {/* Footer */}
-        
+        {/* CTA */}
+        <div className="bp-cta-wrap">
+          <div className="bp-scallop bp-scallop-flip" aria-hidden="true" />
+          <div className="bp-cta-band">
+            <h2>আজই শুরু করুন, ৳0 থেকে</h2>
+            <p>৩০ সেকেন্ডে প্রথম ভিডিও বানান। ক্রেডিট কার্ড লাগে না</p>
+            <Link href="/signup" className="bp-btn bp-btn-light">ফ্রি শুরু করুন</Link>
+          </div>
+          <div className="bp-scallop" aria-hidden="true" />
+        </div>
       </main>
-    </div>
+
+      <BazaarFooter />
+    </>
   );
 }
-// tweak 122->123

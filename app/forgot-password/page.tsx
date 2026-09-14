@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased flex items-center justify-center px-4">
+      <main className="min-h-screen bp-theme antialiased flex items-center justify-center px-4">
         <div className="w-full max-w-md rounded-[24px] border border-zinc-200 bg-white p-8 text-center shadow-sm">
           <div className="w-16 h-16 rounded-full bg-[#0E7C3A]/10 flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">📧</span>
@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased flex items-center justify-center px-4">
+    <main className="min-h-screen bp-theme antialiased flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-[24px] border border-zinc-200 bg-white p-8 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="text-center mb-6">

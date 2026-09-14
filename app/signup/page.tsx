@@ -152,7 +152,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased grid md:grid-cols-[55%_45%]">
+    <div className="bp-theme min-h-screen grid md:grid-cols-[55%_45%]">
       {/* LEFT: form */}
       <div className="flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-md">
@@ -173,7 +173,7 @@ export default function SignupPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4 mt-6">
             <div className="rounded-xl bg-[#0E7C3A]/[0.06] border border-[#0E7C3A]/20 px-4 py-3">
-              <p className="text-sm font-bold text-[#0E7C3A]">🎉 ফ্রি ৬,০০০ টাকা ক্রেডিট</p>
+              <p className="text-sm font-bold text-[#0E7C3A]">ফ্রি ৬,০০০ টাকা ক্রেডিট</p>
               <p className="text-xs text-slate-500 mt-0.5">≈ $50 USD (Binance P2P) — chat, video, hosting সব কাজে ব্যবহার করুন। কার্ড লাগবে না।</p>
             </div>
 
@@ -239,7 +239,7 @@ export default function SignupPage() {
             </label>
 
             <div className="rounded-xl bg-[#0E7C3A]/[0.06] border border-[#0E7C3A]/20 px-4 py-3 flex items-center gap-2">
-              <span className="text-lg">💳</span>
+              
               <p className="bangla text-[13px] text-[#0E7C3A]">bKash / Nagad / Rocket দিয়ে পরে পেমেন্ট করবেন — এখন ফ্রি ট্রায়াল।</p>
             </div>
 
@@ -276,7 +276,7 @@ export default function SignupPage() {
       </div>
 
       {/* RIGHT: value panel */}
-      <div className="bg-[#0E7C3A] text-white px-6 py-10 hidden md:flex flex-col justify-center">
+      <div className="bg-[#0E7C3A] text-white px-6 py-10 hidden md:flex flex-col justify-center border-l-2 border-[#1C1917]">
         <h2 className="text-[24px] font-bold leading-snug">বাংলাদেশের সবচেয়ে সাশ্রয়ী AI প্ল্যাটফর্ম</h2>
         <p className="text-[14px] text-white/80 mt-2 leading-[1.6]">ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক সাবস্ক্রিপশনে।</p>
 
@@ -296,7 +296,7 @@ export default function SignupPage() {
         </div>
 
         <ul className="mt-6 space-y-2 text-[13.5px]">
-          {['✓ 5GB Hosting Free', '✓ 3 Videos Free', '✓ bKash Payment', '✓ বাংলা সাপোর্ট'].map((c) => (
+          {['5GB Hosting Free', '3 Videos Free', 'bKash Payment', 'বাংলা সাপোর্ট'].map((c) => (
             <li key={c} className="flex items-center gap-2"><Check className="w-4 h-4" /> {c}</li>
           ))}
         </ul>

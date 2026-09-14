@@ -83,7 +83,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased grid md:grid-cols-[55%_45%]">
+    <div className="bp-theme min-h-screen grid md:grid-cols-[55%_45%]">
       {/* LEFT: form */}
       <div className="flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-md">
@@ -164,7 +164,7 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT: value panel */}
-      <div className="bg-[#0E7C3A] text-white px-6 py-10 hidden md:flex flex-col justify-center relative overflow-hidden">
+      <div className="bg-[#0E7C3A] text-white px-6 py-10 hidden md:flex flex-col justify-center relative overflow-hidden border-l-2 border-[#1C1917]">
         <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute bottom-0 -left-20 w-64 h-64 rounded-full bg-white/5 blur-3xl" />
         <div className="relative">

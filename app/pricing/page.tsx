@@ -1,5 +1,10 @@
 'use client'
 
+// Bazaar Poster pricing (Direction C, 2026-09). ALL billing logic preserved
+// verbatim: /api/billing/create-checkout, /api/billing/verify-trx (V17 rule:
+// credits granted on approval, never claimed client-side), Binance rate,
+// Stripe/PayPal/Nagad/Rocket paths, sticky CTA. Only presentation restyled.
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { Check, ShieldCheck, Sparkles, Loader2 } from 'lucide-react'
@@ -7,7 +12,6 @@ import { PLANS, type Plan } from '@/lib/pricing'
 import { useBinanceRate, BinanceBadge, WelcomeBanner, HostaTeaser } from '@/components/pricing-binance'
 
 // Brand
-const PRIMARY = '#0E7C3A'
 const BKASH = '#E2136E'
 const STRIPE = '#635BFF'
 
@@ -72,28 +76,28 @@ function TrxVerify({ plan, credits }: { plan: Plan; credits: number }) {
   }
 
   return (
-    <div className="mt-3 rounded-xl border border-pink-100 bg-pink-50/50 p-3">
-      <p className="text-[12px] font-semibold text-slate-700">bKash ট্রানজেকশন যাচাই</p>
-      <div className="mt-2 flex gap-2 min-w-0">
+    <div className="bp-trx">
+      <p className="bp-trx-label">bKash ট্রানজেকশন যাচাই</p>
+      <div className="bp-trx-row">
         <input
           value={trx}
           onChange={e => { setTrx(e.target.value); if (state !== 'idle') setState('idle') }}
           placeholder="ট্রানজেকশন আইডি লিখুন"
-          className="min-w-0 flex-1 rounded-full border border-[#E2E8F0] bg-white px-3 py-2 text-[13px] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E2136E]/30 focus:border-[#E2136E]"
+          className="bp-trx-input"
         />
         <button
           onClick={verify}
           disabled={state === 'verifying'}
-          className="shrink-0 inline-flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-semibold text-white disabled:opacity-60"
+          className="bp-trx-btn"
           style={{ background: BKASH }}
         >
           {state === 'verifying' ? (
-            <span className="inline-flex items-center gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> যাচাই হচ্ছে...</span>
+            <span className="bp-trx-loading"><Loader2 className="bp-trx-spin" size={14} aria-hidden="true" /> যাচাই হচ্ছে...</span>
           ) : 'যাচাই করুন'}
         </button>
       </div>
-      {state === 'success' && <p className="mt-2 text-[12px] font-semibold text-[#0E7C3A]">✓ {msg}</p>}
-      {state === 'error' && <p className="mt-2 text-[12px] font-semibold text-red-600">{msg}</p>}
+      {state === 'success' && <p className="bp-trx-ok">{msg}</p>}
+      {state === 'error' && <p className="bp-trx-err">{msg}</p>}
     </div>
   )
 }
@@ -130,99 +134,82 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#0F172A] overflow-x-hidden">
+    <div className="bp-theme">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }} />
 
-      {/* Top — 7 day refund badge */}
-      <div className="w-full bg-[#F8FAFC] border-b border-[#E2E8F0] overflow-hidden">
-        <div className="mx-auto max-w-[1120px] px-3 sm:px-5 lg:px-0 py-2 flex flex-wrap items-center justify-center gap-2 text-[12px]">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#E2E8F0] px-2.5 py-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#0E7C3A]" /> ৭ দিন মানি-ব্যাক গ্যারান্টি
+      {/* trust stamps */}
+      <div className="bp-page-hero" style={{ paddingBlock: '1.2rem' }}>
+        <div className="bp-wrap bp-stamp-row" style={{ justifyContent: 'center' }}>
+          <span className="bp-stamp">
+            <svg className="bp-stamp-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" /><path d="M9.5 12l2 2 3.5-4" /></svg>
+            ৭ দিন মানি-ব্যাক গ্যারান্টি
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0E7C3A] text-white px-2.5 py-1 font-semibold">bKash • Nagad • Rocket</span>
-          <span className="text-[#475569]">ক্রেডিট কার্ড লাগবে না</span>
+          <span className="bp-stamp">bKash, Nagad, Rocket</span>
+          <span className="bp-stamp">ক্রেডিট কার্ড লাগবে না</span>
         </div>
       </div>
 
       {/* Binance live rate + welcome banner */}
-      <div className="mx-auto max-w-[1120px] px-3 sm:px-5 lg:px-0 pt-6 min-w-0">
+      <div className="bp-wrap" style={{ paddingTop: '1.4rem' }}>
         <WelcomeBanner />
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '.8rem' }}>
           <BinanceBadge rate={binance} />
-          <span className="text-[11px] text-slate-500">১ USDT ≈ {toBn(rate.toFixed(2))} BDT (Binance P2P)</span>
+          <span className="bp-muted" style={{ fontSize: '.8rem' }}>১ USDT ≈ {toBn(rate.toFixed(2))} BDT (Binance P2P)</span>
         </div>
       </div>
 
       {/* Hero */}
-      <section className="mx-auto max-w-[1120px] px-3 sm:px-5 lg:px-0 pt-8 sm:pt-12 md:pt-16 pb-6 text-center min-w-0">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-1 text-[12px] font-medium text-[#475569]">
-          <Sparkles className="h-3.5 w-3.5 text-[#0E7C3A]" /> সিম্পল প্রাইসিং
+      <section className="bp-page-hero" style={{ border: 'none', background: 'transparent', paddingBlock: '2rem 1.5rem', textAlign: 'center' }}>
+        <div className="bp-wrap" style={{ maxWidth: 680, marginInline: 'auto' }}>
+          <span className="bp-eyebrow">
+            <Sparkles size={15} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-green)' }} /> সিম্পল প্রাইসিং
+          </span>
+          <h1 style={{ marginTop: '.6rem' }}>
+            AI + হোস্টিং, <span style={{ color: 'var(--bp-green)' }}>এক দামে</span>
+          </h1>
+          <p>ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE, সব এক সাবস্ক্রিপশনে। bKash দিয়ে ৩০ সেকেন্ডে শুরু</p>
         </div>
-        <h1 className="mt-4 text-[28px] sm:text-[36px] md:text-[44px] font-bold tracking-[-0.03em] leading-[1.05] break-words">
-          AI + হোস্টিং, <span style={{ color: PRIMARY }}>এক দামে</span>
-        </h1>
-        <p className="mt-3 text-[14px] sm:text-[16px] text-[#475569] max-w-[640px] mx-auto leading-[1.6] break-words">
-          ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE — সব এক সাবস্ক্রিপশনে। bKash দিয়ে ৩০ সেকেন্ডে শুরু।
-        </p>
       </section>
 
-      {/* 3 cards — Starter / Pro / Business */}
-      <section className="mx-auto max-w-[1120px] px-3 sm:px-5 lg:px-0 min-w-0">
-        <div className="grid gap-4 md:gap-5 grid-cols-1 md:grid-cols-3 items-stretch">
+      {/* 3 cards */}
+      <section className="bp-wrap" style={{ paddingBottom: '1rem' }}>
+        <div className="bp-plans">
           {PLANS.map((p) => {
             const isPopular = p.id === 'starter'
             const usd = usdFromTaka(p.priceMonthly, rate)
             return (
               <div
                 key={p.id}
-                className={`relative flex flex-col rounded-[20px] border bg-white p-4 sm:p-6 min-w-0 overflow-hidden break-words ${
-                  isPopular
-                    ? 'border-[#0E7C3A] shadow-[0_16px_40px_-16px_rgba(14,124,58,0.35)] ring-1 ring-[#0E7C3A]/15 md:-mt-2 md:pb-8'
-                    : 'border-[#E2E8F0]'
-                }`}
+                className={`bp-tile bp-plan ${isPopular ? 'bp-plan-featured' : ''}`}
               >
-                {p.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                    <div className={`rounded-full px-3 py-1 text-[11px] font-bold text-white shadow ${isPopular ? 'bg-[#0E7C3A]' : 'bg-[#F59E0B] text-white'}`}>{p.badge}</div>
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <h3 className="text-[18px] font-semibold tracking-tight">{p.nameBn} <span className="text-slate-400 font-normal text-[13px]">({p.name})</span></h3>
-                  <p className="mt-0.5 text-[12px] text-[#64748B] break-words">{p.tagline}</p>
-                  <div className="mt-4 flex flex-wrap items-baseline gap-1 min-w-0">
-                    <span className="text-[30px] font-bold tracking-[-0.03em]">৳{toBnInt(p.priceMonthly)}</span>
-                    <span className="text-[13px] text-[#64748B]">/মাস</span>
-                  </div>
-                  <div className="mt-1 text-[12px] text-[#475569] break-words">
-                    <span className="font-semibold">{toBn(p.priceMonthly)} টাকা</span>
-                    <span className="mx-1">≈</span>
-                    <span className="font-semibold">${toBn(usd)}</span>
-                    <span className="text-slate-400"> @{toBn(rate.toFixed(2))}</span>
-                  </div>
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#0E7C3A]/10 px-2.5 py-1 text-[11px] font-bold text-[#0E7C3A]">
-                    {toBn(p.credits)} ক্রেডিট / মাস
-                  </div>
+                {p.badge && <span className="bp-rosette" style={isPopular ? undefined : { background: 'var(--bp-card)' }}>{p.badge}</span>}
+                <span className="bp-plan-name">{p.nameBn} <span className="bp-muted" style={{ textTransform: 'none', fontWeight: 500 }}>({p.name})</span></span>
+                <p style={{ fontSize: '.82rem', margin: '.15rem 0 0' }}>{p.tagline}</p>
+                <div className="bp-price">৳{toBnInt(p.priceMonthly)} <small>/মাস</small></div>
+                <div style={{ fontSize: '.8rem', color: 'var(--bp-ink-soft)' }}>
+                  <b>{toBn(p.priceMonthly)} টাকা</b> ≈ <b>${toBn(usd)}</b> @{toBn(rate.toFixed(2))}
+                </div>
+                <div style={{ marginTop: '.5rem' }}>
+                  <span className="bp-tag">{toBn(p.credits)} ক্রেডিট / মাস</span>
                 </div>
 
-                <ul className="mt-5 space-y-2.5 min-w-0">
+                <ul className="bp-check" style={{ margin: '1.1rem 0 1.3rem' }}>
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-[13px] leading-6 min-w-0">
-                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0E7C3A] text-white">
-                        <Check className="h-3 w-3" />
-                      </span>
-                      <span className="text-[#334155] break-words min-w-0">{f}</span>
+                    <li key={f}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>
+                      <span>{f}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="mt-6 space-y-2 min-w-0">
+                <div style={{ display: 'grid', gap: '.55rem', marginTop: 'auto' }}>
                   {/* bKash primary */}
                   <a
                     href={`/signup?plan=${p.id}`}
-                    className="flex h-11 w-full items-center justify-center rounded-full text-[14px] font-bold text-white shadow"
-                    style={{ background: BKASH }}
+                    className="bp-btn"
+                    style={{ background: BKASH, color: '#fff' }}
                   >
-                    bKash দিয়ে নিন — ৳{toBnInt(p.priceMonthly)}
+                    bKash দিয়ে নিন, ৳{toBnInt(p.priceMonthly)}
                   </a>
                   <TrxVerify plan={p} credits={p.credits} />
 
@@ -230,26 +217,27 @@ export default function PricingPage() {
                   <button
                     onClick={() => startStripe(p.id)}
                     disabled={checkoutPlan !== null}
-                    className="flex h-11 w-full items-center justify-center rounded-full text-[14px] font-semibold text-white disabled:opacity-60"
-                    style={{ background: STRIPE }}
+                    className="bp-btn"
+                    style={{ background: STRIPE, color: '#fff' }}
                   >
                     {checkoutPlan === p.id ? 'প্রসেস হচ্ছে…' : 'Pay with Stripe'}
                   </button>
 
-                  {/* PayPal yellow */}
+                  {/* PayPal */}
                   <button
                     onClick={() => startStripe(p.id)}
-                    className="flex h-11 w-full items-center justify-center rounded-full bg-[#FFC439] text-[14px] font-bold text-[#0F172A] border border-[#E2B500] hover:bg-[#FFB700]"
+                    className="bp-btn"
+                    style={{ background: '#FFC439', color: '#0F172A', borderColor: '#E2B500' }}
                   >
                     Pay with PayPal
                   </button>
 
-                  {/* Nagad / Rocket secondary */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link href={`/signup?plan=${p.id}`} className="flex h-10 items-center justify-center rounded-full border border-[#E2E8F0] bg-white text-[13px] font-semibold hover:bg-slate-50">
+                  {/* Nagad / Rocket */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.5rem' }}>
+                    <Link href={`/signup?plan=${p.id}`} className="bp-btn bp-btn-ghost" style={{ padding: '.55rem .8rem', fontSize: '.88rem' }}>
                       Nagad
                     </Link>
-                    <Link href={`/signup?plan=${p.id}`} className="flex h-10 items-center justify-center rounded-full border border-[#E2E8F0] bg-white text-[13px] font-semibold hover:bg-slate-50">
+                    <Link href={`/signup?plan=${p.id}`} className="bp-btn bp-btn-ghost" style={{ padding: '.55rem .8rem', fontSize: '.88rem' }}>
                       Rocket
                     </Link>
                   </div>
@@ -259,38 +247,40 @@ export default function PricingPage() {
           })}
         </div>
 
-        <p className="mt-4 text-center text-[11px] text-[#64748B] break-words">bKash / Nagad / Rocket / Stripe / PayPal • ভ্যাট সহ ইনভয়েস • ৭ দিন মানি-ব্যাক</p>
+        <p className="bp-muted" style={{ marginTop: '1rem', textAlign: 'center', fontSize: '.78rem' }}>
+          bKash / Nagad / Rocket / Stripe / PayPal, ভ্যাট সহ ইনভয়েস, ৭ দিন মানি-ব্যাক
+        </p>
       </section>
 
-      {/* Bottom CTA — gradient 1x only */}
-      <section className="mx-auto max-w-[1120px] px-3 sm:px-5 lg:px-0 pb-24 md:pb-12 pt-10">
-        <div className="rounded-[20px] p-[1px]" style={{ background: `linear-gradient(135deg, ${PRIMARY}, #F59E0B)` }}>
-          <div className="rounded-[19px] bg-white px-6 py-6 sm:py-8 text-center min-w-0">
-            <h3 className="text-[18px] sm:text-[20px] font-bold break-words">ফ্রিতে শুরু করুন — ৭ দিন মানি-ব্যাক</h3>
-            <p className="mt-1 text-[13px] text-[#475569]">SSL সুরক্ষিত • ভ্যাট সহ ইনভয়েস • যেকোনো সময় Cancel</p>
-            <Link href="/generate" className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[#0E7C3A] px-6 text-[14px] font-semibold text-white hover:bg-[#0A5A2B]">
-              ফ্রিতে ভিডিও বানান — ৳০
-            </Link>
+      {/* Bottom CTA */}
+      <section className="bp-wrap" style={{ paddingTop: '2rem', paddingBottom: '5.5rem' }}>
+        <div className="bp-cta-wrap">
+          <div className="bp-scallop bp-scallop-flip" aria-hidden="true" />
+          <div className="bp-cta-band">
+            <h2 style={{ color: 'var(--bp-card)' }}>ফ্রিতে শুরু করুন, ৭ দিন মানি-ব্যাক</h2>
+            <p>SSL সুরক্ষিত, ভ্যাট সহ ইনভয়েস, যেকোনো সময় Cancel</p>
+            <Link href="/generate" className="bp-btn bp-btn-light">ফ্রিতে ভিডিও বানান, ৳০</Link>
           </div>
+          <div className="bp-scallop" aria-hidden="true" />
         </div>
       </section>
 
-      {/* Sticky CTA Bangla — 320px safe */}
-      <div className="fixed bottom-0 inset-x-0 z-40 border-t border-[#E2E8F0] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="mx-auto max-w-[1120px] px-3 sm:px-5 lg:px-0 py-3 flex items-center justify-between gap-2 min-w-0">
-          <div className="min-w-0">
-            <p className="text-[13px] font-bold leading-none break-words">৳৫৯৯ থেকে শুরু</p>
-            <p className="text-[11px] text-[#64748B]">৬০০০ ক্রেডিট • bKash ৩০ সেকেন্ডে</p>
+      {/* Sticky CTA */}
+      <div className="bp-sticky-cta">
+        <div className="bp-wrap bp-sticky-in">
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontWeight: 700, fontSize: '.92rem', lineHeight: 1.2 }}>৳৫৯৯ থেকে শুরু</p>
+            <p style={{ fontSize: '.74rem', color: 'var(--bp-ink-soft)' }}>৬০০০ ক্রেডিট, bKash ৩০ সেকেন্ডে</p>
           </div>
-          <Link href="/signup?plan=starter" className="shrink-0 inline-flex h-10 items-center justify-center rounded-full bg-[#0E7C3A] px-5 text-[13px] font-bold text-white hover:bg-[#0A5A2B] whitespace-nowrap">
+          <Link href="/signup?plan=starter" className="bp-btn bp-btn-primary" style={{ padding: '.55rem 1.2rem', fontSize: '.88rem' }}>
             এখনই শুরু করুন
           </Link>
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1120px] px-3 sm:px-5 lg:px-0 pb-6">
+      <div className="bp-wrap" style={{ paddingBottom: '1.5rem' }}>
         <HostaTeaser />
       </div>
     </div>
-  )
+  );
 }
