@@ -25,6 +25,7 @@ import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { notify as telegramNotify } from '@/lib/support/telegram'
 import { pushFleetNote, LEAD_LANE } from '@/lib/support/fleet-push'
+import { recordOpsEvent } from '@/lib/ops-events'
 
 const TOPICS = ['billing', 'video', 'hosting', 'gaming', 'other'] as const
 
@@ -148,6 +149,16 @@ export async function POST(req: NextRequest) {
     // (2) Notify the owner — both channels are best-effort and never throw.
     const contactMethod = email || phone
     const summary = `নতুন লিড (${topic}) — ${name} · ${contactMethod} · ${message.slice(0, 280)}`
+
+    // V70 Ops Center live feed (best-effort, never throws).
+    void recordOpsEvent({
+      lane: LEAD_LANE,
+      type: 'LEAD',
+      severity: 'info',
+      title: `New lead — ${name}`,
+      body: summary,
+      meta: { id, topic, source: 'contact-form' },
+    })
     await Promise.allSettled([
       pushFleetNote({
         employee: LEAD_LANE,

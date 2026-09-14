@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { grantPaymentBenefits, ensurePersonalPaymentSchema } from '@/lib/payments/personal'
+import { recordOpsEvent, OPS_LANES } from '@/lib/ops-events'
 
 /**
  * POST /api/admin/payments/verifications/[id]/approve
@@ -40,6 +41,16 @@ export async function POST(
     })
 
     await grantPaymentBenefits(v.id)
+
+    // V70 Ops Center live feed (best-effort, never throws).
+    void recordOpsEvent({
+      lane: OPS_LANES.payments,
+      type: 'PAYMENT',
+      severity: 'success',
+      title: `Payment approved — ${v.plan || '—'} ৳${v.amount}`,
+      body: `${v.method} · ${v.trxId}`,
+      meta: { verificationId: v.id, plan: v.plan, amount: v.amount, reviewedBy: admin.email },
+    })
 
     const updated = await prisma.paymentVerification.findUnique({ where: { id: v.id } })
     return NextResponse.json({
