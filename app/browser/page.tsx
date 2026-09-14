@@ -46,7 +46,7 @@ export default function BrowserPage(){
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-zinc-900 antialiased selection:bg-[#2563EB]/15 overflow-x-hidden">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917] antialiased selection:bg-[#0E7C3A]/20 overflow-x-hidden bp-theme">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap'); h1,h2,h3,.font-bangla{font-family:"Hind Siliguri",sans-serif} .font-inter{font-family:"Inter",system-ui,sans-serif}`}</style>
 
       {/* Trust Bar */}
