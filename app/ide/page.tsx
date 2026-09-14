@@ -82,7 +82,7 @@ export default function IDEPage() {
   const code = lang === 'py' ? PY_SAMPLE : JS_SAMPLE
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-zinc-900 antialiased">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917] antialiased bp-theme">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ideLd) }} />
 
       <div className="mx-auto max-w-[1240px] px-4 md:px-6 py-10">

@@ -7,7 +7,7 @@ export default function App() {
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 selection:bg-[#0E7C3A]/20">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917] selection:bg-[#0E7C3A]/20 bp-theme">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
         .font-bn { font-family: "Hind Siliguri", sans-serif; }
