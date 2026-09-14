@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 // ── helpers ──────────────────────────────────────────────────────────
-const TABS = ['overview','users','credits','transactions','models','fleet','second-brain','guard','drive','products','hosting'] as const
+const TABS = ['overview','users','leads','credits','transactions','models','fleet','second-brain','guard','drive','products','hosting'] as const
 type Tab = typeof TABS[number]
 
 function fmt(n: number | undefined | null) { return (n ?? 0).toLocaleString() }
@@ -603,6 +603,57 @@ function ProductsTab() {
 }
 
 // ── Hosting ──────────────────────────────────────────────────────────
+// ── Leads tab — every captured lead (contact form, CRM, imports) ─────
+function LeadsTab() {
+  const [data, setData] = useState<any>(null)
+  const [err, setErr] = useState('')
+  const [source, setSource] = useState('')
+
+  const load = useCallback(async () => {
+    try {
+      setErr('')
+      setData(await jfetch(`/api/admin/leads?take=100${source ? `&source=${encodeURIComponent(source)}` : ''}`))
+    } catch (e: any) { setErr(e.message) }
+  }, [source])
+  useEffect(() => { load() }, [load])
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-white">লিড <span className="text-xs text-normal text-zinc-500">· funnel capture</span></h2>
+          <p className="text-xs text-zinc-500">GET /api/admin/leads · contact form + CRM + imports · newest first</p>
+        </div>
+        <button onClick={load} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
+      </div>
+      {err && <div className="text-xs text-red-400">{err}</div>}
+      <div className="flex gap-2 items-center">
+        {['', 'contact-form'].map((s) => (
+          <button key={s || 'all'} onClick={() => setSource(s)} className={`px-3 py-1.5 rounded-lg text-xs border ${source === s ? 'bg-[#0E7C3A] text-white border-[#10B981]' : 'text-zinc-400 border-zinc-700 hover:text-white'}`}>{s || 'সব'}</button>
+        ))}
+        <div className="ml-auto text-xs text-zinc-500">Total: <span className="font-mono text-[#10B981]">{data?.total ?? '—'}</span></div>
+      </div>
+      <div className="rounded-xl bg-black border border-zinc-800 p-3">
+        {(data?.leads || []).map((l: any) => (
+          <div key={l.id} className="border-b border-zinc-900 py-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-white font-semibold">{l.name}</span>
+              <span className="text-zinc-400">{l.email || '—'}</span>
+              {l.phone && <span className="text-zinc-400">{l.phone}</span>}
+              {badge(l.status)}
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">{l.source}</span>
+              <span className="ml-auto text-[10px] text-zinc-600 font-mono">{new Date(l.createdAt).toLocaleString()}</span>
+            </div>
+            {l.notes && <div className="mt-1 text-[11px] text-zinc-500 whitespace-pre-wrap">{String(l.notes).slice(0, 400)}</div>}
+          </div>
+        ))}
+        {data && (!data.leads || data.leads.length === 0) && <div className="text-xs text-zinc-600">এখনো কোনো লিড নেই — contact ফর্মের submission এখানে আসবে।</div>}
+        {!data && <div className="text-xs text-zinc-500">Loading leads…</div>}
+      </div>
+    </div>
+  )
+}
+
 // ── V50 Fleet tab — AI employees: reports + chat + storage stream ────
 const FLEET_META: Record<string, { lane: string; color: string }> = {
   Atlas: { lane: 'Hosting — 7 containers, site, uploader, disks', color: '#10B981' },
@@ -1062,6 +1113,7 @@ export default function AdminDashboard() {
           {[
             { id:'overview', label:'ওভারভিউ', icon: LayoutDashboard },
             { id:'users', label:'ইউজারসমূহ', icon: Users },
+            { id:'leads', label:'লিড', icon: Eye },
             { id:'credits', label:'ক্রেডিট', icon: Coins },
             { id:'transactions', label:'লেনদেন', icon: Receipt },
             { id:'models', label:'মডেল·১২০', icon: Cpu },
@@ -1082,6 +1134,7 @@ export default function AdminDashboard() {
         <div className="rounded-2xl bg-black/40 border border-[#0E7C3A]/10 p-4 lg:p-6">
           {active==='overview' && <OverviewTab/>}
           {active==='users' && <UsersTab/>}
+          {active==='leads' && <LeadsTab/>}
           {active==='credits' && <CreditsTab/>}
           {active==='transactions' && <TransactionsTab/>}
           {active==='models' && <ModelsTab/>}
