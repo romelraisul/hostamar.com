@@ -172,13 +172,16 @@ function looksLikeCot(t: string): boolean {
     if (isHostamarModel) {
       // Proprietary SKU: ride BOTH capacity slots (kilo-auto + longcat) so a
       // single slot hiccup can't degrade the branded reply. Direct + edge per slot.
+      // ECHO 2026-09-15 02:2x: Vercel->api.kilo.ai direct hangs (4/4 traces = 18s
+      // timeout, burning the 42s chain -> pub_chat=FALLBACK). CF edge answers in
+      // ~1.2s. Edge first, kilocode direct as the spare.
       for (const slot of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
-        attempts.push({ name: `kilocode:${slot}`, fn: async () => {
-          const r = await kilocodeCall(slot)();
-          return { ...r, model: wanted, provider: wanted };
-        }});
         attempts.push({ name: `edge:${slot}`, fn: async () => {
           const r = await edgeCall(slot)();
+          return { ...r, model: wanted, provider: wanted };
+        }});
+        attempts.push({ name: `kilocode:${slot}`, fn: async () => {
+          const r = await kilocodeCall(slot)();
           return { ...r, model: wanted, provider: wanted };
         }});
       }
