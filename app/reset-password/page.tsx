@@ -203,7 +203,7 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   const { t } = useLocale()
   return (
-    <main className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased flex items-center justify-center px-4">
+    <main className="min-h-screen bp-theme antialiased flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-[24px] border border-zinc-200 bg-white p-8 shadow-sm">
         <Suspense fallback={<div className="text-center text-zinc-400">{t('common.loading') || 'Loading...'}</div>}>
           <ResetPasswordForm />

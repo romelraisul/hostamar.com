@@ -188,7 +188,7 @@ export default async function RootLayout({
                   dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
                 />
       </head>
-      <body>
+      <body className="bp-theme">
         <Providers>
           <LocaleProvider locale={locale}>
           <ChromeGuard>{children}</ChromeGuard>
