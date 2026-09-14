@@ -1,4 +1,5 @@
-export type Plan = 'starter' | 'business' | 'enterprise';
+import { PAYMENT_PLANS } from '@/lib/pricing';
+export type Plan = 'starter' | 'pro' | 'business';
 export type PaymentMethod = 'bkash' | 'nagad';
 
 export type PaymentState = {
@@ -27,10 +28,13 @@ export type PaymentMethodInfo = {
   text: string;
 };
 
+// V17 root-cause fix (HARBOR): old copy of prices (2000/3500/6000, no pro) drifted
+// from lib/pricing.ts — the pay button on /payment showed fake prices. Single source now.
+
 export const PLANS: Record<Plan, PlanInfo> = {
-  starter: { amount: 2000, name: 'Starter', features: ['Web Hosting (5GB)', '10 Videos/month', 'Free SSL', 'Email Support'] },
-  business: { amount: 3500, name: 'Business', features: ['VPS (2 CPU, 4GB RAM)', '20 Videos/month', 'Custom Topics', 'Priority Support', 'Social Scheduler'] },
-  enterprise: { amount: 6000, name: 'Enterprise', features: ['VPS (4 CPU, 8GB RAM)', 'Unlimited Videos', 'Custom Branding', '24/7 Support', 'We Post For You'] },
+  starter: { amount: PAYMENT_PLANS.starter.price, name: 'Starter', features: ['৬০০০ ক্রেডিট / মাস', '১০GB NVMe হোস্টিং + ফ্রি SSL', 'bKash / Nagad সাপোর্ট', 'Email Support'] },
+  pro: { amount: PAYMENT_PLANS.pro.price, name: 'Pro', features: ['১৩০০০ ক্রেডিট / মাস', '৫০GB হোস্টিং', 'API এক্সেস + টিম ৫ জন', 'Priority Support'] },
+  business: { amount: PAYMENT_PLANS.business.price, name: 'Business', features: ['৩০০০০ ক্রেডিট / মাস', 'আনলিমিটেড হোস্টিং', 'কাস্টম ডোমেইন', 'ডেডিকেটেড সাপোর্ট'] },
 };
 
 export const PAYMENT_METHODS: Record<PaymentMethod, PaymentMethodInfo> = {
