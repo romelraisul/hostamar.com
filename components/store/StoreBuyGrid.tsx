@@ -23,7 +23,6 @@ export default function StoreBuyGrid() {
   const [open, setOpen] = useState<Prod | null>(null)
   const [phase, setPhase] = useState<Phase>('idle')
   const [orderId, setOrderId] = useState('')
-  const [receiptSent, setReceiptSent] = useState(false)
   const [err, setErr] = useState('')
 
   useEffect(() => {
@@ -63,7 +62,6 @@ export default function StoreBuyGrid() {
       const d = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(d.error || 'Checkout unavailable')
       setOrderId(d.orderId || '')
-      setReceiptSent(!!d.receiptSent)
       setPhase('done')
     } catch (e: any) {
       setErr(e?.message || 'Checkout unavailable')
@@ -133,7 +131,7 @@ export default function StoreBuyGrid() {
               <div className="mt-4 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0] p-4 text-sm">
                 <div className="font-bold text-[#15803D]">অর্ডার # taken ✓</div>
                 <div className="mt-1">অর্ডার আইডি: <code className="text-xs">{orderId}</code></div>
-                <div className="mt-1 text-xs text-gray-600">{receiptSent ? 'রসিদ + Send Money নির্দেশনা আপনার ইমেইলে পাঠানো হয়েছে।' : 'ইমেইলে রসিদ পাঠানো যায়নি — নিচের তথ্য মিলিয়ে Send Money করুন।'}</div>
+                <div className="mt-1 text-xs text-gray-600">রসিদ + Send Money নির্দেশনা আপনার ইমেইলে পাঠানো হচ্ছে (১-২ মিনিট)।</div>
                 <div className="mt-2 text-gray-700">
                   এখন <b>Send Money</b> (Cash Out নয়): bKash/Nagad/Rocket <b>{BKASH}</b> → ৳{open.amountBdt.toLocaleString('en-BD')}।
                   পাঠানোর ৫ মিনিটের মধ্যে অর্ডার কনফার্ম হয়ে যাবে।
