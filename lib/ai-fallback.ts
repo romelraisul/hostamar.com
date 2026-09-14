@@ -114,8 +114,13 @@ export async function callBestModel(
     }
     // V36.47 FIX: qwen3.5 thinking models return reasoning in .reasoning not .content
     const choice = rawChoice?.message;
-    const txt = (choice?.content?.length > 4 ? choice.content : null) || (choice?.reasoning?.length > 4 ? choice.reasoning : null);
-    if (!txt || txt.length < 5) throw new Error('empty');
+    // ECHO 2026-09-14 fix: reasoning-as-content leak — concise real answers ("4", "OK")
+    // were discarded (length>4 gate) and raw chain-of-thought served to public callers.
+    // Now: prefer content whenever non-empty/whitespace; reasoning only if content absent.
+    const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
+    const rawReasoning = typeof choice?.reasoning === 'string' ? choice.reasoning.trim() : '';
+    const txt = rawTxt || rawReasoning || null;
+    if (!txt) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilocode' };
   };
 
@@ -142,8 +147,13 @@ export async function callBestModel(
       };
     }
     const choice = rawChoice?.message;
-    const txt = (choice?.content?.length > 4 ? choice.content : null) || (choice?.reasoning?.length > 4 ? choice.reasoning : null);
-    if (!txt || txt.length < 5) throw new Error('empty');
+    // ECHO 2026-09-14 fix: reasoning-as-content leak — concise real answers ("4", "OK")
+    // were discarded (length>4 gate) and raw chain-of-thought served to public callers.
+    // Now: prefer content whenever non-empty/whitespace; reasoning only if content absent.
+    const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
+    const rawReasoning = typeof choice?.reasoning === 'string' ? choice.reasoning.trim() : '';
+    const txt = rawTxt || rawReasoning || null;
+    if (!txt) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilo-edge' };
   };
 
