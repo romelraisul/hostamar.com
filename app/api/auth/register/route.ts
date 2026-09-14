@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { WELCOME_CREDITS } from '@/lib/pricing'
+import { recordOpsEvent, OPS_LANES } from '@/lib/ops-events'
 import bcrypt from 'bcryptjs'
 
 export async function POST(req: NextRequest) {
@@ -43,6 +44,16 @@ export async function POST(req: NextRequest) {
           },
         },
       }
+    })
+
+    // V70 Ops Center live feed (best-effort, never throws).
+    void recordOpsEvent({
+      lane: OPS_LANES.signups,
+      type: 'SIGNUP',
+      severity: 'success',
+      title: 'New signup',
+      body: `${customer.email}`,
+      meta: { customerId: customer.id, source: 'register' },
     })
 
     return NextResponse.json({
