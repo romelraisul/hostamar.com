@@ -259,7 +259,7 @@ export default function HomePage() {
               <div className="bp-tile bp-plan bp-plan-featured">
                 <span className="bp-rosette">সবচেয়ে জনপ্রিয়</span>
                 <span className="bp-plan-name">স্টার্টার</span>
-                <div className="bp-price">৳2,000 <small>/ মাস</small></div>
+                <div className="bp-price">৳599 <small>/ মাস</small></div>
                 <ul className="bp-check">
                   <li>{CHECK}১০০ AI ভিডিও</li>
                   <li>{CHECK}৫GB হোস্টিং</li>
@@ -271,7 +271,7 @@ export default function HomePage() {
               </div>
               <div className="bp-tile bp-plan">
                 <span className="bp-plan-name">বিজনেস</span>
-                <div className="bp-price">৳3,500 <small>/ মাস</small></div>
+                <div className="bp-price">৳2,999 <small>/ মাস</small></div>
                 <ul className="bp-check">
                   <li>{CHECK}৩০০ AI ভিডিও</li>
                   <li>{CHECK}২০GB হোস্টিং</li>
