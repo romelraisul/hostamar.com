@@ -94,14 +94,14 @@ function looksLikeCot(t: string): boolean {
   return /(?:^|\n)\s*(?:Let me|First[,:] ?|I need to|The user)(?:\b| is)/i.test(t.slice(0, 200));
 }
 
-  const kilocodeCall = (m: string) => async (): Promise<Res> => {
+  const kilocodeCall = (m: string, capMs?: number) => async (): Promise<Res> => {
     if (!process.env.KILOCODE_API_KEY) throw new Error('no kilocode key');
     const base = process.env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway';
     const r = await fetch(`${base}/chat/completions`, {
       method: 'POST',
       // V26: attempt timeout capped by the remaining chain budget — never lets
       // one attempt consume time the function doesn't have.
-      signal: AbortSignal.timeout(attemptTimeoutMs()),
+      signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.KILOCODE_API_KEY}` },
       // ECHO 2026-09-14 20:1x: kilo-auto/free is an AUTO-ROUTER that flipped to a
       // model emitting chain-of-thought IN .content (public COT_LEAK 19:5x).
@@ -134,12 +134,12 @@ function looksLikeCot(t: string): boolean {
     return { text: txt, model: m, provider: 'kilocode' };
   };
 
-  const edgeCall = (m: string) => async (): Promise<Res> => {
+  const edgeCall = (m: string, capMs?: number) => async (): Promise<Res> => {
     const EDGE_URL = process.env.EDGE_GATEWAY_URL || 'https://hostamar-ai-gateway.romelraisul.workers.dev/v1';
     const key = process.env.EDGE_INTERNAL_KEY || 'hostamar-edge-internal-2026-xK39m';
     const r = await fetch(`${EDGE_URL}/chat/completions`, {
       method: 'POST',
-      signal: AbortSignal.timeout(attemptTimeoutMs()),
+      signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
       headers: { 'Content-Type': 'application/json', 'x-internal-key': String(key) },
       body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, thinking: { type: 'disabled' }, ...toolFields }),
     });
@@ -172,16 +172,18 @@ function looksLikeCot(t: string): boolean {
     if (isHostamarModel) {
       // Proprietary SKU: ride BOTH capacity slots (kilo-auto + longcat) so a
       // single slot hiccup can't degrade the branded reply. Direct + edge per slot.
-      // ECHO 2026-09-15 02:2x: Vercel->api.kilo.ai direct hangs (4/4 traces = 18s
-      // timeout, burning the 42s chain -> pub_chat=FALLBACK). CF edge answers in
-      // ~1.2s. Edge first, kilocode direct as the spare.
-      for (const slot of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
-        attempts.push({ name: `edge:${slot}`, fn: async () => {
-          const r = await edgeCall(slot)();
+      // ECHO 2026-09-15 02:4x trace data: kilocode DIRECT cold sockets from Vercel
+      // hang (18s cap) but any CONNECTED attempt answers in ~1.2s; edge dies with
+      // 502 exactly when kilo upstream is sick (edge's origin IS kilo). So: direct
+      // first at a 9s cap (fail fast, don't burn budget), edge second, and kilo-auto
+      // only — meituan/longcat = kilocode 401 + edge 502 dead weight, dropped.
+      for (let i = 0; i < 2; i++) {
+        attempts.push({ name: `kilocode:kilo-auto/free#${i}`, fn: async () => {
+          const r = await kilocodeCall('kilo-auto/free', 9_000)();
           return { ...r, model: wanted, provider: wanted };
         }});
-        attempts.push({ name: `kilocode:${slot}`, fn: async () => {
-          const r = await kilocodeCall(slot)();
+        attempts.push({ name: `edge:kilo-auto/free#${i}`, fn: async () => {
+          const r = await edgeCall('kilo-auto/free')();
           return { ...r, model: wanted, provider: wanted };
         }});
       }
@@ -212,6 +214,7 @@ function looksLikeCot(t: string): boolean {
       trace.push({ provider: 'budget', status: 'exhausted', error: 'wall-clock budget spent' });
       break;
     }
+    if (remainingMs() < 3_000) break; // ECHO 02:4x: <5s guarantee left a 13s attempt alive past the 42s chain -> Vercel function-killed -> raw 500. 3s >= the 3s attempt floor.
     const t0 = Date.now();
     try {
       const res = await fn();
