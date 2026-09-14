@@ -491,6 +491,7 @@ export default function TvPage() {
                 { f: 'receipt-teldrive.mp4', t: 'Teldrive Receipt' },
                 { f: 'receipt-monitor.mp4', t: 'Monitor Receipt' },
                 { f: 'receipt-paymentsbn.mp4', t: 'বাংলা পেমেন্ট Receipt' },
+                { f: 'receipt-mrr.mp4', t: 'First-10-Customers Receipt' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
