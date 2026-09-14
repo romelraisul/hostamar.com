@@ -164,6 +164,14 @@ export const FAQS: Faq[] = [
     a: 'হ্যাঁ — Agent Cloud-এর এজেন্টদের persist করা memory আছে (chat memory, skill, wiki, code graph)। কন্টেইনার রিস্টার্ট বা সেশন শেষ হলেও কনটেক্সট হারায় না; cron করে চালানো এজেন্টের এটাই সবচেয়ে বড় ঝামেলা, আমরা সেটা নিজে সামলাই।',
     link: { href: '/contact', label: 'মেমরি হোস্টিং জানুন' },
   },
+  {
+    // ORACLE V66 2026-09-14 22:30 — rides Trend 7 (agent-first infra): AgentDrive 49699287 + Botbin 49698661 + ProGantt 49698952 launched same day
+    id: 'agent-mcp-tools',
+    cat: 'chat',
+    q: 'আমার AI agent কি Hostamar-এর টুল সরাসরি ব্যবহার করতে পারে?',
+    a: 'হ্যাঁ — আমাদের ১০৯টি টুল MCP দিয়ে agent-callable: agent নিজেই ভিডিও রেন্ডার, ট্রান্সক্রাইব, ডাবিং, পোস্ট চালাতে পারে, কোনো human UI লাগে না। আজ HN-এ AgentDrive/Botbin দেখুন — সবাই এখন infra agent-first বানাচ্ছে; আমরা শুরু থেকেই তাই।',
+    link: { href: '/contact', label: 'MCP টুল ক্যাটালগ জানুন' },
+  },
 
   // Gaming
   {
