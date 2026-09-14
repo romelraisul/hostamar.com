@@ -171,7 +171,7 @@ export default function LogsPage() {
 
             <button
               type="submit"
-              className="px-6 py-2 bg-[#0E7C3A] hover:bg-[#0E7C3A]/100 rounded-lg text-sm font-medium transition-colors"
+              className="px-6 py-2 bg-[#0E7C3A] text-white hover:bg-[#0E7C3A]/100 rounded-lg text-sm font-medium transition-colors"
             >
               {t('logs.apply')}
             </button>
