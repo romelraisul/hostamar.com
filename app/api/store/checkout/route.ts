@@ -15,7 +15,11 @@ export const runtime = 'nodejs'
 //   2. complete the cart -> Medusa creates the order AND the notification-local
 //      order-placed subscriber fires (receipt pipeline, fixed 19:20 shift).
 //
-// Body: { variant_id, quantity?, email, name, address1, city, postcode? }
+// Body: { variant_id, quantity?, email, name, address1, city, postcode?, phone? }
+//   phone: buyer number — the ONLY order↔bKash-statement reconciliation key on
+//   the manual send-money path (BINDING 09-14). Store API rejects top-level
+//   `phone` (Unrecognized fields) — 400-verified 09-15; it persists ONLY nested
+//   in shipping_address (→ order_address.phone, DB-verified order_01M2GHVE...).
 // Response: { orderId, amountBdt, status }
 //   Auth: none (public — like /api/contact / /api/services/catalog). Rate-limited.
 // Env: MEDUSA_URL (default = CF Workers bridge, workers.dev egress is not
@@ -62,6 +66,8 @@ export async function POST(req: NextRequest) {
   const address1 = String(body.address1 || '').trim().slice(0, 200) || 'N/A'
   const city = String(body.city || '').trim().slice(0, 60) || 'Dhaka'
   const postcode = String(body.postcode || '').trim().slice(0, 12) || '1207'
+  const phone = String(body.phone || '').trim().slice(0, 11)
+  if (phone && !/^01[3-9]\d{8}$/.test(phone)) return NextResponse.json({ error: 'ফোন নম্বর ১১ সংখ্যার হতে হবে (01XXXXXXXXX)' }, { status: 400 })
   const [first, ...rest] = name.split(' ')
 
   try {
@@ -69,7 +75,7 @@ export async function POST(req: NextRequest) {
     await medusa(`/carts/${cart.id}/line-items`, { method: 'POST', json: { variant_id, quantity } })
     await medusa(`/carts/${cart.id}`, {
       method: 'POST',
-      json: { email, shipping_address: { first_name: first || 'Guest', last_name: rest.join(' ') || '.', address_1: address1, city, postal_code: postcode, country_code: 'bd' } },
+      json: { email, shipping_address: { first_name: first || 'Guest', last_name: rest.join(' ') || '.', address_1: address1, city, postal_code: postcode, country_code: 'bd', ...(phone ? { phone } : {}) } },
     })
     const { shipping_options } = await medusa(`/shipping-options?cart_id=${cart.id}`)
     if (!shipping_options?.[0]) throw new Error('no shipping options')
