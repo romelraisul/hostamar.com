@@ -202,8 +202,11 @@ export async function callBestModel(
     const t0 = Date.now();
     try {
       const res = await fn();
-      // V100: a tool_calls answer is a successful attempt even with empty text.
-      if ((res.text && res.text.length > 10) || res.finish_reason === 'tool_calls') {
+      // ECHO 2026-09-14 17:10: accept gate was `text.length > 10` — concise real answers
+      // ("4", "OK", "yes") were marked 'empty' and the loop fell through to the canned
+      // knowledge-base-fallback blurb. Accept any non-empty trimmed text; tool_calls
+      // still accepted with empty text.
+      if ((res.text && res.text.trim().length > 0) || res.finish_reason === 'tool_calls') {
         trace.push({ provider: name, status: 'ok', elapsedMs: Date.now() - t0 });
         if (debug) return { ...res, trace };
         return res;
