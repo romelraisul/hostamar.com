@@ -29,8 +29,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { message: 'Invalid JSON', code: 400 } }, { status: 400 })
   }
 
+  // V100: keep tool-flow messages — an assistant turn carrying tool_calls has
+  // content:null and tool results arrive as role:'tool'; dropping either
+  // breaks the agentic loop on the second request of a tool round-trip.
   const messages: Array<{ role: string; content: string }> = Array.isArray(body.messages)
-    ? body.messages.filter((m: any) => m?.content)
+    ? body.messages.filter((m: any) => m?.content || m?.tool_calls || m?.role === 'tool')
     : []
   if (!messages.length) {
     return NextResponse.json({ error: { message: 'messages[] required', code: 400 } }, { status: 400 })
@@ -43,6 +46,19 @@ export async function POST(req: NextRequest) {
     authUser = null
   }
 
+  // V100: agentic (OpenAI tools) passthrough — forwarded verbatim into the
+  // upstream chain. Anonymous callers stay freemium (capped to 600 max_tokens
+  // in the chain); rate limit / auth / credits / surveillance all unchanged.
+  const toolsPayload =
+    Array.isArray(body.tools) && body.tools.length
+      ? {
+          tools: body.tools,
+          ...(body.tool_choice !== undefined ? { tool_choice: body.tool_choice } : {}),
+          ...(body.parallel_tool_calls !== undefined ? { parallel_tool_calls: body.parallel_tool_calls } : {}),
+          anonymous: !authUser,
+        }
+      : undefined
+
   // V62: true SSE streaming — OpenAI clients that ask for stream:true get real
   // `data:` frames with finish_reason and [DONE]; the buffered path below is
   // untouched for non-streaming callers.
@@ -52,7 +68,12 @@ export async function POST(req: NextRequest) {
 
   // V36.48: support ?debug=1 to return full chain trace
   const debug = new URL(req.url).searchParams.get('debug') === '1';
-  const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined, debug);
+  const result = await callBestModel(messages, SYSTEM_PROMPT, body.model || undefined, debug, toolsPayload);
+
+  // V100: when the upstream answered with tool_calls, meter the serialized
+  // arguments as completion tokens (same length/4 metering as today).
+  const toolCalls = result.message?.tool_calls
+  const completionText: string = result.text || (toolCalls?.length ? JSON.stringify(toolCalls) : '')
 
   // V65 Layer 5: sampled abuse/distillation logging (never breaks chat).
   await recordSurveillance({
@@ -70,7 +91,7 @@ export async function POST(req: NextRequest) {
   let pricing: any = null
   if (authUser) {
     const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
-    const completionTokens = Math.ceil((result.text?.length || 0) / 4)
+    const completionTokens = Math.ceil(completionText.length / 4)
     const totalTokens = promptTokens + completionTokens
     usage = { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: totalTokens }
 
@@ -88,7 +109,7 @@ export async function POST(req: NextRequest) {
     }
   } else {
     const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
-    const completionTokens = Math.ceil((result.text?.length || 0) / 4)
+    const completionTokens = Math.ceil(completionText.length / 4)
     usage = { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: promptTokens + completionTokens }
   }
 
@@ -111,8 +132,11 @@ export async function POST(req: NextRequest) {
     choices: [
       {
         index: 0,
-        message: { role: 'assistant', content: result.text },
-        finish_reason: 'stop',
+        // V100: upstream tool_calls answer → relay the assistant message
+        // VERBATIM (content stays null/empty) with finish_reason "tool_calls";
+        // never synthesize plain content over a tool call.
+        message: toolCalls?.length ? result.message : { role: 'assistant', content: result.text },
+        finish_reason: toolCalls?.length ? 'tool_calls' : 'stop',
       },
     ],
     usage,
@@ -134,7 +158,7 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     endpoint: '/api/v1/chat/completions',
-    usage: 'POST {model, messages[], max_tokens} — OpenAI compatible. Add &debug=1 for full chain trace.',
+    usage: 'POST {model, messages[], max_tokens, tools?, tool_choice?, stream?} — OpenAI compatible. Add &debug=1 for full chain trace.',
     auth: 'optional — public works, authed users get credit accounting',
   })
 }

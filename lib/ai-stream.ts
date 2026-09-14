@@ -14,6 +14,12 @@
  * guaranteed data: [DONE], with a 15s heartbeat chunk so idle warmups never
  * look dead. hostamar-* SKUs ride the same kilocode capacity slot as the
  * non-streaming path and are BRANDED as the requested model (V12 parity).
+ *
+ * V100 (agentic): when the caller sends `tools`, the OpenAI-compatible fields
+ * (tools / tool_choice / parallel_tool_calls) ride the upstream stream body,
+ * and each upstream delta is relayed VERBATIM — including delta.tool_calls
+ * argument chunks — with only the branded model name rewritten. Upstream
+ * finish_reason (including "tool_calls") passes through untouched.
  */
 
 const SSE_HEADERS = {
@@ -52,8 +58,11 @@ export async function streamChatCompletion(body: any, authUser: AuthUser): Promi
     )
   }
 
+  // V100: keep tool-flow messages — an assistant turn carrying tool_calls has
+  // content:null, and tool results arrive as role:'tool'; dropping either
+  // breaks the agentic loop on the second request.
   const messages = Array.isArray(body.messages)
-    ? body.messages.filter((m: any) => m?.content)
+    ? body.messages.filter((m: any) => m?.content || m?.tool_calls || m?.role === 'tool')
     : []
   if (!messages.length) {
     return new Response(
@@ -61,6 +70,10 @@ export async function streamChatCompletion(body: any, authUser: AuthUser): Promi
       { status: 400, headers: { 'Content-Type': 'application/json' } },
     )
   }
+
+  // V100: agentic passthrough — only attached when the caller sent tools, so
+  // plain-chat upstream bodies stay byte-identical to pre-V100.
+  const wantsTools = Array.isArray(body.tools) && body.tools.length > 0
 
   const encoder = new TextEncoder()
   let full = ''
@@ -89,6 +102,15 @@ export async function streamChatCompletion(body: any, authUser: AuthUser): Promi
             temperature: 0.7,
             max_tokens: Number(body.max_tokens) || 1200,
             stream: true,
+            ...(wantsTools
+              ? {
+                  tools: body.tools,
+                  ...(body.tool_choice !== undefined ? { tool_choice: body.tool_choice } : {}),
+                  ...(body.parallel_tool_calls !== undefined
+                    ? { parallel_tool_calls: body.parallel_tool_calls }
+                    : {}),
+                }
+              : {}),
           }),
           // TTFT guard only — once frames flow, we relay until upstream closes.
           signal: AbortSignal.timeout(60_000),
@@ -132,10 +154,14 @@ export async function streamChatCompletion(body: any, authUser: AuthUser): Promi
             try {
               const j = JSON.parse(payload)
               const c = j.choices?.[0]
-              const content: string = c?.delta?.content || ''
               const finish: string | null = c?.finish_reason ?? null
-              if (content) full += content
-              push(sse(chunkOf(wanted, content ? { content } : {}, finish)))
+              // V100: relay the upstream delta VERBATIM — content, tool_calls
+              // (id/name/arguments fragments), reasoning, … — only the model
+              // name is rewritten to the branded SKU. finish_reason (incl.
+              // "tool_calls") passes through untouched.
+              const delta: Record<string, unknown> = c?.delta || {}
+              if (typeof delta.content === 'string' && delta.content) full += delta.content
+              push(sse(chunkOf(wanted, delta, finish)))
             } catch {
               /* partial JSON across TCP frames — skip */
             }
