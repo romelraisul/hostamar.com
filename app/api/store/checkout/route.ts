@@ -72,17 +72,30 @@ export async function POST(req: NextRequest) {
   const [first, ...rest] = name.split(' ')
 
   try {
-    const { cart } = await medusa('/carts', { method: 'POST', json: { region_id: REGION } })
-    await medusa(`/carts/${cart.id}/line-items`, { method: 'POST', json: { variant_id, quantity } })
-    await medusa(`/carts/${cart.id}`, {
+    // FORGE 09-15 04:25: was 8 sequential round-trips (~7.7s from Vercel, each
+    // hop ~0.9s). Probe-verified (order_01M2H0BCT28CHEV66R121HN6AJ): Medusa
+    // accepts items+email+shipping_address IN the cart-create call, and
+    // shipping-options ∥ payment-collections share only cart_id. New depth = 4
+    // hops: create → [options ∥ collection] → [ship ∥ session] → complete.
+    const { cart } = await medusa('/carts', {
       method: 'POST',
-      json: { email, shipping_address: { first_name: first || 'Guest', last_name: rest.join(' ') || '.', address_1: address1, city, postal_code: postcode, country_code: 'bd', ...(phone ? { phone } : {}) } },
+      json: {
+        region_id: REGION,
+        items: [{ variant_id, quantity }],
+        email,
+        shipping_address: { first_name: first || 'Guest', last_name: rest.join(' ') || '.', address_1: address1, city, postal_code: postcode, country_code: 'bd', ...(phone ? { phone } : {}) },
+      },
     })
-    const { shipping_options } = await medusa(`/shipping-options?cart_id=${cart.id}`)
-    if (!shipping_options?.[0]) throw new Error('no shipping options')
-    await medusa(`/carts/${cart.id}/shipping-methods`, { method: 'POST', json: { option_id: shipping_options[0].id } })
-    const { payment_collection } = await medusa('/payment-collections', { method: 'POST', json: { cart_id: cart.id } })
-    await medusa(`/payment-collections/${payment_collection.id}/payment-sessions`, { method: 'POST', json: { provider_id: 'pp_system_default', data: {} } })
+    if (!cart?.id) throw new Error('no cart')
+    const [{ shipping_options }, { payment_collection }] = await Promise.all([
+      medusa(`/shipping-options?cart_id=${cart.id}`),
+      medusa('/payment-collections', { method: 'POST', json: { cart_id: cart.id } }),
+    ])
+    if (!shipping_options?.[0] || !payment_collection?.id) throw new Error('cart setup failed')
+    await Promise.all([
+      medusa(`/carts/${cart.id}/shipping-methods`, { method: 'POST', json: { option_id: shipping_options[0].id } }),
+      medusa(`/payment-collections/${payment_collection.id}/payment-sessions`, { method: 'POST', json: { provider_id: 'pp_system_default', data: {} } }),
+    ])
     const out = await medusa(`/carts/${cart.id}/complete`, { method: 'POST', json: {} })
 
     const order = out.order || out
