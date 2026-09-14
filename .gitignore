@@ -183,3 +183,5 @@ tools/realesrgan/models/
 .env
 .env.*
 hostamar-backup/
+# Funnel lead capture — runtime JSONL fallback store (PII, never commit)
+data/leads/

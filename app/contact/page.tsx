@@ -1,7 +1,8 @@
 'use client'
 
 // Bazaar Poster contact page (Direction C, 2026-09). ALL logic preserved:
-// /api/email/test submission with status states, clipboard copy of the support
+// /api/contact submission (durable lead capture + owner notify) with status
+// states, clipboard copy of the support
 // email, file-name capture, agreement gate, real phone/WhatsApp/office data.
 // Only presentation restyled.
 
@@ -66,7 +67,7 @@ export default function ContactPage() {
     setStatus('sending')
     setErrorMsg('')
     try {
-      const res = await fetch('/api/email/test', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,7 +79,10 @@ export default function ContactPage() {
           attachment: fileName || undefined,
         }),
       })
-      if (!res.ok) throw new Error('পাঠানো যায়নি')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.message || 'পাঠানো যায়নি, আবার চেষ্টা করুন')
+      }
       setStatus('success')
       setName(''); setEmail(''); setPhone(''); setMessage(''); setFileName(''); setAgreed(false)
     } catch (err) {
