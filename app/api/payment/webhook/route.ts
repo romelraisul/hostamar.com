@@ -67,10 +67,12 @@ export async function POST(req: NextRequest) {
     const isSuccess = (status || '').toLowerCase() === 'success' || (status || '').toLowerCase() === 'completed'
     if (isSuccess) {
       const planKey = (merchant_invoice || 'starter').toLowerCase()
-      const planMap: Record<string, { plan: string; videos: number; storage: number; price: number }> = {
-        'starter': { plan: 'STARTER', videos: 20, storage: 10, price: 500 },
-        'pro': { plan: 'PRO', videos: 999, storage: 100, price: 2000 },
-        'business': { plan: 'BUSINESS', videos: 999, storage: 500, price: 5000 },
+      // V-price-unification: subscription.price = amount actually paid
+      // (payment_amount) — old 500/2000/5000 table contradicted checkout.
+      const planMap: Record<string, { plan: string; videos: number; storage: number }> = {
+        'starter': { plan: 'STARTER', videos: 20, storage: 10 },
+        'pro': { plan: 'PRO', videos: 999, storage: 100 },
+        'business': { plan: 'BUSINESS', videos: 999, storage: 500 },
       }
       const planInfo = planMap[planKey] || planMap['starter']
 
@@ -82,7 +84,7 @@ export async function POST(req: NextRequest) {
           videosPerMonth: planInfo.videos,
           storageGB: planInfo.storage,
           nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          price: planInfo.price,
+          price: parseFloat(payment_amount) || 0,
           currency: 'BDT',
           billingCycle: 'monthly',
         },
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest) {
           status: 'active',
           videosPerMonth: planInfo.videos,
           storageGB: planInfo.storage,
-          price: planInfo.price,
+          price: parseFloat(payment_amount) || 0,
           currency: 'BDT',
           billingCycle: 'monthly',
           nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),

@@ -2,12 +2,12 @@ import Link from 'next/link'
 import StoreCatalog from '@/components/store/StoreCatalog'
 
 export const metadata = {
-  title: 'Store — Hostamar-এর সব ১১০+ সার্ভিস | 1cr=1TK',
+  title: 'Store — Hostamar-এর ১০০+ সার্ভিস | 1cr=1TK',
   description:
-    'Hostamar Store — সব AI সার্ভিস এক জায়গায়: 110 ক্যাটালগ সার্ভিস (লাইভ) + CoinLab BD #107 + M3E Canvas #108 + Understand Anything #109 + OpenSEO #110। সাইনআপে 6000 ক্রেডিট ফ্রি, 1 ক্রেডিট = 1 টাকা।',
-  keywords: ['Hostamar store', 'AI services Bangladesh', '১১০ সার্ভিস', 'M3E Canvas', 'OpenSEO', 'AI service price Bangladesh'],
+    'Hostamar Store — সব AI সার্ভিস এক জায়গায়: ১০০+ ক্যাটালগ সার্ভিস (লাইভ) + CoinLab BD + M3E Canvas + Understand Anything + OpenSEO। সাইনআপে 6000 ক্রেডিট ফ্রি, 1 ক্রেডিট = 1 টাকা।',
+  keywords: ['Hostamar store', 'AI services Bangladesh', '১০০+ সার্ভিস', 'M3E Canvas', 'OpenSEO', 'AI service price Bangladesh'],
   openGraph: {
-    title: 'Hostamar Store — 110+ AI সার্ভিস, 1cr=1TK',
+    title: 'Hostamar Store — ১০০+ AI সার্ভিস, 1cr=1TK',
     description: 'সব সার্ভিস পাবলিক — দেখুন, তুলনা করুন, সাইনআপ করে অর্ডার করুন।',
   },
 }
@@ -24,7 +24,7 @@ export default function StorePage() {
             সব সার্ভিস <span style={{ color: GREEN }}>এক জায়গায়</span>
           </h1>
           <p className="text-sm text-zinc-600 mt-3 max-w-2xl">
-            106টি AI সার্ভিস (লাইভ ক্যাটালগ) + CoinLab BD রিসার্চ হাব। সাইনআপ করলেই 6000 ক্রেডিট ফ্রি —
+            ১০০+ AI সার্ভিস (লাইভ ক্যাটালগ) + CoinLab BD রিসার্চ হাব। সাইনআপ করলেই 6000 ক্রেডিট ফ্রি —
             1 ক্রেডিট = 1 টাকা। সার্ভিস কার্ডে মূল্য দেখে ড্যাশবোর্ড থেকে সরাসরি অর্ডার করুন।
           </p>
           <div className="mt-5 flex flex-wrap gap-3">

@@ -16,7 +16,7 @@ const PLANS_BN = [
   {
     key: 'starter',
     name: 'Starter',
-    price: '৳2,000',
+    price: '৳599',
     period: '/মাস',
     features: ['১০০ AI ভিডিও', '৫GB হোস্টিং', 'AI চ্যাট Pro + ব্রাউজার + IDE', '১০৮০p, কোনো ওয়াটারমার্ক নয়'],
     cta: 'Starter নির্বাচন করুন',
@@ -25,7 +25,7 @@ const PLANS_BN = [
   {
     key: 'business',
     name: 'Business',
-    price: '৳3,500',
+    price: '৳2,999',
     period: '/মাস',
     features: ['৩০০ AI ভিডিও', '২০GB হোস্টিং', 'সবকিছু আনলিমিটেড', 'গেম টুর্নামেন্ট হোস্ট করুন'],
     cta: 'Business নির্বাচন করুন',
@@ -45,7 +45,7 @@ const PLANS_EN = [
   {
     key: 'starter',
     name: 'Starter',
-    price: '৳2,000',
+    price: '৳599',
     period: '/mo',
     features: ['100 AI videos', '5GB hosting', 'AI Chat Pro + Browser + IDE', '1080p, no watermark'],
     cta: 'Choose Starter',
@@ -54,7 +54,7 @@ const PLANS_EN = [
   {
     key: 'business',
     name: 'Business',
-    price: '৳3,500',
+    price: '৳2,999',
     period: '/mo',
     features: ['300 AI videos', '20GB hosting', 'Everything unlimited', 'Host game tournaments'],
     cta: 'Choose Business',

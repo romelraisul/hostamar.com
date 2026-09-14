@@ -25,10 +25,12 @@ export default function BentoFeaturesSection() {
       {/* Proof bar — one line */}
       <div className="mx-auto mb-12 flex max-w-[1120px] flex-wrap items-center justify-center gap-x-8 gap-y-3 text-center">
         {[
-          ['500+', isBengali ? 'অ্যাকটিভ ক্রিয়েটর' : 'Active Creators'],
-          ['10K+', isBengali ? 'ভিডিও' : 'Videos'],
-          ['50+', isBengali ? 'টেমপ্লেট' : 'Templates'],
-          ['99%', isBengali ? 'সাফল্য' : 'Success'],
+          // 2026-09-14 honesty pass — verifiable facts only (see lib/products.ts,
+          // lib/video-templates.ts, serviceCatalog DB). No fabricated user counts.
+          ['৬', isBengali ? 'AI প্রোডাক্ট' : 'AI Products'],
+          ['১০০+', isBengali ? 'বাংলা টেমপ্লেট' : 'Bangla Templates'],
+          ['১০০+', isBengali ? 'লাইভ সার্ভিস' : 'Live Services'],
+          ['BETA', isBengali ? 'পাবলিক বিটা' : 'Public Beta'],
         ].map(([n, l]) => (
           <div key={l} className="flex items-baseline gap-2">
             <span className="font-hind text-2xl font-bold text-[#0E7C3A]">{n}</span>
