@@ -1,4 +1,7 @@
-export const dynamic = 'force-dynamic'
+// Catalog changes ~never (116-123 products, manual admin edits). Stale-by-5min
+// at the edge is irrelevant for a 2-click buyer and removes the per-request
+// cold function + bridge hop that made 2/3 prod loads take ~20s.
+export const revalidate = 300
 
 // ============================================================================
 // GET /api/store/products — public Medusa catalog bridge (FORGE, 2026-09-14).
@@ -20,7 +23,10 @@ export async function GET() {
     const res = await fetch(`${base}/store/products?limit=250&region_id=${REGION}&fields=id,title,variants.id,variants.calculated_price.calculated_amount`, {
       headers: { 'x-publishable-api-key': pk, 'user-agent': 'HostamarStorefront/1.0 (Vercel SSR)' },
       signal: AbortSignal.timeout(15_000),
-      cache: 'no-store',
+      // Platform data cache (Vercel): dedupes + serves subsequent requests
+      // without touching the bridge. Was 'no-store' -> every page load ate a
+      // full bridge hop, and 2/3 prod requests measured >20s / timed out.
+      cache: 'default',
     })
     const data: any = await res.json().catch(() => null)
     if (!res.ok || !data) return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
