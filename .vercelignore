@@ -33,6 +33,8 @@ demo/
 video-output/
 *.zip
 *.mp4
+!public/videos/*.mp4
+!public/tv/*.mp4
 *.mkv
 *.wav
 *.flac

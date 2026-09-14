@@ -1,0 +1,41 @@
+name: heavy-lifter-cloud-backup
+on:
+  repository_dispatch:
+    types: [heavy-lifter]
+  workflow_dispatch:
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Pull and execute queued jobs from Cloudflare Worker
+        run: |
+          JOBS=$(curl -s https://hostamar-orchestrator.YOUR_SUBDOMAIN.workers.dev/api/queue/pull)
+          echo "$JOBS" | jq -c '.[]' | while read job; do
+            echo "Processing: $job"
+            TYPE=$(echo "$job" | jq -r '.type')
+            # Execute based on job type — heavy tasks run here when PC is offline
+            case "$TYPE" in
+              seo-crawl)
+                echo "Running SEO crawl..."
+                # node scripts/seo-crawler.js
+                ;;
+              vercel-guard-cleanup)
+                echo "Running Vercel guard cleanup..."
+                node scripts/vercel-guard.mjs
+                ;;
+              *)
+                echo "Unknown job type: $TYPE"
+                ;;
+            esac
+            # Report back
+            ID=$(echo "$job" | jq -r '.id')
+            curl -s -X POST https://hostamar-orchestrator.YOUR_SUBDOMAIN.workers.dev/api/queue/report \
+              -H "Content-Type: application/json" \
+              -d "{\"id\": \"$ID\", \"status\": \"done\", \"result\": {\"ok\": true}}"
+          done

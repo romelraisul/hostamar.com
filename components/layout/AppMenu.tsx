@@ -47,6 +47,14 @@ export default function AppMenu({ open, onClose }: { open: boolean; onClose: () 
           ))}
         </div>
 
+        <div className="mt-2 border-t border-zinc-100 pt-2">
+          <div className="pb-1 text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+            {isBn ? 'ইকোসিস্টেম' : 'Ecosystem'}
+          </div>
+          <Link href="/coinlab" onClick={onClose} className="block py-2 font-medium text-zinc-800">CoinLab BD</Link>
+          <Link href="/download" onClick={onClose} className="block py-2 font-medium text-zinc-800">{isBn ? 'ডাউনলোড' : 'Download'}</Link>
+        </div>
+
         <div className="mt-2 flex items-center gap-3 border-t border-zinc-100 pt-3">
           <button
             onClick={() => setLocale(isBn ? 'en' : 'bn')}

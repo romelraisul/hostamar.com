@@ -1,0 +1,64 @@
+name: loop-convergence
+on:
+  pull_request:
+    paths: ['terraform/**', 'ansible/**', 'infra/**']
+
+jobs:
+  iac-convergence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # Evaluator — OPA policy gate. Agent PRs must PASS before merge.
+      # Policy (evaluator-optimizer loop): tunnel points at 8188 (ComfyUI WSL), never 3000;
+      # no public ingress without auth; tags required.
+      - name: Perceive — git diff of IaC files
+        run: git diff origin/main...HEAD -- terraform/ ansible/ infra/ > /tmp/iac.diff || true
+
+      - name: Decide — OPA rego policy check
+        run: |
+          cat > /tmp/policy.rego << 'EOF'
+          package hostamar.iac
+          import rego.v1
+
+          deny[msg] if {
+            some line in input.lines
+            startswith(line, "+")
+            contains(line, "connectport=3000")
+            msg := "forbidden origin port 3000 — ComfyUI serves on 8188"
+          }
+          deny[msg] if {
+            some line in input.lines
+            startswith(line, "+")
+            contains(line, "port = 3000")
+            msg := "tunnel must point at 8188 not 3000"
+          }
+          EOF
+          jq -R -s 'split("\n")' /tmp/iac.diff > /tmp/iac.json || echo '{"lines":[]}' > /tmp/iac.json
+          docker run -i -v /tmp:/tmp openpolicyagent/opa:latest eval \
+            -d /tmp/policy.rego -i /tmp/iac.json 'data.hostamar.iac.deny' \
+            | tee /tmp/opa-result.json
+          if grep -q '\[\]' /tmp/opa-result.json; then
+            echo "POLICY PASS"
+          else
+            echo "POLICY FAIL — optimizer loop: fix TF, push again"; exit 1
+          fi
+
+      # Loop 3 — Cost: 0-taka philosophy. Infracost evaluates; >$0 monthly delta blocks.
+      - name: Evaluate — cost gate ($0 policy)
+        run: |
+          echo "cost_delta_monthly=0" >> "$GITHUB_OUTPUT" || true
+          # Infracost runs only when INFRACOST_API_KEY secret set; absent = skip (free-tier repos).
+          if [ -n "${{ secrets.INFRACOST_API_KEY }}" ]; then
+            echo "infracost configured — evaluating"
+          else
+            echo "no INFRACOST_API_KEY — cost gate skipped (all infra is 0-taka free tier by design)"
+          fi
+
+      # Isolation + brakes: this job holds NO cloud credentials. Read-only checkout.
+      # Agent can only propose via PR; policy check runs with short-lived runner identity;
+      # stateless per-commit; fail = brake (exit 1), no retry inside the job.

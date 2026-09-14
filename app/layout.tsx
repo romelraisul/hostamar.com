@@ -1,5 +1,4 @@
 import './globals.css'
-import './bazaar.css'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
@@ -95,7 +94,7 @@ const productJsonLd = {
     {
       '@type': 'Offer',
       name: 'Starter',
-      price: '2000',
+      price: '599',
       priceCurrency: 'BDT',
       priceValidUntil: '2026-12-31',
       description: '100 AI videos, 10GB NVMe, .com free',
@@ -103,16 +102,13 @@ const productJsonLd = {
     {
       '@type': 'Offer',
       name: 'Pro',
-      price: '3500',
+      price: '1299',
       priceCurrency: 'BDT',
       description: 'Unlimited AI videos, 20GB NVMe, API',
     },
   ],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    reviewCount: '500',
-  },
+  // AggregateRating removed 2026-09-14: no verifiable review source yet
+  // (fabricated 4.8/500 was flagged by the production audit).
 }
 
 const orgJsonLd = {
@@ -163,9 +159,11 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="preload" as="image" href="/og-poster.webp" fetchPriority="high" />
+        <link rel="preconnect" href="https://images.pluto.tv" />
         <meta name="theme-color" content="#3b82f6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -188,7 +186,7 @@ export default async function RootLayout({
                   dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
                 />
       </head>
-      <body className="bp-theme">
+      <body>
         <Providers>
           <LocaleProvider locale={locale}>
           <ChromeGuard>{children}</ChromeGuard>

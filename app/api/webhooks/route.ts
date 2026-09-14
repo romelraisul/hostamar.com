@@ -29,11 +29,13 @@ const RECEIVER = {
 
 type Method = keyof typeof RECEIVER
 
-const PLAN_MAP: Record<string, { plan: string; videos: number; storage: number; price: number }> = {
-  starter: { plan: 'STARTER', videos: 20, storage: 10, price: 2000 },
-  growth: { plan: 'GROWTH', videos: 30, storage: 50, price: 2000 },
-  business: { plan: 'BUSINESS', videos: 999, storage: 100, price: 3500 },
-  enterprise: { plan: 'ENTERPRISE', videos: 999, storage: 500, price: 6000 },
+// V-price-unification: subscription.price = amount actually paid (the `amount`
+// argument) — old 2000/2000/3500/6000 table contradicted checkout (599/1299/2999).
+const PLAN_MAP: Record<string, { plan: string; videos: number; storage: number }> = {
+  starter: { plan: 'STARTER', videos: 20, storage: 10 },
+  growth: { plan: 'GROWTH', videos: 30, storage: 50 },
+  business: { plan: 'BUSINESS', videos: 999, storage: 100 },
+  enterprise: { plan: 'ENTERPRISE', videos: 999, storage: 500 },
 }
 
 function mapPlan(planKey: string) {
@@ -51,7 +53,7 @@ async function activateSubscription(customerId: string, planKey: string, amount:
       status: 'active',
       videosPerMonth: info.videos,
       storageGB: info.storage,
-      price: info.price,
+      price: amount,
       nextBillingDate,
     },
     create: {
@@ -60,7 +62,7 @@ async function activateSubscription(customerId: string, planKey: string, amount:
       status: 'active',
       videosPerMonth: info.videos,
       storageGB: info.storage,
-      price: info.price,
+      price: amount,
       currency: 'BDT',
       billingCycle: 'monthly',
       nextBillingDate,

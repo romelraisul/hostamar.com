@@ -110,7 +110,7 @@ export default function ProductsPage() {
             <span className="bangla bg-white/15 px-3 py-1 rounded-full">IDE আনলিমিটেড</span>
           </div>
           <p className="bangla text-2xl font-bold mt-6">
-            শুরু মাত্র ৳২,০০০/মাস
+            শুরু মাত্র ৳৫৯৯/মাস
           </p>
           <Link
             href="/signup?ref=products-bottom"

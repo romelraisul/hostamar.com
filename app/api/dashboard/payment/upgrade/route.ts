@@ -3,11 +3,15 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { PAYMENT_PLANS } from '@/lib/pricing'
 
+// V-price-unification: plans/prices come ONLY from lib/pricing.ts PAYMENT_PLANS
+// (Starter ৳599 · Pro ৳1,299 · Business ৳2,999). Enterprise is not sold by any
+// checkout path and has no authoritative price — removed (2026-09-14 audit).
 const planDetails: Record<string, { price: number; videosPerMonth: number; storageGB: number }> = {
-  starter: { price: 2000, videosPerMonth: 10, storageGB: 5 },
-  business: { price: 3500, videosPerMonth: 30, storageGB: 20 },
-  enterprise: { price: 6000, videosPerMonth: 999999, storageGB: 100 },
+  starter: { price: PAYMENT_PLANS.starter.price, videosPerMonth: 10, storageGB: 5 },
+  pro: { price: PAYMENT_PLANS.pro.price, videosPerMonth: 30, storageGB: 20 },
+  business: { price: PAYMENT_PLANS.business.price, videosPerMonth: 80, storageGB: 100 },
 }
 
 export async function POST(req: NextRequest) {
@@ -34,6 +38,20 @@ export async function POST(req: NextRequest) {
     }
 
     const planInfo = planDetails[plan]
+
+    // V-price-unification (money-loop fix): activating a paid plan requires a
+    // real completed payment for this customer — same rule as POST /api/subscription.
+    // This route previously created an ACTIVE subscription with no payment at all.
+    const paidPayment = await prisma.payment.findFirst({
+      where: { customerId: customer.id, status: { in: ['paid', 'completed', 'success'] } },
+      orderBy: { createdAt: 'desc' },
+    })
+    if (!paidPayment) {
+      return NextResponse.json(
+        { error: 'payment_required', message: 'Complete a payment first — POST /api/payment/create.' },
+        { status: 402 }
+      )
+    }
 
     // Calculate next billing date (1 month from now)
     const nextBillingDate = new Date()

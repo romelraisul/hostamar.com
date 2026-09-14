@@ -13,6 +13,14 @@ const COMPANY_LINKS = [
   { href: '/contact', bn: 'যোগাযোগ', en: 'Contact' },
 ]
 
+// V36.15: AI Store + Labs added to footer ecosystem column
+const STORE_LINKS = [
+  { href: '/store', bn: 'AI Store — ১০৬+ সার্ভিস', en: 'AI Store — 106+ services', desc: 'সব AI সার্ভিস এক জায়গায় — ১cr=1TK' },
+  { href: '/coinlab', bn: 'CoinLab BD — ক্রিপ্টো রিসার্চ', en: 'CoinLab BD — crypto research', desc: 'বাংলায় ক্রিপ্টো রিসার্চ, ৭-সেকশন টেমপ্লেট' },
+  { href: '/labs', bn: 'Labs — AI Desk ও টোকেন সেফটি', en: 'Labs — AI Desk & token safety', desc: 'স্ক্যাম থেকে বাঁচুন, BTC মনিটর, পেপার ট্রেডিং' },
+  { href: '/download', bn: 'ডাউনলোড — Hostamar Node', en: 'Download — Hostamar Node', desc: 'ফোন + কম্পিউটার = ডাটাসেন্টার' },
+]
+
 // V17: Docs column — the user-facing documentation hub (EN + বাংলা) +
 // public API surfaces. 106 services · 120 models · Orca ADE guide.
 const DOCS_LINKS = [
@@ -38,7 +46,7 @@ export default function AppFooter() {
   return (
     <footer className="mt-20 border-t border-zinc-200 bg-white">
       <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           {/* Column 1: Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5">
@@ -112,7 +120,24 @@ export default function AppFooter() {
             </ul>
           </div>
 
-          {/* Column 4: Legal + Payment */}
+          {/* Column 5: Store + Ecosystem (V36.15) */}
+          <div>
+            <div className="mb-3 text-[13px] font-semibold text-zinc-900">
+              🛍️ {isBn ? 'স্টোর ও ইকোসিস্টেম' : 'Store & Ecosystem'}
+            </div>
+            <ul className="space-y-2.5 text-[13px] text-zinc-500">
+              {STORE_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-zinc-900">
+                    {isBn ? l.bn : l.en}
+                  </Link>
+                  <p className="mt-0.5 text-[11px] leading-snug text-zinc-400">{l.desc}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 6: Legal + Payment */}
           <div>
             <div className="mb-3 text-[13px] font-semibold text-zinc-900">
               {isBn ? 'লিগ্যাল ও পেমেন্ট' : 'Legal & Payment'}

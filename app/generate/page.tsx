@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { VIDEO_TEMPLATES } from '@/lib/video-templates'
+import { getDeviceTier } from '@/lib/device-tier'
 
 const PRIMARY = '#0E7C3A'
 const ACCENT = '#F59E0B'
@@ -20,7 +22,7 @@ const faqLd = {
   mainEntity: [
     { '@type': 'Question', name: 'InVideo $17 vs Hostamar?', acceptedAnswer: { '@type': 'Answer', text: 'InVideo Plus $17/mo (75 credits, watermark-free). Hostamar FREE ৳0 — Bangla script + voice + caption + BGM, 10 videos/month free. Pictory Starter $19, Veed Lite $12 — Hostamar still FREE.' } },
     { '@type': 'Question', name: 'AI marketing video Bangladesh কত দ্রুত?', acceptedAnswer: { '@type': 'Answer', text: 'একটা বাংলা প্রম্পট দিন — 90 সেকেন্ডে 4K ভিডিও, watermark-free export। ঈদ/বৈশাখ/11.11 টেমপ্লেট রেডি।' } },
-    { '@type': 'Question', name: 'bKash দিয়ে পেমেন্ট?', acceptedAnswer: { '@type': 'Answer', text: 'হ্যাঁ — bKash/Nagad/Rocket অটো, কোনো ডলার কার্ড লাগবে না। Free থেকে Starter ৳2000/yr।' } },
+    { '@type': 'Question', name: 'bKash দিয়ে পেমেন্ট?', acceptedAnswer: { '@type': 'Answer', text: 'হ্যাঁ — bKash/Nagad/Rocket অটো, কোনো ডলার কার্ড লাগবে না। Free থেকে Starter ৳599/মাস।' } },
     { '@type': 'Question', name: 'Watermark থাকে?', acceptedAnswer: { '@type': 'Answer', text: 'না — FREE তেও watermark-free 1080p, Pro তে 4K। Veed free তে watermark থাকে, Hostamar এ নয়।' } },
     { '@type': 'Question', name: 'Commercial use?', acceptedAnswer: { '@type': 'Answer', text: 'হ্যাঁ — আপনার ব্র্যান্ড, আপনার ভিডিও, ফেসবুক/ইউটিউব/টিকটক সবখানে ব্যবহার করুন।' } },
   ],
@@ -38,6 +40,16 @@ export default function VideoGeneratePage() {
   const [videoUrl, setVideoUrl] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // V36.33: template prefill (?template=eid-01) + device-tier brain banner
+  const [tierInfo, setTierInfo] = useState<{ labelBn: string; recommendationBn: string; brain: string } | null>(null)
+  useEffect(() => {
+    setTierInfo(getDeviceTier())
+    const tid = new URLSearchParams(window.location.search).get('template')
+    if (tid) {
+      const t = VIDEO_TEMPLATES.find((x) => x.id === tid)
+      if (t) { setPromptBn(t.prompt); setAspect(t.aspect) }
+    }
+  }, [])
 
   const start = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,16 +87,24 @@ export default function VideoGeneratePage() {
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="px-2.5 py-1 rounded-full bg-white border text-zinc-700 font-medium">bKash • Nagad • Rocket</span>
             <span className="px-2.5 py-1 rounded-full bg-white border text-zinc-700">BDIX Dhaka • 20ms</span>
-            <span className="px-2.5 py-1 rounded-full bg-[#0E7C3A] text-white font-semibold">500+ creators</span>
+            <span className="px-2.5 py-1 rounded-full bg-[#0E7C3A] text-white font-semibold">১০০+ বাংলা টেমপ্লেট</span>
             <span className="hidden sm:inline px-2.5 py-1 rounded-full bg-white border">Watermark-free</span>
           </div>
           <div className="text-xs text-zinc-600">InVideo $17/mo vs <span className="font-bold text-[#0E7C3A]">Hostamar ৳0 FREE</span> • Pictory $19 vs ৳0 • Veed $12 vs ৳0</div>
         </div>
+        {/* V36.33 device-tier banner: old device -> cloud brain */}
+        {tierInfo && (
+          <div className="mt-3 rounded-2xl border border-[#0E7C3A]/30 bg-[#0E7C3A]/5 px-5 py-3 text-xs text-zinc-700 flex flex-wrap items-center gap-2">
+            <span className="font-bold text-[#0E7C3A]">📱 {tierInfo.labelBn}</span>
+            <span>{tierInfo.recommendationBn}</span>
+            <span className="px-2 py-0.5 rounded-full bg-white border font-mono">brain: {tierInfo.brain}</span>
+          </div>
+        )}
       </section>
 
       <section className="mx-auto max-w-[1180px] px-4 md:px-6 mt-6">
         <h1 className="text-[28px] md:text-[36px] font-bold tracking-tight leading-tight">AI ভিডিও জেনারেটর — ৳0 তে শুরু</h1>
-        <p className="mt-2 text-zinc-600 max-w-[760px] leading-relaxed">একটা বাংলা প্রম্পট দিন — স্ক্রিপ্ট + ভয়েস + ক্যাপশন + BGM + talking avatar, 4K export। <span className="font-semibold text-[#0F172A]">InVideo Plus $17 (75cr) vs Hostamar ৳0</span> — 500+ creators ইতিমধ্যে ব্যবহার করছে।</p>
+        <p className="mt-2 text-zinc-600 max-w-[760px] leading-relaxed">একটা বাংলা প্রম্পট দিন — স্ক্রিপ্ট + ভয়েস + ক্যাপশন + BGM + talking avatar, 4K export। <span className="font-semibold text-[#0F172A]">InVideo Plus $17 (75cr) vs Hostamar ৳0</span> — সাইনআপেই ৬০০০ ফ্রি ক্রেডিট।</p>
         <div className="mt-4 grid sm:grid-cols-3 gap-3">
           {DEMOS.map((d) => (
             <div key={d.tag} className={`rounded-2xl p-4 text-white bg-gradient-to-br ${d.grad} flex flex-col justify-between min-h-[110px]`}>
@@ -165,12 +185,12 @@ export default function VideoGeneratePage() {
             <div className="rounded-[24px] border border-zinc-200 bg-white p-5">
               <h3 className="font-semibold">কেন Hostamar?</h3>
               <ul className="mt-3 text-sm space-y-2 text-zinc-600">
-                <li>✓ InVideo Max $85 vs Hostamar Starter ৳2000 — Bangla-first</li>
+                <li>✓ InVideo Max $85 vs Hostamar Starter ৳599 — Bangla-first</li>
                 <li>✓ Pictory Pro $35 vs Hostamar ৳0 FREE — 10 videos/mo</li>
                 <li>✓ Veed Lite $12 watermark-free — Hostamar FREE watermark-free</li>
-                <li>✓ 500+ creators, 4.8★, bKash • Nagad • Rocket</li>
+                <li>✓ ১০০+ বাংলা টেমপ্লেট, BETA, bKash • Nagad • Rocket</li>
               </ul>
-              <Link href="/pricing" data-ga="pricing_click" className="mt-4 inline-flex h-10 px-5 rounded-full bg-[#0F172A] text-white text-sm font-semibold items-center">Pricing ৳0/৳2000/৳3500 দেখুন →</Link>
+              <Link href="/pricing" data-ga="pricing_click" className="mt-4 inline-flex h-10 px-5 rounded-full bg-[#0F172A] text-white text-sm font-semibold items-center">Pricing ৳0/৳599/৳1,299 দেখুন →</Link>
             </div>
             {jobId ? (
               <div className="rounded-[24px] border border-zinc-200 bg-white p-5">

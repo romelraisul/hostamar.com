@@ -11,14 +11,40 @@
  * budget is spent, we fall straight to the knowledge-base completion so every
  * request returns a well-formed response — the function can never be killed
  * mid-flight by its own chain.
+ *
+ * V100 (agentic): when the caller sends `tools`, the OpenAI-compatible fields
+ * (tools / tool_choice / parallel_tool_calls) ride every upstream body
+ * verbatim, kilocode slots are tried first (kilo.ai gateway is
+ * OpenAI-compatible and forwards tools to the underlying model), and an
+ * upstream assistant message containing tool_calls is returned VERBATIM with
+ * finish_reason "tool_calls" instead of being flattened into plain text.
  */
+type FallbackTrace = { provider: string; status: string; error?: string; elapsedMs?: number };
+
+export type ToolsPayload = {
+  tools?: unknown;
+  tool_choice?: unknown;
+  parallel_tool_calls?: unknown;
+  anonymous?: boolean;
+};
+
 export async function callBestModel(
   messages: { role: string; content: string }[],
   systemPrompt: string,
   selectedModel?: string,
-): Promise<{ text: string; model: string; provider: string }> {
+  debug = false,
+  toolsPayload?: ToolsPayload,
+): Promise<{
+  text: string;
+  model: string;
+  provider: string;
+  message?: any;
+  finish_reason?: string;
+  trace?: FallbackTrace[];
+}> {
   const system = { role: 'system', content: systemPrompt };
   const allMessages = [system, ...messages];
+  const trace: FallbackTrace[] = [];
 
   // Context-size awareness: total payload chars → approx tokens (/4).
   // Small contexts keep MAX_TOKENS 600 (fast); huge contexts (Hermes-style
@@ -26,7 +52,10 @@ export async function callBestModel(
   // budget thinking and return empty.
   const inputChars = allMessages.reduce((n, m) => n + (m.content?.length || 0), 0);
   const approxTokens = Math.ceil(inputChars / 4);
-  const MAX_TOKENS = approxTokens > 20_000 ? 1200 : 600;
+  let MAX_TOKENS = approxTokens > 20_000 ? 1200 : 600;
+  // V100 guardrail: tools requests from ANONYMOUS callers stay freemium but
+  // are capped at 600 completion tokens to bound capacity.
+  if (toolsPayload?.tools && toolsPayload.anonymous) MAX_TOKENS = Math.min(MAX_TOKENS, 600);
 
   // ── V26 wall-clock budget ────────────────────────────────────────────────
   const CHAIN_BUDGET_MS = Number(process.env.AI_CHAIN_BUDGET_MS || 42_000);
@@ -42,8 +71,21 @@ export async function callBestModel(
   const wanted = selectedModel || '';
   const isHostamarModel = wanted.startsWith('hostamar-');
 
-  type Res = { text: string; model: string; provider: string };
-  const attempts: Array<() => Promise<Res>> = [];
+  type Res = { text: string; model: string; provider: string; message?: any; finish_reason?: string };
+  type Attempt = { name: string; fn: () => Promise<Res> };
+  const attempts: Attempt[] = [];
+
+  // V100: OpenAI tools passthrough — only attached when the caller actually
+  // sent a tools array, so plain-chat upstream bodies stay byte-identical.
+  const toolFields = toolsPayload?.tools
+    ? {
+        tools: toolsPayload.tools,
+        ...(toolsPayload.tool_choice !== undefined ? { tool_choice: toolsPayload.tool_choice } : {}),
+        ...(toolsPayload.parallel_tool_calls !== undefined
+          ? { parallel_tool_calls: toolsPayload.parallel_tool_calls }
+          : {}),
+      }
+    : {};
 
   const kilocodeCall = (m: string) => async (): Promise<Res> => {
     if (!process.env.KILOCODE_API_KEY) throw new Error('no kilocode key');
@@ -54,11 +96,25 @@ export async function callBestModel(
       // one attempt consume time the function doesn't have.
       signal: AbortSignal.timeout(attemptTimeoutMs()),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.KILOCODE_API_KEY}` },
-      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS }),
+      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
     });
     if (!r.ok) throw new Error(`kilocode ${r.status}`);
     const j: any = await r.json();
-    const txt = j.choices?.[0]?.message?.content;
+    // V100: upstream answered with tool_calls → relay the message VERBATIM
+    // (content may be null); never synthesize plain content over a tool call.
+    const rawChoice = j.choices?.[0];
+    if (rawChoice?.message?.tool_calls?.length) {
+      return {
+        text: '',
+        model: m,
+        provider: 'kilocode',
+        message: rawChoice.message,
+        finish_reason: rawChoice.finish_reason || 'tool_calls',
+      };
+    }
+    // V36.47 FIX: qwen3.5 thinking models return reasoning in .reasoning not .content
+    const choice = rawChoice?.message;
+    const txt = (choice?.content?.length > 4 ? choice.content : null) || (choice?.reasoning?.length > 4 ? choice.reasoning : null);
     if (!txt || txt.length < 5) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilocode' };
   };
@@ -70,11 +126,23 @@ export async function callBestModel(
       method: 'POST',
       signal: AbortSignal.timeout(attemptTimeoutMs()),
       headers: { 'Content-Type': 'application/json', 'x-internal-key': String(key) },
-      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS }),
+      body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
     });
     if (!r.ok) throw new Error(`edge ${r.status}`);
     const j: any = await r.json();
-    const txt = j.choices?.[0]?.message?.content;
+    // V100: same verbatim tool_calls relay as the kilocode path.
+    const rawChoice = j.choices?.[0];
+    if (rawChoice?.message?.tool_calls?.length) {
+      return {
+        text: '',
+        model: m,
+        provider: 'kilo-edge',
+        message: rawChoice.message,
+        finish_reason: rawChoice.finish_reason || 'tool_calls',
+      };
+    }
+    const choice = rawChoice?.message;
+    const txt = (choice?.content?.length > 4 ? choice.content : null) || (choice?.reasoning?.length > 4 ? choice.reasoning : null);
     if (!txt || txt.length < 5) throw new Error('empty');
     return { text: txt, model: m, provider: 'kilo-edge' };
   };
@@ -85,42 +153,59 @@ export async function callBestModel(
       // Proprietary SKU: ride BOTH capacity slots (kilo-auto + longcat) so a
       // single slot hiccup can't degrade the branded reply. Direct + edge per slot.
       for (const slot of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
-        attempts.push(async () => {
+        attempts.push({ name: `kilocode:${slot}`, fn: async () => {
           const r = await kilocodeCall(slot)();
-          return { text: r.text, model: wanted, provider: wanted };
-        });
-        attempts.push(async () => {
+          return { ...r, model: wanted, provider: wanted };
+        }});
+        attempts.push({ name: `edge:${slot}`, fn: async () => {
           const r = await edgeCall(slot)();
-          return { text: r.text, model: wanted, provider: wanted };
-        });
+          return { ...r, model: wanted, provider: wanted };
+        }});
       }
     } else {
-      attempts.push(kilocodeCall(wanted));
-      attempts.push(edgeCall(wanted));
+      attempts.push({ name: `kilocode:${wanted}`, fn: kilocodeCall(wanted) });
+      attempts.push({ name: `edge:${wanted}`, fn: edgeCall(wanted) });
     }
   }
 
   // Capacity fallback order (reports the ACTUAL model used in the response)
   for (const m of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
-    attempts.push(kilocodeCall(m));
-    attempts.push(edgeCall(m));
+    attempts.push({ name: `kilocode:${m}`, fn: kilocodeCall(m) });
+    attempts.push({ name: `edge:${m}`, fn: edgeCall(m) });
   }
 
-  for (const fn of attempts) {
-    // V26: budget gate — if the wall-clock budget is nearly spent, stop
-    // attempting and fall to the deterministic knowledge base. This is the
-    // 504 fix: the function always finishes inside its own maxDuration.
-    if (remainingMs() < 5_000) break;
+  // V100: with tools in play, try the kilocode gateway slots FIRST — kilo.ai
+  // is OpenAI-compatible and forwards tools to the underlying model. Plain
+  // chat keeps the existing attempt interleave.
+  const orderedAttempts = toolsPayload?.tools
+    ? [
+        ...attempts.filter((a) => a.name.startsWith('kilocode:')),
+        ...attempts.filter((a) => !a.name.startsWith('kilocode:')),
+      ]
+    : attempts;
+
+  for (const { name, fn } of orderedAttempts) {
+    if (remainingMs() < 5_000) {
+      trace.push({ provider: 'budget', status: 'exhausted', error: 'wall-clock budget spent' });
+      break;
+    }
+    const t0 = Date.now();
     try {
       const res = await fn();
-      if (res.text && res.text.length > 10) {
-        console.log('ai-fallback success', res.provider, res.model);
+      // V100: a tool_calls answer is a successful attempt even with empty text.
+      if ((res.text && res.text.length > 10) || res.finish_reason === 'tool_calls') {
+        trace.push({ provider: name, status: 'ok', elapsedMs: Date.now() - t0 });
+        if (debug) return { ...res, trace };
         return res;
       }
-    } catch { continue; }
+      trace.push({ provider: name, status: 'empty', elapsedMs: Date.now() - t0 });
+    } catch (e) {
+      trace.push({ provider: name, status: 'error', error: (e as Error).message, elapsedMs: Date.now() - t0 });
+      continue;
+    }
   }
 
-  // 5. FINAL UNLIMITED FALLBACK — knowledge base, no LLM needed, always works, Bangla+English
+  // 5. FINAL UNLIMITED FALLBACK
   const lastUser = messages[messages.length - 1]?.content?.toLowerCase() || '';
   let fallback = '';
   if (lastUser.includes('bkash') || lastUser.includes('বিকাশ') || lastUser.includes('payment') || lastUser.includes('পেমেন্ট') || lastUser.includes('trx')) {
@@ -134,5 +219,6 @@ export async function callBestModel(
   } else {
     fallback = `Hostamar Support: ৫০+ AI সার্ভিস, 120 মডেল চ্যাট, ব্রাউজার IDE, ক্লাউড হোস্টিং, TV ৫০ চ্যানেল — সাইনআপে 6000cr বোনাস (1cr = 1TK = ১ ভবিষ্যৎ HOST কয়েন)। কী জানতে চান?`;
   }
-  return { text: fallback, model: 'knowledge-base-fallback', provider: 'fallback' };
+  trace.push({ provider: 'knowledge-base', status: 'fallback', error: 'all-providers-failed' });
+  return { text: fallback, model: 'knowledge-base-fallback', provider: 'fallback', trace };
 }

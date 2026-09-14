@@ -168,13 +168,18 @@ state/*.db-shm
 docker/tv-station/videos/free/
 
 .env*
-.env.docker
-.env.prod2
-.env.vercel.backup
-.env.backup.json
-.env.bak*
-
-# V33: Real-ESRGAN binary + models (45MB exe + 67MB models — tools/realesrgan/README.md)
+# V33: Real-ESRGAN binary + models (45MB exe + 67MB models)
 tools/realesrgan/*.exe
 tools/realesrgan/*.dll
 tools/realesrgan/models/
+.env.providers
+.tv-agent-secret.local
+
+# TV + video renders (must NOT be ignored — .vercelignore mirrors this)
+!public/tv/*.mp4
+!public/videos/*.mp4
+
+# secrets & backups - never commit
+.env
+.env.*
+hostamar-backup/

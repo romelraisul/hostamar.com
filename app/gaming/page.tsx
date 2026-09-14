@@ -452,9 +452,9 @@ export default function App() {
               <div className="absolute -right-16 -top-16 h-[200px] w-[200px] rounded-full bg-[#0E7C3A]/40 blur-2xl" />
               <div className="flex items-center justify-between">
                 <div className="text-[12px] uppercase tracking-widest text-white/50">Most Popular</div>
-                <span className="text-[11px] px-2.5 py-1 rounded-full bg-[#0E7C3A] font-semibold">Starter — ৳2000/mo</span>
+                <span className="text-[11px] px-2.5 py-1 rounded-full bg-[#0E7C3A] font-semibold">Starter — ৳599/mo</span>
               </div>
-              <div className="mt-3 flex items-baseline gap-2"><span className="text-[34px] font-bold">৳2,000</span><span className="text-white/60 text-[13px]">/ month</span></div>
+              <div className="mt-3 flex items-baseline gap-2"><span className="text-[34px] font-bold">৳599</span><span className="text-white/60 text-[13px]">/ month</span></div>
               <div className="mt-1 text-[12px] text-white/60">Tournament discount 10%, priority BD server, custom avatar</div>
               <ul className="mt-5 space-y-2.5 text-[13px] text-white/85">
                 <li className="flex gap-2"><span className="text-emerald-400">✓</span> Video 10 credits + Hosting 5GB included</li>
@@ -469,7 +469,7 @@ export default function App() {
             {/* Business */}
             <div className="rounded-[20px] bg-white border border-zinc-200 p-6 flex flex-col">
               <div className="text-[12px] uppercase tracking-widest opacity-50">Business</div>
-              <div className="mt-2 flex items-baseline gap-2"><span className="text-[32px] font-bold">৳3,500</span><span className="opacity-60 text-[13px]">/ month</span></div>
+              <div className="mt-2 flex items-baseline gap-2"><span className="text-[32px] font-bold">৳2,999</span><span className="opacity-60 text-[13px]">/ month</span></div>
               <div className="mt-1 text-[12px] opacity-60">Create private tournament, invite friends, bKash split</div>
               <ul className="mt-5 space-y-2.5 text-[13px]">
                 <li>✓ সব Starter ফিচার +</li>

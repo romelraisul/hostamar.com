@@ -50,11 +50,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'customer not found', customerEmail }, { status: 404 })
     }
 
+    // V-price-unification: admin bootstrap creates a TRIAL — nothing is
+    // charged, so price is recorded as 0 instead of an invented plan table.
     const planMap: Record<string, { videos: number; storage: number; price: number }> = {
-      STARTER: { videos: 20, storage: 10, price: 500 },
-      GROWTH: { videos: 30, storage: 50, price: 2000 },
-      PRO: { videos: 999, storage: 100, price: 3500 },
-      BUSINESS: { videos: 999, storage: 500, price: 5000 },
+      STARTER: { videos: 20, storage: 10, price: 0 },
+      GROWTH: { videos: 30, storage: 50, price: 0 },
+      PRO: { videos: 999, storage: 100, price: 0 },
+      BUSINESS: { videos: 999, storage: 500, price: 0 },
     }
     const info = planMap[plan] || planMap['PRO']
 

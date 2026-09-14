@@ -18,7 +18,7 @@ import {
 const GREEN = '#0E7C3A'
 
 // Refund specifics grounded in repo: bKash/Nagad/Rocket/USDT payment methods
-// (CheckoutButton, PaymentModal, dashboard/payment), Starter ৳2000 / Business ৳3500
+// (CheckoutButton, PaymentModal, dashboard/payment), Starter ৳599 / Business ৳2,999
 // (pricing page), 7-day trial / 30-day first-purchase (terms). NOT fabricating:
 // refund@ email (use real support@), +880 9613 phone, gaming 10% fee (no figure
 // in repo), certified refund-window SLAs (stated as typical, not guaranteed).
@@ -51,8 +51,8 @@ const SECTIONS = [
     no: '3',
     title: 'Video Plans',
     icon: Video,
-    body: 'Starter (৳2000/mo) and Business (৳3500/mo): if you have generated fewer than 3 videos and request within 30 days of first payment, you receive a full refund. Heavy usage beyond the policy window is not refunded.',
-    bn: 'Starter ৳2000 / Business ৳3500 — ৩টির কম ভিডিও + ৩০ দিনের মধ্যে = ফুল রিফান্ড।',
+    body: 'Starter (৳599/mo) and Business (৳2,999/mo): if you have generated fewer than 3 videos and request within 30 days of first payment, you receive a full refund. Heavy usage beyond the policy window is not refunded.',
+    bn: 'Starter ৳599 / Business ৳2,999 — ৩টির কম ভিডিও + ৩০ দিনের মধ্যে = ফুল রিফান্ড।',
   },
   {
     id: 'hosting',

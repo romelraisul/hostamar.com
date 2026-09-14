@@ -2,11 +2,11 @@
 
 // components/pricing/ROICalculator.tsx
 // Client-only ROI calculator for the /pricing page. No API — pure math.
-// Anchors Hostamar Business (৳3500/mo) against the pain of paying an agency
+// Anchors Hostamar Business (৳2,999/mo — lib/pricing.ts PAYMENT_PLANS) against the pain of paying an agency
 // per reel. All numbers render in Bangla digits via Intl.NumberFormat('bn-BD').
 import { useState } from 'react'
 
-const HOSTAMAR_MONTHLY = 3500
+const HOSTAMAR_MONTHLY = 2999 // Business — from lib/pricing.ts PAYMENT_PLANS (single source)
 
 // Bangla-digit currency + number formatters.
 const bnCurrency = (n: number) =>
@@ -22,7 +22,7 @@ export default function ROICalculator() {
   const agencySpend = reels * agencyCost
   const savings = agencySpend - HOSTAMAR_MONTHLY
   const hoursSaved = reels * hoursPerReel
-  // Payback in days: how fast the ৳3500 is recovered from agency spend.
+  // Payback in days: how fast the ৳2,999 is recovered from agency spend.
   const paybackDays = agencySpend > 0 ? Math.max(1, Math.round((HOSTAMAR_MONTHLY / agencySpend) * 30)) : 0
 
   return (

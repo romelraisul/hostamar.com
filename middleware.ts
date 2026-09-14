@@ -122,6 +122,10 @@ export async function middleware(request: NextRequest) {
     '/api/tv/agent',
     '/api/admin/seed-tv-channels',
     '/api/cron/tv-stability',
+    '/api/cron/surveillance', // V65 Layer 5 — self-guards via x-vercel-cron/CRON_SECRET at the route
+    '/api/cron/heartbeat', // V8 Phase B — self-guards via x-vercel-cron/CRON_SECRET at the route
+    '/api/orchestrator', // V86: Cloudflare Worker orchestrator proxy (catch-all)
+    '/api/social/publish', // V86: Social publishing API — public
     '/api/support/chat',
     '/api/chat/support',
     '/api/chat',
@@ -129,6 +133,9 @@ export async function middleware(request: NextRequest) {
     // Customer OpenAI-compatible base URL (hostamar.com/api/v1) — public:
     // models list + chat completions via unlimited free-fallback chain.
     // CLIs set OPENAI_BASE_URL=https://hostamar.com/api/v1.
+    // V36.49: the BASE path itself is public too — /api/v1?debug=1 is the
+    // documented gateway verify URL (route.ts returns endpoint info + trace).
+    '/api/v1',
     '/api/v1/models',
     '/api/v1/chat/completions',
     '/api/showcase',
@@ -165,13 +172,14 @@ export async function middleware(request: NextRequest) {
     '/api/videos/upload/complete', // V30 worker completion callback (multipart file push) — same secret
     '/api/videos/upload/presign', // V33 worker B2 direct PUT (4K finals exceed the ~4.5MB Vercel body cap) — same secret, fail-closed at route
     '/api/cloud/heartbeat',     // V31 PC-as-Cloud tracker heartbeat — x-worker-secret (fail-closed at route)
+    '/api/admin/fleet',         // V50 employee fleet — POST guarded by FLEET_REPORT_SECRET bearer (GET still self-guards admin cookie)
   ]
   if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return NextResponse.next()
   }
 
   // Public page paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide', '/docs']
+  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide', '/docs', '/download', '/store', '/coinlab', '/labs']
   for (const p of publicPaths) {
     if (pathname === p || pathname.startsWith(p + '/')) {
       return NextResponse.next()

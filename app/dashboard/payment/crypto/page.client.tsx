@@ -66,15 +66,15 @@ export default function CryptoPaymentPageClient() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                   <span>Starter</span>
-                  <span className="font-bold text-[#0E7C3A]">৳2,000</span>
+                  <span className="font-bold text-[#0E7C3A]">৳599</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-[#0E7C3A]/10 border border-[#0E7C3A]/20 rounded-lg">
-                  <span className="font-semibold">Business</span>
-                  <span className="font-bold text-[#0E7C3A]">৳3,500</span>
+                  <span className="font-semibold">Pro</span>
+                  <span className="font-bold text-[#0E7C3A]">৳1,299</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span>Enterprise</span>
-                  <span className="font-bold text-[#0E7C3A]">৳6,000</span>
+                  <span>Business</span>
+                  <span className="font-bold text-[#0E7C3A]">৳2,999</span>
                 </div>
               </div>
             </div>

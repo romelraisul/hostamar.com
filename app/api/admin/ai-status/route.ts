@@ -125,8 +125,10 @@ export async function GET(req: NextRequest) {
 
   // All probes in parallel. Tunnel endpoints (ai/comfy.hostamar.com) can take
   // 2-4s from Vercel, so give them generous timeouts to avoid false "offline".
+  // V50 fix: LiteLLM has NO /health route (404) and it hangs on full-model
+  // health checks — probe /v1/models instead (fast, cheap, real 200).
   const [gateway, comfy, kilocode, nvidia, tokenrouter, opencode] = await Promise.all([
-    probeUrl(`${GATEWAY_URL}/health`, 6000),
+    probeUrl(`${GATEWAY_URL}/v1/models`, 6000),
     probeUrl(`${COMFY_URL}/system_stats`, 7000),
     probeProvider('kilocode'),
     probeProvider('nvidia'),

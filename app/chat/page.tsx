@@ -72,7 +72,7 @@ export default function ChatPage(){
           <div className="flex items-center gap-3 min-w-0 overflow-hidden">
             <span className="inline-flex items-center gap-1.5 shrink-0">
               <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] animate-pulse" />
-              <span className="font-bn font-medium truncate">৫০০+ ক্রিয়েটর Hostamar Chat ব্যবহার করছেন</span>
+              <span className="font-bn font-medium truncate">BETA — বাংলা-ফার্স্ট AI চ্যাট</span>
             </span>
             <span className="hidden sm:inline h-3 w-px bg-white/20 shrink-0" />
             <span className="hidden sm:inline-flex items-center gap-1 shrink-0">

@@ -43,6 +43,13 @@ export default function StudioIDE(){
   const [exporting, setExporting] = useState(false)
   const [pct, setPct] = useState(0)
 
+  // V36.32 — Reel AI: voice provider chain + emotion + lip-sync + waveform
+  const [voiceProvider, setVoiceProvider] = useState<'auto'|'sarvam-bulbul'|'fish-s1'|'elevenlabs-v3'>('auto')
+  const [emotion, setEmotion] = useState<'neutral'|'happy'|'serious'|'whisper'>('neutral')
+  const [lipSync, setLipSync] = useState(false)
+  const [voiceCloneConsent, setVoiceCloneConsent] = useState(false)
+  const [waveform, setWaveform] = useState<number[]>([])
+
   useEffect(()=>{ const t=TEMPLATES[tpl]; setCode(t.code); setLang(t.lang); setRatio(t.ratio)},[tpl])
 
   const run = async ()=>{
@@ -171,6 +178,45 @@ export default function StudioIDE(){
           {rightTab==='Voice' && (
             <div className="space-y-3 text-sm">
               <select value={voice} onChange={e=>setVoice(e.target.value)} className="w-full rounded-lg border border-white/10 bg-black/30 p-2 text-zinc-100"><option>নারী কণ্ঠ - সুমাইয়া</option><option>পুরুষ কণ্ঠ - আরিয়ান</option></select>
+
+              {/* V36.32 — Reel AI voice layer */}
+              <div>
+                <div className="text-[10px] tracking-widest text-zinc-500 mb-1">VOICE ENGINE (Reel AI)</div>
+                <select value={voiceProvider} onChange={e=>setVoiceProvider(e.target.value as any)} className="w-full rounded-lg border border-white/10 bg-black/30 p-2 text-zinc-100">
+                  <option value="auto">অটো — বাংলা: Sarvam Bulbul v2 → Fish S1 → ElevenLabs v3</option>
+                  <option value="sarvam-bulbul">Sarvam Bulbul v2 (বাংলা নেটিভ, ৫ cr)</option>
+                  <option value="fish-s1">Fish Audio S1 (ক্লোন-গ্রেড, ১০ cr)</option>
+                  <option value="elevenlabs-v3">ElevenLabs v3 Expressive (২৫ cr)</option>
+                </select>
+              </div>
+              <div>
+                <div className="text-[10px] tracking-widest text-zinc-500 mb-1">EMOTION</div>
+                <div className="flex gap-1">
+                  {(['neutral','happy','serious','whisper'] as const).map(m=>(
+                    <button key={m} onClick={()=>setEmotion(m)} className={`flex-1 rounded-lg border p-1.5 text-[11px] ${emotion===m?'border-[#2563EB] bg-white/5':'border-white/10'}`}>{m}</button>
+                  ))}
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={lipSync} onChange={e=>setLipSync(e.target.checked)} className="accent-[#0E7C3A]" />
+                Lip-sync (Wav2Lip HD + LivePortrait) — +১০০ cr
+              </label>
+              {lipSync && (
+                <label className="flex items-start gap-2 text-[11px] text-zinc-400">
+                  <input type="checkbox" checked={voiceCloneConsent} onChange={e=>setVoiceCloneConsent(e.target.checked)} className="accent-[#0E7C3A] mt-0.5" />
+                  আমি কণ্ঠ ক্লোনের লিখিত সম্মতি দিচ্ছি (নিজের ১০ সেকেন্ড নমুনা) — সম্মতি ছাড়া Facebook reject করে।
+                </label>
+              )}
+              {/* Waveform — canvas preview of voice energy */}
+              <div>
+                <div className="text-[10px] tracking-widest text-zinc-500 mb-1">WAVEFORM</div>
+                <div className="h-10 rounded-lg bg-black/40 border border-white/10 flex items-center gap-[2px] px-2 overflow-hidden">
+                  {(waveform.length ? waveform : Array.from({length:48},()=>0.15+Math.random()*0.7)).map((v,i)=>(
+                    <span key={i} className="w-[3px] rounded bg-[#2563EB]" style={{height:`${Math.min(100,v*100)}%`,opacity:v}} />
+                  ))}
+                </div>
+                <div className="text-[10px] text-zinc-600 mt-1">{waveform.length ? 'ভয়েস প্রিভিউ' : 'প্লেহোল্ডার — এক্সপোর্টে আসল ওয়েভফর্ম'}</div>
+              </div>
             </div>
           )}
           {rightTab==='Style' && (

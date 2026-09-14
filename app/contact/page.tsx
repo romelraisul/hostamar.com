@@ -300,12 +300,12 @@ export default function ContactPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
               <span className="bp-stamp" style={{ padding: '.3rem .8rem', fontSize: '.9rem' }}>
                 <Star size={14} strokeWidth={1.7} aria-hidden="true" style={{ color: 'var(--bp-amber)', fill: 'var(--bp-amber)' }} />
-                4.8
+
               </span>
-              <span className="bp-muted" style={{ fontSize: '.88rem' }}>৫০০+ ক্রিয়েটর বিশ্বাস করে</span>
+              <span className="bp-muted" style={{ fontSize: '.88rem' }}>বাংলাদেশে তৈরি, bKash/Nagad সাপোর্ট</span>
             </div>
             <p className="bp-muted" style={{ fontSize: '.88rem', lineHeight: 1.6 }}>
-              বাংলাদেশের ৫০০+ ক্রিয়েটর ও এজেন্সি Hostamar ব্যবহার করছে, ভিডিও, হোস্টিং, চ্যাট সব এক জায়গায়।
+              বাংলাদেশের SME, ক্রিয়েটর ও এজেন্সিদের জন্য Hostamar, ভিডিও, হোস্টিং, চ্যাট সব এক জায়গায়।
             </p>
             <div className="bp-stamp-row" style={{ gap: '.4rem' }}>
               {['Video', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming'].map((p) => (
