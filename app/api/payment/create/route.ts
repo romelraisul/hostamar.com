@@ -47,26 +47,26 @@ function generateInstructions(method: PaymentMethod, plan: { name: string; price
       return [
         `৳${plan.price.toLocaleString()} প্রদানের জন্য আপনার ${phone} নম্বরে bKash অ্যাপ খুলুন`,
         '"Send Money" অথবা "Payment" অপশনে ক্লিক করুন',
-        `Merchant Number: ${BKASH_NUMBER} (Hostamar)`,
+        `Personal Number: ${BKASH_NUMBER} (Hostamar — Send Money only, Cash Out নয়)`,
         `Amount: ৳${plan.price.toLocaleString()} লিখুন`,
-        `Reference: ${trxId} (অবশ্যই লিখুন)`,
+        `Reference: ${trxId} (নোটে লিখলে যাচাই দ্রুত হবে)`,
         'আপনার bKash PIN দিয়ে নিশ্চিত করুন',
         `পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — ${plan.credits.toLocaleString()} ক্রেডিট যোগ হবে`,
       ];
     case 'nagad':
       return [
         `৳${plan.price.toLocaleString()} প্রদানের জন্য আপনার ${phone} নম্বরে Nagad অ্যাপ খুলুন`,
-        '"Send Money" অথবা "Payment" অপশনে ক্লিক করুন',
-        `Merchant Number: ${NAGAD_NUMBER} (Hostamar)`,
+        '"Send Money" অপশনে ক্লিক করুন (Payment/Cash Out নয়)',
+        `Personal Number: ${NAGAD_NUMBER} (Hostamar — Send Money only, Cash Out নয়)`,
         `Amount: ৳${plan.price.toLocaleString()} লিখুন`,
-        `Reference: ${trxId} (অবশ্যই লিখুন)`,
+        `Reference: ${trxId} (নোটে লিখলে যাচাই দ্রুত হবে)`,
         'আপনার Nagad PIN দিয়ে নিশ্চিত করুন',
         `পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — ${plan.credits.toLocaleString()} ক্রেডিট যোগ হবে`,
       ];
     case 'rocket':
       return [
         `৳${plan.price.toLocaleString()} প্রদানের জন্য Rocket অ্যাপ বা SMS ব্যবহার করুন`,
-        `Rocket Number: ${ROCKET_NUMBER} (Hostamar)`,
+        `Rocket Number: ${ROCKET_NUMBER} (Hostamar — Send Money only, Cash Out নয়)`,
         `Amount: ৳${plan.price.toLocaleString()}`,
         `Message/Memo এ লিখুন: ${trxId}`,
         'পেমেন্ট সম্পন্ন হলে TrxID জমা দিন — অ্যাডমিন যাচাই করে প্ল্যান চালু করবে',

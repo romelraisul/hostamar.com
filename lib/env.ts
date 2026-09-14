@@ -52,6 +52,11 @@ const serverSchema = z
     NAGAD_PERSONAL_NUMBER: z.string().optional(),
     ROCKET_PERSONAL_NUMBER: z.string().optional(),
     PERSONAL_PAYMENT_ENABLED: z.string().optional(),
+    // Manual Send-Money receiver numbers (NEXT_PUBLIC_* so the client panel
+    // could inline them too; server routes read these first).
+    NEXT_PUBLIC_BKASH_NUMBER: z.string().optional(),
+    NEXT_PUBLIC_NAGAD_NUMBER: z.string().optional(),
+    NEXT_PUBLIC_ROCKET_NUMBER: z.string().optional(),
     SMS_WEBHOOK_SECRET: z.string().optional(),
 
     // ── OPTIONAL (validated shape when present) ──────────────────

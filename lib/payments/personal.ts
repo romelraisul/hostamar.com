@@ -13,12 +13,16 @@
  */
 import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
+import { BKASH_PERSONAL, PAYMENT_PLANS, PRICING } from '@/lib/pricing'
 import { ensureSchema } from '@/lib/ensure-schema'
 import { recordAffiliateCommission } from '@/lib/affiliate'
 
 export const TRXID_REGEX = /^[A-Z0-9]{8,10}$/
 export const AMOUNT_TOLERANCE = 1 // ±1 Tk
-export const PENDING_EXPIRY_MINUTES = 15
+/** Admin review window for PENDING TrxID submissions (24h). SMS auto-match
+ *  stays on SMS_MATCH_WINDOW_MINUTES; real payments must NOT vanish from the
+ *  admin approval queue after 15 minutes. */
+export const PENDING_EXPIRY_MINUTES = 24 * 60
 export const SMS_MATCH_WINDOW_MINUTES = 5
 export const VERIFY_RATE_LIMIT_PER_MIN = 5
 
@@ -31,13 +35,24 @@ export interface PersonalNumbers {
   enabled: boolean
 }
 
-/** The personal numbers users send money to (from env). */
+/**
+ * The personal numbers users send money to.
+ * Checkout-style NEXT_PUBLIC_* vars win, then the legacy personal-number vars,
+ * then the documented bKash number from lib/pricing.ts (bKash only — never a
+ * fake number for Nagad/Rocket: an unset var hides that method).
+ * Manual Send-Money is the PRIMARY payment path: enabled unless explicitly
+ * disabled with PERSONAL_PAYMENT_ENABLED='false'.
+ */
 export function getPersonalNumbers(): PersonalNumbers {
+  const bkash = env.NEXT_PUBLIC_BKASH_NUMBER || env.BKASH_PERSONAL_NUMBER || BKASH_PERSONAL
+  const nagad = env.NEXT_PUBLIC_NAGAD_NUMBER || env.NAGAD_PERSONAL_NUMBER || null
+  const rocket = env.NEXT_PUBLIC_ROCKET_NUMBER || env.ROCKET_PERSONAL_NUMBER || null
+  const explicitlyDisabled = env.PERSONAL_PAYMENT_ENABLED === 'false'
   return {
-    BKASH: env.BKASH_PERSONAL_NUMBER || null,
-    NAGAD: env.NAGAD_PERSONAL_NUMBER || null,
-    ROCKET: env.ROCKET_PERSONAL_NUMBER || null,
-    enabled: env.PERSONAL_PAYMENT_ENABLED === 'true',
+    BKASH: bkash || null,
+    NAGAD: nagad,
+    ROCKET: rocket,
+    enabled: !explicitlyDisabled && Boolean(bkash || nagad || rocket),
   }
 }
 
@@ -148,11 +163,19 @@ export async function grantPaymentBenefits(verificationId: string): Promise<void
   if (v.plan && v.plan !== 'free') {
     const now = new Date()
     const nextBilling = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-    const planLimits: Record<string, { videos: number; storage: number; price: number }> = {
-      starter: { videos: 50, storage: 50, price: 499 },
-      pro: { videos: 200, storage: 500, price: 1499 },
+    // Single source: PRICING (videos/storage) + PAYMENT_PLANS (price) so
+    // business (and any price change) is honored — no stale hardcoded table.
+    const planKey = (['starter', 'pro', 'business'] as const).includes(
+      v.plan as 'starter' | 'pro' | 'business',
+    )
+      ? (v.plan as 'starter' | 'pro' | 'business')
+      : 'starter'
+    const tier = PRICING[planKey]
+    const limits = {
+      videos: tier.videosPerMonth,
+      storage: tier.storageGB,
+      price: PAYMENT_PLANS[planKey].price,
     }
-    const limits = planLimits[v.plan] || planLimits.starter
     await prisma.subscription.upsert({
       where: { customerId: v.customerId },
       create: {
