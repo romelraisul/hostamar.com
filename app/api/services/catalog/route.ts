@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
 // FORGE 2026-09-15 11:1x — force-dynamic was the real blocker, NOT the header
@@ -11,35 +11,18 @@ import prisma from '@/lib/prisma'
 export const revalidate = 300
 
 /**
- * GET /api/services/catalog?category=&search=
- * Public, filters isActive, returns 50 with nameBn
+ * GET /api/services/catalog — public, isActive only. category/search were
+ * NEVER used by any caller (StoreCatalog/lib/services/bridge cron all fetch
+ * plain and filter client-side) and merely reading request.url kept this
+ * route per-request dynamic -> Vercel edge stripped s-maxage/SWR from every
+ * response (prod proved bare `max-age=60` on both 373832d AND 9e1b841 builds).
+ * Zero request-data access = ISR-cacheable, exactly like /api/store/products.
  */
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const category = searchParams.get('category')
-  const search = searchParams.get('search')?.toLowerCase().trim()
-
-  const where: any = { isActive: true }
-  if (category && category !== 'all') {
-    where.category = category
-  }
-
-  let services = await prisma.serviceCatalog.findMany({
-    where,
+export async function GET() {
+  const services = await prisma.serviceCatalog.findMany({
+    where: { isActive: true },
     orderBy: { id: 'asc' },
   })
-
-  if (search) {
-    services = services.filter(
-      (s: any) =>
-        s.name.toLowerCase().includes(search) ||
-        s.nameBn.includes(search) ||
-        s.category.toLowerCase().includes(search) ||
-        s.categoryBn.includes(search) ||
-        s.benefit.toLowerCase().includes(search) ||
-        s.benefitBn.includes(search)
-    )
-  }
 
   // Route header overrides next.config.js headers for route handlers (measured
   // live: config's s-maxage=3600 never reached the edge, every probe = MISS
