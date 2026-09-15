@@ -56,17 +56,17 @@ export default function MfaPanel() {
   return (
     <div className="rounded-xl border bg-[#FFFDF6] p-5">
       <h3 className="flex items-center gap-2 font-semibold">
-        {enabled === false ? <ShieldOff className="h-4 w-4 text-zinc-400" /> : <ShieldCheck className="h-4 w-4 text-[#0E7C3A]" />}
+        {enabled === false ? <ShieldOff className="h-4 w-4 text-[#78716C]" /> : <ShieldCheck className="h-4 w-4 text-[#0E7C3A]" />}
         দুই-ধাপ যাচাই (MFA)
       </h3>
-      <p className="mt-1 text-xs text-zinc-500">
+      <p className="mt-1 text-xs text-[#57534E]">
         Google Authenticator দিয়ে অ্যাকাউন্ট সুরক্ষিত করুন — লগ ইনে প্রতিবার 6-digit কোড লাগবে।
       </p>
 
       {msg && <div className="mt-3 rounded-lg bg-[#ECFDF5] p-2.5 text-xs text-[#0E7C3A]">{msg}</div>}
 
       {enabled === null ? (
-        <p className="mt-3 text-xs text-zinc-400">লোড হচ্ছে…</p>
+        <p className="mt-3 text-xs text-[#78716C]">লোড হচ্ছে…</p>
       ) : enabled ? (
         <div className="mt-3">
           <p className="text-xs font-medium text-emerald-600">✅ MFA চালু আছে</p>
@@ -88,7 +88,7 @@ export default function MfaPanel() {
       ) : qr ? (
         <div className="mt-3 space-y-3">
           <img src={qr} alt="MFA QR" width={220} height={220} className="rounded-lg border" />
-          <p className="break-all rounded-lg bg-zinc-50 p-2 font-mono text-[10px] text-zinc-500">{secret}</p>
+          <p className="break-all rounded-lg bg-zinc-50 p-2 font-mono text-[10px] text-[#57534E]">{secret}</p>
           <div className="flex gap-2">
             <input
               value={token}
@@ -99,14 +99,14 @@ export default function MfaPanel() {
               className="w-32 rounded-lg border p-2 text-sm"
             />
             <button onClick={verify} disabled={busy === 'verify' || token.length !== 6}
-              className="rounded-lg bg-[#0E7C3A] px-3 py-2 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-zinc-300">
+              className="rounded-lg bg-[#0E7C3A] px-3 py-2 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-[#F0E7CF]">
               {busy === 'verify' ? <Loader2 className="h-3 w-3 animate-spin" /> : '✓ চালু করুন'}
             </button>
           </div>
         </div>
       ) : (
         <button onClick={setup} disabled={busy === 'setup'}
-          className="mt-3 rounded-lg bg-[#0E7C3A] px-3 py-2 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-zinc-300">
+          className="mt-3 rounded-lg bg-[#0E7C3A] px-3 py-2 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-[#F0E7CF]">
           {busy === 'setup' ? 'তৈরি হচ্ছে...' : '+ MFA চালু করুন'}
         </button>
       )}

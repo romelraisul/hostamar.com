@@ -105,7 +105,7 @@ export default function IdeClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">কোড এডিটর 💻</h1>
-          <p className="mt-1 text-sm text-zinc-500">ব্রাউজারে সফটওয়্যার বানান — ফাইল B2-তে সেভ, কোড রান — ফ্রি আনলিমিটেড</p>
+          <p className="mt-1 text-sm text-[#57534E]">ব্রাউজারে সফটওয়্যার বানান — ফাইল B2-তে সেভ, কোড রান — ফ্রি আনলিমিটেড</p>
         </div>
         <a href="/dashboard/services/new?type=ide" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">+ নতুন IDE</a>
       </div>
@@ -120,13 +120,13 @@ export default function IdeClient() {
                 <span className="text-3xl">{ide.icon}</span>
                 <div className="flex-1">
                   <h3 className="font-semibold">{ide.name}</h3>
-                  <p className="text-xs text-zinc-500">{ide.desc}</p>
+                  <p className="text-xs text-[#57534E]">{ide.desc}</p>
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-sm font-bold text-[#0E7C3A]">ফ্রি</span>
                 <button onClick={() => create(ide.id)} disabled={busy === ide.id}
-                  className="rounded-lg bg-[#0E7C3A] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-zinc-300">
+                  className="rounded-lg bg-[#0E7C3A] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-[#F0E7CF]">
                   {busy === ide.id ? 'খুলছে...' : 'শুরু করুন'}
                 </button>
               </div>
@@ -140,51 +140,51 @@ export default function IdeClient() {
           <div className="flex items-center justify-between border-b p-3 text-sm">
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">● running</span>
-              <span className="font-mono text-xs text-zinc-500">{activeSession.inputs?.serverId}</span>
-              <span className="text-xs text-zinc-400">({activeSession.inputs?.ideType})</span>
+              <span className="font-mono text-xs text-[#57534E]">{activeSession.inputs?.serverId}</span>
+              <span className="text-xs text-[#78716C]">({activeSession.inputs?.ideType})</span>
             </div>
-            <button onClick={() => setActiveSession(null)} className="text-xs text-zinc-500 hover:text-zinc-800">← সব IDE</button>
+            <button onClick={() => setActiveSession(null)} className="text-xs text-[#57534E] hover:text-[#292524]">← সব IDE</button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-[180px_1fr_1fr]">
             {/* file explorer */}
             <div className="border-r p-3">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-zinc-600">ফাইলস</p>
+                <p className="text-xs font-semibold text-[#57534E]">ফাইলস</p>
                 <button onClick={() => fileRef.current?.click()} className="rounded border px-1.5 text-xs hover:bg-zinc-50">+ new</button>
                 <input ref={fileRef} className="hidden" defaultValue="" placeholder="name.js"
                   onKeyDown={e => { if (e.key === 'Enter' && e.currentTarget.value.trim()) { setOpenFile(e.currentTarget.value.trim()); setCode('// new file\n'); e.currentTarget.value = '' } }} />
               </div>
               <div className="mt-2 space-y-1">
-                {files.length === 0 && <p className="text-xs text-zinc-400">B2 ফোল্ডার খালি — ফাইল সেভ করুন</p>}
+                {files.length === 0 && <p className="text-xs text-[#78716C]">B2 ফোল্ডার খালি — ফাইল সেভ করুন</p>}
                 {files.map(f => (
                   <button key={f.name} onClick={() => setOpenFile(f.name)}
-                    className={`block w-full truncate rounded px-2 py-1 text-left text-xs ${openFile === f.name ? 'bg-[#ECFDF5] text-[#0E7C3A]' : 'text-zinc-600 hover:bg-zinc-50'}`}>
+                    className={`block w-full truncate rounded px-2 py-1 text-left text-xs ${openFile === f.name ? 'bg-[#ECFDF5] text-[#0E7C3A]' : 'text-[#57534E] hover:bg-zinc-50'}`}>
                     📄 {f.name}
                   </button>
                 ))}
-                <button onClick={() => setOpenFile('app.js')} className={`block w-full truncate rounded px-2 py-1 text-left text-xs ${openFile === 'app.js' ? 'bg-[#ECFDF5] text-[#0E7C3A]' : 'text-zinc-600 hover:bg-zinc-50'}`}>📄 app.js</button>
+                <button onClick={() => setOpenFile('app.js')} className={`block w-full truncate rounded px-2 py-1 text-left text-xs ${openFile === 'app.js' ? 'bg-[#ECFDF5] text-[#0E7C3A]' : 'text-[#57534E] hover:bg-zinc-50'}`}>📄 app.js</button>
               </div>
             </div>
             {/* editor */}
             <div className="flex flex-col border-r">
               <div className="flex items-center justify-between border-b p-2">
-                <span className="font-mono text-xs text-zinc-500">{openFile}</span>
+                <span className="font-mono text-xs text-[#57534E]">{openFile}</span>
                 <div className="flex gap-2">
                   <button onClick={save} disabled={saving} className="rounded-lg border px-3 py-1 text-xs font-medium hover:bg-zinc-50 disabled:opacity-50">{saving ? '...' : '💾 সেভ'}</button>
-                  <button onClick={run} disabled={running} className="rounded-lg bg-[#0E7C3A] px-3 py-1 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-zinc-300">{running ? 'রান...' : '▶ রান'}</button>
+                  <button onClick={run} disabled={running} className="rounded-lg bg-[#0E7C3A] px-3 py-1 text-xs font-medium text-white hover:bg-[#0c6a32] disabled:bg-[#F0E7CF]">{running ? 'রান...' : '▶ রান'}</button>
                 </div>
               </div>
               <textarea
                 value={code}
                 onChange={e => setCode(e.target.value)}
                 spellCheck={false}
-                className="h-[50vh] w-full resize-none bg-[#1C1917] p-3 font-mono text-xs text-emerald-100 focus:outline-none"
+                className="h-[50vh] w-full resize-none bg-[#FFFDF6] p-3 font-mono text-xs text-emerald-100 focus:outline-none"
               />
             </div>
             {/* output */}
             <div className="flex flex-col">
-              <div className="border-b p-2 text-xs font-semibold text-zinc-600">আউটপুট</div>
-              <pre className="h-[50vh] overflow-auto bg-[#1C1917] p-3 font-mono text-xs text-lime-300">{output || '$ রান চাপুন...'}</pre>
+              <div className="border-b p-2 text-xs font-semibold text-[#57534E]">আউটপুট</div>
+              <pre className="h-[50vh] overflow-auto bg-[#FFFDF6] p-3 font-mono text-xs text-lime-300">{output || '$ রান চাপুন...'}</pre>
             </div>
           </div>
         </div>
@@ -199,14 +199,14 @@ export default function IdeClient() {
                 <span>{s.inputs?.ideType || s.serviceId} ({s.inputs?.serverId || ''}) • {new Date(s.createdAt).toLocaleString('bn-BD')}</span>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{s.status === 'processing' ? 'running' : s.status}</span>
-                  <button onClick={() => setActiveSession(s)} className="rounded-lg bg-[#0F172A] px-3 py-1.5 text-xs font-medium text-white">ওপেন →</button>
+                  <button onClick={() => setActiveSession(s)} className="rounded-lg bg-[#FBF4E4] px-3 py-1.5 text-xs font-medium text-[#1C1917]">ওপেন →</button>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
-      {loading && <p className="mt-6 text-sm text-zinc-500">লোড হচ্ছে...</p>}
+      {loading && <p className="mt-6 text-sm text-[#57534E]">লোড হচ্ছে...</p>}
     </div>
   )
 }

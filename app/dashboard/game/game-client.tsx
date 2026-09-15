@@ -54,9 +54,9 @@ export default function GameClient() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">গেম হোস্টিং 🎮</h1>
-          <p className="mt-1 text-sm text-zinc-500">Minecraft, CS2, Valorant, GTA V — Start/Stop ক্রেডিটে, ২৪/৭ অনলাইন</p>
+          <p className="mt-1 text-sm text-[#57534E]">Minecraft, CS2, Valorant, GTA V — Start/Stop ক্রেডিটে, ২৪/৭ অনলাইন</p>
         </div>
-        <a href="/dashboard/services/new?type=game" className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700">+ নতুন সার্ভার</a>
+        <a href="/dashboard/services/new?type=game" className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-[#1C1917] hover:bg-purple-700">+ নতুন সার্ভার</a>
       </div>
 
       {msg && <div className="mt-4 rounded-lg bg-[#ECFDF5] p-3 text-sm text-[#0E7C3A]">{msg}</div>}
@@ -68,15 +68,15 @@ export default function GameClient() {
               <span className="text-3xl">{g.icon}</span>
               <div className="flex-1">
                 <h3 className="font-semibold">{g.name}</h3>
-                <p className="text-xs text-zinc-500">{g.ram} RAM • {g.cpu}</p>
+                <p className="text-xs text-[#57534E]">{g.ram} RAM • {g.cpu}</p>
               </div>
-              <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600">ফ্রি</span>
+              <span className="rounded-full bg-[#FBF4E4] px-2 py-1 text-xs font-medium text-[#57534E]">ফ্রি</span>
             </div>
             <div className="mt-4 flex items-center gap-2">
               <button
                 onClick={() => act(g.id, 'start')}
                 disabled={busy === g.id + 'start' || running[g.id]}
-                className="flex-1 rounded-lg bg-[#0E7C3A] py-2 text-sm font-medium text-white hover:bg-[#0c6a32] disabled:bg-zinc-300"
+                className="flex-1 rounded-lg bg-[#0E7C3A] py-2 text-sm font-medium text-white hover:bg-[#0c6a32] disabled:bg-[#F0E7CF]"
               >
                 {running[g.id] ? 'চলছে ✓' : busy === g.id + 'start' ? 'স্টার্ট...' : 'স্টার্ট'}
               </button>
@@ -88,9 +88,9 @@ export default function GameClient() {
                 স্টপ
               </button>
             </div>
-            {running[g.id] && <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
+            {running[g.id] && <div className="mt-3 flex items-center justify-between text-xs text-[#57534E]">
               <span>স্ট্যাটাস: <span className="font-semibold text-[#0E7C3A]">Running</span></span>
-              <a href={`/game/${g.id}`} className="rounded-lg bg-[#0F172A] px-3 py-1.5 font-medium text-white">▶ খেলুন</a>
+              <a href={`/game/${g.id}`} className="rounded-lg bg-[#FBF4E4] px-3 py-1.5 font-medium text-[#1C1917]">▶ খেলুন</a>
             </div>}
           </div>
         ))}
@@ -103,13 +103,13 @@ export default function GameClient() {
             {servers.map(s => (
               <div key={s.id} className="flex items-center justify-between rounded-lg border bg-[#FFFDF6] p-3 text-sm">
                 <span>{s.inputs?.gameId || s.serviceId} • {new Date(s.createdAt).toLocaleString('bn-BD')}</span>
-                <span className={`rounded-full px-2 py-0.5 text-xs ${s.status === 'running' || s.status === 'processing' ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-600'}`}>{s.status}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs ${s.status === 'running' || s.status === 'processing' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#FBF4E4] text-[#57534E]'}`}>{s.status}</span>
               </div>
             ))}
           </div>
         </div>
       )}
-      {loading && <p className="mt-6 text-sm text-zinc-500">লোড হচ্ছে...</p>}
+      {loading && <p className="mt-6 text-sm text-[#57534E]">লোড হচ্ছে...</p>}
     </div>
   )
 }

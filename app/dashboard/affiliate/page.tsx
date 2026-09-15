@@ -40,7 +40,7 @@ export default function AffiliateDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
       </div>
     );
@@ -48,10 +48,10 @@ export default function AffiliateDashboard() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917] flex items-center justify-center p-6">
         <div className="text-center">
           <p className="text-red-400 mb-2">{error || 'No data'}</p>
-          <p className="text-zinc-500 text-sm">Please log in to view your affiliate dashboard.</p>
+          <p className="text-[#57534E] text-sm">Please log in to view your affiliate dashboard.</p>
         </div>
       </div>
     );
@@ -60,13 +60,13 @@ export default function AffiliateDashboard() {
   const ratePct = Math.round(data.commissionRate * 100);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917]">
       <main className="container mx-auto px-4 py-10 max-w-5xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Share2 className="w-7 h-7 text-emerald-400" /> Affiliate Program
           </h1>
-          <p className="text-zinc-400 mt-1">
+          <p className="text-[#78716C] mt-1">
             Earn <span className="text-emerald-400 font-semibold">{ratePct}% recurring commission</span> on every payment from users you refer.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function AffiliateDashboard() {
             <h2 className="font-semibold">Your Referral Link</h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <code className="flex-1 rounded-lg bg-[#1C1917] border border-zinc-700 px-4 py-3 text-sm text-emerald-300 font-mono break-all">
+            <code className="flex-1 rounded-lg bg-[#FFFDF6] border border-[#D8CDB4] px-4 py-3 text-sm text-emerald-300 font-mono break-all">
               {data.referralLink}
             </code>
             <button
@@ -89,66 +89,66 @@ export default function AffiliateDashboard() {
               {copied ? 'Copied!' : 'Copy Link'}
             </button>
           </div>
-          <p className="text-xs text-zinc-500 mt-3">
+          <p className="text-xs text-[#57534E] mt-3">
             Share this link. When someone signs up and pays, you earn {ratePct}% of every payment — forever.
           </p>
         </div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
-            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
+          <div className="rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-5">
+            <div className="flex items-center gap-2 text-[#78716C] text-sm mb-1">
               <Users className="w-4 h-4" /> Referrals
             </div>
             <div className="text-2xl font-bold">{data.referralCount}</div>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
-            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
+          <div className="rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-5">
+            <div className="flex items-center gap-2 text-[#78716C] text-sm mb-1">
               <TrendingUp className="w-4 h-4" /> Total Earnings
             </div>
             <div className="text-2xl font-bold text-emerald-400">৳{data.totalEarnings.toLocaleString()}</div>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
-            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
+          <div className="rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-5">
+            <div className="flex items-center gap-2 text-[#78716C] text-sm mb-1">
               <Clock className="w-4 h-4" /> Pending
             </div>
             <div className="text-2xl font-bold text-amber-400">৳{data.pending.toLocaleString()}</div>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
-            <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
+          <div className="rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-5">
+            <div className="flex items-center gap-2 text-[#78716C] text-sm mb-1">
               <Wallet className="w-4 h-4" /> Paid Out
             </div>
-            <div className="text-2xl font-bold text-white">৳{data.paid.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[#1C1917]">৳{data.paid.toLocaleString()}</div>
           </div>
         </div>
 
         {/* Commission history */}
-        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
-          <div className="px-6 py-4 border-b border-zinc-800">
+        <div className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#D8CDB4]">
             <h2 className="font-semibold">Commission History</h2>
           </div>
           {data.commissions.length === 0 ? (
-            <div className="px-6 py-10 text-center text-zinc-500 text-sm">
+            <div className="px-6 py-10 text-center text-[#57534E] text-sm">
               No commissions yet. Share your referral link to start earning!
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Date</th>
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Source</th>
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Amount</th>
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Status</th>
+                  <tr className="border-b border-[#D8CDB4]">
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Date</th>
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Source</th>
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Amount</th>
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.commissions.map((c) => (
-                    <tr key={c.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                      <td className="px-6 py-3 text-sm text-zinc-300">
+                    <tr key={c.id} className="border-b border-[#D8CDB4]/50 hover:bg-[#FFFDF6]/30">
+                      <td className="px-6 py-3 text-sm text-[#57534E]">
                         {new Date(c.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-3 text-sm text-zinc-400">{c.sourceType}</td>
+                      <td className="px-6 py-3 text-sm text-[#78716C]">{c.sourceType}</td>
                       <td className="px-6 py-3 text-sm font-semibold text-emerald-400">৳{c.amount}</td>
                       <td className="px-6 py-3">
                         <span

@@ -100,20 +100,20 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917]">
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Building2 className="w-7 h-7 text-emerald-400" /> Team Workspaces
           </h1>
-          <p className="text-zinc-400 mt-1">Collaborate with your team. Invite members by email.</p>
+          <p className="text-[#78716C] mt-1">Collaborate with your team. Invite members by email.</p>
         </div>
 
         {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
         {notice && <div className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</div>}
 
         {/* Create workspace */}
-        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 mb-6">
+        <div className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-6 mb-6">
           <h2 className="font-semibold mb-3 flex items-center gap-2">
             <Plus className="w-4 h-4 text-emerald-400" /> Create Workspace
           </h2>
@@ -122,7 +122,7 @@ export default function TeamPage() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Workspace name (e.g. My Agency)"
-              className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+              className="flex-1 rounded-lg border border-[#D8CDB4] bg-[#FFFDF6] px-4 py-2.5 text-sm text-[#1C1917] placeholder-[#A89E8C] focus:border-emerald-500 focus:outline-none"
               onKeyDown={(e) => e.key === 'Enter' && createWorkspace()}
             />
             <button
@@ -138,7 +138,7 @@ export default function TeamPage() {
 
         {/* Invite member */}
         {workspaces.length > 0 && (
-          <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 mb-6">
+          <div className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-6 mb-6">
             <h2 className="font-semibold mb-3 flex items-center gap-2">
               <UserPlus className="w-4 h-4 text-emerald-400" /> Invite Member
             </h2>
@@ -146,7 +146,7 @@ export default function TeamPage() {
               <select
                 value={inviteOrg}
                 onChange={(e) => setInviteOrg(e.target.value)}
-                className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                className="rounded-lg border border-[#D8CDB4] bg-[#FFFDF6] px-3 py-2.5 text-sm text-[#1C1917] focus:border-emerald-500 focus:outline-none"
               >
                 <option value="">Select workspace</option>
                 {workspaces.map((w) => (
@@ -158,7 +158,7 @@ export default function TeamPage() {
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="member@example.com"
                 type="email"
-                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+                className="flex-1 rounded-lg border border-[#D8CDB4] bg-[#FFFDF6] px-4 py-2.5 text-sm text-[#1C1917] placeholder-[#A89E8C] focus:border-emerald-500 focus:outline-none"
                 onKeyDown={(e) => e.key === 'Enter' && sendInvite()}
               />
               <button
@@ -173,8 +173,8 @@ export default function TeamPage() {
             {inviteLink && (
               <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
                 <code className="flex-1 text-xs text-emerald-300 font-mono break-all">{inviteLink}</code>
-                <button onClick={copyInvite} className="shrink-0 p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition">
-                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
+                <button onClick={copyInvite} className="shrink-0 p-1.5 rounded-lg bg-[#FFFDF6] hover:bg-[#FDF8EC] transition">
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-[#78716C]" />}
                 </button>
               </div>
             )}
@@ -183,31 +183,31 @@ export default function TeamPage() {
 
         {/* Workspaces */}
         {loading ? (
-          <div className="text-center text-zinc-500 py-10">Loading...</div>
+          <div className="text-center text-[#57534E] py-10">Loading...</div>
         ) : workspaces.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-10 text-center text-zinc-500 text-sm">
+          <div className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-10 text-center text-[#57534E] text-sm">
             No workspaces yet. Create one above to start collaborating.
           </div>
         ) : (
           <div className="space-y-4">
             {workspaces.map((w) => (
-              <div key={w.id} className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
-                <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+              <div key={w.id} className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 overflow-hidden">
+                <div className="px-6 py-4 border-b border-[#D8CDB4] flex items-center justify-between">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-emerald-400" /> {w.name}
                   </h3>
-                  <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">{w.role}</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-[#FFFDF6] text-[#78716C]">{w.role}</span>
                 </div>
                 <div className="px-6 py-4">
-                  <div className="flex items-center gap-2 text-sm text-zinc-400 mb-3">
+                  <div className="flex items-center gap-2 text-sm text-[#78716C] mb-3">
                     <Users className="w-4 h-4" /> {w.members.length} member{w.members.length !== 1 ? 's' : ''}
                   </div>
                   <div className="space-y-2">
                     {w.members.map((m) => (
-                      <div key={m.id} className="flex items-center justify-between rounded-lg bg-zinc-800/50 px-4 py-2.5">
+                      <div key={m.id} className="flex items-center justify-between rounded-lg bg-[#FFFDF6] px-4 py-2.5">
                         <div>
-                          <div className="text-sm text-white">{m.name || m.email || m.id}</div>
-                          {m.email && <div className="text-xs text-zinc-500">{m.email}</div>}
+                          <div className="text-sm text-[#1C1917]">{m.name || m.email || m.id}</div>
+                          {m.email && <div className="text-xs text-[#57534E]">{m.email}</div>}
                         </div>
                         <span
                           className={
@@ -216,7 +216,7 @@ export default function TeamPage() {
                               ? 'bg-emerald-500/20 text-emerald-300'
                               : m.role === 'admin'
                                 ? 'bg-blue-500/20 text-blue-300'
-                                : 'bg-zinc-700 text-zinc-300')
+                                : 'bg-[#FDF8EC] text-[#57534E]')
                           }
                         >
                           {m.role}
@@ -226,7 +226,7 @@ export default function TeamPage() {
                   </div>
                   {w.pendingInvites.length > 0 && (
                     <div className="mt-4">
-                      <div className="text-xs text-zinc-500 mb-2">Pending invites</div>
+                      <div className="text-xs text-[#57534E] mb-2">Pending invites</div>
                       {w.pendingInvites.map((i) => (
                         <div key={i.id} className="flex items-center justify-between rounded-lg bg-amber-500/5 border border-amber-500/20 px-4 py-2 mb-1">
                           <span className="text-sm text-amber-200">{i.email}</span>

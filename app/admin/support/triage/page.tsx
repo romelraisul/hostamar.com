@@ -73,13 +73,13 @@ export default function TriagePage() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Tier 2 — Support Triage</h1>
-        <button onClick={load} className="px-3 py-1 rounded bg-slate-800 text-white text-sm" disabled={loading}>
+        <button onClick={load} className="px-3 py-1 rounded bg-[#FFFDF6] text-[#1C1917] text-sm" disabled={loading}>
           {loading ? 'Refreshing…' : 'Refresh'}
         </button>
       </div>
-      {msg && <div className="mb-4 p-3 rounded bg-slate-100 text-sm">{msg}</div>}
+      {msg && <div className="mb-4 p-3 rounded bg-[#FBF4E4] text-sm">{msg}</div>}
 
-      {data?.inbox?.length === 0 && <p className="text-slate-500">No escalations pending. 🎉</p>}
+      {data?.inbox?.length === 0 && <p className="text-[#57534E]">No escalations pending. 🎉</p>}
 
       <div className="grid gap-4">
         {data?.inbox?.map((item) => (
@@ -87,15 +87,15 @@ export default function TriagePage() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="font-semibold uppercase">{item.service}</span>
-                <span className="ml-2 text-sm text-slate-500">{item.check}</span>
+                <span className="ml-2 text-sm text-[#57534E]">{item.check}</span>
               </div>
-              <span className="text-xs text-slate-400">{new Date(item.createdAt).toLocaleString()}</span>
+              <span className="text-xs text-[#78716C]">{new Date(item.createdAt).toLocaleString()}</span>
             </div>
             {item.triage && (
               <div className="mt-2 text-sm">
                 <p><b>Cause:</b> {item.triage.probableCause}</p>
                 <p><b>Confidence:</b> {(item.triage.confidence * 100).toFixed(0)}%</p>
-                <p><b>Suggested fix:</b> <code className="text-xs bg-slate-100 px-1 rounded">{item.triage.suggestedFix}</code></p>
+                <p><b>Suggested fix:</b> <code className="text-xs bg-[#FBF4E4] px-1 rounded">{item.triage.suggestedFix}</code></p>
                 <p><b>Runbook:</b> <a className="text-[#0E7C3A]" href={item.triage.runbookLink}>{item.triage.runbookLink}</a></p>
                 {item.triage.destructive && <span className="inline-block mt-1 px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs">⚠ DESTRUCTIVE — needs approval</span>}
                 {item.triage.needsHumanApproval && !item.triage.destructive && <span className="inline-block mt-1 px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-xs">needs human approval</span>}
@@ -105,7 +105,7 @@ export default function TriagePage() {
               <button onClick={() => act(item.id, 'approve', false)} disabled={busy === item.id + 'approve'} className="px-3 py-1 rounded bg-green-600 text-white text-sm">
                 Approve Fix
               </button>
-              <button onClick={() => act(item.id, 'deny')} disabled={busy === item.id + 'deny'} className="px-3 py-1 rounded bg-slate-300 text-sm">
+              <button onClick={() => act(item.id, 'deny')} disabled={busy === item.id + 'deny'} className="px-3 py-1 rounded bg-[#F0E7CF] text-sm">
                 Deny
               </button>
               <button onClick={() => act(item.id, 'escalate')} disabled={busy === item.id + 'escalate'} className="px-3 py-1 rounded bg-red-600 text-white text-sm">
@@ -117,7 +117,7 @@ export default function TriagePage() {
       </div>
 
       <h2 className="text-lg font-semibold mt-8">Recent Tier 1 auto-resolutions</h2>
-      <div className="mt-2 text-xs text-slate-500">
+      <div className="mt-2 text-xs text-[#57534E]">
         {data?.recentAuto?.slice(0, 10).map((e) => (
           <div key={e.id} className="border-b py-1">
             <span className="uppercase font-mono">{e.service}</span> · {e.check} → <b>{e.result}</b> · {new Date(e.createdAt).toLocaleString()}
