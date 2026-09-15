@@ -6,5 +6,7 @@ compatibility_date = "2026-09-01"
 # 25.6s cold vs 3.9s warm checkout). Cron triggers run inside the worker —
 # zero Vercel deploys, zero Hobby-plan sub-daily-cron violation.
 [triggers]
-crons = ["*/15 * * * *"]
+# V3: */5 so every cron lands inside the catalog item's stale window
+# (s-maxage=300): buyer always gets HIT/STALE, never the ~20s fill.
+crons = ["*/5 * * * *"]
 
