@@ -91,12 +91,12 @@ export default function ApiKeysPage() {
           </h1>
           <p className="text-zinc-400 mt-1">
             Use API keys to call Hostamar APIs programmatically. Pass as{' '}
-            <code className="text-emerald-300 bg-zinc-900 px-1.5 py-0.5 rounded text-sm">Authorization: Bearer &lt;key&gt;</code>
+            <code className="text-emerald-300 bg-[#1C1917] px-1.5 py-0.5 rounded text-sm">Authorization: Bearer &lt;key&gt;</code>
           </p>
         </div>
 
         {/* Create key */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 mb-6">
+        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               value={newKeyName}
@@ -121,7 +121,7 @@ export default function ApiKeysPage() {
                 <Shield className="w-3.5 h-3.5" /> Copy this key now — it won't be shown again.
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 font-mono text-sm text-white bg-zinc-900 rounded px-3 py-2 break-all">{newKey}</code>
+                <code className="flex-1 font-mono text-sm text-white bg-[#1C1917] rounded px-3 py-2 break-all">{newKey}</code>
                 <button onClick={copyKey} className="shrink-0 p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition">
                   {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
                 </button>
@@ -135,7 +135,7 @@ export default function ApiKeysPage() {
         )}
 
         {/* Keys list */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
           <div className="px-6 py-4 border-b border-zinc-800">
             <h2 className="font-semibold">Your Keys ({keys.length}/5)</h2>
           </div>

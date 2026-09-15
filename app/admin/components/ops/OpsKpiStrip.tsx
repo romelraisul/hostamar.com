@@ -29,12 +29,12 @@ export default function OpsKpiStrip({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="text-xs tracking-[0.2em] text-zinc-500">OPS KPIs</div>
-        <button onClick={onRefresh} className="px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 hover:border-[#10B981]/30 flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5"/>Refresh</button>
+        <button onClick={onRefresh} className="px-2.5 py-1.5 rounded-lg bg-[#23201D] border border-zinc-800 text-xs text-zinc-300 hover:border-[#10B981]/30 flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5"/>Refresh</button>
       </div>
       {err && <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">{err}</div>}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-2xl bg-black border border-[#0E7C3A]/20 p-4 hover:border-[#10B981]/30 transition">
+          <div key={c.label} className="rounded-2xl bg-[#1C1917] border border-[#0E7C3A]/20 p-4 hover:border-[#10B981]/30 transition">
             <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${c.accent} flex items-center justify-center mb-2.5`}><c.icon className="w-4 h-4 text-white"/></div>
             <div className="text-xl font-black text-white">{blank ? '—' : c.value}</div>
             <div className="text-[10px] tracking-widest text-zinc-500 mt-1">{c.label.toUpperCase()}</div>

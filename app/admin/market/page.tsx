@@ -17,7 +17,7 @@ export default function AdminMarketPage(){
   return (
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold">Admin — Market Auto-Adjust (approval-gated)</h1>
-      <div className="mt-4 rounded-xl border bg-white p-4 text-sm">
+      <div className="mt-4 rounded-xl border bg-[#FFFDF6] p-4 text-sm">
         <p>Binance USDT/BDT: {data.binance.usdtBdt} ({data.binance.source})</p>
         <p>$HOSTA: ${data.hosta.price} • OpenRouter model costs live</p>
         <p className="mt-2 font-semibold">Current Starter: {data.currentPrice} Taka → Suggested: {data.suggestedPrice} Taka</p>

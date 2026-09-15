@@ -54,7 +54,7 @@ export default function MfaPanel() {
   }
 
   return (
-    <div className="rounded-xl border bg-white p-5">
+    <div className="rounded-xl border bg-[#FFFDF6] p-5">
       <h3 className="flex items-center gap-2 font-semibold">
         {enabled === false ? <ShieldOff className="h-4 w-4 text-zinc-400" /> : <ShieldCheck className="h-4 w-4 text-[#0E7C3A]" />}
         দুই-ধাপ যাচাই (MFA)

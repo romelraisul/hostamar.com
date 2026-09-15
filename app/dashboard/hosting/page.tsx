@@ -59,7 +59,7 @@ export default function HostingDashboardPage() {
           <p className="text-sm text-[#64748B]">202 queued → auto-provisioned as podman pod + nginx in &lt;30s. ব্যাকআপ to s3.hostamar.com, আপটাইম Kuma, custom domain via Cloudflare Tunnel.</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/hosting" className="rounded-full border px-4 py-2 text-sm font-medium hover:bg-white">View Plans</Link>
+          <Link href="/hosting" className="rounded-full border px-4 py-2 text-sm font-medium hover:bg-[#FFFDF6]">View Plans</Link>
           <button onClick={load} className="rounded-full bg-[#0E7C3A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0c6a32]">Refresh</button>
         </div>
       </div>
@@ -67,9 +67,9 @@ export default function HostingDashboardPage() {
       {actionMsg && <div className="mb-4 rounded-lg bg-[#ECFDF5] border border-[#0E7C3A]/20 px-4 py-2 text-sm text-[#0E7C3A]">{actionMsg}</div>}
       {err && <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">{err}</div>}
 
-      {loading ? <div className="rounded-xl border bg-white p-8 text-center text-[#64748B]">Loading servers...</div>
+      {loading ? <div className="rounded-xl border bg-[#FFFDF6] p-8 text-center text-[#64748B]">Loading servers...</div>
       : servers.length === 0 ? (
-        <div className="rounded-xl border bg-white p-10 text-center">
+        <div className="rounded-xl border bg-[#FFFDF6] p-10 text-center">
           <p className="font-semibold text-[#0F172A]">এখনো কোনো সার্ভার নেই</p>
           <p className="text-sm text-[#64748B] mt-1">Create one via POST /api/hosting/servers with credits (599 Taka Starter). Queue → pod created.</p>
           <Link href="/dashboard/services/new" className="inline-block mt-4 rounded-full bg-[#0E7C3A] px-6 py-2 text-sm font-semibold text-white">সার্ভার তৈরি করুন</Link>
@@ -77,7 +77,7 @@ export default function HostingDashboardPage() {
       ) : (
         <div className="grid gap-4">
           {servers.map(s=>(
-            <div key={s.id} className="rounded-xl border bg-white p-4 shadow-sm">
+            <div key={s.id} className="rounded-xl border bg-[#FFFDF6] p-4 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">

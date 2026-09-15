@@ -105,9 +105,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-[#050A06] text-white">
+    <div className="min-h-screen bg-[#1C1917] text-white">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-black border-b border-[#0E7C3A]/30 px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#1C1917] border-b border-[#0E7C3A]/30 px-4 py-3 flex items-center justify-between">
         <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg hover:bg-[#0E7C3A]/20 border border-transparent hover:border-[#0E7C3A]/30">
           <Menu className="w-6 h-6 text-[#10B981]" />
         </button>
@@ -123,7 +123,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar - green/black hybrid */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-[280px] bg-black border-r border-[#0E7C3A]/30 flex flex-col transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 w-[280px] bg-[#1C1917] border-r border-[#0E7C3A]/30 flex flex-col transition-transform duration-200 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -167,7 +167,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : 'text-zinc-500'}`} />
                   <span>{item.label}</span>
-                  {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />}
+                  {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FFFDF6]" />}
                 </Link>
               )
             })}
@@ -230,7 +230,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <span className="text-[10px] text-zinc-500 font-mono">{clock ? `updated ${clock}` : '…'}</span>
           </div>
-          <div className="min-h-screen bg-[#050A06]">{children}</div>
+          <div className="min-h-screen bg-[#1C1917]">{children}</div>
         </div>
       </div>
     </div>

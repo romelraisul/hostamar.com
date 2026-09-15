@@ -50,16 +50,16 @@ function CreditMeter({ credits, loading }: { credits: number; loading: boolean }
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-3xl font-black tabular-nums">{loading ? '—' : credits.toLocaleString()}</span>
           <span className="text-white/70 text-sm">/ 6,000</span>
-          <span className="ml-auto text-xs bg-white text-[#0E7C3A] px-2.5 py-1 rounded-full font-bold">{pct}%</span>
+          <span className="ml-auto text-xs bg-[#FFFDF6] text-[#0E7C3A] px-2.5 py-1 rounded-full font-bold">{pct}%</span>
         </div>
-        <div className="mt-3 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full bg-white rounded-full transition-all" style={{ width: `${pct}%` }} /></div>
+        <div className="mt-3 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full bg-[#FFFDF6] rounded-full transition-all" style={{ width: `${pct}%` }} /></div>
         <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">Used {used.toLocaleString()}</span>
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">Video 100</span>
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">IDE 10</span>
         </div>
         <div className="mt-2 flex gap-2 text-[11px] text-white/70 justify-center">Chat 1 • Browser 5 • Game 20 • Hosting 0</div>
-        <Link href="/dashboard/payment" className="mt-4 flex items-center justify-center gap-2 rounded-full bg-white text-[#0E7C3A] text-sm font-bold py-2.5 hover:bg-[#ECFDF5] transition">
+        <Link href="/dashboard/payment" className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#FFFDF6] text-[#0E7C3A] text-sm font-bold py-2.5 hover:bg-[#ECFDF5] transition">
           <CreditCard className="w-4 h-4" /> bKash Renew →
         </Link>
       </div>
@@ -114,7 +114,7 @@ function ServicesStrip() {
     return open ? list : list.slice(0, 6)
   })()
   return (
-    <div className="rounded-2xl border bg-white p-5">
+    <div className="rounded-2xl border bg-[#FFFDF6] p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-semibold text-[#0F172A] flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[#0E7C3A]" />
@@ -217,7 +217,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <div className="h-8 w-48 rounded bg-[#E2E8F0] animate-pulse" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 space-y-6"><div className="h-64 rounded-2xl border bg-white animate-pulse" /></div>
+          <div className="lg:col-span-8 space-y-6"><div className="h-64 rounded-2xl border bg-[#FFFDF6] animate-pulse" /></div>
           <div className="lg:col-span-4 space-y-4"><div className="h-48 rounded-2xl bg-[#0E7C3A]/20 animate-pulse" /></div>
         </div>
       </div>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
       {/* Command palette */}
       {cmdOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-[20vh] p-4" onClick={() => setCmdOpen(false)}>
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-2xl bg-[#FFFDF6] shadow-2xl border overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 px-4 py-3 border-b">
               <Search className="w-4 h-4 text-zinc-400" />
               <input autoFocus placeholder="Search products, videos, settings..." className="flex-1 outline-none text-sm" />
@@ -257,7 +257,7 @@ export default function DashboardPage() {
             <p className="text-xs text-[#64748B] mt-1">Hostamar • Video 100 • Hosting 0 • Chat 1 • Browser 5 • IDE 10 • Game 20</p>
           </div>
         </div>
-        <button onClick={() => setCmdOpen(true)} className="hidden sm:flex items-center gap-2 rounded-full border bg-white px-3 py-2 text-xs text-[#64748B] hover:border-[#0E7C3A]/30">
+        <button onClick={() => setCmdOpen(true)} className="hidden sm:flex items-center gap-2 rounded-full border bg-[#FFFDF6] px-3 py-2 text-xs text-[#64748B] hover:border-[#0E7C3A]/30">
           <Command className="w-3.5 h-3.5" /> ⌘K
         </button>
       </div>
@@ -266,7 +266,7 @@ export default function DashboardPage() {
       <div className="sm:hidden rounded-full bg-[#F1F5F9] p-1 flex items-center gap-2 text-xs">
         <span className="px-3 py-1.5 rounded-full bg-[#0E7C3A] text-white font-bold">{shownCredits.toLocaleString()} / 6000</span>
         <span className="text-[#64748B]">{creditPct}% • {plan}</span>
-        <Link href="/dashboard/payment" className="ml-auto px-3 py-1 rounded-full bg-white border text-[#0E7C3A] font-semibold">bKash</Link>
+        <Link href="/dashboard/payment" className="ml-auto px-3 py-1 rounded-full bg-[#FFFDF6] border text-[#0E7C3A] font-semibold">bKash</Link>
       </div>
 
       {error && <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">Live stats unavailable ({error}) — showing fallback.</div>}
@@ -276,13 +276,13 @@ export default function DashboardPage() {
         <div className="lg:col-span-8 space-y-6">
           {/* Credit + Usage row */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border bg-white p-5">
+            <div className="rounded-2xl border bg-[#FFFDF6] p-5">
               <div className="text-[11px] tracking-[0.2em] text-[#64748B]">CREDITS</div>
               <div className="text-2xl font-black text-[#0F172A] tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#64748B]">/ 6,000</span></div>
               <div className="text-xs text-[#64748B] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
               <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#0E7C3A] rounded-full" style={{ width: `${creditPct}%` }} /></div>
             </div>
-            <div className="rounded-2xl border bg-white p-5">
+            <div className="rounded-2xl border bg-[#FFFDF6] p-5">
               <div className="text-[11px] tracking-[0.2em] text-[#64748B]">STORAGE</div>
               <div className="text-2xl font-black text-[#0F172A] mt-1">{storageUsed} <span className="text-sm font-normal text-[#64748B]">/ {storageTotal} GB</span></div>
               <div className="text-xs text-[#64748B] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
@@ -291,7 +291,7 @@ export default function DashboardPage() {
           </div>
 
           {/* 6 Products grid */}
-          <div className="rounded-2xl border bg-white p-5">
+          <div className="rounded-2xl border bg-[#FFFDF6] p-5">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-[#0F172A] flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#0E7C3A]" /> Your 6 Products</h2>
               <span className="text-xs text-[#64748B] hidden sm:inline">Video 100 • Chat 1 • Browser 5 • IDE 10 • Game 20 • Hosting 0</span>
@@ -305,11 +305,11 @@ export default function DashboardPage() {
                   <button
                     key={p.slug}
                     onClick={() => setActiveProduct(p.slug)}
-                    className={`text-left rounded-2xl border p-4 transition ${isActive ? 'bg-[#0E7C3A] text-white border-[#0E7C3A] shadow' : 'bg-white hover:border-[#0E7C3A]/30 hover:bg-[#ECFDF5]/40'}`}
+                    className={`text-left rounded-2xl border p-4 transition ${isActive ? 'bg-[#0E7C3A] text-white border-[#0E7C3A] shadow' : 'bg-[#FFFDF6] hover:border-[#0E7C3A]/30 hover:bg-[#ECFDF5]/40'}`}
                   >
                     <div className="flex items-center justify-between">
                       <span className={`w-9 h-9 rounded-xl grid place-items-center text-lg ${isActive ? 'bg-white/20' : 'bg-[#F8FAFC] border'}`}>{p.emoji}</span>
-                      <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${isActive ? 'bg-white text-[#0E7C3A]' : p.slug === 'ai-video' ? 'bg-[#0E7C3A] text-white' : p.slug === 'cloud-hosting' ? 'bg-[#2563EB] text-white' : 'bg-zinc-900 text-white'}`}>{BADGE[p.slug]}</span>
+                      <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${isActive ? 'bg-[#FFFDF6] text-[#0E7C3A]' : p.slug === 'ai-video' ? 'bg-[#0E7C3A] text-white' : p.slug === 'cloud-hosting' ? 'bg-[#2563EB] text-white' : 'bg-[#1C1917] text-white'}`}>{BADGE[p.slug]}</span>
                     </div>
                     <div className={`mt-2 font-semibold ${isActive ? 'text-white' : 'text-[#0F172A]'}`}>{p.nameEn}</div>
                     <div className={`text-xs ${isActive ? 'text-white/70' : 'text-[#64748B]'}`}>{p.taglineEn}</div>
@@ -324,7 +324,7 @@ export default function DashboardPage() {
           <ServicesStrip />
 
           {/* Per-tab main */}
-          <div className="rounded-2xl border bg-white p-5 sm:p-6">
+          <div className="rounded-2xl border bg-[#FFFDF6] p-5 sm:p-6">
             {activeProduct === 'ai-video' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Video — AI মার্কেটিং ভিডিও</h3><span className="text-xs bg-[#0E7C3A] text-white px-2.5 py-1 rounded-full">100cr</span></div>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
                 <div className="rounded-xl border bg-[#F8FAFC] p-4">
-                  <input placeholder="একটা প্রম্পট দিন — e.g. Eid sale 20% off pants" className="w-full px-4 py-3 rounded-xl border bg-white text-sm focus:outline-none focus:border-[#0E7C3A]" />
+                  <input placeholder="একটা প্রম্পট দিন — e.g. Eid sale 20% off pants" className="w-full px-4 py-3 rounded-xl border bg-[#FFFDF6] text-sm focus:outline-none focus:border-[#0E7C3A]" />
                   <div className="mt-3 flex items-center gap-2 text-xs text-[#64748B]">Trust: bKash • Nagad • Rocket • BDIX 20ms • InVideo $17 vs ৳0 • Pictory $19 vs ৳0</div>
                 </div>
                 <Link href="/generate" className="flex items-center justify-center gap-2 rounded-full bg-[#0E7C3A] text-white font-bold py-3 hover:bg-[#0c6a32]"><Zap className="w-4 h-4" /> Generate -100cr →</Link>
@@ -365,10 +365,10 @@ export default function DashboardPage() {
             )}
             {activeProduct === 'ai-chat' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Chat — AI চ্যাট বাংলা</h3><span className="text-xs bg-zinc-900 text-white px-2.5 py-1 rounded-full">1cr/msg • 100/day</span></div>
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Chat — AI চ্যাট বাংলা</h3><span className="text-xs bg-[#1C1917] text-white px-2.5 py-1 rounded-full">1cr/msg • 100/day</span></div>
                 <div className="rounded-xl border bg-[#F8FAFC] p-4">
                   <div className="flex gap-2"><span className="w-8 h-8 rounded-full bg-[#0E7C3A] text-white grid place-items-center text-xs">AI</span><div className="bp-card px-4 py-3 text-sm shadow-sm max-w-[85%]">হ্যালো! আমি Hostamar AI — বাংলায় সাহায্য করি।</div></div>
-                  <div className="mt-3 rounded-xl bg-white border p-3 text-xs text-[#64748B]">Tawk.to FREE fallback + Hostamar AI assist • Messenger till 11pm</div>
+                  <div className="mt-3 rounded-xl bg-[#FFFDF6] border p-3 text-xs text-[#64748B]">Tawk.to FREE fallback + Hostamar AI assist • Messenger till 11pm</div>
                 </div>
                 <div className="flex gap-2"><input placeholder="মেসেজ লিখুন..." className="flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:border-[#0E7C3A]" /><button className="px-5 py-3 rounded-xl bg-[#0E7C3A] text-white font-bold">Send</button></div>
                 <Link href="/chat" className="flex items-center justify-center gap-2 rounded-full border font-semibold py-2.5">Open Chat →</Link>
@@ -376,7 +376,7 @@ export default function DashboardPage() {
             )}
             {activeProduct === 'ai-browser' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Browser — AI Browser</h3><span className="text-xs bg-zinc-900 text-white px-2.5 py-1 rounded-full">5cr/summary</span></div>
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Browser — AI Browser</h3><span className="text-xs bg-[#1C1917] text-white px-2.5 py-1 rounded-full">5cr/summary</span></div>
                 <div className="flex gap-2"><input defaultValue="https://browser.hostamar.com" className="flex-1 px-4 py-2.5 rounded-xl border bg-[#F8FAFC] text-sm font-mono" /><button className="px-4 py-2.5 rounded-xl bg-[#0E7C3A] text-white text-sm font-bold">Go</button><button className="px-4 py-2.5 rounded-xl bg-[#2563EB] text-white text-sm">Summarize 5cr</button></div>
                 <div className="rounded-xl border bg-[#F8FAFC] h-40 grid place-items-center text-sm text-[#64748B]"><Globe className="w-6 h-6 mb-1" /> browser.hostamar.com iframe (530 tunnel — start cloudflared)</div>
                 <p className="text-xs text-[#64748B]">Like Opera Aria FREE — Page Context + Tabs</p>
@@ -385,7 +385,7 @@ export default function DashboardPage() {
             {activeProduct === 'dev-ide' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">IDE — 93 models</h3><span className="text-xs bg-[#8B5CF6] text-white px-2.5 py-1 rounded-full">10cr/run</span></div>
-                <select className="w-full px-3 py-2.5 rounded-xl border bg-white text-sm">
+                <select className="w-full px-3 py-2.5 rounded-xl border bg-[#FFFDF6] text-sm">
                   <option>rafan — RAG + 93 • ai.hostamar.com LIVE</option>
                   <option>sora2 • veo3.1 • kling3</option>
                   <option>gpt-4o • claude-3.5 • gemini-2.5</option>
@@ -422,7 +422,7 @@ export default function DashboardPage() {
         {/* Right column 4 */}
         <div className="lg:col-span-4 space-y-6">
           <CreditMeter credits={shownCredits} loading={loading} />
-          <div className="rounded-2xl border bg-white p-5">
+          <div className="rounded-2xl border bg-[#FFFDF6] p-5">
             <h3 className="font-semibold text-[#0F172A] flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#0E7C3A]" /> Credit Usage</h3>
             <div className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-[#64748B]">Video</span><span className="font-mono font-bold">100cr</span></div>
@@ -435,7 +435,7 @@ export default function DashboardPage() {
             <div className="mt-4 h-2 rounded-full bg-[#F1F5F9] overflow-hidden"><div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${Math.min(100, Math.round((used / 6000) * 100))}%` }} /></div>
             <div className="text-xs text-center text-[#64748B] mt-2">Used {used.toLocaleString()} / 6000</div>
           </div>
-          <div className="rounded-2xl border bg-white p-5">
+          <div className="rounded-2xl border bg-[#FFFDF6] p-5">
             <h3 className="text-sm font-semibold text-[#0F172A]">Quick Actions</h3>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Link href="/generate" className="rounded-xl border p-3 hover:border-[#0E7C3A] hover:bg-[#ECFDF5]/50"><Video className="w-5 h-5 text-[#0E7C3A]" /><div className="text-sm font-medium mt-1">Generate</div><div className="text-xs text-[#64748B]">Video 100cr</div></Link>
