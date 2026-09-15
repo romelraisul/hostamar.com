@@ -318,3 +318,8 @@ body.bp-theme h1,body.bp-theme h2,body.bp-theme h3{letter-spacing:0}
   .bp-form-field-half{grid-template-columns:1fr}
 }
 
+
+/* bn: blog sidebar/hero form input */
+.bp-form-input{width:100%;font-family:var(--font-body);font-size:.9rem;color:var(--bp-ink);background:var(--bp-paper-2);border:2px solid var(--bp-ink);border-radius:10px;padding:.55rem .8rem;color:var(--bp-ink)}
+.bp-form-input:focus{outline:none;box-shadow:3px 3px 0 var(--bp-ink)}
+
