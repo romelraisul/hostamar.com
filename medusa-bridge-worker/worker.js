@@ -29,9 +29,20 @@ export default {
   // is nothing, keep it that way.
   async scheduled(event, env, ctx) {
     ctx.waitUntil(
-      fetch('https://store.hostamar.com/health', { signal: AbortSignal.timeout(10_000) })
-        .then((r) => r.status)
-        .catch(() => 0)
+      Promise.all([
+        fetch('https://store.hostamar.com/health', { signal: AbortSignal.timeout(10_000) })
+          .then((r) => r.status)
+          .catch(() => 0),
+        // V3: hit the REAL buyer-facing catalog URL. Its edge item lapses
+        // every s-maxage=300s; a buyer hitting an expired item eats the
+        // ~20s blocking origin-fill (08:23: 4x19.7s). A */5 cron landing
+        // inside the stale window serves STALE (0.1-0.7s) + refreshes in
+        // background, so users never race the fill. Same-zone curl probes
+        // of this URL all returned 200 — no WAF challenge risk (CF->CF).
+        fetch('https://hostamar.com/api/store/products', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+          .then((r) => r.status)
+          .catch(() => 0),
+      ])
     )
   },
 }
