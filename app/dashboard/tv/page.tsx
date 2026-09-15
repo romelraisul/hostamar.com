@@ -102,24 +102,24 @@ export default function CustomerTv() {
     });
   };
 
-  if (loading) return <div className="p-6 text-zinc-400">Loading your TV...</div>;
+  if (loading) return <div className="p-6 text-[#78716C]">Loading your TV...</div>;
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold flex items-center gap-2"><Tv className="w-5 h-5 text-emerald-400" /> My TV</h2>
         <div className="flex items-center gap-2">
-          <button onClick={() => setPower((p) => !p)} className={`p-2 rounded-lg ${power ? 'bg-emerald-600' : 'bg-zinc-700'}`}>
+          <button onClick={() => setPower((p) => !p)} className={`p-2 rounded-lg ${power ? 'bg-emerald-600' : 'bg-[#FDF8EC]'}`}>
             <Tv className="w-4 h-4" />
           </button>
-          <button onClick={load} className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700"><RefreshCw className="w-4 h-4" /></button>
+          <button onClick={load} className="p-2 rounded-lg bg-[#FFFDF6] hover:bg-[#FDF8EC]"><RefreshCw className="w-4 h-4" /></button>
         </div>
       </div>
 
-      <div ref={containerRef} className="relative rounded-xl bg-[#1C1917] border border-zinc-800 overflow-hidden aspect-video">
+      <div ref={containerRef} className="relative rounded-xl bg-[#FFFDF6] border border-[#D8CDB4] overflow-hidden aspect-video">
         {!power ? (
-          <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center">
-            <p className="text-zinc-500 text-sm">TV is off</p>
+          <div className="absolute inset-0 bg-[#FBF4E4] flex items-center justify-center">
+            <p className="text-[#57534E] text-sm">TV is off</p>
           </div>
         ) : (
           <video ref={videoRef} controls={false} autoPlay muted={muted} playsInline onEnded={handleEnded} className="w-full h-full object-contain" poster="/og-image.png" />
@@ -156,13 +156,13 @@ export default function CustomerTv() {
       {error && <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
 
       {/* Channel list */}
-      <div className="mt-4 rounded-xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
-        <div className="px-4 py-3 border-b border-zinc-800">
+      <div className="mt-4 rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/50 overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#D8CDB4]">
           <h3 className="font-semibold text-sm flex items-center gap-2"><Radio className="w-4 h-4 text-emerald-400" /> Channels</h3>
         </div>
-        <div className="max-h-[200px] overflow-auto divide-y divide-zinc-800">
+        <div className="max-h-[200px] overflow-auto divide-y divide-[#D8CDB4]">
           {channels.length === 0 ? (
-            <div className="p-4 text-center text-zinc-500 text-sm">No channels yet. Admin needs to seed channels.</div>
+            <div className="p-4 text-center text-[#57534E] text-sm">No channels yet. Admin needs to seed channels.</div>
           ) : (
             channels.slice(0, 20).map((ch, idx) => (
               <button

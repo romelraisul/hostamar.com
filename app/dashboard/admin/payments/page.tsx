@@ -84,7 +84,7 @@ export default function AdminPaymentsPage() {
             bKash 01822417463
           </span>
         </div>
-        <button onClick={load} className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5 text-[13px] font-medium hover:border-zinc-400">
+        <button onClick={load} className="flex items-center gap-1.5 rounded-full border border-[#E6DCC4] px-3 py-1.5 text-[13px] font-medium hover:border-[#CBBFA4]">
           <RefreshCw className="h-3.5 w-3.5" /> Reload
         </button>
       </div>
@@ -93,15 +93,15 @@ export default function AdminPaymentsPage() {
       {error && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-[13px] font-semibold text-red-600">{error}</p>}
 
       {loading ? (
-        <div className="flex items-center gap-2 text-zinc-500"><Loader2 className="h-4 w-4 animate-spin" /> লোড হচ্ছে…</div>
+        <div className="flex items-center gap-2 text-[#57534E]"><Loader2 className="h-4 w-4 animate-spin" /> লোড হচ্ছে…</div>
       ) : txns.length === 0 ? (
-        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-6 text-[14px] text-zinc-500">
+        <div className="flex items-center gap-2 rounded-xl border border-[#E6DCC4] bg-zinc-50 px-4 py-6 text-[14px] text-[#57534E]">
           <Clock className="h-4 w-4" /> কোনো pending পেমেন্ট নেই — সব পরিষ্কার ✓
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-zinc-200">
+        <div className="overflow-hidden rounded-xl border border-[#E6DCC4]">
           <table className="w-full text-left text-[13px]">
-            <thead className="bg-zinc-50 text-[11px] uppercase tracking-wide text-zinc-500">
+            <thead className="bg-zinc-50 text-[11px] uppercase tracking-wide text-[#57534E]">
               <tr>
                 <th className="px-3 py-2">Customer</th>
                 <th className="px-3 py-2">Plan</th>
@@ -114,21 +114,21 @@ export default function AdminPaymentsPage() {
             </thead>
             <tbody>
               {txns.map((t) => (
-                <tr key={t.id} className="border-t border-zinc-100">
+                <tr key={t.id} className="border-t border-[#E6DCC4]">
                   <td className="px-3 py-2">
                     <div className="font-medium">{t.customer?.name || t.customer?.email}</div>
-                    <div className="text-[11px] text-zinc-400">{t.customer?.phone || t.customer?.email}</div>
+                    <div className="text-[11px] text-[#78716C]">{t.customer?.phone || t.customer?.email}</div>
                   </td>
                   <td className="px-3 py-2">{t.videoPackage}</td>
                   <td className="px-3 py-2 font-semibold">৳{t.amount}</td>
                   <td className="px-3 py-2 font-semibold" style={{ color: GREEN }}>+{t.creditsAdded}cr</td>
                   <td className="px-3 py-2 font-mono text-[11px]">{t.gatewayTrxId}</td>
-                  <td className="px-3 py-2 text-[11px] text-zinc-400">{new Date(t.createdAt).toLocaleString()}</td>
+                  <td className="px-3 py-2 text-[11px] text-[#78716C]">{new Date(t.createdAt).toLocaleString()}</td>
                   <td className="px-3 py-2">
                     <button
                       onClick={() => approve(t)}
                       disabled={approving === t.id}
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-white disabled:opacity-60"
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-[#1C1917] disabled:opacity-60"
                       style={{ background: GREEN }}
                     >
                       {approving === t.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
@@ -141,7 +141,7 @@ export default function AdminPaymentsPage() {
           </table>
         </div>
       )}
-      <p className="mt-3 text-[11px] text-zinc-400">
+      <p className="mt-3 text-[11px] text-[#78716C]">
         Approve → transaction completed · subscription activated · credits granted (from lib/pricing.ts single source) · customer notified.
       </p>
     </div>

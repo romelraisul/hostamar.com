@@ -8,11 +8,11 @@ export default function AdminError({
   reset: () => void
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-900">
-      <div className="max-w-md rounded-lg border border-slate-700 bg-slate-800 p-8 text-center">
+    <div className="flex min-h-screen items-center justify-center bg-[#F6EBD2]">
+      <div className="max-w-md rounded-lg border border-[#D8CDB4] bg-[#FFFDF6] p-8 text-center">
         <div className="mb-4 text-4xl">⚠️</div>
-        <h2 className="mb-2 text-xl font-semibold text-white">Admin Error</h2>
-        <p className="mb-6 text-sm text-slate-400">{error.message || 'Something went wrong'}</p>
+        <h2 className="mb-2 text-xl font-semibold text-[#1C1917]">Admin Error</h2>
+        <p className="mb-6 text-sm text-[#78716C]">{error.message || 'Something went wrong'}</p>
         <div className="flex justify-center gap-4">
           <button
             onClick={() => reset()}
@@ -22,7 +22,7 @@ export default function AdminError({
           </button>
           <a
             href="/"
-            className="rounded-md border border-slate-600 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700"
+            className="rounded-md border border-[#CBBFA4] px-4 py-2 text-sm font-medium text-[#57534E] hover:bg-[#FDF8EC]"
           >
             Go Home
           </a>
