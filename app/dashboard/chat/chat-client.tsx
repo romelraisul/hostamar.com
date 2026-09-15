@@ -197,7 +197,7 @@ export default function ChatClient() {
               )}
               <div className={`group relative max-w-[78%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${m.role === 'user' ? 'bg-[#0E7C3A] text-white rounded-br-md' : 'bg-[#FFFDF6] border text-[#1C1917] shadow-sm rounded-bl-md'}`}>
                 <p style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>{m.content}</p>
-                <div className={`mt-1.5 flex items-center gap-2 text-[10px] ${m.role === 'user' ? 'text-[#1C1917]/70' : 'text-[#78716C]'}`}>
+                <div className={`mt-1.5 flex items-center gap-2 text-[10px] ${m.role === 'user' ? 'text-white/70' : 'text-[#78716C]'}`}>
                   {m.role === 'assistant' && m.model && <span className="truncate max-w-[240px]">{m.model?.split('/').pop()} • {m.provider || 'fallback-chain'}{m.fallbackFrom ? ` (fallback from ${m.fallbackFrom})` : ''}{m.cost != null ? ` • ${m.cost} cr` : ''}{m.creditsRemaining != null ? ` • bal ${m.creditsRemaining}` : ''}</span>}
                   {m.role === 'assistant' && (
                     <button onClick={() => copy(i, m.content)} className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
