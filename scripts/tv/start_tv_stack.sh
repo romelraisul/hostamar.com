@@ -13,20 +13,23 @@ log() { echo "[$(date '+%H:%M:%S') start-tv] $*"; }
 
 # 1) Ensure podman containers are running (restart policies cover crashes,
 #    but after a cold boot they may need an explicit start).
-for c in hostamar-tv-db hostamar-tv-rtmp hostamar-nginx; do
-  if ! podman ps --format '{{.Names}}' | grep -qx "$c"; then
-    if podman ps -a --format '{{.Names}}' | grep -qx "$c"; then
-      log "starting container $c"
-      podman start "$c" >/dev/null 2>&1 || log "WARN: podman start $c failed"
-    else
-      log "NOTE: container $c not present (skip)"
-    fi
-  fi
-done
+#    hostamar-tv-rtmp was PRUNED (2026-09-15) — recreate from docker/tv-station
+#    compose spec if missing (only 1935 mapped; container 8080 conflicts with
+#    the local LLM gateway).
+if ! podman ps --format '{{.Names}}' | grep -qx 'hostamar-tv-rtmp'; then
+  podman rm -f hostamar-tv-rtmp >/dev/null 2>&1 || true
+  log "recreating hostamar-tv-rtmp container"
+  podman run -d --name hostamar-tv-rtmp --restart unless-stopped \
+    -p 1935:1935 \
+    -v "$REPO/docker/tv-station/nginx.conf:/etc/nginx/nginx.conf:ro" \
+    -v hls-data:/tmp/hls \
+    docker.io/alfg/nginx-rtmp:latest >/dev/null 2>&1 \
+    || log "WARN: could not recreate hostamar-tv-rtmp"
+fi
 
 # 2) Ensure user systemd TV units are active. Use `start` (idempotent) and
 #    rely on Restart=always / enabled for resilience.
-for u in tv-db tv-rtmp tv-ffmpeg tv-no-repeat-watcher tv-ever-fresh tv-hls2; do
+for u in tv-db tv-rtmp tv-ffmpeg tv-no-repeat-watcher tv-ever-fresh tv-hls2 tv-ffmpeg-vp9; do
   if ! systemctl --user is-active --quiet "$u.service" 2>/dev/null; then
     log "starting unit $u"
     systemctl --user start "$u.service" 2>/dev/null || log "WARN: start $u failed"

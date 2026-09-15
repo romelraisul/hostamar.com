@@ -9,7 +9,7 @@
 set -u
 
 REPO="/home/romel/hostamar-build"
-HLS_URL="https://tv.hostamar.com/hls/tv/index.m3u8"
+HLS_URL="https://tv.hostamar.com/master.m3u8"
 LOG="/tmp/tv-health-check.log"
 PLAYLIST="$REPO/docker/tv-station/videos/playlist.host.txt"
 TELEGRAM_BOT_TOKEN="${HOSTAMAR_TV_TELEGRAM_BOT_TOKEN:-}"
