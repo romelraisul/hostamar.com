@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { ensureFiverrCatalog } from '@/lib/pinned-chat'
 
-export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+// FORGE 09-15 (18:4x): was force-dynamic — same edge-strip as 6cf5412/aa4b18b:
+// every hit MISS + re-ran ensureFiverrCatalog. Route was already paramless, so
+// the flag was the only thing making it per-request dynamic. revalidate=3600:
+// seed now runs once per ISR rebuild instead of per visitor.
+export const revalidate = 3600
 export const maxDuration = 60
 
 /**
