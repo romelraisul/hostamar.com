@@ -498,6 +498,7 @@ export default function TvPage() {
                 { f: 'receipt-order.mp4', t: 'ভিডিও অ্যাড অর্ডার — ৳2,900' },
                 { f: 'receipt-delivery.mp4', t: '৩০-ঘণ্টা ডেলিভারি গ্যারান্টি — ৳2,900' },
                 { f: 'receipt-support.mp4', t: 'AI সাপোর্ট — 24/7, $0.00' },
+                { f: 'receipt-checkout.mp4', t: 'Checkout — ৪s, bKash/Nagad/Rocket' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
