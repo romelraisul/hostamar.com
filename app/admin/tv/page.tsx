@@ -103,7 +103,7 @@ export default function AdminTvControls() {
 
       {/* Controls */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <button onClick={startStream} disabled={busy || isLive} className="p-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-[#FDF8EC] disabled:text-[#57534E] font-semibold flex items-center justify-center gap-2">
+        <button onClick={startStream} disabled={busy || isLive} className="p-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-[#FDF8EC] disabled:text-white/70 font-semibold flex items-center justify-center gap-2">
           {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />} Start Stream
         </button>
         <button onClick={stopStream} disabled={busy || !isLive} className="p-4 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-[#FDF8EC] disabled:text-[#57534E] font-semibold flex items-center justify-center gap-2">

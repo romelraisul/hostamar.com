@@ -128,7 +128,7 @@ export default function TeamPage() {
             <button
               onClick={createWorkspace}
               disabled={creating || !newName.trim()}
-              className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition"
+              className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-2 transition"
             >
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Create
@@ -164,7 +164,7 @@ export default function TeamPage() {
               <button
                 onClick={sendInvite}
                 disabled={inviting || !inviteEmail.trim() || !inviteOrg}
-                className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition"
+                className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-2 transition"
               >
                 {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
                 Invite

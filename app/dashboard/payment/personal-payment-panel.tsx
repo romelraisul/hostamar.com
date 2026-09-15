@@ -215,7 +215,7 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
           <button
             onClick={handleSubmit}
             disabled={submitting || !senderNumber || !trxId}
-            className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm font-semibold text-[#1C1917] transition flex items-center justify-center gap-2"
+            className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm font-semibold text-white transition flex items-center justify-center gap-2"
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
             {submitting ? 'Verifying...' : 'Submit TrxID'}

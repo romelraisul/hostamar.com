@@ -53,12 +53,12 @@ function CreditMeter({ credits, loading }: { credits: number; loading: boolean }
       <div className="absolute inset-0 bg-white/10 rounded-2xl" style={{ background: 'radial-gradient(600px at 80% -20%, rgba(255,255,255,0.12), transparent)' }} />
       <div className="relative">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] tracking-[0.2em] text-[#1C1917]/70">CREDIT</span>
+          <span className="text-[11px] tracking-[0.2em] text-white/70">CREDIT</span>
           <span className="flex items-center gap-1 text-xs bg-white/20 px-2.5 py-1 rounded-full"><Coins className="w-3 h-3" /> 6000 cap</span>
         </div>
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-3xl font-black tabular-nums">{loading ? '—' : credits.toLocaleString()}</span>
-          <span className="text-[#1C1917]/70 text-sm">/ 6,000</span>
+          <span className="text-white/70 text-sm">/ 6,000</span>
           <span className="ml-auto text-xs bg-[#FFFDF6] text-[#0E7C3A] px-2.5 py-1 rounded-full font-bold">{pct}%</span>
         </div>
         <div className="mt-3 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full bg-[#FFFDF6] rounded-full transition-all" style={{ width: `${pct}%` }} /></div>
@@ -67,7 +67,7 @@ function CreditMeter({ credits, loading }: { credits: number; loading: boolean }
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">Video 100</span>
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">IDE 10</span>
         </div>
-        <div className="mt-2 flex gap-2 text-[11px] text-[#1C1917]/70 justify-center">Chat 1 • Browser 5 • Game 20 • Hosting 0</div>
+        <div className="mt-2 flex gap-2 text-[11px] text-white/70 justify-center">Chat 1 • Browser 5 • Game 20 • Hosting 0</div>
         <Link href="/dashboard/payment" className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#FFFDF6] text-[#0E7C3A] text-sm font-bold py-2.5 hover:bg-[#ECFDF5] transition">
           <CreditCard className="w-4 h-4" /> bKash Renew →
         </Link>
@@ -314,9 +314,9 @@ export default function DashboardPage() {
                       <span className={`w-9 h-9 rounded-xl grid place-items-center text-lg ${isActive ? 'bg-white/20' : 'bg-[#F8FAFC] border'}`}>{PICON[p.slug]}</span>
                       <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${isActive ? 'bg-[#FFFDF6] text-[#0E7C3A]' : p.slug === 'ai-video' ? 'bg-[#0E7C3A] text-white' : p.slug === 'cloud-hosting' ? 'bg-[#2563EB] text-white' : 'bg-[#FFFDF6] text-[#1C1917]'}`}>{BADGE[p.slug]}</span>
                     </div>
-                    <div className={`mt-2 font-semibold ${isActive ? 'text-[#1C1917]' : 'text-[#1C1917]'}`}>{p.nameEn}</div>
-                    <div className={`text-xs ${isActive ? 'text-[#1C1917]/70' : 'text-[#57534E]'}`}>{p.taglineEn}</div>
-                    <div className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${isActive ? 'bg-white/20 text-[#1C1917]' : 'bg-[#F1F5F9] text-[#475569]'}`}>{COST_HINT[p.slug]} <ArrowRight className="w-3 h-3" /></div>
+                    <div className={`mt-2 font-semibold ${isActive ? 'text-white' : 'text-[#1C1917]'}`}>{p.nameEn}</div>
+                    <div className={`text-xs ${isActive ? 'text-white/70' : 'text-[#57534E]'}`}>{p.taglineEn}</div>
+                    <div className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-[#F1F5F9] text-[#475569]'}`}>{COST_HINT[p.slug]} <ArrowRight className="w-3 h-3" /></div>
                   </button>
                 )
               })}
@@ -333,7 +333,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between"><h3 className="font-bold text-[#1C1917]">Video — AI মার্কেটিং ভিডিও</h3><span className="text-xs bg-[#0E7C3A] text-white px-2.5 py-1 rounded-full">100cr</span></div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { t: 'Eid Collection', d: '9:16 24s', g: 'from-[#0E7C3A] to-[#065F46]' },
+                    { t: 'Eid Collection', d: '9:16 24s', g: 'from-[#0E7C3A] to-[#065F46] text-white' },
                     { t: 'Boishakh', d: 'Square 1:1', g: 'from-[#F59E0B] to-[#D97706]' },
                     { t: '11.11 Sale', d: '16:9 30s', g: 'from-[#2563EB] to-[#1D4ED8]' },
                   ].map(c => (
