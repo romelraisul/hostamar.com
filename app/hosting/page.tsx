@@ -53,8 +53,6 @@ const hostingLd = {
   aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '0', highPrice: '3500', priceCurrency: 'BDT', offerCount: 3 },
 }
 
-import BazaarNav from '@/components/home/BazaarNav'
-import BazaarFooter from '@/components/home/BazaarFooter'
 
 const CHECK = (
   <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 15, height: 15, color: 'var(--bp-green)', marginTop: 2, flex: 'none' }}><path d="M5 12l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
