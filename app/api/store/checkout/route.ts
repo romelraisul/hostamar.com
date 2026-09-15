@@ -170,7 +170,17 @@ export async function POST(req: NextRequest) {
       amountBdt,
     })
   } catch (e: any) {
-    console.error('[store/checkout]', e?.message)
-    return NextResponse.json({ error: 'Checkout unavailable. Try again or contact us.' }, { status: 502 })
+    const msg = String(e?.message || '')
+    console.error('[store/checkout]', msg)
+    // FORGE 09-15 09:0x: upstream 4xx (e.g. variant unpublished while the edge-
+    // cached catalog card still shows it — proven by diag: Medusa "Variants ...
+    // do not exist or belong to a product that is not published" was reported to
+    // the buyer as a retryable 502 "Try again" → infinite spin). Buyer-fixable
+    // failures now return 400 with an honest refresh message; 5xx/timeout keeps 502.
+    const buyerFixable = / -> 4\d\d/.test(msg)
+    return NextResponse.json(
+      { error: buyerFixable ? 'এই প্রোডাক্টটি এখন আর অর্ডারে নেওয়া যাচ্ছে না — পেজ রিফ্রেশ করে অন্য আইটেম দেখুন।' : 'Checkout unavailable. Try again or contact us.' },
+      { status: buyerFixable ? 400 : 502 },
+    )
   }
 }
