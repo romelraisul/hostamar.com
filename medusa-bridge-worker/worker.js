@@ -66,6 +66,13 @@ export default {
         fetch('https://hostamar.com/api/store/checkout', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
           .then((r) => r.status)
           .catch(() => 0),
+        // V7 (FORGE 2026-09-15 20:0x): warm the HOMEPAGE. Same isolate class as
+        // V5's /store keep — root-layout cookies() makes / dynamic too; probes
+        // 19:1x showed 5.8s first-hit-after-idle vs 0.4-0.8s warm. This is the
+        // link every outreach/DM lands on → cold = bounced first impression.
+        fetch('https://hostamar.com/', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+          .then((r) => r.status)
+          .catch(() => 0),
       ])
     )
   },
