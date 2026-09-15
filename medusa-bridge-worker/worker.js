@@ -48,6 +48,15 @@ export default {
         fetch('https://hostamar.com/api/services/catalog', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
           .then((r) => r.status)
           .catch(() => 0),
+        // V5 (FORGE 2026-09-15 17:1x): keep the MONEY PAGE itself warm.
+        // Root-layout cookies() makes every page fully dynamic (NOVA 09-14)
+        // -> Vercel isolate goes idle -> first buyer on a marketing link eats
+        // ~20s cold /store (measured 20.2s). */5 GET keeps the fn warm:
+        // 0.6-0.9s for the price of one discarded HTML fetch. CF->CF, no WAF
+        // risk (same egress class as the two API keeps above).
+        fetch('https://hostamar.com/store', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+          .then((r) => r.status)
+          .catch(() => 0),
       ])
     )
   },
