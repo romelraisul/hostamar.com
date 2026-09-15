@@ -34,12 +34,16 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  // Route header overrides next.config.js headers for route handlers (measured
+  // live: config's s-maxage=3600 never reached the edge, every probe = MISS
+  // 1.5-1.9s). Same SWR/SIE string as /api/store/products — buyers never race
+  // the dynamic Prisma fill; stale is served instantly, refreshed in background.
   return NextResponse.json(
     {
       success: true,
       total: services.length,
       services,
     },
-    { headers: { 'Cache-Control': 'public, max-age=60' } }
+    { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' } }
   )
 }
