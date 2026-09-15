@@ -128,7 +128,8 @@ export async function middleware(request: NextRequest) {
     '/api/cron/surveillance', // V65 Layer 5 — self-guards via x-vercel-cron/CRON_SECRET at the route
     '/api/cron/heartbeat', // V8 Phase B — self-guards via x-vercel-cron/CRON_SECRET at the route
     '/api/orchestrator', // V86: Cloudflare Worker orchestrator proxy (catch-all)
-    '/api/social/publish', // V86: Social publishing API — public
+    '/api/social/publish', // V86: Social publishing API — public (fail-closed x-social-secret at route)
+    '/api/social/direct',  // 2026-09-15 PULSE direct publisher — fail-closed x-social-secret at route
     '/api/support/chat',
     '/api/chat/support',
     '/api/chat',
