@@ -47,6 +47,14 @@ echo $JOBS | jq -c '.[]' | while read job; do
 - Tick 2 (20:55): full round-trip green — push `ping-flow-test` (`{"queued":true}`) → cron pull → node executor runs → reports `failed: unknown type` (correct: synthetic type, not registered) → D1 row updated, `pending:0`. Push→pull→execute→report path proven end-to-end.
 - Queue empty of real work; zombie x-post job is now honestly `cancelled`/`failed`, no longer fake-pending.
 
+## 3b. Root cause #2 — Vercel deploys broken 19:16→21:0x (found + fixed during audit)
+
+While verifying this audit's push, deploys were found failing since 19:16 with `exceeded_serverless_functions_per_deployment` (Hobby 12-function cap) — build compiles fine, fails at deploy phase, known Vercel enforcement regression (community-confirmed: even 11 counted functions rejected). Six consecutive production deploys ERRORED; site kept serving from last-good (19:14).
+
+**Culprit window:** 00885ba (READY 19:14) → 68b68fb (ERROR 19:16): two commits flipped `/api/mcp/catalog` + `/api/ai-services/catalog` from `force-dynamic` → `revalidate=3600` (ISR). ISR conversion adds counted function bundles (`.rsc.func` etc.) and tipped the cap.
+
+**Fix (6a5f9c0):** restored the two routes' `force-dynamic` + CDN cache via response headers (`s-maxage`, proven 373832d pattern) — edge cache behavior kept, function count back under cap. Deploy went **● Ready** immediately. Lesson: on this Hobby project, avoid `export const revalidate` on API routes; use `force-dynamic` + Cache-Control headers for edge caching.
+
 ## 4. What the TV pipeline actually is (already built)
 
 ```
