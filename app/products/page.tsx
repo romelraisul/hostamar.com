@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { PRODUCTS } from '@/lib/products'
+import BazaarNav from '@/components/home/BazaarNav'
+import BazaarFooter from '@/components/home/BazaarFooter'
 
 export const metadata: Metadata = {
   title: 'Products - Hostamar',
@@ -8,10 +10,10 @@ export const metadata: Metadata = {
     'ছয়টি পণ্য, একটি প্ল্যাটফর্ম — AI ভিডিও, ক্লাউড হোস্টিং, AI চ্যাট, AI ব্রাউজার, গেম, Dev IDE।',
 }
 
-const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  live:   { label: '✅ Live — ব্যবহার করুন',  cls: 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/20' },
-  beta:   { label: '🧪 Beta — চলছে',        cls: 'bg-amber-100 text-amber-700 border-amber-200' },
-  planned:{ label: '🔜 শীঘ্রই আসছে',        cls: 'bg-zinc-100 text-zinc-600 border-zinc-200' },
+const STATUS_BADGE: Record<string, { label: string; bg: string }> = {
+  live:   { label: 'Live — ব্যবহার করুন',  bg: '#2563EB' },
+  beta:   { label: 'Beta — চলছে',          bg: '#F59E0B' },
+  planned:{ label: 'শীঘ্রই আসছে',           bg: '#57534E' },
 }
 
 export default function ProductsPage() {
@@ -20,109 +22,102 @@ export default function ProductsPage() {
   const planned = PRODUCTS.filter(p => p.status === 'planned')
 
   return (
-    <main className="min-h-screen bg-[#FFFFFF] text-zinc-900 antialiased">
-      {/* ============ HERO ============ */}
+    <div className="bp-theme min-h-screen bg-[#FBF4E4] text-[#1C1917]">
+      <BazaarNav />
 
-      {/* ============ PRODUCT GRID ============ */}
-      <section className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="bangla text-2xl font-bold text-zinc-900 mb-6">সব পণ্য</h2>
+      <div className="bp-page-hero">
+        <div className="bp-wrap">
+          <h1>পণ্যসমূহ</h1>
+          <p>ছয়টি পণ্য, একটি প্ল্যাটফর্ম — AI ভিডিও, ক্লাউড হোস্টিং, AI চ্যাট, AI ব্রাউজার, গেম, Dev IDE</p>
+        </div>
+      </div>
 
-        <div className="mb-3 flex items-center gap-2"><span className="px-2.5 py-1 rounded-full bg-[#2563EB] text-white text-xs font-bold">70% LIVE</span><span className="text-sm text-zinc-600">AI Video + Hosting — টাকা বানায়</span></div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...PRODUCTS].sort((a,b)=>{ const order: Record<string,number>={ 'ai-video':1,'cloud-hosting':2,'ai-chat':3,'dev-ide':4,'ai-browser':5,'game':6 }; return (order[a.slug]??99)-(order[b.slug]??99)}).map((p) => {
-            const badge = STATUS_BADGE[p.status]
-            return (
-              <Link
-                key={p.slug}
-                href={`/products/${p.slug}`}
-                className={`group block bg-white rounded-[24px] border border-zinc-200 hover:border-[#2563EB]/40 hover:shadow-[0_12px_32px_-16px_rgba(37,99,235,0.25)] transition-all overflow-hidden shadow-sm ${p.status==='planned' ? 'opacity-70' : ''}`}
-              >
-                {/* Gradient hero */}
-                <div className={`bg-gradient-to-br ${p.gradient} p-6 text-white relative`}>
-                  <span className="absolute top-3 right-3 text-2xl">{p.emoji}</span>
-                  <span className={`inline-block text-xs px-2 py-0.5 rounded-full border bg-white/20 backdrop-blur-sm border-white/30`}>
-                    {p.badge}
-                  </span>
-                  <h3 className="bangla mt-3 text-2xl font-bold">{p.nameBn}</h3>
-                  <p className="text-sm opacity-90">{p.nameEn}</p>
-                </div>
+      <section className="bp-sec" aria-label="সব পণ্য">
+        <div className="bp-wrap">
+          <div className="bp-sec-head">
+            <h2>সব পণ্য</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
+              <span className="bp-tag">70% LIVE</span>
+              <span className="bp-muted" style={{ fontSize: '.9rem' }}>AI Video + Hosting, টাকা বানায়</span>
+            </div>
+          </div>
 
-                {/* Body */}
-                <div className="p-6">
-                  <p className="bangla text-zinc-700 font-medium mb-3">{p.taglineBn}</p>
-                  <p className="bangla text-sm text-zinc-500 mb-4 line-clamp-3">{p.description}</p>
-
-                  <div className="flex items-center justify-between">
-                    <span className={`bangla text-xs px-2 py-1 rounded-full border ${badge.cls}`}>
-                      {badge.label}
-                    </span>
-                    <span className="bangla text-sm font-semibold text-[#2563EB] group-hover:translate-x-1 transition-transform">
-                      বিস্তারিত →
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            )
-          })}
+          <div style={{ display: 'grid', gap: '1.4rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+            {[...PRODUCTS].sort((a, b) => {
+              const order: Record<string, number> = { 'ai-video': 1, 'cloud-hosting': 2, 'ai-chat': 3, 'dev-ide': 4, 'ai-browser': 5, 'game': 6 }
+              return (order[a.slug] ?? 99) - (order[b.slug] ?? 99)
+            }).map((p) => {
+              const badge = STATUS_BADGE[p.status]
+              return (
+                <Link
+                  key={p.slug}
+                  href={`/products/${p.slug}`}
+                  style={{ textDecoration: 'none', opacity: p.status === 'planned' ? 0.7 : 1 }}
+                >
+                  <article className="bp-tile" style={{ padding: 0, overflow: 'hidden', height: '100%' }}>
+                    <div style={{ background: `linear-gradient(135deg, ${p.gradient})`, padding: '1.3rem', color: '#fff', position: 'relative' }}>
+                      <span className="bp-tag" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', borderColor: 'rgba(255,255,255,.4)' }}>{p.badge}</span>
+                      <h3 style={{ margin: '.6rem 0 0', fontSize: '1.35rem' }}>{p.nameBn}</h3>
+                      <p style={{ fontSize: '.85rem', opacity: .9, margin: 0 }}>{p.nameEn}</p>
+                    </div>
+                    <div style={{ padding: '1.2rem' }}>
+                      <p style={{ fontWeight: 600, fontSize: '.92rem', margin: '0 0 .4rem' }}>{p.taglineBn}</p>
+                      <p style={{ fontSize: '.86rem', color: 'var(--bp-ink-soft)', margin: '0 0 1rem' }}>{p.description}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span className="bp-tag" style={{ background: 'var(--bp-paper-2)', color: 'var(--bp-ink-soft)' }}>{badge.label}</span>
+                        <span style={{ fontSize: '.9rem', fontWeight: 600, color: 'var(--bp-green)' }}>বিস্তারিত</span>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              )
+            })}
+          </div>
         </div>
       </section>
 
-      {/* ============ WHY US (per-product competitive edge) ============ */}
-      <section className="bg-[#FFFFFF] py-16 border-t border-zinc-200">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-10">
-            <div className="inline-block mb-3 px-3 py-1 bg-[#2563EB]/10 text-[#2563EB] rounded-full text-sm font-semibold">
-              🏆 প্রতিযোগিতামূলক সুবিধা
-            </div>
-            <h2 className="bangla text-3xl font-bold text-zinc-900">কেন হোস্টামার — গ্লোবাল টুলগুলোর চেয়ে আলাদা</h2>
-            <p className="bangla text-zinc-600 mt-2">আমাদের প্রতিটি পণ্য বাংলাদেশের জন্য নির্মিত</p>
+      <section className="bp-sec bp-sec-alt" aria-label="প্রতিযোগিতামূলক সুবিধা">
+        <div className="bp-wrap">
+          <div className="bp-sec-head">
+            <span className="bp-eyebrow">প্রতিযোগিতামূলক সুবিধা</span>
+            <h2>কেন হোস্টামার, গ্লোবাল টুলগুলোর চেয়ে আলাদা</h2>
+            <p>আমাদের প্রতিটি পণ্য বাংলাদেশের জন্য নির্মিত</p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {PRODUCTS.map((p) => (
-              <div
-                key={p.slug}
-                className="bg-white border border-zinc-200 rounded-[20px] p-4 hover:border-[#2563EB]/40 transition-colors"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">{p.emoji}</span>
-                  <span className="bangla font-bold text-zinc-900">{p.nameBn}</span>
+              <div key={p.slug} className="bp-tile">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.55rem' }}>
+                  <span className="bp-play" style={{ position: 'static', width: 24, height: 24, boxShadow: 'none', flex: 'none' }}>
+                    <svg viewBox="0 0 24 24" style={{ width: 10, height: 10 }} aria-hidden="true"><path d="M7 5l12 7-12 7V5z" /></svg>
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-bn)', fontWeight: 700, color: 'var(--bp-ink)' }}>{p.nameBn}</span>
                 </div>
-                <p className="bangla text-sm text-zinc-600 leading-relaxed">{p.competitorGap}</p>
+                <p style={{ marginTop: '.45rem' }}>{p.competitorGap}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ============ COMBINED VALUE PROP ============ */}
-      <section className="bg-[#2563EB] text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="bangla text-3xl md:text-4xl font-bold mb-4">
-            একটি সাবস্ক্রিপশনে সব ছয়টি
-          </h2>
-          <p className="bangla text-lg opacity-95 mb-6">
-            আলাদা টুল কেনা বন্ধ। হোস্টামার প্ল্যানে সবকিছু পাবেন — AI ভিডিও, ক্লাউড, চ্যাট, ব্রাউজার, গেম, IDE।
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 mb-2 text-sm">
-            <span className="bangla bg-white/15 px-3 py-1 rounded-full">মাসে ১০টা ভিডিও</span>
-            <span className="bangla bg-white/15 px-3 py-1 rounded-full">১০০ চ্যাট মেসেজ/দিন</span>
-            <span className="bangla bg-white/15 px-3 py-1 rounded-full">৫GB হোস্টিং ফ্রি</span>
-            <span className="bangla bg-white/15 px-3 py-1 rounded-full">IDE আনলিমিটেড</span>
+      <div className="bp-cta-wrap">
+        <div className="bp-scallop bp-scallop-flip" aria-hidden="true" />
+        <div className="bp-cta-band">
+          <h2>একটি সাবস্ক্রিপশনে সব ছয়টি</h2>
+          <p>আলাদা টুল কেনা বন্ধ। হোস্টামার প্ল্যানে সবকিছু পাবেন, AI ভিডিও, ক্লাউড, চ্যাট, ব্রাউজার, গেম, IDE।</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '.5rem', marginBottom: '.4rem', fontSize: '.9rem' }}>
+            {['মাসে ১০টা ভিডিও', '১০০ চ্যাট মেসেজ/দিন', '৫GB হোস্টিং ফ্রি', 'IDE আনলিমিটেড'].map((c) => (
+              <span key={c} className="bp-stamp" style={{ padding: '.3rem .8rem', fontSize: '.84rem' }}>{c}</span>
+            ))}
           </div>
-          <p className="bangla text-2xl font-bold mt-6">
-            শুরু মাত্র ৳৫৯৯/মাস
-          </p>
-          <Link
-            href="/signup?ref=products-bottom"
-            className="bangla inline-block mt-6 px-8 py-4 bg-white text-[#2563EB] font-bold rounded-full text-lg hover:bg-zinc-100"
-          >
-            সব পণ্য একসাথে শুরু করুন →
+          <p style={{ fontSize: '1.5rem', fontWeight: 700, margin: '.8rem 0 0' }}>শুরু মাত্র ৳৫৯৯/মাস</p>
+          <Link href="/signup?ref=products-bottom" className="bp-btn bp-btn-light" style={{ marginTop: '.9rem' }}>
+            সব পণ্য একসাথে শুরু করুন
           </Link>
         </div>
-      </section>
+        <div className="bp-scallop" aria-hidden="true" />
+      </div>
 
-      {/* ============ FOOTER NOTE ============ */}
-
-    </main>
-  )
+      <BazaarFooter />
+    </div>
+  );
 }
