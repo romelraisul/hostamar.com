@@ -432,6 +432,20 @@ const STATEMENTS: string[] = [
 )`,
   `CREATE INDEX IF NOT EXISTS "CryptoTip_walletId_idx" ON "CryptoTip"("walletId")`,
   `CREATE INDEX IF NOT EXISTS "CryptoTip_videoSlug_idx" ON "CryptoTip"("videoSlug")`,
+  // Rate limit table (prisma/schema.prisma model RateLimitEvent) — prod DB
+  // predates it, so checkRateLimit fails OPEN on every request (audit:
+  // 20 rapid signups all passed). Shape must match the Prisma model exactly.
+  `CREATE TABLE IF NOT EXISTS "RateLimitEvent" (
+  "id" TEXT NOT NULL,
+  "bucket" TEXT NOT NULL,
+  "ip" TEXT NOT NULL,
+  "path" TEXT NOT NULL,
+  "method" TEXT NOT NULL DEFAULT 'GET',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "RateLimitEvent_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "RateLimitEvent_bucket_createdAt_idx" ON "RateLimitEvent"("bucket","createdAt")`,
+  `CREATE INDEX IF NOT EXISTS "RateLimitEvent_ip_createdAt_idx" ON "RateLimitEvent"("ip","createdAt")`,
 ]
 
 let ensured: Promise<void> | null = null
