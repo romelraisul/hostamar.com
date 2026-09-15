@@ -16,7 +16,10 @@ log "cloud backup start"
 REMOTES="$("$RCLONE" listremotes 2>/dev/null)"
 
 # 1. Final videos/audio -> R2 IF the remote exists, else OneDrive
-if echo "$REMOTES" | grep -q '^r2:'; then
+if echo "$REMOTES" | grep -q '^b2:'; then
+  "$RCLONE" copy "$BUILD/video-output/" b2:hostamar-tv \
+    --include "*.mp4" --include "*.mp3" --quiet 2>>"$LOG" && log "videos -> b2 OK" || log "videos -> b2 FAILED"
+elif echo "$REMOTES" | grep -q '^r2:'; then
   "$RCLONE" copy "$BUILD/video-output/" r2:hostamar-videos \
     --include "*.mp4" --include "*.mp3" --quiet 2>>"$LOG" && log "videos -> r2 OK" || log "videos -> r2 FAILED"
 elif echo "$REMOTES" | grep -q '^onedrive:'; then
@@ -26,17 +29,17 @@ else
   log "videos: NO remote (r2/onedrive) configured — skipped"
 fi
 
-# 2. Copyright registry (if it exists) -> OneDrive
-if echo "$REMOTES" | grep -q '^onedrive:' && [ -d "$BUILD/copyright-db" ]; then
-  "$RCLONE" copy "$BUILD/copyright-db/" onedrive:Hostamar/permanent --quiet 2>>"$LOG" \
-    && log "copyright-db -> onedrive OK" || log "copyright-db -> onedrive FAILED"
+# 2. Copyright registry (if it exists) -> b2 (onedrive retired: 507 quota 2026-09-15)
+if echo "$REMOTES" | grep -q '^b2:' && [ -d "$BUILD/copyright-db" ]; then
+  "$RCLONE" copy "$BUILD/copyright-db/" b2:hostamar-prod/cloud-backup/permanent --quiet 2>>"$LOG" \
+    && log "copyright-db -> b2 OK" || log "copyright-db -> b2 FAILED"
 fi
 
-# 3. Guard/metrics history -> OneDrive (always worth backing up)
-if echo "$REMOTES" | grep -q '^onedrive:'; then
-  "$RCLONE" copy "$BUILD/state/" onedrive:Hostamar/state \
+# 3. Guard/metrics history -> b2 (onedrive retired: 507 quota 2026-09-15)
+if echo "$REMOTES" | grep -q '^b2:'; then
+  "$RCLONE" copy "$BUILD/state/" b2:hostamar-prod/cloud-backup/state \
     --include "metrics.db" --include "guard_history.db" --include "run_history.db" \
-    --quiet 2>>"$LOG" && log "state dbs -> onedrive OK" || log "state dbs -> onedrive FAILED"
+    --quiet 2>>"$LOG" && log "state dbs -> b2 OK" || log "state dbs -> b2 FAILED"
 fi
 
 log "cloud backup done"
