@@ -1,0 +1,10 @@
+name = "hostamar-medusa-bridge"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# FORGE V2: self-warm every 15min (kills first-buy-of-hour cold tax: measured
+# 25.6s cold vs 3.9s warm checkout). Cron triggers run inside the worker —
+# zero Vercel deploys, zero Hobby-plan sub-daily-cron violation.
+[triggers]
+crons = ["*/15 * * * *"]
+
