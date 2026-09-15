@@ -474,24 +474,40 @@ async function claimJob() {
     const j = await r.json().catch(() => ({}))
     return j
   }
-  const r = await fetchW(`${APP}/api/videos/queue/next`, { headers: { 'x-worker-secret': SECRET }, signal: AbortSignal.timeout(15000) })
-  return await r.json().catch(() => ({}))
+  // ponytail: WSL->CF stalls one IP ~20s (ATLAS 06:40 rule); curl -4 --retry re-resolves
+  // to the other CF IP natively — proven pattern, undici retries just re-pick the same one.
+  return curlJson(`${APP}/api/videos/queue/next`, ['-H', `x-worker-secret: ${SECRET}`])
+}
+
+function curlJson(url, extraArgs = []) {
+  // never throw on transient net/parse failure — {} = "no job", loop retries in 10s
+  try {
+    const out = execFileSync('curl', ['-4', '-s', '--connect-timeout', '3', '--retry', '5', '--retry-all-errors', '--retry-delay', '2', '--max-time', '60', ...extraArgs, url], { encoding: 'utf8', timeout: 70000 })
+    return JSON.parse(out)
+  } catch (e) {
+    console.warn('[worker] curl claim failed (will retry):', String(e?.message || e).slice(0, 100))
+    return {}
+  }
 }
 
 let _SOCKFAIL = 0
 // One-shot fetch wrapper: a 15s hang on a fresh connection = WSL->CF SYN drop
 // or dead keep-alive socket (ATLAS 2026-09-14 rule). Retry once on a clean
 // socket. Counter exposed so the monitor can flag silent retry storms.
-async function fetchW(url, opts = {}) {
-  const timeout = opts?.signal?.timeout || 15000
-  try {
-    return await fetch(url, opts)
-  } catch (e) {
-    if (!/abort|timeout|socket/i.test(String(e?.message || e))) throw e
-    _SOCKFAIL++
-    console.warn(`[worker] net retry #${_SOCKFAIL} ${String(e.message || e).slice(0, 60)}`)
-    return fetch(url, { ...opts, signal: AbortSignal.timeout(timeout) })
+async function fetchW(url, opts = {}, attempts = 6) {
+  const timeout = 8000 // ponytail: per-attempt cap; 3 fresh sockets beat waiting out a stalled one
+  let last
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await fetch(url, { ...opts, signal: AbortSignal.timeout(timeout) })
+    } catch (e) {
+      last = e
+      if (!/abort|timeout|socket/i.test(String(e?.message || e))) throw e
+      _SOCKFAIL++
+      console.warn(`[worker] net retry #${_SOCKFAIL} ${String(e.message || e).slice(0, 60)}`)
+    }
   }
+  throw last
 }
 
 async function main() {
@@ -515,7 +531,7 @@ async function main() {
       }
     } catch (e) {
       if (job) await fail(job, e)
-      console.error('[worker] loop error:', String(e?.message || e).slice(0, 300))
+      console.error('[worker] loop error:', String(e?.message || e).slice(0, 120)) // 120: execFileSync err carries argv w/ secret
     }
     if (once) {
       if (job) console.log('[worker] --once: job finished, exit')
