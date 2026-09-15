@@ -41,16 +41,15 @@ async function postToX(message: string) {
     oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
     oauth_nonce: crypto.randomBytes(16).toString('hex'), oauth_version: '1.0',
   }
-  const params = { text: message }
-  const all = { ...params, ...oauth }
-  const sigBase = ['POST', pct(url), pct(Object.keys(all).sort().map(k => `${k}=${all[k]}`).join('&'))].join('&')
+  // JSON body: only oauth_* params enter the signature base string.
+  const sigBase = ['POST', pct(url), pct(Object.keys(oauth).sort().map(k => `${k}=${oauth[k]}`).join('&'))].join('&')
   const sig = crypto.createHmac('sha1', `${pct(CKS)}&${pct(ATS)}`).update(sigBase).digest('base64')
   const oauthSigned: Record<string, string> = { ...oauth, oauth_signature: sig }
   const header = 'OAuth ' + Object.keys(oauthSigned).sort().map(k => `${k}="${pct(oauthSigned[k])}"`).join(', ')
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: header, 'Content-Type': 'application/json', 'User-Agent': 'HostamarPulse/1.0' },
-    body: JSON.stringify(params),
+    body: JSON.stringify({ text: message }),
   })
   const body = await res.json().catch(() => ({} as any))
   if (res.status === 201 && body?.data?.id) {
