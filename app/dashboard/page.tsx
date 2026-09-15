@@ -13,6 +13,15 @@ import { PRODUCT_NAV } from '@/lib/products'
 import NodeStatus from '@/components/dashboard/NodeStatus'
 import { fetchCatalog, decodeIcon, type CatalogService } from '@/lib/services'
 
+const PICON: Record<string, React.ReactNode> = {
+  'ai-video': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor" stroke="none" /></svg>,
+  'cloud-hosting': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2" /><rect x="3" y="13" width="18" height="7" rx="2" /><path d="M7 7.5h.01M7 16.5h.01" /></svg>,
+  'ai-chat': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" /><path d="M9 11h6M9 14h4" /></svg>,
+  'dev-ide': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6" /></svg>,
+  'ai-browser': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18" /></svg>,
+  'game': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5" /><path d="M7 11v3M5.5 12.5h3M16 11.5h.01M18.5 13.5h.01" /></svg>,
+};
+
 interface DashboardStats {
   videos: { total: number; thisMonth: number }
   services: { active: number; total: number }
@@ -215,7 +224,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 rounded bg-[#E2E8F0] animate-pulse" />
+        <div className="h-8 w-48 rounded bg-[#F6EBD2] animate-pulse" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 space-y-6"><div className="h-64 rounded-2xl border bg-[#FFFDF6] animate-pulse" /></div>
           <div className="lg:col-span-4 space-y-4"><div className="h-48 rounded-2xl bg-[#0E7C3A]/20 animate-pulse" /></div>
@@ -226,6 +235,16 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <header style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-bn)', fontWeight: 700, fontSize: '1.55rem', lineHeight: 1.2, color: 'var(--bp-ink)' }}>ড্যাশবোর্ড</h1>
+          <p style={{ color: 'var(--bp-ink-soft)', fontSize: '.95rem' }}>সব টুল এক জায়গায়, এক সাবস্ক্রিপশনে</p>
+        </div>
+        <span className="bp-stamp" style={{ padding: '.4rem 1rem', fontSize: '.86rem' }}>
+          <svg className="bp-stamp-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          {plan} প্ল্যান
+        </span>
+      </header>
       {/* Command palette */}
       {cmdOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-[20vh] p-4" onClick={() => setCmdOpen(false)}>
@@ -238,7 +257,7 @@ export default function DashboardPage() {
             <div className="p-2 text-sm">
               {PRODUCT_NAV.map(p => (
                 <Link key={p.slug} href={`/dashboard/${p.slug === 'ai-video' ? 'videos' : p.slug === 'cloud-hosting' ? 'hosting' : p.slug === 'dev-ide' ? 'ide' : p.slug === 'game' ? 'game' : p.slug.slice(3)}`} onClick={() => setCmdOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#ECFDF5] text-[#0F172A]">
-                  <span>{p.emoji}</span> {p.nameEn} <span className="ml-auto text-xs text-zinc-500">{COST_HINT[p.slug]}</span>
+                  <span>{PICON[p.slug]}</span> {p.nameEn} <span className="ml-auto text-xs text-zinc-500">{COST_HINT[p.slug]}</span>
                 </Link>
               ))}
             </div>
@@ -305,10 +324,10 @@ export default function DashboardPage() {
                   <button
                     key={p.slug}
                     onClick={() => setActiveProduct(p.slug)}
-                    className={`text-left rounded-2xl border p-4 transition ${isActive ? 'bg-[#0E7C3A] text-white border-[#0E7C3A] shadow' : 'bg-[#FFFDF6] hover:border-[#0E7C3A]/30 hover:bg-[#ECFDF5]/40'}`}
+                    className={`text-left bp-card p-4 transition ${isActive ? 'bg-[#0E7C3A] text-white border-[#0E7C3A] shadow' : 'bg-[#FFFDF6] hover:border-[#0E7C3A]/30 hover:bg-[#ECFDF5]/40'}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`w-9 h-9 rounded-xl grid place-items-center text-lg ${isActive ? 'bg-white/20' : 'bg-[#F8FAFC] border'}`}>{p.emoji}</span>
+                      <span className={`w-9 h-9 rounded-xl grid place-items-center text-lg ${isActive ? 'bg-white/20' : 'bg-[#F8FAFC] border'}`}>{PICON[p.slug]}</span>
                       <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${isActive ? 'bg-[#FFFDF6] text-[#0E7C3A]' : p.slug === 'ai-video' ? 'bg-[#0E7C3A] text-white' : p.slug === 'cloud-hosting' ? 'bg-[#2563EB] text-white' : 'bg-[#1C1917] text-white'}`}>{BADGE[p.slug]}</span>
                     </div>
                     <div className={`mt-2 font-semibold ${isActive ? 'text-white' : 'text-[#0F172A]'}`}>{p.nameEn}</div>
@@ -324,7 +343,7 @@ export default function DashboardPage() {
           <ServicesStrip />
 
           {/* Per-tab main */}
-          <div className="rounded-2xl border bg-[#FFFDF6] p-5 sm:p-6">
+          <div className="bp-tile">
             {activeProduct === 'ai-video' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Video — AI মার্কেটিং ভিডিও</h3><span className="text-xs bg-[#0E7C3A] text-white px-2.5 py-1 rounded-full">100cr</span></div>

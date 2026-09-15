@@ -131,8 +131,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Logo */}
           <div className="px-6 py-6 border-b border-[#0E7C3A]/20">
             <Link href="/admin?tab=overview" className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center font-black text-white text-sm">
-                H
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center text-white">
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7V5z" fill="currentColor" /></svg>
               </div>
               <div>
                 <div className="font-black tracking-widest text-white text-[15px] leading-none">HOSTAMAR</div>
@@ -141,7 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
             <div className="mt-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              <span className="text-[10px] tracking-widest text-zinc-500">GREEN / BLACK HYBRID</span>
+              <span className="text-[10px] tracking-widest text-zinc-500">SYSTEMS ONLINE</span>
             </div>
           </div>
 

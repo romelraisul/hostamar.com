@@ -1099,10 +1099,10 @@ export default function AdminDashboard() {
     <main className="min-h-screen bg-[#1C1917]">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
         {/* Header */}
-        <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#0E7C3A]/20 via-[#0E7C3A]/10 to-black border border-[#0E7C3A]/20 p-6">
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#0E7C3A]/20 via-transparent to-transparent border border-[#0E7C3A]/20 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-xl font-black tracking-widest text-white">ADMIN CONSOLE</h1>
+              <h1 className="text-xl font-black tracking-widest text-white">ADMIN CONSOLE <span style={{ fontFamily: 'var(--font-bn)', fontWeight: 600, letterSpacing: 0 }} className="align-middle">অ্যাডমিন</span></h1>
               <p className="text-sm text-zinc-500 mt-1">Real data · <span className="text-[#10B981] font-mono">/api/admin/*</span> + gateway + hosting</p>
             </div>
             <div className="text-right"><div className="text-xs tracking-widest text-zinc-600">TODAY</div><div className="text-sm font-mono text-white">{new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric'})}</div></div>
