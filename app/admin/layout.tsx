@@ -165,7 +165,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       : 'text-[#78716C] border-transparent hover:bg-[#0E7C3A]/10 hover:text-white hover:border-[#0E7C3A]/20'
                   }`}
                 >
-                  <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-[#1C1917]' : 'text-[#57534E]'}`} />
+                  <item.icon className={`w-[18px] h-[18px] ${isActive ? 'text-white' : 'text-[#57534E]'}`} />
                   <span>{item.label}</span>
                   {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FFFDF6]" />}
                 </Link>
