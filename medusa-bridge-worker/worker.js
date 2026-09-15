@@ -42,6 +42,12 @@ export default {
         fetch('https://hostamar.com/api/store/products', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
           .then((r) => r.status)
           .catch(() => 0),
+        // V4: same trick for the services catalog (109 rows, /store + /chat
+        // read it). Held at max-age=60/MISS ~1.5s per probe until FORGE's
+        // SWR patch ships — keep it hot either way.
+        fetch('https://hostamar.com/api/services/catalog', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+          .then((r) => r.status)
+          .catch(() => 0),
       ])
     )
   },
