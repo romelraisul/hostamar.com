@@ -279,16 +279,16 @@ export default function DashboardPage() {
         <div className="lg:col-span-8 space-y-6">
           {/* Credit + Usage row */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border-2 border-[#D8CDB4] bg-[#FFFDF6] p-5 text-[#F6EBD2]">
-              <div className="text-[11px] tracking-[0.2em] text-[#B8AFA3]">CREDITS</div>
-              <div className="text-2xl font-black tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#B8AFA3]">/ 6,000</span></div>
-              <div className="text-xs text-[#B8AFA3] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
+            <div className="rounded-2xl border-2 border-[#D8CDB4] bg-[#FFFDF6] p-5 text-[#1C1917]">
+              <div className="text-[11px] tracking-[0.2em] text-[#57534E]">CREDITS</div>
+              <div className="text-2xl font-black tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#57534E]">/ 6,000</span></div>
+              <div className="text-xs text-[#57534E] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
               <div className="h-2 rounded-full bg-[#FDF8EC] mt-3 overflow-hidden"><div className="h-full bg-[#0E7C3A] rounded-full" style={{ width: `${creditPct}%` }} /></div>
             </div>
-            <div className="rounded-2xl border-2 border-[#D8CDB4] bg-[#FFFDF6] p-5 text-[#F6EBD2]">
-              <div className="text-[11px] tracking-[0.2em] text-[#B8AFA3]">STORAGE</div>
-              <div className="text-2xl font-black mt-1">{storageUsed} <span className="text-sm font-normal text-[#B8AFA3]">/ {storageTotal} GB</span></div>
-              <div className="text-xs text-[#B8AFA3] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
+            <div className="rounded-2xl border-2 border-[#D8CDB4] bg-[#FFFDF6] p-5 text-[#1C1917]">
+              <div className="text-[11px] tracking-[0.2em] text-[#57534E]">STORAGE</div>
+              <div className="text-2xl font-black mt-1">{storageUsed} <span className="text-sm font-normal text-[#57534E]">/ {storageTotal} GB</span></div>
+              <div className="text-xs text-[#57534E] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
               <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${storagePct}%` }} /></div>
             </div>
           </div>
