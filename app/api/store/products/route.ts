@@ -42,7 +42,11 @@ export async function GET() {
         }
       })
       .filter((p: any) => p.variantId)
-    return NextResponse.json({ count: data.count ?? products.length, products }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300' } })
+    // SWR/SIE: without stale-while-revalidate the first buyer after
+    // s-maxage lapses pays the full blocking origin-fill; with it they get
+    // instant stale while the edge refreshes in background. stale-if-error
+    // keeps serving the catalog even when bridge/tunnel briefly 502s.
+    return NextResponse.json({ count: data.count ?? products.length, products }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' } })
   } catch {
     return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
   }
