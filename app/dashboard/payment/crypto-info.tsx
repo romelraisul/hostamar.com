@@ -10,7 +10,7 @@ export default function CryptoPaymentInfo() {
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-[#FFFDF6] rounded-lg p-4">
           <h4 className="font-bold text-[#0E7C3A] mb-2">Wallet Addresses</h4>
           <div className="space-y-2 text-sm">
             <div>
@@ -28,7 +28,7 @@ export default function CryptoPaymentInfo() {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-[#FFFDF6] rounded-lg p-4">
           <h4 className="font-bold text-green-600 mb-2">How to Pay</h4>
           <ol className="text-sm space-y-1 list-decimal ml-4">
             <li>Send ~$25 USDT to wallet above</li>

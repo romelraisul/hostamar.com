@@ -232,7 +232,7 @@ export default function ReelPage() {
             <ReelPreview images={images} captions={captions} logoUrl={logoUrl} />
             <div className="flex flex-wrap gap-2">
               <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={onLogoUpload} />
-              <button onClick={() => logoInputRef.current?.click()} className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 px-4 py-2 text-sm font-medium">
+              <button onClick={() => logoInputRef.current?.click()} className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-[#1C1917] hover:bg-zinc-800 px-4 py-2 text-sm font-medium">
                 <Upload className="h-4 w-4" /> লোগো আপলোড
               </button>
               <button onClick={toggleVoice} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition ${speaking ? 'bg-[#10B981] animate-pulse' : 'bg-[#0E7C3A] hover:bg-[#10B981]'}`}>
@@ -243,7 +243,7 @@ export default function ReelPage() {
                 {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 ভিডিও এক্সপোর্ট (১২ সেকেন্ড)
               </button>
-              <button onClick={load} disabled={loading} className="rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 px-4 py-2 text-sm">
+              <button onClick={load} disabled={loading} className="rounded-full border border-zinc-700 bg-[#1C1917] hover:bg-zinc-800 px-4 py-2 text-sm">
                 রিফ্রেশ
               </button>
             </div>
@@ -251,7 +251,7 @@ export default function ReelPage() {
           </div>
 
           <div className="space-y-5">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+            <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/60 p-4">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-sm">স্ক্রিপ্ট</h2>
                 <button onClick={() => { navigator.clipboard?.writeText(data?.script || ''); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white">
@@ -263,14 +263,14 @@ export default function ReelPage() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+            <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/60 p-4">
               <h2 className="font-semibold text-sm mb-2">ক্যাপশন (৪ স্লাইড)</h2>
               <ol className="text-sm text-zinc-300 space-y-1 list-decimal list-inside" style={{ fontFamily: "'Noto Sans Bengali', sans-serif" }}>
                 {captions.map((c, i) => <li key={i}>{c}</li>)}
               </ol>
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-sm text-zinc-400">
+            <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/60 p-4 text-sm text-zinc-400">
               <p className="mb-2 font-semibold text-zinc-200">HD এক্সপোর্ট চাই? Pro নিন</p>
               <p>Pro ১২৯৯ TK → 13000cr — bKash <span className="text-[#10B981] font-semibold">01822417463</span></p>
               <Link href="/dashboard/payment" className="inline-flex mt-3 rounded-full bg-[#0E7C3A] hover:bg-[#10B981] text-white px-4 py-1.5 font-semibold text-xs">আপগ্রেড করুন →</Link>

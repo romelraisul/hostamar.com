@@ -100,7 +100,7 @@ export default function ReferralPage() {
       <div className="rounded-[20px] border border-[#0E7C3A]/20 bg-gradient-to-br from-[#0E7C3A] to-[#14a34a] text-white p-5 md:p-6">
         <div className="flex items-center gap-2 mb-3"><Gift className="w-5 h-5"/> <span className="bangla font-bold">আপনার রেফারেল কোড</span></div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="px-4 py-2 rounded-xl bg-white text-[#0E7C3A] font-mono font-extrabold text-xl tracking-widest">{code || 'ABC123'}</span>
+          <span className="px-4 py-2 rounded-xl bg-[#FFFDF6] text-[#0E7C3A] font-mono font-extrabold text-xl tracking-widest">{code || 'ABC123'}</span>
           <button onClick={async()=>{
             if(!code){
               const r=await fetch('/api/referral/create',{method:'POST',credentials:'include'}); const j=await r.json(); if(j.code){setCode(j.code); setLink(j.link)}
@@ -110,8 +110,8 @@ export default function ReferralPage() {
         <div className="mt-4">
           <div className="bangla text-xs text-white/80 mb-1">রেফারেল লিংক</div>
           <div className="flex gap-2">
-            <input readOnly value={link} className="flex-1 px-3 py-2.5 rounded-xl bg-white text-zinc-800 text-sm font-mono truncate" />
-            <button onClick={copy} className="px-4 py-2.5 rounded-xl bg-white text-[#0E7C3A] font-semibold text-sm flex items-center gap-1.5 hover:bg-zinc-50">
+            <input readOnly value={link} className="flex-1 px-3 py-2.5 rounded-xl bg-[#FFFDF6] text-zinc-800 text-sm font-mono truncate" />
+            <button onClick={copy} className="px-4 py-2.5 rounded-xl bg-[#FFFDF6] text-[#0E7C3A] font-semibold text-sm flex items-center gap-1.5 hover:bg-zinc-50">
               {copied ? <Check className="w-4 h-4"/> : <Copy className="w-4 h-4"/>} {copied ? 'কপি হয়েছে' : 'কপি'}
             </button>
           </div>
@@ -124,17 +124,17 @@ export default function ReferralPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+        <div className="rounded-2xl border border-zinc-200 bg-[#FFFDF6] p-5">
           <div className="flex items-center gap-2 text-zinc-500 text-sm bangla"><Users className="w-4 h-4"/> মোট রেফারেল</div>
           <div className="text-3xl font-extrabold mt-1">{total}</div>
           <div className="text-xs text-zinc-500 bangla">{paid} টি পেইড • {pending} টি পেন্ডিং</div>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+        <div className="rounded-2xl border border-zinc-200 bg-[#FFFDF6] p-5">
           <div className="flex items-center gap-2 text-zinc-500 text-sm bangla"><Trophy className="w-4 h-4 text-[#0E7C3A]"/> অর্জিত ক্রেডিট</div>
           <div className="text-3xl font-extrabold text-[#0E7C3A] mt-1">{earnedCr.toLocaleString('bn-BD')} ক্রেডিট</div>
           <div className="text-xs text-zinc-500">500cr × {paid} = {earnedCr}</div>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+        <div className="rounded-2xl border border-zinc-200 bg-[#FFFDF6] p-5">
           <div className="flex items-center gap-2 text-zinc-500 text-sm bangla"><Wallet className="w-4 h-4 text-amber-600"/> অর্জিত টাকা</div>
           <div className="text-3xl font-extrabold text-amber-600 mt-1">{earnedTk.toLocaleString('bn-BD')} টাকা</div>
           <div className="text-xs text-zinc-500">60৳ × {paid} (10% starter)</div>
@@ -142,7 +142,7 @@ export default function ReferralPage() {
       </div>
 
       {/* Withdraw */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <div className="rounded-2xl border border-zinc-200 bg-[#FFFDF6] p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div>
           <div className="bangla font-semibold">টাকা উত্তোলন</div>
           <div className="bangla text-sm text-zinc-500">bKash এর মাধ্যমে টাকা তুলুন — মিনিমাম ১০০ টাকা</div>
@@ -154,7 +154,7 @@ export default function ReferralPage() {
       </div>
 
       {/* How it works */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+      <div className="rounded-2xl border border-zinc-200 bg-[#FFFDF6] p-5">
         <h3 className="bangla font-bold mb-2">কিভাবে কাজ করে?</h3>
         <ol className="bangla list-decimal list-inside space-y-1 text-sm text-zinc-600">
           <li>উপরে লিংক কপি করে বন্ধুকে পাঠান (https://hostamar.com/?ref=ABC123)</li>
@@ -165,7 +165,7 @@ export default function ReferralPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-zinc-200 bg-[#FFFDF6] overflow-hidden">
         <div className="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
           <span className="bangla font-semibold">আমার রেফারেল তালিকা</span>
           <span className="text-xs text-zinc-500">{rows.length} জন</span>

@@ -63,12 +63,12 @@ export default function OpsLaneDrawer({
             <div className="text-[11px] text-zinc-500 mt-0.5 truncate">{lane.role || '—'} · {lane.schedule || 'no schedule'}</div>
             <div className="text-[11px] text-zinc-600">last run {ageLabel(lane.ageMinutes)} · streak {lane.streak ?? 0}</div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg bg-[#23201D] border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700"><X className="w-4 h-4" /></button>
         </div>
 
         <div className="p-5 space-y-5">
           {/* controls */}
-          <div className="rounded-xl bg-black border border-[#0E7C3A]/20 p-4 space-y-3">
+          <div className="rounded-xl bg-[#1C1917] border border-[#0E7C3A]/20 p-4 space-y-3">
             <div className="text-xs tracking-[0.2em] text-zinc-500">CONTROL</div>
             <div className="flex gap-2">
               <button
@@ -93,13 +93,13 @@ export default function OpsLaneDrawer({
             </div>
             <div className="flex gap-2 items-center">
               <input value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && note.trim() && run('note', { note })} placeholder="Note for this lane (ops log)…" className="flex-1 px-2.5 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white placeholder:text-zinc-600 focus:border-[#10B981]/40 focus:outline-none" />
-              <button onClick={() => run('note', { note })} disabled={busy !== null || !note.trim()} className="px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs disabled:opacity-40 flex items-center gap-1"><Send className="w-3 h-3" />Log</button>
+              <button onClick={() => run('note', { note })} disabled={busy !== null || !note.trim()} className="px-3 py-2 rounded-lg bg-[#23201D] border border-zinc-800 text-zinc-300 text-xs disabled:opacity-40 flex items-center gap-1"><Send className="w-3 h-3" />Log</button>
             </div>
             <div className="text-[10px] text-zinc-600">POST /api/admin/ops/control · {lane.autonomy || 'autonomous'} default · halted/paused stops runs via control sync.</div>
           </div>
 
           {/* raw last report */}
-          <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="rounded-xl bg-[#1C1917] border border-zinc-800 p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="text-xs tracking-[0.2em] text-zinc-500">LAST SHIFT REPORT</div>
               <span className="text-[10px] text-zinc-600 font-mono">{raw?.runAt ? new Date(raw.runAt).toLocaleString() : ''}</span>
@@ -117,7 +117,7 @@ export default function OpsLaneDrawer({
           </div>
 
           {/* lane events */}
-          <div className="rounded-xl bg-black border border-zinc-800 p-4">
+          <div className="rounded-xl bg-[#1C1917] border border-zinc-800 p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="text-xs tracking-[0.2em] text-zinc-500">RECENT EVENTS · {laneEvents.length}</div>
               <RefreshCw className="w-3 h-3 text-zinc-600" />

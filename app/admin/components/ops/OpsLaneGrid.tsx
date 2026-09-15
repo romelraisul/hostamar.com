@@ -54,7 +54,7 @@ export default function OpsLaneGrid({
 
   if (!lanes.length) {
     return (
-      <div className="rounded-2xl bg-black border border-[#0E7C3A]/20 p-10 text-center">
+      <div className="rounded-2xl bg-[#1C1917] border border-[#0E7C3A]/20 p-10 text-center">
         {err ? <div className="text-sm text-red-300">{err}</div>
           : loading ? <div className="text-sm text-zinc-500">Loading lanes…</div>
           : <div className="text-sm text-zinc-600">No fleet lanes registered yet — they appear once employees post their first run.</div>}
@@ -70,7 +70,7 @@ export default function OpsLaneGrid({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
         {lanes.map((l) => (
-          <div key={l.employee} className={`rounded-xl bg-black border p-3 transition ${l.paused ? 'border-amber-500/30' : 'border-zinc-800 hover:border-[#10B981]/30'}`}>
+          <div key={l.employee} className={`rounded-xl bg-[#1C1917] border p-3 transition ${l.paused ? 'border-amber-500/30' : 'border-zinc-800 hover:border-[#10B981]/30'}`}>
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotStyle(l)}`} />

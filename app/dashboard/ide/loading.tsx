@@ -7,7 +7,7 @@ export default function IdeLoading() {
           <div key={i} className="h-32 animate-pulse rounded-2xl border bg-zinc-100/60" />
         ))}
       </div>
-      <div className="mt-6 h-[50vh] animate-pulse rounded-2xl border bg-zinc-900/40" />
+      <div className="mt-6 h-[50vh] animate-pulse rounded-2xl border bg-[#1C1917]/40" />
     </div>
   )
 }

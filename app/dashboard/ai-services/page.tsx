@@ -178,7 +178,7 @@ export default function AiServicesPage() {
     <div className="flex h-full flex-col p-4 lg:flex-row gap-4">
       {/* ── LEFT: pinned chats + categories ── */}
       <aside className="w-full lg:w-64 shrink-0 space-y-4">
-        <div className="rounded-2xl border bg-white p-3">
+        <div className="rounded-2xl border bg-[#FFFDF6] p-3">
           <p className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700">
             <Pin className="h-3.5 w-3.5" style={{ color: GREEN }} /> Pinned Chats
             <span className="ml-auto rounded-full bg-[#ECFDF5] px-2 py-0.5 text-[10px] font-bold" style={{ color: GREEN }}>
@@ -189,7 +189,7 @@ export default function AiServicesPage() {
             {pinned.length === 0 && <p className="px-1 text-[11px] text-zinc-400">কোনো pinned প্রজেক্ট নেই — একটা সার্ভিস Activate করুন 📌</p>}
             {pinned.map(c => (
               <button key={c.chatId} onClick={() => openChat(c)}
-                className={`block w-full rounded-xl border p-2.5 text-left transition hover:border-[#0E7C3A] ${activeChat?.chatId === c.chatId ? 'border-[#0E7C3A] bg-[#ECFDF5]' : 'bg-white'}`}>
+                className={`block w-full rounded-xl border p-2.5 text-left transition hover:border-[#0E7C3A] ${activeChat?.chatId === c.chatId ? 'border-[#0E7C3A] bg-[#ECFDF5]' : 'bg-[#FFFDF6]'}`}>
                 <p className="flex items-center gap-1.5 text-xs font-semibold">
                   <span className={`h-1.5 w-1.5 rounded-full ${c.status === 'delivered' ? 'bg-zinc-400' : 'animate-pulse bg-emerald-500'}`} />
                   {c.title}
@@ -201,7 +201,7 @@ export default function AiServicesPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-3">
+        <div className="rounded-2xl border bg-[#FFFDF6] p-3">
           <p className="text-xs font-semibold text-zinc-700">Categories</p>
           <div className="mt-2 space-y-1">
             <button onClick={() => setCat('all')}
@@ -223,7 +223,7 @@ export default function AiServicesPage() {
       {/* ── CENTER: catalog grid ── */}
       <section className="min-w-0 flex-1">
         {/* header: credits meter */}
-        <div className="rounded-2xl border bg-white p-4">
+        <div className="rounded-2xl border bg-[#FFFDF6] p-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Coins className="h-5 w-5" style={{ color: GREEN }} />
@@ -255,7 +255,7 @@ export default function AiServicesPage() {
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((s, i) => (
-              <div key={s.id} className="flex w-full flex-col rounded-2xl border bg-white p-4" style={{ minWidth: 0 }}>
+              <div key={s.id} className="flex w-full flex-col rounded-2xl border bg-[#FFFDF6] p-4" style={{ minWidth: 0 }}>
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{decodeIcon(s.icon)}</span>
                   <div className="min-w-0 flex-1">
@@ -290,7 +290,7 @@ export default function AiServicesPage() {
 
       {/* ── RIGHT: pinned chat view ── */}
       {activeChat && (
-        <section className="fixed inset-0 z-40 flex flex-col bg-white lg:static lg:z-auto lg:w-[380px] lg:shrink-0 lg:rounded-2xl lg:border">
+        <section className="fixed inset-0 z-40 flex flex-col bg-[#FFFDF6] lg:static lg:z-auto lg:w-[380px] lg:shrink-0 lg:rounded-2xl lg:border">
           <div className="flex items-center justify-between border-b p-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-bold">{activeChat.title}</p>
@@ -350,7 +350,7 @@ export default function AiServicesPage() {
       {/* ── Material Collection Modal ── */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-5">
+          <div className="w-full max-w-md rounded-2xl bg-[#FFFDF6] p-5">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-base font-bold">Activate {modal.nameBn || modal.name}</h3>

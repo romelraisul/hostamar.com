@@ -54,7 +54,7 @@ export default function AdminMarket() {
       </p>
       {trends.length === 0 && <p className="text-sm text-slate-500">No drift pending. Prices are at market.</p>}
       {trends.map(t => (
-        <div key={t.id} className="rounded-xl border bg-white p-4">
+        <div key={t.id} className="rounded-xl border bg-[#FFFDF6] p-4">
           <div className="flex items-center justify-between">
             <p className="font-semibold capitalize">{t.service.replace('.', ' ')}</p>
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${

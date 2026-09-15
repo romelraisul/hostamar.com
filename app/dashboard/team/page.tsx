@@ -113,7 +113,7 @@ export default function TeamPage() {
         {notice && <div className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{notice}</div>}
 
         {/* Create workspace */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 mb-6">
+        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 mb-6">
           <h2 className="font-semibold mb-3 flex items-center gap-2">
             <Plus className="w-4 h-4 text-emerald-400" /> Create Workspace
           </h2>
@@ -138,7 +138,7 @@ export default function TeamPage() {
 
         {/* Invite member */}
         {workspaces.length > 0 && (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 mb-6">
+          <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 mb-6">
             <h2 className="font-semibold mb-3 flex items-center gap-2">
               <UserPlus className="w-4 h-4 text-emerald-400" /> Invite Member
             </h2>
@@ -185,13 +185,13 @@ export default function TeamPage() {
         {loading ? (
           <div className="text-center text-zinc-500 py-10">Loading...</div>
         ) : workspaces.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-10 text-center text-zinc-500 text-sm">
+          <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-10 text-center text-zinc-500 text-sm">
             No workspaces yet. Create one above to start collaborating.
           </div>
         ) : (
           <div className="space-y-4">
             {workspaces.map((w) => (
-              <div key={w.id} className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+              <div key={w.id} className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
                 <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-emerald-400" /> {w.name}

@@ -83,7 +83,7 @@ export default function TriagePage() {
 
       <div className="grid gap-4">
         {data?.inbox?.map((item) => (
-          <div key={item.id} className="border rounded-lg p-4 bg-white shadow-sm">
+          <div key={item.id} className="border rounded-lg p-4 bg-[#FFFDF6] shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <span className="font-semibold uppercase">{item.service}</span>

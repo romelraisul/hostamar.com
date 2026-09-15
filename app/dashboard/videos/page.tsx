@@ -338,7 +338,7 @@ export default function VideosPage() {
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-sm w-full p-6">
+          <div className="bg-[#FFFDF6] rounded-xl max-w-sm w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">{t('dashVideos.deleteTitle')}</h2>
               <button
@@ -379,7 +379,7 @@ export default function VideosPage() {
           /* Grid View */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVideos.map((video) => (
-              <div key={video.id} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group">
+              <div key={video.id} className="bg-[#FFFDF6] rounded-xl border overflow-hidden hover:shadow-md transition-shadow group">
                 {/* Thumbnail */}
                 <div className="relative aspect-video bg-gray-100">
                   {video.thumbnailUrl ? (
@@ -475,7 +475,7 @@ export default function VideosPage() {
           </div>
         ) : (
           /* Table View */
-          <div className="bg-white rounded-xl border overflow-hidden">
+          <div className="bg-[#FFFDF6] rounded-xl border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -563,7 +563,7 @@ export default function VideosPage() {
         )
       ) : (
         /* Empty State */
-        <div className="bg-white rounded-xl border p-12 text-center">
+        <div className="bg-[#FFFDF6] rounded-xl border p-12 text-center">
           <Video className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('dashVideos.noVideos')}</h3>
           <p className="text-gray-500 mb-4">
@@ -584,7 +584,7 @@ export default function VideosPage() {
       {/* V29: reel-style preview + export modal */}
       {previewVideo && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setPreviewVideo(null)}>
-          <div className="bg-white rounded-2xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#FFFDF6] rounded-2xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between mb-3">
               <h3 className="font-semibold text-gray-900 line-clamp-1">{previewVideo.title}</h3>
               <button className="p-1 text-gray-400 hover:text-gray-600" onClick={() => setPreviewVideo(null)}>
@@ -594,7 +594,7 @@ export default function VideosPage() {
 
             {previewVideo.url && /\.(webm|mp4)(\?|$)/i.test(previewVideo.url) ? (
               /* Real video file (B2 webm/mp4) — native player */
-              <video controls src={proxiedUrl(previewVideo)} className="w-full aspect-[9/16] bg-black rounded-xl" />
+              <video controls src={proxiedUrl(previewVideo)} className="w-full aspect-[9/16] bg-[#1C1917] rounded-xl" />
             ) : (() => {
               const m = getManifest(previewVideo)
               if (!m) {
@@ -694,7 +694,7 @@ function CreateVideoModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full p-6">
+      <div className="bg-[#FFFDF6] rounded-xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">{t('dashVideos.createNewTitle')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
