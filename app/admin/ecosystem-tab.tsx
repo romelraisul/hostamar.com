@@ -100,7 +100,7 @@ export default function AdminEcosystemTab() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-bold text-white">Fullstake Ecosystem</h3>
+          <h3 className="text-lg font-bold text-[#1C1917]">Fullstake Ecosystem</h3>
           <p className="text-sm text-gray-400">
             Unified view across Hostamar, OSSU Academy, LuckyStar, AI Browser, and failover infrastructure.
           </p>
@@ -130,7 +130,7 @@ export default function AdminEcosystemTab() {
               <div className="mt-0.5 text-gray-300">{moduleIcon(moduleItem.icon)}</div>
               <div className="min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-white">{moduleItem.name}</p>
+                  <p className="text-sm font-semibold text-[#1C1917]">{moduleItem.name}</p>
                   <ExternalLink className="w-3 h-3 text-gray-400" />
                 </div>
                 <p className="mt-1 text-xs text-gray-400">{moduleItem.description}</p>

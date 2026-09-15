@@ -177,18 +177,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-3">
           <button
             onClick={() => setPaletteOpen(true)}
-            className="flex items-center gap-2 rounded-full border bg-[#23201D] px-3 py-1.5 text-sm text-[#B8AFA3] hover:border-[#0E7C3A]/30 hover:text-[#F6EBD2] transition-colors"
+            className="flex items-center gap-2 rounded-full border bg-[#FDF8EC] px-3 py-1.5 text-sm text-[#B8AFA3] hover:border-[#0E7C3A]/30 hover:text-[#F6EBD2] transition-colors"
           >
             <Search className="h-4 w-4" />
             <span>Search or jump…</span>
-            <span className="ml-2 hidden sm:inline-flex items-center gap-1 rounded bg-[#23201D] px-1.5 py-0.5 text-[11px] font-medium text-[#B8AFA3]">
+            <span className="ml-2 hidden sm:inline-flex items-center gap-1 rounded bg-[#FDF8EC] px-1.5 py-0.5 text-[11px] font-medium text-[#B8AFA3]">
               <Command className="h-3 w-3" /> K
             </span>
           </button>
         </div>
         <div className="flex items-center gap-3">
           {/* Header credit meter */}
-          <div className="hidden md:flex items-center gap-3 rounded-full border bg-[#23201D] px-3 py-1.5">
+          <div className="hidden md:flex items-center gap-3 rounded-full border bg-[#FDF8EC] px-3 py-1.5">
             <span className="h-2 w-2 rounded-full bg-[#0E7C3A] animate-pulse" />
             <span className="text-xs font-semibold tracking-wide text-[#F6EBD2]">CREDITS</span>
             <span className="text-sm font-bold text-[#F6EBD2]">
@@ -205,14 +205,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
           </div>
           {/* Storage pill */}
-          <div className="hidden xl:flex items-center gap-2 rounded-full border bg-[#23201D] px-3 py-1.5 text-xs text-[#B8AFA3]">
+          <div className="hidden xl:flex items-center gap-2 rounded-full border bg-[#FDF8EC] px-3 py-1.5 text-xs text-[#B8AFA3]">
             <HardDrive className="h-3.5 w-3.5" />
             <span>{storageUsed} / {storageTotal} GB</span>
             <span className="h-1.5 w-14 overflow-hidden rounded-full bg-[#E2E8F0]">
               <span className="block h-full bg-[#2563EB]" style={{ width: `${storagePct}%` }} />
             </span>
           </div>
-          <Link href="/dashboard/settings" className="flex items-center gap-2 rounded-full border bg-[#23201D] px-2 py-1 text-sm hover:bg-[#F8FAFC]">
+          <Link href="/dashboard/settings" className="flex items-center gap-2 rounded-full border bg-[#FDF8EC] px-2 py-1 text-sm hover:bg-[#F8FAFC]">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
               <User className="h-4 w-4" />
             </span>
@@ -222,14 +222,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b bg-[#23201D] px-4">
-        <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 hover:bg-[#23201D]">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b bg-[#FDF8EC] px-4">
+        <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 hover:bg-[#FDF8EC]">
           <Menu className="h-6 w-6 text-[#F6EBD2]" />
         </button>
         <span className="font-bold text-xl tracking-tight text-[#0E7C3A]">Hostamar</span>
         <button
           onClick={() => setPaletteOpen(true)}
-          className="rounded-lg border p-2 hover:bg-[#23201D]"
+          className="rounded-lg border p-2 hover:bg-[#FDF8EC]"
           aria-label="Open command palette"
         >
           <Search className="h-5 w-5 text-[#B8AFA3]" />
@@ -241,7 +241,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 flex h-full w-64 flex-col border-r border-[#0E7C3A]/40 bg-[#1C1917] transition-transform duration-200 lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 flex h-full w-64 flex-col border-r border-[#0E7C3A]/40 bg-[#FFFDF6] transition-transform duration-200 lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -258,7 +258,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard" className="font-bold text-xl text-[#0E7C3A]">
             Hostamar
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="rounded p-1 hover:bg-[#23201D]">
+          <button onClick={() => setSidebarOpen(false)} className="rounded p-1 hover:bg-[#FDF8EC]">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -268,7 +268,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="rounded-xl border border-[#0E7C3A]/20 bg-[#0E7C3A]/15 px-3 py-3">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold tracking-widest text-[#0E7C3A]">CREDITS</span>
-              <span className="rounded-full bg-[#23201D] px-2 py-0.5 text-[11px] font-semibold text-[#0E7C3A] border">
+              <span className="rounded-full bg-[#FDF8EC] px-2 py-0.5 text-[11px] font-semibold text-[#0E7C3A] border">
                 {plan ? plan.toUpperCase() : 'FREE'}
               </span>
             </div>
@@ -301,7 +301,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href="/dashboard"
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  pathname === '/dashboard' ? 'bg-[#0E7C3A] text-white' : 'text-[#B8AFA3] hover:bg-[#23201D] hover:text-[#F6EBD2]'
+                  pathname === '/dashboard' ? 'bg-[#0E7C3A] text-white' : 'text-[#B8AFA3] hover:bg-[#FDF8EC] hover:text-[#F6EBD2]'
                 }`}
               >
                 <LayoutDashboard className="h-4 w-4" />
@@ -315,7 +315,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     href={p.href}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                      active ? 'bg-[#0E7C3A] text-white' : 'text-[#B8AFA3] hover:bg-[#23201D] hover:text-[#F6EBD2]'
+                      active ? 'bg-[#0E7C3A] text-white' : 'text-[#B8AFA3] hover:bg-[#FDF8EC] hover:text-[#F6EBD2]'
                     }`}
                   >
                     <p.icon className="h-4 w-4" />
@@ -338,7 +338,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                      active ? 'bg-[#EFF6FF] text-[#2563EB]' : 'text-[#B8AFA3] hover:bg-[#23201D]'
+                      active ? 'bg-[#EFF6FF] text-[#2563EB]' : 'text-[#B8AFA3] hover:bg-[#FDF8EC]'
                     }`}
                   >
                     <item.icon className="h-4 w-4" />
@@ -372,12 +372,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <ul className="mt-2 space-y-1">
                 {recentVideos.map((v) => (
                   <li key={v.id}>
-                    <Link href="/dashboard/videos" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-[#23201D]">
-                      <span className="flex h-7 w-7 items-center justify-center rounded bg-[#23201D] border">
+                    <Link href="/dashboard/videos" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-[#FDF8EC]">
+                      <span className="flex h-7 w-7 items-center justify-center rounded bg-[#FDF8EC] border">
                         <Video className="h-3.5 w-3.5 text-[#B8AFA3]" />
                       </span>
                       <span className="min-w-0 flex-1 truncate text-xs font-medium text-[#F6EBD2]">{v.title}</span>
-                      <ChevronRight className="h-3 w-3 text-[#94A3B8] shrink-0" />
+                      <ChevronRight className="h-3 w-3 text-[#78716C] shrink-0" />
                     </Link>
                   </li>
                 ))}
@@ -412,8 +412,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Command Palette */}
       {paletteOpen && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[20vh] px-4">
-          <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-sm" onClick={() => setPaletteOpen(false)} />
-          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border bg-[#23201D] shadow-xl">
+          <div className="absolute inset-0 bg-[#FBF4E4]/40 backdrop-blur-sm" onClick={() => setPaletteOpen(false)} />
+          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border bg-[#FDF8EC] shadow-xl">
             <div className="flex items-center gap-3 border-b px-4 py-3">
               <Search className="h-5 w-5 text-[#B8AFA3]" />
               <input
@@ -421,9 +421,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 value={paletteQuery}
                 onChange={(e) => setPaletteQuery(e.target.value)}
                 placeholder="Jump to… (Video, Hosting, Chat, Browser, IDE, Game, Billing)"
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#94A3B8]"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#78716C]"
               />
-              <span className="rounded bg-[#23201D] px-1.5 py-0.5 text-xs text-[#B8AFA3]">ESC</span>
+              <span className="rounded bg-[#FDF8EC] px-1.5 py-0.5 text-xs text-[#B8AFA3]">ESC</span>
             </div>
             <div className="max-h-80 overflow-auto p-2">
               {filteredCommands.length === 0 ? (
@@ -434,14 +434,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <li key={c.href + c.label}>
                       <button
                         onClick={() => go(c.href)}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#23201D]"
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#FDF8EC]"
                       >
-                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#23201D] text-[#B8AFA3]">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FDF8EC] text-[#B8AFA3]">
                           <c.icon className="h-4 w-4" />
                         </span>
                         <span className="flex-1 text-sm font-medium text-[#F6EBD2]">{c.label}</span>
-                        {c.kbd && <span className="text-xs text-[#94A3B8]">{c.kbd}</span>}
-                        <ChevronRight className="h-4 w-4 text-[#CBD5E1]" />
+                        {c.kbd && <span className="text-xs text-[#78716C]">{c.kbd}</span>}
+                        <ChevronRight className="h-4 w-4 text-[#57534E]" />
                       </button>
                     </li>
                   ))}

@@ -108,7 +108,7 @@ export default function DashboardBrowserPage() {
 
       <div className="relative min-h-[60vh] flex-1 overflow-hidden rounded-xl border bg-[#FFFDF6]">
         {!src && !loading && (
-          <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center text-sm text-slate-500">
+          <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center text-sm text-[#57534E]">
             <ShieldCheck className="h-8 w-8 text-[#0E7C3A]" />
             Enter a URL above and click Browse. Sites load through Hostamar&apos;s
             same-origin proxy so almost everything renders right here.
@@ -135,10 +135,10 @@ export default function DashboardBrowserPage() {
 
       {sessions.length > 0 && (
         <div className="rounded-xl border bg-[#FFFDF6] p-3">
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600"><History className="h-3.5 w-3.5" /> আমার সেশন ({sessions.length})</p>
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-[#57534E]"><History className="h-3.5 w-3.5" /> আমার সেশন ({sessions.length})</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {sessions.map(s => (
-              <span key={s.id} className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600">
+              <span key={s.id} className="rounded-full bg-[#FBF4E4] px-2.5 py-1 text-xs text-[#57534E]">
                 {s.inputs?.sessionId || s.id} • {s.status === 'processing' ? 'running' : s.status}
               </span>
             ))}

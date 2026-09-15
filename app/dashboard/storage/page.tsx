@@ -17,7 +17,7 @@ export default function StoragePage() {
 
   if (!me) {
     return (
-      <div className="p-6 text-sm text-zinc-500">
+      <div className="p-6 text-sm text-[#57534E]">
         স্টোরেজ লোড হচ্ছে… লগ ইন না থাকলে <a className="text-[#0E7C3A] underline" href="/login">লগ ইন করুন</a>।
       </div>
     )

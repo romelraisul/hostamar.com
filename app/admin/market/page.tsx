@@ -22,10 +22,10 @@ export default function AdminMarketPage(){
         <p>$HOSTA: ${data.hosta.price} • OpenRouter model costs live</p>
         <p className="mt-2 font-semibold">Current Starter: {data.currentPrice} Taka → Suggested: {data.suggestedPrice} Taka</p>
         <p>Diff: {data.diffPct}% — status: <span className={data.status==='pending_approval'?'text-amber-600 font-bold':'text-green-600'}>{data.status}</span></p>
-        <p className="text-xs text-slate-500 mt-1">{data.note}</p>
+        <p className="text-xs text-[#57534E] mt-1">{data.note}</p>
         {data.status==='pending_approval' && <button onClick={approve} className="mt-3 rounded-full bg-[#0E7C3A] px-4 py-2 text-white text-sm font-semibold">Approve — update /pricing + Stripe/PayPal</button>}
         {msg && <p className="mt-2 text-sm text-[#0E7C3A]">{msg}</p>}
-        <p className="mt-3 text-xs text-slate-500">Cron: /api/market-adjust daily • writes Neon market_adjustment pending_approval • human must Approve • logs to SeoEvent + Slack webhook if configured</p>
+        <p className="mt-3 text-xs text-[#57534E]">Cron: /api/market-adjust daily • writes Neon market_adjustment pending_approval • human must Approve • logs to SeoEvent + Slack webhook if configured</p>
       </div>
     </div>
   )

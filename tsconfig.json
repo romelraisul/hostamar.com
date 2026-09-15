@@ -38,6 +38,7 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
+    "docker/tv-station/hls-archive",
     "cloudflare-worker",
     "node_modules",
     "camofox",
