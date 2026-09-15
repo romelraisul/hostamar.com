@@ -59,7 +59,7 @@ export default function ServicesNewForm() {
         </div>
       ) : (
         <form onSubmit={submit} className="mt-6 space-y-6">
-          <div className="rounded-xl border bg-white p-6">
+          <div className="rounded-xl border bg-[#FFFDF6] p-6">
             <h2 className="font-semibold text-lg">১. সার্ভিস টাইপ</h2>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {TYPES.map(t => (
@@ -72,7 +72,7 @@ export default function ServicesNewForm() {
               ))}
             </div>
           </div>
-          <div className="rounded-xl border bg-white p-6">
+          <div className="rounded-xl border bg-[#FFFDF6] p-6">
             <h2 className="font-semibold text-lg">২. প্ল্যান</h2>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {[
@@ -97,7 +97,7 @@ export default function ServicesNewForm() {
               </select>
             </div>
           </div>
-          <div className="rounded-xl border bg-white p-6">
+          <div className="rounded-xl border bg-[#FFFDF6] p-6">
             <h2 className="font-semibold text-lg">৩. পেমেন্ট — bKash</h2>
             <div className="mt-3 space-y-2 text-sm">
               <p>bKash (Send Money): <strong className="text-[#0E7C3A]">01822417463</strong> <button type="button" onClick={() => navigator.clipboard.writeText('01822417463')} className="ml-1 rounded border px-1.5 text-xs">কপি</button></p>

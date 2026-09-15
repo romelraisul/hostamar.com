@@ -116,7 +116,7 @@ export default function CustomerTv() {
         </div>
       </div>
 
-      <div ref={containerRef} className="relative rounded-xl bg-black border border-zinc-800 overflow-hidden aspect-video">
+      <div ref={containerRef} className="relative rounded-xl bg-[#1C1917] border border-zinc-800 overflow-hidden aspect-video">
         {!power ? (
           <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center">
             <p className="text-zinc-500 text-sm">TV is off</p>
@@ -137,7 +137,7 @@ export default function CustomerTv() {
               {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
             </button>
             <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white" style={{ width: `${muted ? 0 : volume * 100}%` }} />
+              <div className="h-full bg-[#FFFDF6]" style={{ width: `${muted ? 0 : volume * 100}%` }} />
             </div>
             <button onClick={() => containerRef.current?.requestFullscreen()} className="p-1 rounded bg-white/10">
               <Maximize2 className="w-3.5 h-3.5" />
@@ -148,7 +148,7 @@ export default function CustomerTv() {
         {/* LIVE badge */}
         {isLive && (
           <div className="absolute top-3 left-3 flex items-center gap-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+            <span className="w-1.5 h-1.5 bg-[#FFFDF6] rounded-full animate-pulse" /> LIVE
           </div>
         )}
       </div>
@@ -156,7 +156,7 @@ export default function CustomerTv() {
       {error && <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
 
       {/* Channel list */}
-      <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+      <div className="mt-4 rounded-xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
         <div className="px-4 py-3 border-b border-zinc-800">
           <h3 className="font-semibold text-sm flex items-center gap-2"><Radio className="w-4 h-4 text-emerald-400" /> Channels</h3>
         </div>

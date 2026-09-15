@@ -102,7 +102,7 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
   const activeNumber = selected ? config.numbers[selected] : null;
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-5">
+    <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 space-y-5">
       <div className="flex items-center gap-2">
         <Smartphone className="w-5 h-5 text-emerald-400" />
         <h3 className="text-lg font-semibold text-white">Send Money (Personal)</h3>

@@ -78,7 +78,7 @@ export default function AffiliateDashboard() {
             <h2 className="font-semibold">Your Referral Link</h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <code className="flex-1 rounded-lg bg-zinc-900 border border-zinc-700 px-4 py-3 text-sm text-emerald-300 font-mono break-all">
+            <code className="flex-1 rounded-lg bg-[#1C1917] border border-zinc-700 px-4 py-3 text-sm text-emerald-300 font-mono break-all">
               {data.referralLink}
             </code>
             <button
@@ -96,25 +96,25 @@ export default function AffiliateDashboard() {
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <Users className="w-4 h-4" /> Referrals
             </div>
             <div className="text-2xl font-bold">{data.referralCount}</div>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <TrendingUp className="w-4 h-4" /> Total Earnings
             </div>
             <div className="text-2xl font-bold text-emerald-400">৳{data.totalEarnings.toLocaleString()}</div>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <Clock className="w-4 h-4" /> Pending
             </div>
             <div className="text-2xl font-bold text-amber-400">৳{data.pending.toLocaleString()}</div>
           </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+          <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/50 p-5">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1">
               <Wallet className="w-4 h-4" /> Paid Out
             </div>
@@ -123,7 +123,7 @@ export default function AffiliateDashboard() {
         </div>
 
         {/* Commission history */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
           <div className="px-6 py-4 border-b border-zinc-800">
             <h2 className="font-semibold">Commission History</h2>
           </div>

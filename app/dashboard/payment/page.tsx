@@ -284,7 +284,7 @@ export default function PaymentPage() {
             {/* QR Code Display - Show when method is selected */}
             {selectedMethod && (
               <div className="text-center py-4">
-                <div className="inline-block bg-white rounded-2xl p-4 shadow-lg shadow-black/20">
+                <div className="inline-block bg-[#FFFDF6] rounded-2xl p-4 shadow-lg shadow-black/20">
                   <NextImage
                     src={`/qr/${selectedMethod}.png`}
                     alt={`${PAYMENT_METHODS[selectedMethod].name} QR Code`}

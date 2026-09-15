@@ -116,7 +116,7 @@ export default function AdminTvControls() {
 
       {/* Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Zap className="w-4 h-4 text-amber-400" /> Stream Status</h3>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between"><dt className="text-zinc-400">Channel</dt><dd>{status?.channelName || '—'}</dd></div>
@@ -125,7 +125,7 @@ export default function AdminTvControls() {
             <div className="flex justify-between"><dt className="text-zinc-400">Live since</dt><dd>{status?.liveSince ? new Date(status.liveSince).toLocaleString() : '—'}</dd></div>
           </dl>
         </div>
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Globe className="w-4 h-4 text-blue-400" /> Destinations</h3>
           {status?.destinations?.length ? (
             <div className="space-y-2">
@@ -145,7 +145,7 @@ export default function AdminTvControls() {
       </div>
 
       {/* Playlist */}
-      <div className="rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden">
+      <div className="rounded-xl bg-[#23201D] border border-zinc-800 overflow-hidden">
         <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
           <h3 className="font-semibold">Playlist ({playlist.length})</h3>
           <button onClick={load} className="p-1.5 rounded-lg hover:bg-zinc-800"><RefreshCw className="w-4 h-4 text-zinc-400" /></button>

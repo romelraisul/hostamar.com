@@ -230,7 +230,7 @@ export default function OrcaIdePage() {
             <span className="h-1 w-8 overflow-hidden rounded-full bg-zinc-700"><span className="block h-full" style={{ width: `${pct}%`, background: GREEN }} /></span>
           </span>
           <select value={model} onChange={e => { setModel(e.target.value); fetch(`/api/orca/price?model=${encodeURIComponent(e.target.value)}`).then(r => r.json()).then(d => setPriceLbl(d.label || '')) }}
-            className="max-w-44 rounded border border-zinc-800 bg-zinc-900 px-1.5 py-0.5 text-[11px]">
+            className="max-w-44 rounded border border-zinc-800 bg-[#1C1917] px-1.5 py-0.5 text-[11px]">
             {models.map(m => <option key={m.id}>{m.id} • PAID</option>)}
           </select>
           {priceLbl && <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[9px] text-zinc-400">{priceLbl}</span>}
@@ -262,7 +262,7 @@ export default function OrcaIdePage() {
           <div className="border-t border-zinc-800 p-1.5">
             <div className="flex items-center gap-1">
               <input type="number" min={1} max={5} value={fanCount} onChange={e => setFanCount(Math.max(1, Math.min(5, +e.target.value)))}
-                className="w-12 rounded border border-zinc-800 bg-zinc-900 px-1 py-0.5 text-[10px]" />
+                className="w-12 rounded border border-zinc-800 bg-[#1C1917] px-1 py-0.5 text-[10px]" />
               <button onClick={fan} disabled={busy} className="flex-1 rounded-lg py-1 text-[10px] font-semibold disabled:bg-zinc-800"
                 style={{ background: busy ? undefined : GREEN, color: busy ? '#666' : '#fff' }}>
                 ⚡ Fan ×{fanCount}
@@ -306,7 +306,7 @@ export default function OrcaIdePage() {
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
             {msgs.map((m, i) => (
-              <div key={i} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${m.role === 'user' ? 'ml-auto bg-[#0E7C3A] text-white' : m.role === 'system' ? 'mx-auto bg-zinc-900 text-zinc-400' : 'bg-zinc-800 text-zinc-100'}`}>
+              <div key={i} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${m.role === 'user' ? 'ml-auto bg-[#0E7C3A] text-white' : m.role === 'system' ? 'mx-auto bg-[#1C1917] text-zinc-400' : 'bg-zinc-800 text-zinc-100'}`}>
                 {m.content}
                 {m.meta && <p className="mt-1 text-[9px] text-zinc-500">{m.meta}</p>}
               </div>
@@ -320,7 +320,7 @@ export default function OrcaIdePage() {
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
                 rows={2}
                 placeholder={`vibe code লিখুন (${model} • PAID token price) — /tools দেখুন · Shift+Enter নতুন লাইন`}
-                className="flex-1 resize-none rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-[12px] focus:border-[#0E7C3A] focus:outline-none" />
+                className="flex-1 resize-none rounded-xl border border-zinc-800 bg-[#1C1917] px-3 py-2 text-[12px] focus:border-[#0E7C3A] focus:outline-none" />
               <button onClick={send} disabled={busy || !input.trim()} className="rounded-xl p-2.5 disabled:bg-zinc-800" style={{ background: GREEN }}>
                 <Send className="h-4 w-4 text-white" />
               </button>
@@ -338,12 +338,12 @@ export default function OrcaIdePage() {
               <MousePointerClick className="h-3 w-3" /> Design {designMode ? 'ON' : ''}
             </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto bg-white" onClick={onPreviewClick} style={{ cursor: designMode ? 'crosshair' : 'default' }}>
+          <div className="min-h-0 flex-1 overflow-y-auto bg-[#FFFDF6]" onClick={onPreviewClick} style={{ cursor: designMode ? 'crosshair' : 'default' }}>
             <iframe title="preview" srcDoc={previewHtml} className="h-full w-full border-0" sandbox="allow-scripts" />
           </div>
           <div className="border-t border-zinc-800 p-1.5">
             <textarea value={previewHtml} onChange={e => setPreviewHtml(e.target.value)} rows={4} spellCheck={false}
-              className="w-full resize-none rounded-lg border border-zinc-800 bg-zinc-900 p-1.5 font-mono text-[9px] text-zinc-300 focus:outline-none" />
+              className="w-full resize-none rounded-lg border border-zinc-800 bg-[#1C1917] p-1.5 font-mono text-[9px] text-zinc-300 focus:outline-none" />
             <p className="mt-1 text-[9px] text-zinc-600">{designMode ? 'Design Mode: element ক্লিক → chat (1cr)' : 'Design Mode off'}</p>
           </div>
         </aside>
@@ -362,7 +362,7 @@ export default function OrcaIdePage() {
 
         {tab === 'terminal' && (
           <div className="flex h-[calc(100%-29px)] flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto bg-zinc-900 p-2 font-mono text-[11px] leading-relaxed text-lime-300">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-[#1C1917] p-2 font-mono text-[11px] leading-relaxed text-lime-300">
               {termLines.map((l, i) => <div key={i} className="whitespace-pre-wrap">{l}</div>)}
             </div>
             <div className="flex items-center gap-1 border-t border-zinc-800 px-2 py-1.5">
@@ -380,10 +380,10 @@ export default function OrcaIdePage() {
               <button onClick={() => git('status')} className="rounded-lg border border-zinc-800 px-2 py-1 text-[10px] hover:bg-zinc-800">Status</button>
               <button onClick={() => git('diff')} className="rounded-lg border border-zinc-800 px-2 py-1 text-[10px] hover:bg-zinc-800">Diff</button>
               <input value={commitMsg} onChange={e => setCommitMsg(e.target.value)} placeholder="commit message"
-                className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] focus:outline-none" />
+                className="w-52 rounded-lg border border-zinc-800 bg-[#1C1917] px-2 py-1 text-[10px] focus:outline-none" />
               <button onClick={() => git('commit')} className="rounded-lg px-2 py-1 text-[10px] font-semibold text-white" style={{ background: GREEN }}>✓ Commit (1cr)</button>
             </div>
-            <pre className="mt-2 min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-900 p-2 font-mono text-[10px] text-zinc-300">{gitOut || 'git status / diff / commit — Orca-তেই রিভিউ করুন'}</pre>
+            <pre className="mt-2 min-h-0 flex-1 overflow-auto rounded-lg bg-[#1C1917] p-2 font-mono text-[10px] text-zinc-300">{gitOut || 'git status / diff / commit — Orca-তেই রিভিউ করুন'}</pre>
           </div>
         )}
 

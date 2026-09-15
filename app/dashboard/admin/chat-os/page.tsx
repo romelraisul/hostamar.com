@@ -239,7 +239,7 @@ export default function ChatOsPage() {
         <span className="font-bold">Hostamar Chat OS</span>
         <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-400">Orca IDE</span>
         <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-          <select className="rounded border border-zinc-800 bg-zinc-900 px-1.5 py-0.5 text-[11px]">
+          <select className="rounded border border-zinc-800 bg-[#23201D] px-1.5 py-0.5 text-[11px]">
             {projects.map(p => <option key={p}>{p}</option>)}
           </select>
         </div>
@@ -252,7 +252,7 @@ export default function ChatOsPage() {
             {credits != null ? credits.toLocaleString('bn-BD') : '…'} cr
             <span className="h-1 w-8 overflow-hidden rounded-full bg-zinc-700"><span className="block h-full" style={{ width: `${pct}%`, background: GREEN }} /></span>
           </span>
-          <select value={model} onChange={e => setModel(e.target.value)} className="max-w-40 rounded border border-zinc-800 bg-zinc-900 px-1.5 py-0.5 text-[11px]">
+          <select value={model} onChange={e => setModel(e.target.value)} className="max-w-40 rounded border border-zinc-800 bg-[#23201D] px-1.5 py-0.5 text-[11px]">
             {models.map(m => <option key={m.id}>{m.id}{m.free ? ' ✓free' : ''}</option>)}
           </select>
           <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-400">MCP {mcpTools.length}</span>
@@ -292,7 +292,7 @@ export default function ChatOsPage() {
         <main className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
             {msgs.map((m, i) => (
-              <div key={i} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${m.role === 'user' ? 'ml-auto bg-[#0E7C3A] text-white' : m.role === 'system' ? 'mx-auto bg-zinc-900 text-zinc-400' : 'bg-zinc-800 text-zinc-100'}`}>
+              <div key={i} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 ${m.role === 'user' ? 'ml-auto bg-[#0E7C3A] text-white' : m.role === 'system' ? 'mx-auto bg-[#23201D] text-zinc-400' : 'bg-zinc-800 text-zinc-100'}`}>
                 {m.content}
                 {m.meta && <p className="mt-1 text-[9px] text-zinc-500">{m.meta}</p>}
               </div>
@@ -308,7 +308,7 @@ export default function ChatOsPage() {
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
                 rows={2}
                 placeholder="চ্যাট করুন (ফ্রি) — /tools দেখুন MCP tools…  |  Shift+Enter নতুন লাইন"
-                className="flex-1 resize-none rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-[12px] focus:border-[#0E7C3A] focus:outline-none"
+                className="flex-1 resize-none rounded-xl border border-zinc-800 bg-[#23201D] px-3 py-2 text-[12px] focus:border-[#0E7C3A] focus:outline-none"
               />
               <button onClick={send} disabled={busy || !input.trim()} className="rounded-xl p-2.5 disabled:bg-zinc-800" style={{ background: GREEN }}>
                 <Send className="h-4 w-4 text-white" />
@@ -330,7 +330,7 @@ export default function ChatOsPage() {
               </button>
             </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto bg-white" onClick={onPreviewClick} style={{ cursor: designMode ? 'crosshair' : 'default' }}>
+          <div className="min-h-0 flex-1 overflow-y-auto bg-[#FFFDF6]" onClick={onPreviewClick} style={{ cursor: designMode ? 'crosshair' : 'default' }}>
             <iframe
               title="preview"
               srcDoc={previewHtml}
@@ -344,7 +344,7 @@ export default function ChatOsPage() {
               onChange={e => setPreviewHtml(e.target.value)}
               rows={4}
               spellCheck={false}
-              className="w-full resize-none rounded-lg border border-zinc-800 bg-zinc-900 p-1.5 font-mono text-[9px] text-zinc-300 focus:outline-none"
+              className="w-full resize-none rounded-lg border border-zinc-800 bg-[#23201D] p-1.5 font-mono text-[9px] text-zinc-300 focus:outline-none"
             />
             <p className="mt-1 text-[9px] text-zinc-600">{designMode ? 'Design Mode: preview-এ যেকোনো element ক্লিক করুন → চ্যাটে যাবে (1cr)' : 'Design Mode off'}</p>
           </div>
@@ -365,7 +365,7 @@ export default function ChatOsPage() {
         {/* Terminal */}
         {tab === 'terminal' && (
           <div className="flex h-[calc(100%-29px)] flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto bg-zinc-900 p-2 font-mono text-[11px] leading-relaxed text-lime-300">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-[#23201D] p-2 font-mono text-[11px] leading-relaxed text-lime-300">
               {termLines.map((l, i) => <div key={i} className="whitespace-pre-wrap">{l}</div>)}
             </div>
             <div className="flex items-center gap-1 border-t border-zinc-800 px-2 py-1.5">
@@ -385,10 +385,10 @@ export default function ChatOsPage() {
               <button onClick={() => git('status')} className="flex items-center gap-1 rounded-lg border border-zinc-800 px-2 py-1 text-[10px] hover:bg-zinc-800"><RefreshCw className="h-3 w-3" /> Status</button>
               <button onClick={() => git('diff')} className="flex items-center gap-1 rounded-lg border border-zinc-800 px-2 py-1 text-[10px] hover:bg-zinc-800">Diff</button>
               <input value={commitMsg} onChange={e => setCommitMsg(e.target.value)} placeholder="commit message"
-                className="w-52 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] focus:outline-none" />
+                className="w-52 rounded-lg border border-zinc-800 bg-[#23201D] px-2 py-1 text-[10px] focus:outline-none" />
               <button onClick={() => git('commit')} className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-white" style={{ background: GREEN }}>✓ Commit (ফ্রি)</button>
             </div>
-            <pre className="mt-2 min-h-0 flex-1 overflow-auto rounded-lg bg-zinc-900 p-2 font-mono text-[10px] text-zinc-300">{gitOut || 'git status / diff দেখুন — commit করুন Chat OS থেকেই'}</pre>
+            <pre className="mt-2 min-h-0 flex-1 overflow-auto rounded-lg bg-[#23201D] p-2 font-mono text-[10px] text-zinc-300">{gitOut || 'git status / diff দেখুন — commit করুন Chat OS থেকেই'}</pre>
           </div>
         )}
 
@@ -424,7 +424,7 @@ export default function ChatOsPage() {
               <p className="mb-1 text-[10px] font-bold text-zinc-400">TASKMASTER</p>
               <div className="mb-1 flex gap-1">
                 <input value={taskTitle} onChange={e => setTaskTitle(e.target.value)} placeholder="নতুন টাস্ক (ফ্রি)"
-                  className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] focus:outline-none" />
+                  className="flex-1 rounded-lg border border-zinc-800 bg-[#23201D] px-2 py-1 text-[10px] focus:outline-none" />
                 <button onClick={addTask} className="rounded-lg px-2 text-[10px] font-semibold text-white" style={{ background: GREEN }}>+</button>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto">

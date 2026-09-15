@@ -42,14 +42,14 @@ export default function AdminReferralsPage() {
           ['pending','পেন্ডিং'],
           ['paid','পেইড'],
         ].map(([k,l])=> (
-          <button key={k} onClick={()=>setFilter(k)} className={`bangla px-4 py-2 rounded-full text-sm border ${filter===k?'bg-[#0E7C3A] text-white border-[#0E7C3A]':'bg-white border-zinc-200'}`}>{l}</button>
+          <button key={k} onClick={()=>setFilter(k)} className={`bangla px-4 py-2 rounded-full text-sm border ${filter===k?'bg-[#0E7C3A] text-white border-[#0E7C3A]':'bg-[#FFFDF6] border-zinc-200'}`}>{l}</button>
         ))}
-        <button onClick={load} className="bangla ml-auto px-4 py-2 rounded-full bg-white border border-zinc-200 text-sm">রিফ্রেশ</button>
+        <button onClick={load} className="bangla ml-auto px-4 py-2 rounded-full bg-[#FFFDF6] border border-zinc-200 text-sm">রিফ্রেশ</button>
       </div>
 
       {msg && <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm">{msg}</div>}
 
-      <div className="mt-4 rounded-2xl border border-zinc-200 bg-white overflow-hidden">
+      <div className="mt-4 rounded-2xl border border-zinc-200 bg-[#FFFDF6] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-zinc-600">

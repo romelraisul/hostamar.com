@@ -115,10 +115,10 @@ export default function ChatClient() {
   return (
     <div className="flex h-[calc(100vh-7rem)] min-h-[480px] -m-2 sm:-m-4 lg:-m-6 overflow-hidden rounded-none sm:rounded-2xl border bg-[#F8FAFC] relative">
       {/* ============ LEFT — models sidebar ============ */}
-      <button onClick={() => setModelsOpen(v => !v)} className="lg:hidden absolute top-3 left-3 z-30 rounded-lg border bg-white p-2 shadow-sm" aria-label="Toggle models">
+      <button onClick={() => setModelsOpen(v => !v)} className="lg:hidden absolute top-3 left-3 z-30 rounded-lg border bg-[#FFFDF6] p-2 shadow-sm" aria-label="Toggle models">
         <Menu className="w-4 h-4" />
       </button>
-      <aside className={`${modelsOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-20 w-72 bg-white border-r flex flex-col transition-transform`}>
+      <aside className={`${modelsOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-20 w-72 bg-[#FFFDF6] border-r flex flex-col transition-transform`}>
         <div className="px-3 py-3 border-b space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold tracking-wide text-[#0F172A] flex items-center gap-1.5">
@@ -160,7 +160,7 @@ export default function ChatClient() {
       {/* ============ CENTER — chat ============ */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* top bar */}
-        <div className="flex items-center justify-between gap-2 border-b bg-white px-4 py-2.5 lg:px-6">
+        <div className="flex items-center justify-between gap-2 border-b bg-[#FFFDF6] px-4 py-2.5 lg:px-6">
           <div className="flex items-center gap-2 min-w-0 pl-8 lg:pl-0">
             <Bot className="w-4 h-4 text-[#0E7C3A] shrink-0" />
             <span className="text-sm font-bold text-[#0F172A] truncate">{sel?.displayName || modelId}</span>
@@ -185,7 +185,7 @@ export default function ChatClient() {
               <p className="text-xs max-w-sm" style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>বাম পাশে {models.length} মডেল — longcat, kimi, qwen সহ। বাংলায় লিখুন, উত্তর পাবেন।</p>
               <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                 {['বাংলায় একটা মার্কেটিং ক্যাপশন লেখো', 'Eid sale এর জন্য ভিডিও আইডিয়া দাও', 'bKash পেমেন্ট কীভাবে কাজ করে?'].map(s => (
-                  <button key={s} onClick={() => setInput(s)} className="rounded-full border bg-white px-3 py-1.5 text-xs hover:border-[#0E7C3A] hover:text-[#0E7C3A]" style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>{s}</button>
+                  <button key={s} onClick={() => setInput(s)} className="rounded-full border bg-[#FFFDF6] px-3 py-1.5 text-xs hover:border-[#0E7C3A] hover:text-[#0E7C3A]" style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>{s}</button>
                 ))}
               </div>
             </div>
@@ -195,7 +195,7 @@ export default function ChatClient() {
               {m.role === 'assistant' && (
                 <span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0E7C3A] to-[#065F46] grid place-items-center text-[9px] font-bold text-white shrink-0 mt-1">AI</span>
               )}
-              <div className={`group relative max-w-[78%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${m.role === 'user' ? 'bg-[#0E7C3A] text-white rounded-br-md' : 'bg-white border text-[#0F172A] shadow-sm rounded-bl-md'}`}>
+              <div className={`group relative max-w-[78%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${m.role === 'user' ? 'bg-[#0E7C3A] text-white rounded-br-md' : 'bg-[#FFFDF6] border text-[#0F172A] shadow-sm rounded-bl-md'}`}>
                 <p style={{ fontFamily: "'Hind Siliguri', 'Noto Sans Bengali', sans-serif" }}>{m.content}</p>
                 <div className={`mt-1.5 flex items-center gap-2 text-[10px] ${m.role === 'user' ? 'text-white/70' : 'text-[#94A3B8]'}`}>
                   {m.role === 'assistant' && m.model && <span className="truncate max-w-[240px]">{m.model?.split('/').pop()} • {m.provider || 'fallback-chain'}{m.fallbackFrom ? ` (fallback from ${m.fallbackFrom})` : ''}{m.cost != null ? ` • ${m.cost} cr` : ''}{m.creditsRemaining != null ? ` • bal ${m.creditsRemaining}` : ''}</span>}
@@ -214,7 +214,7 @@ export default function ChatClient() {
           {busy && (
             <div className="flex gap-2.5">
               <span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0E7C3A] to-[#065F46] grid place-items-center text-[9px] font-bold text-white shrink-0">AI</span>
-              <div className="rounded-2xl bg-white border px-4 py-3 text-xs text-[#64748B] flex items-center gap-1 shadow-sm">
+              <div className="rounded-2xl bg-[#FFFDF6] border px-4 py-3 text-xs text-[#64748B] flex items-center gap-1 shadow-sm">
                 <span className="animate-pulse">ভাবছি</span><span className="animate-pulse delay-75">.</span><span className="animate-pulse delay-150">.</span><span className="animate-pulse delay-300">.</span>
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function ChatClient() {
         </div>
 
         {/* input — fixed bottom, room to type */}
-        <div className="border-t bg-white px-4 py-3 lg:px-8">
+        <div className="border-t bg-[#FFFDF6] px-4 py-3 lg:px-8">
           <div className="flex items-end gap-2 rounded-2xl border bg-[#F8FAFC] p-2 focus-within:border-[#0E7C3A]">
             <textarea
               value={input}
@@ -252,7 +252,7 @@ export default function ChatClient() {
 
       {/* ============ RIGHT — settings (xl only, optional) ============ */}
       {settingsOpen && (
-        <aside className="hidden xl:flex w-80 bg-white border-l flex-col">
+        <aside className="hidden xl:flex w-80 bg-[#FFFDF6] border-l flex-col">
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <span className="text-xs font-bold text-[#0F172A]">সেটিংস</span>
             <button onClick={() => setSettingsOpen(false)} className="p-1 rounded hover:bg-[#F1F5F9]"><X className="w-4 h-4" /></button>

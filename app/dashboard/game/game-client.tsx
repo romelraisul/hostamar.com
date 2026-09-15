@@ -63,7 +63,7 @@ export default function GameClient() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {GAMES.map(g => (
-          <div key={g.id} className="rounded-xl border bg-white p-5">
+          <div key={g.id} className="rounded-xl border bg-[#FFFDF6] p-5">
             <div className="flex items-center gap-3">
               <span className="text-3xl">{g.icon}</span>
               <div className="flex-1">
@@ -101,7 +101,7 @@ export default function GameClient() {
           <h2 className="font-semibold">আমার সার্ভার ({servers.length})</h2>
           <div className="mt-3 space-y-2">
             {servers.map(s => (
-              <div key={s.id} className="flex items-center justify-between rounded-lg border bg-white p-3 text-sm">
+              <div key={s.id} className="flex items-center justify-between rounded-lg border bg-[#FFFDF6] p-3 text-sm">
                 <span>{s.inputs?.gameId || s.serviceId} • {new Date(s.createdAt).toLocaleString('bn-BD')}</span>
                 <span className={`rounded-full px-2 py-0.5 text-xs ${s.status === 'running' || s.status === 'processing' ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-600'}`}>{s.status}</span>
               </div>

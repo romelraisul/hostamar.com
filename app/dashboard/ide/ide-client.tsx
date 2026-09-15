@@ -115,7 +115,7 @@ export default function IdeClient() {
       {!activeSession && (
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {IDES.map(ide => (
-            <div key={ide.id} className="rounded-xl border bg-white p-5">
+            <div key={ide.id} className="rounded-xl border bg-[#FFFDF6] p-5">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{ide.icon}</span>
                 <div className="flex-1">
@@ -136,7 +136,7 @@ export default function IdeClient() {
       )}
 
       {activeSession && (
-        <div className="mt-6 rounded-xl border bg-white">
+        <div className="mt-6 rounded-xl border bg-[#FFFDF6]">
           <div className="flex items-center justify-between border-b p-3 text-sm">
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">● running</span>
@@ -178,13 +178,13 @@ export default function IdeClient() {
                 value={code}
                 onChange={e => setCode(e.target.value)}
                 spellCheck={false}
-                className="h-[50vh] w-full resize-none bg-zinc-900 p-3 font-mono text-xs text-emerald-100 focus:outline-none"
+                className="h-[50vh] w-full resize-none bg-[#1C1917] p-3 font-mono text-xs text-emerald-100 focus:outline-none"
               />
             </div>
             {/* output */}
             <div className="flex flex-col">
               <div className="border-b p-2 text-xs font-semibold text-zinc-600">আউটপুট</div>
-              <pre className="h-[50vh] overflow-auto bg-black p-3 font-mono text-xs text-lime-300">{output || '$ রান চাপুন...'}</pre>
+              <pre className="h-[50vh] overflow-auto bg-[#1C1917] p-3 font-mono text-xs text-lime-300">{output || '$ রান চাপুন...'}</pre>
             </div>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function IdeClient() {
           <h2 className="font-semibold">আমার IDE সেশন ({sessions.length})</h2>
           <div className="mt-3 space-y-2">
             {sessions.map(s => (
-              <div key={s.id} className="flex items-center justify-between rounded-lg border bg-white p-3 text-sm">
+              <div key={s.id} className="flex items-center justify-between rounded-lg border bg-[#FFFDF6] p-3 text-sm">
                 <span>{s.inputs?.ideType || s.serviceId} ({s.inputs?.serverId || ''}) • {new Date(s.createdAt).toLocaleString('bn-BD')}</span>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{s.status === 'processing' ? 'running' : s.status}</span>

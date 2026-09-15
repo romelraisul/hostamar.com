@@ -30,7 +30,7 @@ export default function OpsFeed({
   )
 
   return (
-    <div className="rounded-2xl bg-black border border-[#0E7C3A]/20 overflow-hidden">
+    <div className="rounded-2xl bg-[#1C1917] border border-[#0E7C3A]/20 overflow-hidden">
       <div className="px-4 py-3 border-b border-[#0E7C3A]/10 flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
@@ -38,10 +38,10 @@ export default function OpsFeed({
           <span className="text-[10px] text-zinc-600 font-mono">10s</span>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <select value={type} onChange={(e) => setType(e.target.value)} className="px-2 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white">
+          <select value={type} onChange={(e) => setType(e.target.value)} className="px-2 py-1.5 rounded-lg bg-[#1C1917] border border-zinc-800 text-xs text-white">
             {types.map((t) => <option key={t} value={t}>{t === 'all' ? 'All types' : t}</option>)}
           </select>
-          <select value={lane} onChange={(e) => setLane(e.target.value)} className="px-2 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white">
+          <select value={lane} onChange={(e) => setLane(e.target.value)} className="px-2 py-1.5 rounded-lg bg-[#1C1917] border border-zinc-800 text-xs text-white">
             {lanes.map((l) => <option key={l} value={l}>{l === 'all' ? 'All lanes' : l}</option>)}
           </select>
           <span className="text-[11px] text-zinc-500">{filtered.length}/{events.length}</span>

@@ -190,7 +190,7 @@ export default function DriveApp() {
 
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setPreview(null)}>
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-lg bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-lg bg-[#FFFDF6] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <div className="font-semibold truncate">{preview.fileName}</div>
               <button onClick={() => setPreview(null)} className="text-sm text-zinc-500">✕</button>

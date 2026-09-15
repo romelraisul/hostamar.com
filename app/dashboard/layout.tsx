@@ -177,7 +177,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-3">
           <button
             onClick={() => setPaletteOpen(true)}
-            className="flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 text-sm text-[#64748B] hover:border-[#0E7C3A]/30 hover:text-[#0F172A] transition-colors"
+            className="flex items-center gap-2 rounded-full border bg-[#FFFDF6] px-3 py-1.5 text-sm text-[#64748B] hover:border-[#0E7C3A]/30 hover:text-[#0F172A] transition-colors"
           >
             <Search className="h-4 w-4" />
             <span>Search or jump…</span>
@@ -188,7 +188,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         <div className="flex items-center gap-3">
           {/* Header credit meter */}
-          <div className="hidden md:flex items-center gap-3 rounded-full border bg-white px-3 py-1.5">
+          <div className="hidden md:flex items-center gap-3 rounded-full border bg-[#FFFDF6] px-3 py-1.5">
             <span className="h-2 w-2 rounded-full bg-[#0E7C3A] animate-pulse" />
             <span className="text-xs font-semibold tracking-wide text-[#0F172A]">CREDITS</span>
             <span className="text-sm font-bold text-[#0F172A]">
@@ -205,14 +205,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
           </div>
           {/* Storage pill */}
-          <div className="hidden xl:flex items-center gap-2 rounded-full border bg-white px-3 py-1.5 text-xs text-[#475569]">
+          <div className="hidden xl:flex items-center gap-2 rounded-full border bg-[#FFFDF6] px-3 py-1.5 text-xs text-[#475569]">
             <HardDrive className="h-3.5 w-3.5" />
             <span>{storageUsed} / {storageTotal} GB</span>
             <span className="h-1.5 w-14 overflow-hidden rounded-full bg-[#E2E8F0]">
               <span className="block h-full bg-[#2563EB]" style={{ width: `${storagePct}%` }} />
             </span>
           </div>
-          <Link href="/dashboard/settings" className="flex items-center gap-2 rounded-full border bg-white px-2 py-1 text-sm hover:bg-[#F8FAFC]">
+          <Link href="/dashboard/settings" className="flex items-center gap-2 rounded-full border bg-[#FFFDF6] px-2 py-1 text-sm hover:bg-[#F8FAFC]">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
               <User className="h-4 w-4" />
             </span>
@@ -222,7 +222,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b bg-white px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b bg-[#FFFDF6] px-4">
         <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 hover:bg-[#F1F5F9]">
           <Menu className="h-6 w-6 text-[#0F172A]" />
         </button>
@@ -241,7 +241,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 flex h-full w-64 flex-col border-r bg-white transition-transform duration-200 lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 flex h-full w-64 flex-col border-r bg-[#FFFDF6] transition-transform duration-200 lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -268,7 +268,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="rounded-xl border border-[#0E7C3A]/20 bg-[#ECFDF5] px-3 py-3">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold tracking-widest text-[#0E7C3A]">CREDITS</span>
-              <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-[#0E7C3A] border">
+              <span className="rounded-full bg-[#FFFDF6] px-2 py-0.5 text-[11px] font-semibold text-[#0E7C3A] border">
                 {plan ? plan.toUpperCase() : 'FREE'}
               </span>
             </div>
@@ -372,8 +372,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <ul className="mt-2 space-y-1">
                 {recentVideos.map((v) => (
                   <li key={v.id}>
-                    <Link href="/dashboard/videos" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-white">
-                      <span className="flex h-7 w-7 items-center justify-center rounded bg-white border">
+                    <Link href="/dashboard/videos" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-[#FFFDF6]">
+                      <span className="flex h-7 w-7 items-center justify-center rounded bg-[#FFFDF6] border">
                         <Video className="h-3.5 w-3.5 text-[#64748B]" />
                       </span>
                       <span className="min-w-0 flex-1 truncate text-xs font-medium text-[#0F172A]">{v.title}</span>
@@ -413,7 +413,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {paletteOpen && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[20vh] px-4">
           <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-sm" onClick={() => setPaletteOpen(false)} />
-          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border bg-white shadow-xl">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border bg-[#FFFDF6] shadow-xl">
             <div className="flex items-center gap-3 border-b px-4 py-3">
               <Search className="h-5 w-5 text-[#64748B]" />
               <input

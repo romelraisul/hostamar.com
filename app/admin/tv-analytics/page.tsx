@@ -68,19 +68,19 @@ export default function TvAnalytics() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1"><Eye className="w-4 h-4" /> Today</div>
           <div className="text-2xl font-bold">{data.todayViews.toLocaleString()}</div>
         </div>
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1"><TrendingUp className="w-4 h-4" /> 7 Days</div>
           <div className="text-2xl font-bold">{data.weekViews.toLocaleString()}</div>
         </div>
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1"><Activity className="w-4 h-4" /> 30 Days</div>
           <div className="text-2xl font-bold">{data.monthViews.toLocaleString()}</div>
         </div>
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <div className="flex items-center gap-2 text-zinc-400 text-sm mb-1"><DollarSign className="w-4 h-4" /> Est. Earnings</div>
           <div className="text-2xl font-bold text-emerald-400">${earnings.toFixed(2)}</div>
           <div className="text-xs text-zinc-500">@ ${data.cpm}/1000 views</div>
@@ -89,7 +89,7 @@ export default function TvAnalytics() {
 
       {/* New: Top Stable + Ad Clicks + Storage B2 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <h3 className="font-semibold mb-3 text-sm flex items-center gap-2">🏆 Top Stable Channels</h3>
           {data.topStable?.length ? (
             <div className="space-y-1 max-h-[220px] overflow-auto">
@@ -102,7 +102,7 @@ export default function TvAnalytics() {
             </div>
           ) : (<div className="text-xs text-zinc-500">No stable data yet — will seed on /api/tv/stable-channels</div>)}
         </div>
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <h3 className="font-semibold mb-3 text-sm">📢 Ad Clicks</h3>
           <div className="text-xs space-y-1">
             <div className="flex justify-between"><span className="text-zinc-400">Today</span><span className="font-bold">{data.adClicks?.today ?? 0}</span></div>
@@ -112,7 +112,7 @@ export default function TvAnalytics() {
             <div className="text-[11px] text-zinc-500 mt-2">Top: {(data.adClicks?.topAds || []).slice(0,3).map((a:any)=>a.adKey).join(', ') || '—'}</div>
           </div>
         </div>
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <h3 className="font-semibold mb-3 text-sm">💾 Storage B2</h3>
           <div className="text-xs space-y-1">
             <div className="flex justify-between"><span className="text-zinc-400">Objects</span><span className="font-bold">{data.storageB2?.count ?? '—'}</span></div>
@@ -126,7 +126,7 @@ export default function TvAnalytics() {
 
       {/* Live status + Facebook */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Zap className="w-4 h-4 text-red-400" /> Live Now</h3>
           {data.liveNow ? (
             <div className="flex items-center gap-3">
@@ -140,7 +140,7 @@ export default function TvAnalytics() {
             <div className="text-zinc-500">Not live. Set Facebook LIVE below.</div>
           )}
         </div>
-        <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><LinkIcon className="w-4 h-4 text-blue-400" /> Set Facebook LIVE</h3>
           <div className="flex gap-2">
             <input
@@ -159,7 +159,7 @@ export default function TvAnalytics() {
       </div>
 
       {/* Top channels */}
-      <div className="rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden">
+      <div className="rounded-xl bg-[#23201D] border border-zinc-800 overflow-hidden">
         <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
           <h3 className="font-semibold flex items-center gap-2"><Users className="w-4 h-4 text-emerald-400" /> Top Channels</h3>
           <span className="text-xs text-zinc-500">{data.apiCalls} API calls • {data.externalEmbeds} external embeds</span>
