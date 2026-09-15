@@ -57,6 +57,15 @@ export default {
         fetch('https://hostamar.com/store', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
           .then((r) => r.status)
           .catch(() => 0),
+        // V6 (FORGE 2026-09-15 17:5x): warm the CHECKOUT function itself.
+        // V2/V3 keep the Medusa ORIGIN hot, V5 the store page — but the
+        // /api/store/checkout route is its own Vercel isolate: a buyer who
+        // fills the form 1min+ after the last order eats its cold start
+        // (POST-only route, nothing ever GETs it). A GET 405s but loads the
+        // exact same function → first real POST is warm. Zero side effects.
+        fetch('https://hostamar.com/api/store/checkout', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+          .then((r) => r.status)
+          .catch(() => 0),
       ])
     )
   },
