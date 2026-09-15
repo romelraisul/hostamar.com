@@ -30,6 +30,11 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, rmSync, r
 import { execFileSync, spawnSync } from 'node:child_process'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import dns from 'node:dns'
+// WSL v6 egress to Cloudflare is dead (ATLAS 2026-09-14 rule; curl -4 pin in
+// atlas-hosting-check.sh). Node happy-eyeballs picks v6 some of the time ->
+// recurring 15s claim timeouts. Force IPv4-first resolution.
+dns.setDefaultResultOrder('ipv4first')
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO = join(__dirname, '..')
@@ -454,7 +459,7 @@ async function uploadFinal(final, videoId) {
 async function fail(job, err) {
   console.error(`[worker] FAIL videoId=${job?.videoId}:`, String(err?.message || err).slice(0, 300))
   try {
-    await fetch(`${APP}/api/videos/queue/fail`, {
+    await fetchW(`${APP}/api/videos/queue/fail`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ secret: SECRET, videoId: job?.videoId, queueId: job?.queueId, error: String(err?.message || err).slice(0, 400) }),
       signal: AbortSignal.timeout(15000),
@@ -465,12 +470,28 @@ async function fail(job, err) {
 async function claimJob() {
   if (forceVideoId) {
     // Direct Prisma-free mode: the row exists in prod; ask the API for this one.
-    const r = await fetch(`${APP}/api/videos/queue/next?secret=${encodeURIComponent(SECRET)}`, { headers: { 'x-worker-secret': SECRET }, signal: AbortSignal.timeout(15000) })
+    const r = await fetchW(`${APP}/api/videos/queue/next?secret=${encodeURIComponent(SECRET)}`, { headers: { 'x-worker-secret': SECRET }, signal: AbortSignal.timeout(15000) })
     const j = await r.json().catch(() => ({}))
     return j
   }
-  const r = await fetch(`${APP}/api/videos/queue/next`, { headers: { 'x-worker-secret': SECRET }, signal: AbortSignal.timeout(15000) })
+  const r = await fetchW(`${APP}/api/videos/queue/next`, { headers: { 'x-worker-secret': SECRET }, signal: AbortSignal.timeout(15000) })
   return await r.json().catch(() => ({}))
+}
+
+let _SOCKFAIL = 0
+// One-shot fetch wrapper: a 15s hang on a fresh connection = WSL->CF SYN drop
+// or dead keep-alive socket (ATLAS 2026-09-14 rule). Retry once on a clean
+// socket. Counter exposed so the monitor can flag silent retry storms.
+async function fetchW(url, opts = {}) {
+  const timeout = opts?.signal?.timeout || 15000
+  try {
+    return await fetch(url, opts)
+  } catch (e) {
+    if (!/abort|timeout|socket/i.test(String(e?.message || e))) throw e
+    _SOCKFAIL++
+    console.warn(`[worker] net retry #${_SOCKFAIL} ${String(e.message || e).slice(0, 60)}`)
+    return fetch(url, { ...opts, signal: AbortSignal.timeout(timeout) })
+  }
 }
 
 async function main() {
