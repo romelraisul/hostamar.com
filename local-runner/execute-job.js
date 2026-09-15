@@ -17,42 +17,21 @@ async function report(status, result) {
 
 async function main() {
   try {
+    // All job types are placeholders. Real creds live in Vercel env, not on the
+    // local PC (commit ab928e6) — report honest failure, never fake success.
     switch (job.type) {
       case 'seo-crawl':
-        console.log('Running SEO crawl...');
-        // Competitor Monitoring Playwright Crawler — separate Docker container
-        // node scripts/seo-crawl.js
-        await report('done', { ok: true, type: 'seo-crawl', note: 'placeholder' });
-        break;
       case 'seo-audit':
-        console.log('Running SEO audit...');
-        // Lighthouse + Playwright SEO Testing
-        await report('done', { ok: true, type: 'seo-audit', note: 'placeholder' });
-        break;
       case 'blog-generate':
-        console.log('Generating blog...');
-        // GSC demand pull → blog generation
-        await report('done', { ok: true, type: 'blog-generate', note: 'placeholder' });
-        break;
       case 'fb-post':
-        console.log('Posting to Facebook...');
-        // Facebook Graph API — FB_PAGE_ID + FACEBOOK_PAGE_ACCESS_TOKEN
-        await report('done', { ok: true, type: 'fb-post', note: 'placeholder' });
-        break;
       case 'x-post':
-        console.log('Posting to X...');
-        // X API — X_ACCESS_TOKEN + X_ACCESS_SECRET + X_API_KEY + X_API_SECRET
-        await report('done', { ok: true, type: 'x-post', note: 'placeholder' });
-        break;
       case 'yt-upload':
-        console.log('Uploading to YouTube...');
-        // YouTube Data API — YOUTUBE_REFRESH_TOKEN + YOUTUBE_CLIENT_ID + YOUTUBE_CLIENT_SECRET
-        await report('done', { ok: true, type: 'yt-upload', note: 'placeholder' });
-        break;
       case 'vercel-guard-cleanup':
-        console.log('Running Vercel guard cleanup...');
-        // node scripts/vercel-guard.mjs
-        await report('done', { ok: true, type: 'vercel-guard-cleanup', note: 'placeholder' });
+        console.log('Job type not implemented locally:', job.type);
+        await report('failed', {
+          ok: false,
+          error: `${job.type} not implemented on PC — for x/youtube/reddit use POST /api/social/direct from Vercel`,
+        });
         break;
       default:
         console.log('Unknown job type:', job.type);
