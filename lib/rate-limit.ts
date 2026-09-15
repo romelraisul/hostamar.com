@@ -40,7 +40,8 @@ export async function checkRateLimit(
   ip: string,
   cfg: RateLimitConfig,
   path: string = '/',
-  method: string = 'GET'
+  method: string = 'GET',
+  repaired = false
 ): Promise<RateLimitResult> {
   const now = Date.now()
   const windowStart = new Date(now - cfg.windowMs)
@@ -83,7 +84,15 @@ export async function checkRateLimit(
     const msg = String((error as any)?.message || error || '')
     const missingTable = msg.includes('does not exist') || msg.includes('P2021')
     if (missingTable) {
-      // Don't block traffic when the DB doesn't have the rate-limit table.
+      // Self-heal once: ensure-schema creates RateLimitEvent lazily, and
+      // auth routes were the one caller that never triggered it — which is
+      // exactly why the table was missing and limits silently failed open.
+      // Still fail-open if the repair itself fails (never block buyers).
+      if (!repaired) {
+        const { ensureSchema } = await import('@/lib/ensure-schema')
+        await ensureSchema().catch(() => {})
+        return checkRateLimit(ip, cfg, path, method, true)
+      }
       return { allowed: true, remaining: cfg.limit, resetAt: now + cfg.windowMs }
     }
     throw error
