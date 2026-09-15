@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic'
+// FORGE 2026-09-15 11:1x — force-dynamic was the real blocker, NOT the header
+// string: Vercel's edge STRIPS s-maxage/SWR from force-dynamic route handlers
+// (proved live after 373832d deployed: origin runs my new code, CDN still
+// returns bare `max-age=60`, and /api/ai-services/catalog — route-sets
+// s-maxage=3600 — arrives as bare max-age=3600). revalidate=300 (the exact
+// pattern of /api/store/products, which keeps s-maxage=300+SWR+SIE and shows
+// STALE/HIT) is the working combo. Header kept for the browser + docs.
+export const revalidate = 300
 
 /**
  * GET /api/services/catalog?category=&search=
