@@ -72,7 +72,7 @@ export default function AdminMarket() {
           {t.status === 'pending_approval' && (
             <div className="mt-3 flex gap-2">
               <button onClick={() => decide(t.id, 'approve')}
-                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-[#1C1917]">
+                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white">
                 <Check className="h-3 w-3" /> Apply
               </button>
               <button onClick={() => decide(t.id, 'reject')}

@@ -109,7 +109,7 @@ export default function CustomerTv() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold flex items-center gap-2"><Tv className="w-5 h-5 text-emerald-400" /> My TV</h2>
         <div className="flex items-center gap-2">
-          <button onClick={() => setPower((p) => !p)} className={`p-2 rounded-lg ${power ? 'bg-emerald-600' : 'bg-[#FDF8EC]'}`}>
+          <button onClick={() => setPower((p) => !p)} className={`p-2 rounded-lg ${power ? 'bg-emerald-600 text-white' : 'bg-[#FDF8EC]'}`}>
             <Tv className="w-4 h-4" />
           </button>
           <button onClick={load} className="p-2 rounded-lg bg-[#FFFDF6] hover:bg-[#FDF8EC]"><RefreshCw className="w-4 h-4" /></button>

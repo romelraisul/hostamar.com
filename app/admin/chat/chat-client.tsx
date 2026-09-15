@@ -87,7 +87,7 @@ export default function ChatOsClient({ user }: { user: any }) {
       <div className="hidden lg:flex w-72 border-r border-[#D8CDB4] flex-col p-3 gap-2 overflow-y-auto">
         <div className="text-xs font-bold text-[#78716C] uppercase tracking-widest">Hostamar OS</div>
         <div className="text-[11px] text-[#57534E]">{user.email} • admin</div>
-        <button onClick={toggleAutonomous} className={`mt-2 text-xs px-2 py-1.5 rounded border font-semibold ${autonomous?'bg-emerald-600 text-[#1C1917] border-emerald-500':'bg-[#FDF8EC] text-[#78716C] border-[#D8CDB4]'}`}>
+        <button onClick={toggleAutonomous} className={`mt-2 text-xs px-2 py-1.5 rounded border font-semibold ${autonomous?'bg-emerald-600 text-white border-emerald-500':'bg-[#FDF8EC] text-[#78716C] border-[#D8CDB4]'}`}>
           {autonomous ? '🤖 Autonomous ON' : 'Autonomous OFF'}
         </button>
         {autonomous && <div className="text-[10px] text-emerald-400">🤖 I handle support + bKash + health when out of town</div>}

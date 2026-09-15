@@ -83,7 +83,7 @@ export default function AffiliateDashboard() {
             </code>
             <button
               onClick={copyLink}
-              className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition"
+              className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-5 py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 transition"
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy Link'}

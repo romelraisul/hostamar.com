@@ -276,7 +276,7 @@ export default function AdminPaymentsClient() {
                           'px-3 py-1.5 rounded-md text-xs font-medium transition ' +
                           (approvingId === t.id
                             ? 'bg-[#FDF8EC] text-[#78716C] cursor-wait'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-[#1C1917]')
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white')
                         }
                       >
                         {approvingId === t.id ? 'Approving…' : 'Approve & Activate'}
@@ -338,7 +338,7 @@ export default function AdminPaymentsClient() {
                           'px-3 py-1.5 rounded-md text-xs font-medium transition mr-2 ' +
                           (approvingId === v.id
                             ? 'bg-[#FDF8EC] text-[#78716C] cursor-wait'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-[#1C1917]')
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white')
                         }
                       >
                         {approvingId === v.id ? '…' : 'Approve'}

@@ -65,21 +65,21 @@ function OverviewTab() {
   if (err) return <div className="p-6 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{err}</div>
   const s = stats || {}
   const cards = [
-    { label: 'Total Customers', value: fmt(s.totalCustomers), icon: Users, accent: 'from-[#0E7C3A] to-[#10B981]' },
+    { label: 'Total Customers', value: fmt(s.totalCustomers), icon: Users, accent: 'from-[#0E7C3A] to-[#10B981] text-white' },
     { label: 'Total Orders', value: fmt(s.totalOrders), icon: ShoppingCart, accent: 'from-emerald-600 to-emerald-400' },
-    { label: 'Total Revenue', value: fmtBDT(s.totalRevenue), icon: DollarSign, accent: 'from-[#FDF8EC] to-[#F6EBD2]' },
+    { label: 'Total Revenue', value: fmtBDT(s.totalRevenue), icon: DollarSign, accent: 'from-amber-600 to-amber-400' },
     { label: 'Pending Orders', value: fmt(s.pendingOrders), icon: Clock, accent: 'from-amber-600 to-amber-400' },
-    { label: 'Active Subscriptions', value: fmt(s.activeSubscriptions), icon: Activity, accent: 'from-[#0E7C3A] to-[#065F46]' },
+    { label: 'Active Subscriptions', value: fmt(s.activeSubscriptions), icon: Activity, accent: 'from-[#0E7C3A] to-[#065F46] text-white' },
     { label: 'Videos', value: fmt(s.totalVideos), icon: Video, accent: 'from-violet-600 to-violet-400' },
     { label: 'New Today', value: fmt(s.newCustomersToday), icon: TrendingUp, accent: 'from-sky-600 to-sky-400' },
-    { label: 'Monthly Revenue', value: fmtBDT(s.monthlyRevenue), icon: CreditCard, accent: 'from-[#0E7C3A] to-[#10B981]' },
+    { label: 'Monthly Revenue', value: fmtBDT(s.monthlyRevenue), icon: CreditCard, accent: 'from-[#0E7C3A] to-[#10B981] text-white' },
   ]
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(c=>(
           <div key={c.label} className="rounded-2xl bg-[#FFFDF6] border border-[#0E7C3A]/20 p-5 hover:border-[#10B981]/30 transition">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.accent} flex items-center justify-center mb-3`}><c.icon className="w-5 h-5 text-[#1C1917]"/></div>
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.accent} flex items-center justify-center mb-3`}><c.icon className="w-5 h-5 text-white"/></div>
             <div className="text-2xl font-black text-[#1C1917]">{c.value}</div>
             <div className="text-xs tracking-widest text-[#57534E] mt-1">{c.label.toUpperCase()}</div>
           </div>
@@ -560,7 +560,7 @@ function ModelsTab() {
           {models.map((m:any)=>(
             <div key={m.id} className="rounded-2xl bg-[#FFFDF6] border border-[#0E7C3A]/20 p-5 hover:border-[#10B981]/30 transition">
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center"><Cpu className="w-5 h-5 text-[#1C1917]"/></div><div className="font-bold text-[#1C1917]">{m.id}</div></div>
+                <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center text-white"><Cpu className="w-5 h-5 text-white"/></div><div className="font-bold text-[#1C1917]">{m.id}</div></div>
                 <span className="text-[10px] tracking-widest text-[#57534E] border border-[#D8CDB4] rounded-full px-2 py-1">{m.owned_by || 'hostamar'}</span>
               </div>
               {m.description && <p className="text-sm text-[#78716C] mt-3 leading-relaxed">{m.description}</p>}

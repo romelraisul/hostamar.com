@@ -182,7 +182,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
 
           {/* User */}
-          <div className="border-t border-[#0E7C3A]/20 p-4 bg-gradient-to-t from-[#0E7C3A]/10 to-transparent">
+          <div className="border-t border-[#0E7C3A]/20 p-4 bg-gradient-to-t from-[#0E7C3A]/10 to-transparent text-white">
             {userLoading ? (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[#FFFDF6] animate-pulse" />
@@ -194,7 +194,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             ) : (
               <>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0E7C3A] to-[#10B981] flex items-center justify-center text-white">
                     <User className="w-5 h-5 text-[#1C1917]" />
                   </div>
                   <div className="flex-1 min-w-0">

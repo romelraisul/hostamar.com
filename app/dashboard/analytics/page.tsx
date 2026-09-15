@@ -23,7 +23,7 @@ export default function AnalyticsPage(){
       <div className="mt-4 rounded-xl border bg-[#FFFDF6] p-4">
         <h3 className="font-semibold text-sm">প্রতিদিন টোকেন</h3>
         <div className="mt-2 h-24 flex items-end gap-2">
-          {data.perDay.map((d:any)=><div key={d.date} className="flex-1 bg-[#0E7C3A] rounded" style={{height: `${Math.min(100, d.tokens/10)}%`}} title={`${d.date} ${d.tokens}`}><p className="text-[10px] text-[#1C1917] text-center">{d.tokens}</p></div>)}
+          {data.perDay.map((d:any)=><div key={d.date} className="flex-1 bg-[#0E7C3A] rounded" style={{height: `${Math.min(100, d.tokens/10)}%`}} title={`${d.date} ${d.tokens}`}><p className="text-[10px] text-white text-center">{d.tokens}</p></div>)}
         </div>
       </div>
       <div className="mt-4 rounded-xl border bg-[#FFFDF6] p-4">

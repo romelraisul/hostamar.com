@@ -235,7 +235,7 @@ export default function ReelPage() {
               <button onClick={() => logoInputRef.current?.click()} className="flex items-center gap-1.5 rounded-full border border-[#D8CDB4] bg-[#FFFDF6] hover:bg-[#FFFDF6] px-4 py-2 text-sm font-medium">
                 <Upload className="h-4 w-4" /> লোগো আপলোড
               </button>
-              <button onClick={toggleVoice} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition ${speaking ? 'bg-[#10B981] animate-pulse' : 'bg-[#0E7C3A] hover:bg-[#10B981]'}`}>
+              <button onClick={toggleVoice} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition ${speaking ? 'bg-[#10B981] animate-pulse' : 'bg-[#0E7C3A] hover:bg-[#10B981] text-white'}`}>
                 {speaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 {speaking ? 'বন্ধ করুন' : 'বাংলা ভয়েসওভার চালু করুন'}
               </button>
