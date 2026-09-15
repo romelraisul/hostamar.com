@@ -265,22 +265,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="w-9 h-9 rounded-xl bg-[#0E7C3A] text-white grid place-items-center font-black">H</span>
-          <div>
-            <h1 className="text-xl font-bold text-[#0F172A] leading-none">
-              {locale === 'bn' ? 'ওভারভিউ • Dashboard' : locale === 'ur' ? 'جائزہ • Dashboard' : 'Dashboard • 6 products • 6000 credit'}
-            </h1>
-            <p className="text-xs text-[#64748B] mt-1">Hostamar • Video 100 • Hosting 0 • Chat 1 • Browser 5 • IDE 10 • Game 20</p>
-          </div>
-        </div>
-        <button onClick={() => setCmdOpen(true)} className="hidden sm:flex items-center gap-2 rounded-full border bg-[#FFFDF6] px-3 py-2 text-xs text-[#64748B] hover:border-[#0E7C3A]/30">
-          <Command className="w-3.5 h-3.5" /> ⌘K
-        </button>
-      </div>
-
       {/* Mobile credit bar */}
       <div className="sm:hidden rounded-full bg-[#F1F5F9] p-1 flex items-center gap-2 text-xs">
         <span className="px-3 py-1.5 rounded-full bg-[#0E7C3A] text-white font-bold">{shownCredits.toLocaleString()} / 6000</span>
@@ -295,16 +279,16 @@ export default function DashboardPage() {
         <div className="lg:col-span-8 space-y-6">
           {/* Credit + Usage row */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border bg-[#FFFDF6] p-5">
-              <div className="text-[11px] tracking-[0.2em] text-[#64748B]">CREDITS</div>
-              <div className="text-2xl font-black text-[#0F172A] tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#64748B]">/ 6,000</span></div>
-              <div className="text-xs text-[#64748B] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
-              <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#0E7C3A] rounded-full" style={{ width: `${creditPct}%` }} /></div>
+            <div className="rounded-2xl border-2 border-[#1C1917] bg-[#1C1917] p-5 text-[#F6EBD2]">
+              <div className="text-[11px] tracking-[0.2em] text-[#B8AFA3]">CREDITS</div>
+              <div className="text-2xl font-black tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#B8AFA3]">/ 6,000</span></div>
+              <div className="text-xs text-[#B8AFA3] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
+              <div className="h-2 rounded-full bg-[#23201D] mt-3 overflow-hidden"><div className="h-full bg-[#0E7C3A] rounded-full" style={{ width: `${creditPct}%` }} /></div>
             </div>
-            <div className="rounded-2xl border bg-[#FFFDF6] p-5">
-              <div className="text-[11px] tracking-[0.2em] text-[#64748B]">STORAGE</div>
-              <div className="text-2xl font-black text-[#0F172A] mt-1">{storageUsed} <span className="text-sm font-normal text-[#64748B]">/ {storageTotal} GB</span></div>
-              <div className="text-xs text-[#64748B] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
+            <div className="rounded-2xl border-2 border-[#1C1917] bg-[#1C1917] p-5 text-[#F6EBD2]">
+              <div className="text-[11px] tracking-[0.2em] text-[#B8AFA3]">STORAGE</div>
+              <div className="text-2xl font-black mt-1">{storageUsed} <span className="text-sm font-normal text-[#B8AFA3]">/ {storageTotal} GB</span></div>
+              <div className="text-xs text-[#B8AFA3] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
               <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${storagePct}%` }} /></div>
             </div>
           </div>
