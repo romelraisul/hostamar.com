@@ -15,7 +15,11 @@ export async function GET(req: NextRequest) {
     await ensureSchema()
     const channel = await getOrCreateDefaultChannel()
     let items = await prisma.tvPlaylistItem.findMany({
-      where: { channelId: channel.id },
+      // `played` is the retire flag: the no-repeat watcher sets it, and the
+      // safety work retires third-party footage the same way. Without this filter
+      // retired items keep airing (the channel stayed on other people's content
+      // even after being retired), so filter here rather than at every caller.
+      where: { channelId: channel.id, played: false },
       orderBy: { position: 'asc' },
       take: 100,
     })
