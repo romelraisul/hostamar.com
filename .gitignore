@@ -160,7 +160,6 @@ docker/tv-station/videos/hls2/
 *.m4s
 *.db-wal
 *.db-shm
-public/og/tv/
 scripts/bangla-dub/state.json
 state/*.db-wal
 state/*.db-shm
