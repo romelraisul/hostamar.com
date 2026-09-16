@@ -545,6 +545,9 @@ export default function TvPage() {
                 { f: 'receipt-paste.mp4', t: 'Checkout v2 — phone-paste fix, live today' },
                 { f: 'dream-job-email.mp4', t: 'AI ব্রাউজার — স্বপ্নের চাকরির ইমেইল লেখা' },
                 { f: 'receipt-workforce-10items.mp4', t: 'AI Workforce — ১০-টা রেসিপ্ট একসাথে' },
+                { f: 'programme-build-log-001.mp4', t: 'Build Log 001 — সম্পূর্ণ পর্ব (৫৯s, নেরেশনসহ)' },
+                { f: 'receipt-uptime-sla.mp4', t: 'Uptime SLA — ডাউন হলে টাকা ফেরত' },
+                { f: 'receipt-mrr-30d.mp4', t: 'MRR — ৩০ দিনের গণনা' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
