@@ -67,15 +67,20 @@ def launch(dests):
     for platform, url in dests:
         # RE-ENCODE, never -c copy: a stream copy carries the source's broken
         # timeline (ffmpeg showed time=-00:01:27 with frames stalled) and the
-        # ingest never starts the broadcast. -g 60 is the keyframe cadence
-        # YouTube wants. NO -r: forcing 15fps onto a variable-rate source made the
-        # encoder fall behind (speed=0.78x, drop climbing ~20/s) — leave the
-        # source's own cadence alone.
+        # ingest never starts the broadcast. -g 60 = the keyframe cadence YouTube
+        # wants. NO -r: forcing 15fps onto a variable-rate source made the
+        # encoder fall behind (speed=0.78x, drop ~20/s).
+        # Deliberately cheaper than the local publisher (854x480 2Mbps): this box
+        # also runs the TV mixers and the agent, and any contention showed up as
+        # drops (speed 0.79x, drop climbing) which is exactly what buffers the
+        # viewer. 640x360 @1200k leaves real headroom and YouTube serves it fine.
         cmd = (['ffmpeg'] + src + ['-map', '0',
+               '-vf', 'scale=640:360:force_original_aspect_ratio=decrease,'
+                      'pad=640:360:(ow-iw)/2:(oh-ih)/2',
                '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency',
-               '-b:v', '2000k', '-maxrate', '2200k', '-bufsize', '4400k',
+               '-b:v', '1200k', '-maxrate', '1300k', '-bufsize', '2600k',
                '-pix_fmt', 'yuv420p', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0',
-               '-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2',
+               '-c:a', 'aac', '-b:a', '96k', '-ar', '44100', '-ac', '2',
                '-f', 'flv', url])
         # stderr MUST go to a file, never a PIPE: nothing drains a PIPE while the
         # process runs, so ffmpeg fills the 64K pipe buffer and blocks — the
