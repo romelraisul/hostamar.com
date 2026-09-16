@@ -23,6 +23,8 @@ const EMPLOYEES = [
   'Fleet-Heartbeat',
   // V71: TV Station Operator — owns the 24/7 live channel + edge shelf
   'Channel',
+  // V72: Account Safety Officer — owns suspension/termination prevention
+  'Guard',
 ] as const
 
 async function isAdmin(req: NextRequest): Promise<boolean> {
