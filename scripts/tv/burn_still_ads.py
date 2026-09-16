@@ -41,14 +41,34 @@ def esc(t):
               .replace("'", "\\\\'").replace("%", "\\%"))
 
 
+def has_audio(path):
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a:0",
+                        "-show_entries", "stream=codec_name", "-of", "csv=p=0", path],
+                       capture_output=True, text=True)
+    return bool(r.stdout.strip())
+
+
 def burn(src, dst, text):
     vf = (f"drawtext=fontfile={FONT}:text='{esc(text)}'"
           f":fontcolor=white:fontsize=22:box=1:boxcolor=black@0.6"
           f":boxborderw=8:x=(w-text_w)/2:y=h-th-20")
-    cmd = ["ffmpeg", "-y", "-i", src, "-vf", vf,
-           "-c:v", "libx264", "-b:v", "800k", "-maxrate", "900k",
-           "-bufsize", "1600k", "-preset", "fast",
-           "-c:a", "copy", "-movflags", "+faststart", dst]
+    # A CC0 source with no audio track used to pass -c:a copy silently, producing
+    # a silent file that then poisoned the whole TV concat output (one silent
+    # member makes ffmpeg drop audio for the entire playlist). Inject a silent
+    # stereo track instead, so every published ad is guaranteed to carry audio.
+    if has_audio(src):
+        cmd = ["ffmpeg", "-y", "-i", src, "-vf", vf,
+               "-c:v", "libx264", "-b:v", "800k", "-maxrate", "900k",
+               "-bufsize", "1600k", "-preset", "fast",
+               "-c:a", "copy", "-movflags", "+faststart", dst]
+    else:
+        cmd = ["ffmpeg", "-y", "-i", src, "-f", "lavfi", "-i",
+               "anullsrc=channel_layout=stereo:sample_rate=44100", "-vf", vf,
+               "-map", "0:v", "-map", "1:a", "-shortest",
+               "-c:v", "libx264", "-b:v", "800k", "-maxrate", "900k",
+               "-bufsize", "1600k", "-preset", "fast",
+               "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-ac", "2",
+               "-movflags", "+faststart", dst]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     return r.returncode == 0 and os.path.exists(dst) and os.path.getsize(dst) > 100_000
 
