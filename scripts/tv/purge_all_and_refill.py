@@ -51,7 +51,7 @@ def main():
     time.sleep(8)
     run(['bash','scripts/tv/force_restart_tv.sh'], timeout=60)
     time.sleep(5)
-    p = subprocess.run(['bash','-c','curl -s -o /dev/null -w "%{http_code}" https://tv.hostamar.com/hls/tv/index.m3u8'], capture_output=True, text=True, timeout=20)
+    p = subprocess.run(['bash','-c','curl -s -o /dev/null -w "%{http_code}" https://tv.hostamar.com/master.m3u8'], capture_output=True, text=True, timeout=20)
     print(f"HLS public: {p.stdout.strip()}")
     print("Done. TV should now have 2 real-dubbed keep-music, ever-fresh will continue to 2880.")
 
