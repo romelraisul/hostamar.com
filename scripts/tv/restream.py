@@ -20,6 +20,12 @@ import time
 
 REPO = '/home/romel/hostamar-build'
 RTMP_IN = 'rtmp://127.0.0.1:1935/live/tv'
+# Read the concat playlist directly instead of pulling RTMP back out of nginx.
+# The RTMP round-trip lagged badly ("lag of 48s", speed=0.18x) because the
+# publisher writes into nginx while we read out; the playlist file has no such
+# contention and encodes at speed=0.997x. Fall back to RTMP if it is missing.
+PLAYLIST = os.path.join(REPO, 'docker/tv-station/videos/playlist.host.txt')
+ERRLOG = '/tmp/tv-restream-ffmpeg.log'
 
 def db_url():
     for line in open(os.path.join(REPO, '.env.local')):
@@ -68,14 +74,38 @@ def main():
             continue
         # Build tee muxer: -f tee "[f=flv]rtmp://...|[f=flv]rtmp://..."
         tee = "|".join([f"[f=flv]{url}" for _, url in dests])
-        cmd = ['ffmpeg','-re','-i',RTMP_IN,'-c','copy','-f','tee', tee]
+        # Source: local concat playlist (no RTMP round-trip contention).
+        if os.path.exists(PLAYLIST) and os.path.getsize(PLAYLIST) > 0:
+            src = ['-re', '-f', 'concat', '-safe', '0', '-stream_loop', '-1', '-i', PLAYLIST]
+        else:
+            src = ['-re', '-fflags', '+genpts', '-i', RTMP_IN]
+        # RE-ENCODE, do not -c copy. Stream copy preserved the source's broken
+        # timeline (ffmpeg showed time=-00:01:27, frames stalled) and YouTube
+        # never started the broadcast. -g 60 is the keyframe cadence it wants.
+        # -map 0 is REQUIRED for the tee muxer: it has no implicit stream
+        # selection, so without it every target fails with
+        # "Output file does not contain any stream".
+        cmd = (['ffmpeg'] + src + ['-map', '0',
+               '-c:v','libx264','-preset','ultrafast','-tune','zerolatency',
+               '-b:v','2000k','-maxrate','2200k','-bufsize','4400k',
+               '-pix_fmt','yuv420p','-g','60','-keyint_min','60','-sc_threshold','0',
+               '-c:a','aac','-b:a','128k','-ar','44100','-ac','2',
+               '-f','tee', tee])
         print(f"[restream] launching ffmpeg -> {len(dests)}tee", flush=True)
-        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        # stderr MUST go to a file, never a PIPE: nothing drains a PIPE while the
+        # process runs, so ffmpeg fills the 64K pipe buffer and blocks — the tee
+        # then looks alive while sending nothing, and its errors are unreadable.
+        errf = open(ERRLOG, 'ab', buffering=0)
+        errf.write(f"\n=== {time.strftime('%Y-%m-%d %H:%M:%S')} launch {len(dests)} dest ===\n".encode())
+        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=errf)
         # Wait a bit, check if it dies quickly (bad key)
         time.sleep(5)
         if proc.poll() is not None:
-            err = proc.stderr.read().decode()[-500:] if proc.stderr else ""
-            print(f"[restream] ffmpeg exited quickly: {err[:200]}", flush=True)
+            try:
+                tail = open(ERRLOG, 'rb').read()[-600:].decode('utf-8', 'replace')
+            except Exception:
+                tail = "(no log)"
+            print(f"[restream] ffmpeg exited quickly: {tail}", flush=True)
             time.sleep(30)
 
 if __name__ == '__main__':
