@@ -1,29 +1,64 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getAuthUser } from '@/lib/auth'
 import { ensureFiverrCatalog } from '@/lib/pinned-chat'
 
+export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-export const revalidate = 3600
-// FORGE 09-15: was force-dynamic + req.url param reads with ZERO server-side
-// callers (dashboard filters client-side, grep-verified) → Vercel edge stripped
-// s-maxage/SWR, every hit was MISS + full N+1 backfill. Seed (ensureFiverrCatalog)
-// now runs in a 60s in-process window (same cold-instance cadence as before);
-// the per-request tier backfill loop was dropped — all 106 rows were already
-// backfilled by V14, the read below still serves any tiers present in DB.
-let lastSeed = 0
+export const maxDuration = 60
 
-async function serve() {
-  if (Date.now() - lastSeed > 60_000) {
-    lastSeed = Date.now()
-    await ensureFiverrCatalog().catch(() => 0)
-  }
-  const services = await prisma.serviceCatalog.findMany({ where: { isActive: true }, orderBy: { id: 'asc' } })
+/**
+ * GET /api/ai-services/catalog — merged deduped catalog:
+ * existing 50 + new unique Fiverr jobs (idempotently ensured) = ~105 unique.
+ * Public (middleware allows), cached s-maxage 300 (next.config).
+ */
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const category = searchParams.get('category')
+  const search = searchParams.get('search')?.toLowerCase().trim()
+  const before = await prisma.serviceCatalog.count().catch(() => 0)
+
+  // Idempotent seed of the deduped new jobs (runs once per cold instance)
+  await ensureFiverrCatalog().catch(() => 0)
+
+  // V14: one-shot tier backfill for existing-50 services (not in the deduped
+  // JSON) — priced from their own catalog creditCost via the pricing lib.
+  try {
+    const { priceService } = await import('@/lib/pricing/ai-services-pricing')
+    const bare = await prisma.serviceCatalog.findMany({ where: { isActive: true } })
+    for (const svc of bare) {
+      const inp = svc.inputs as any
+      if (!inp?.tiers) {
+        const p = priceService(svc.id, svc.category, svc.creditCost)
+        await prisma.serviceCatalog.update({
+          where: { id: svc.id },
+          data: { inputs: { ...inp, tiers: p.tiers, marketFiverrUSD: p.fiverrUSD, marketFiverrBDT: `৳${Math.round(p.fiverrAvgUSD * 120)}`, hostamarDiscountPct: p.hostamarDiscountPct } },
+        }).catch(() => {})
+      }
+    }
+  } catch {}
+
+  const where: any = { isActive: true }
+  if (category && category !== 'all') where.category = category
+  const services = await prisma.serviceCatalog.findMany({ where, orderBy: { id: 'asc' } })
+
+  // V13: normalize hyphens ↔ spaces so 'logo-design' matches 'Logo Design'
+  const norm = (x: string) => x.toLowerCase().replace(/[-\s]+/g, '')
+  const needle = norm(search || '')
+  const filtered = search
+    ? services.filter((s: any) =>
+        norm(s.name).includes(needle) || norm(s.nameBn).includes(needle) ||
+        norm(s.category).includes(needle) ||
+        norm(s.benefit).includes(needle) || norm(s.benefitBn).includes(needle))
+    : services
+
   const res = NextResponse.json({
     success: true,
-    total: services.length,
+    total: filtered.length,
     totalDeduped: services.length,
+    addedNew: Math.max(0, services.length - before),
     duplicatesPolicy: 'semantic-dedup: existing card wins, new unique only',
-    services: services.map((s: any) => ({
+    services: filtered.map((s: any) => ({
       id: s.id, name: s.name, nameBn: s.nameBn,
       category: s.category, categoryBn: s.categoryBn,
       creditCost: s.creditCost, dollarRange: s.dollarRange,
@@ -42,5 +77,3 @@ async function serve() {
   res.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400')
   return res
 }
-
-export { serve as GET }
