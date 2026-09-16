@@ -89,7 +89,7 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8 text-zinc-400">
+      <div className="flex items-center justify-center py-8 text-[#78716C]">
         <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading payment options...
       </div>
     );
@@ -102,29 +102,29 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
   const activeNumber = selected ? config.numbers[selected] : null;
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 space-y-5">
+    <div className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-6 space-y-5">
       <div className="flex items-center gap-2">
         <Smartphone className="w-5 h-5 text-emerald-400" />
-        <h3 className="text-lg font-semibold text-white">Send Money (Personal)</h3>
+        <h3 className="text-lg font-semibold text-[#1C1917]">Send Money (Personal)</h3>
         <span className="ml-auto text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
           No merchant needed
         </span>
       </div>
 
-      <p className="text-sm text-zinc-400">{config.instructions}</p>
+      <p className="text-sm text-[#78716C]">{config.instructions}</p>
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-300">
           ⚠️ Send Money only — Cash Out নয়
         </span>
         {config.reference && (
-          <span className="rounded-md border border-zinc-700 bg-zinc-800 px-2 py-1 text-zinc-300">
+          <span className="rounded-md border border-[#D8CDB4] bg-[#FFFDF6] px-2 py-1 text-[#57534E]">
             Reference: <span className="font-mono text-emerald-400">{config.reference}</span>
             <span
               role="button"
               tabIndex={0}
               onClick={() => copyNumber(config.reference as string, 'ref')}
-              className="ml-1 cursor-pointer text-zinc-500 hover:text-zinc-300"
+              className="ml-1 cursor-pointer text-[#57534E] hover:text-[#57534E]"
               title="Copy reference"
             >
               {copiedNum === 'ref' ? (
@@ -157,7 +157,7 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
                 {isSelected && <Check className="w-4 h-4 text-emerald-400" />}
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm text-white">{num}</span>
+                <span className="font-mono text-sm text-[#1C1917]">{num}</span>
                 <span
                   role="button"
                   tabIndex={0}
@@ -165,17 +165,17 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
                     e.stopPropagation();
                     copyNumber(num, key);
                   }}
-                  className="p-1 rounded hover:bg-zinc-800"
+                  className="p-1 rounded hover:bg-[#FFFDF6]"
                   title="Copy number"
                 >
                   {copiedNum === key ? (
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
                   ) : (
-                    <Copy className="w-3.5 h-3.5 text-zinc-400" />
+                    <Copy className="w-3.5 h-3.5 text-[#78716C]" />
                   )}
                 </span>
               </div>
-              <div className="mt-2 flex items-center gap-1 text-[11px] text-zinc-500">
+              <div className="mt-2 flex items-center gap-1 text-[11px] text-[#57534E]">
                 <QrCode className="w-3 h-3" /> Send Money only
               </div>
             </button>
@@ -185,30 +185,30 @@ export default function PersonalPaymentPanel({ amount, plan, credits }: Props) {
 
       {/* Submission form */}
       {selected && activeNumber && (
-        <div className="space-y-3 border-t border-zinc-800 pt-4">
-          <div className="text-sm text-zinc-300">
-            <span className="text-zinc-500">ধাপ ১:</span> এই নম্বরে <strong>Send Money</strong> (Cash Out নয়) করুন —{' '}
+        <div className="space-y-3 border-t border-[#D8CDB4] pt-4">
+          <div className="text-sm text-[#57534E]">
+            <span className="text-[#57534E]">ধাপ ১:</span> এই নম্বরে <strong>Send Money</strong> (Cash Out নয়) করুন —{' '}
             <span className="font-mono text-emerald-400">{activeNumber}</span>
-            {amount ? <> — পরিমাণ <span className="text-white font-semibold">৳{amount}</span></> : null}
+            {amount ? <> — পরিমাণ <span className="text-[#1C1917] font-semibold">৳{amount}</span></> : null}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">আপনার নম্বর (Sender Number)</label>
+              <label className="block text-xs text-[#57534E] mb-1">আপনার নম্বর (Sender Number)</label>
               <input
                 value={senderNumber}
                 onChange={(e) => setSenderNumber(e.target.value)}
                 placeholder="01XXXXXXXXX"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-lg border border-[#D8CDB4] bg-[#FFFDF6] px-3 py-2 text-sm text-[#1C1917] placeholder-[#A89E8C] focus:border-emerald-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">TrxID (SMS-এ পাবেন)</label>
+              <label className="block text-xs text-[#57534E] mb-1">TrxID (SMS-এ পাবেন)</label>
               <input
                 value={trxId}
                 onChange={(e) => setTrxId(e.target.value.toUpperCase())}
                 placeholder="9HK3X2AB1C"
                 maxLength={10}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm font-mono text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+                className="w-full rounded-lg border border-[#D8CDB4] bg-[#FFFDF6] px-3 py-2 text-sm font-mono text-[#1C1917] placeholder-[#A89E8C] focus:border-emerald-500 focus:outline-none"
               />
             </div>
           </div>

@@ -182,7 +182,7 @@ export default function AdminPaymentsClient() {
 
   if (loading) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center text-slate-300">
+      <div className="min-h-[40vh] flex items-center justify-center text-[#57534E]">
         Loading payments...
       </div>
     )
@@ -200,19 +200,19 @@ export default function AdminPaymentsClient() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Total Payments</div>
-          <div className="text-2xl font-semibold text-white">{stats.total}</div>
+          <div className="text-sm text-[#78716C]">Total Payments</div>
+          <div className="text-2xl font-semibold text-[#1C1917]">{stats.total}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Completed</div>
+          <div className="text-sm text-[#78716C]">Completed</div>
           <div className="text-2xl font-semibold text-emerald-400">{stats.completed}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Pending</div>
+          <div className="text-sm text-[#78716C]">Pending</div>
           <div className="text-2xl font-semibold text-amber-400">{stats.pending}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Revenue</div>
+          <div className="text-sm text-[#78716C]">Revenue</div>
           <div className="text-2xl font-semibold text-[#0E7C3A]">{formatCurrency(stats.revenue)}</div>
         </div>
       </div>
@@ -224,7 +224,7 @@ export default function AdminPaymentsClient() {
               <h3 className="text-lg font-semibold text-amber-300">
                 Pending Bkash/Nagad/Rocket ({pendingTxns.length})
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-[#78716C] mt-1">
                 Customers sent money to 01822417463 (bKash) / 01711317101 (Nagad) / 01822417463 (Rocket).
                 Click Approve to confirm TrxID, activate subscription, and email receipt.
               </p>
@@ -246,27 +246,27 @@ export default function AdminPaymentsClient() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">When</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Customer</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">TrxID</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Gateway</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Plan</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Amount</th>
-                  <th className="text-right px-6 py-3 text-xs text-slate-400 font-medium">Action</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">When</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Customer</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">TrxID</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Gateway</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Plan</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Amount</th>
+                  <th className="text-right px-6 py-3 text-xs text-[#78716C] font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {pendingTxns.map((t) => (
                   <tr key={t.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                    <td className="px-6 py-4 text-xs text-slate-300">{formatDate(t.createdAt)}</td>
-                    <td className="px-6 py-4 text-sm text-white">
+                    <td className="px-6 py-4 text-xs text-[#57534E]">{formatDate(t.createdAt)}</td>
+                    <td className="px-6 py-4 text-sm text-[#1C1917]">
                       <div>{t.customerName || '—'}</div>
-                      <div className="text-xs text-slate-400">{t.customerEmail}</div>
+                      <div className="text-xs text-[#78716C]">{t.customerEmail}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-white font-mono">{t.gatewayTrxId || '—'}</td>
-                    <td className="px-6 py-4 text-sm text-slate-300 capitalize">{(t.gateway || 'bkash_personal').replace('_personal','')}</td>
-                    <td className="px-6 py-4 text-sm text-slate-300 uppercase">{(t.videoPackage || 'starter')}</td>
-                    <td className="px-6 py-4 text-sm text-white">{formatCurrency(t.amount, t.currency)}</td>
+                    <td className="px-6 py-4 text-sm text-[#1C1917] font-mono">{t.gatewayTrxId || '—'}</td>
+                    <td className="px-6 py-4 text-sm text-[#57534E] capitalize">{(t.gateway || 'bkash_personal').replace('_personal','')}</td>
+                    <td className="px-6 py-4 text-sm text-[#57534E] uppercase">{(t.videoPackage || 'starter')}</td>
+                    <td className="px-6 py-4 text-sm text-[#1C1917]">{formatCurrency(t.amount, t.currency)}</td>
                     <td className="px-6 py-4 text-right">
                       <button
                         type="button"
@@ -275,7 +275,7 @@ export default function AdminPaymentsClient() {
                         className={
                           'px-3 py-1.5 rounded-md text-xs font-medium transition ' +
                           (approvingId === t.id
-                            ? 'bg-slate-700 text-slate-400 cursor-wait'
+                            ? 'bg-[#FDF8EC] text-[#78716C] cursor-wait'
                             : 'bg-emerald-600 hover:bg-emerald-500 text-white')
                         }
                       >
@@ -294,7 +294,7 @@ export default function AdminPaymentsClient() {
       {verifications.length > 0 && (
         <div className="bg-white/5 border border-emerald-500/20 rounded-xl overflow-hidden">
           <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">Personal Send-Money — Pending TrxID</h3>
+            <h3 className="text-lg font-semibold text-[#1C1917]">Personal Send-Money — Pending TrxID</h3>
             <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">
               {verifications.length} pending
             </span>
@@ -303,32 +303,32 @@ export default function AdminPaymentsClient() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/5">
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Customer</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Method</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Amount</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">TrxID</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Sender</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">SMS</th>
-                  <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Plan</th>
-                  <th className="text-right px-6 py-3 text-xs text-slate-400 font-medium">Action</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Customer</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Method</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Amount</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">TrxID</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Sender</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">SMS</th>
+                  <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Plan</th>
+                  <th className="text-right px-6 py-3 text-xs text-[#78716C] font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {verifications.map((v) => (
                   <tr key={v.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                    <td className="px-6 py-4 text-sm text-white">{v.customerEmail || v.customerId}</td>
-                    <td className="px-6 py-4 text-sm text-white">{v.method}</td>
-                    <td className="px-6 py-4 text-sm text-white">৳{v.amount}</td>
+                    <td className="px-6 py-4 text-sm text-[#1C1917]">{v.customerEmail || v.customerId}</td>
+                    <td className="px-6 py-4 text-sm text-[#1C1917]">{v.method}</td>
+                    <td className="px-6 py-4 text-sm text-[#1C1917]">৳{v.amount}</td>
                     <td className="px-6 py-4 text-sm font-mono text-emerald-300">{v.trxId}</td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{v.senderNumber}</td>
+                    <td className="px-6 py-4 text-sm text-[#57534E]">{v.senderNumber}</td>
                     <td className="px-6 py-4 text-sm">
                       {v.smsMatched ? (
                         <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-300">matched</span>
                       ) : (
-                        <span className="text-xs px-2 py-1 rounded-full bg-slate-500/20 text-slate-400">no SMS</span>
+                        <span className="text-xs px-2 py-1 rounded-full bg-[#EADFC4] text-[#78716C]">no SMS</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-300">{v.plan || '—'}{v.credits ? ` (+${v.credits}cr)` : ''}</td>
+                    <td className="px-6 py-4 text-sm text-[#57534E]">{v.plan || '—'}{v.credits ? ` (+${v.credits}cr)` : ''}</td>
                     <td className="px-6 py-4 text-right whitespace-nowrap">
                       <button
                         type="button"
@@ -337,7 +337,7 @@ export default function AdminPaymentsClient() {
                         className={
                           'px-3 py-1.5 rounded-md text-xs font-medium transition mr-2 ' +
                           (approvingId === v.id
-                            ? 'bg-slate-700 text-slate-400 cursor-wait'
+                            ? 'bg-[#FDF8EC] text-[#78716C] cursor-wait'
                             : 'bg-emerald-600 hover:bg-emerald-500 text-white')
                         }
                       >
@@ -362,29 +362,29 @@ export default function AdminPaymentsClient() {
 
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-white/5">
-          <h3 className="text-lg font-semibold text-white">Payments</h3>
+          <h3 className="text-lg font-semibold text-[#1C1917]">Payments</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Transaction</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Method</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Amount</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Status</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Date</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Transaction</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Method</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Amount</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Status</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Date</th>
               </tr>
             </thead>
             <tbody>
               {payments.map((payment) => (
                 <tr key={payment.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                  <td className="px-6 py-4 text-sm text-white">
+                  <td className="px-6 py-4 text-sm text-[#1C1917]">
                     {payment.transactionId || '—'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-white capitalize">
+                  <td className="px-6 py-4 text-sm text-[#1C1917] capitalize">
                     {payment.method.toLowerCase()}
                   </td>
-                  <td className="px-6 py-4 text-sm text-white">
+                  <td className="px-6 py-4 text-sm text-[#1C1917]">
                     {formatCurrency(payment.amount, payment.currency)}
                   </td>
                   <td className="px-6 py-4">
@@ -401,12 +401,12 @@ export default function AdminPaymentsClient() {
                       {payment.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{formatDate(payment.createdAt)}</td>
+                  <td className="px-6 py-4 text-sm text-[#57534E]">{formatDate(payment.createdAt)}</td>
                 </tr>
               ))}
               {!payments.length && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-8 text-center text-[#78716C]">
                     No payments found.
                   </td>
                 </tr>

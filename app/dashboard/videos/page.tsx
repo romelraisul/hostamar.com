@@ -389,7 +389,7 @@ export default function VideosPage() {
                       <Video className="w-12 h-12 text-gray-300" />
                     </div>
                   )}
-                  <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 rounded text-white text-xs">
+                  <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 rounded text-[#1C1917] text-xs">
                     {formatDuration(video.duration)}
                   </div>
                   {video.status === 'processing' && (
@@ -594,7 +594,7 @@ export default function VideosPage() {
 
             {previewVideo.url && /\.(webm|mp4)(\?|$)/i.test(previewVideo.url) ? (
               /* Real video file (B2 webm/mp4) — native player */
-              <video controls src={proxiedUrl(previewVideo)} className="w-full aspect-[9/16] bg-[#1C1917] rounded-xl" />
+              <video controls src={proxiedUrl(previewVideo)} className="w-full aspect-[9/16] bg-[#FFFDF6] rounded-xl" />
             ) : (() => {
               const m = getManifest(previewVideo)
               if (!m) {
@@ -606,14 +606,14 @@ export default function VideosPage() {
               }
               return (
                 <div className="space-y-3">
-                  <div className="relative w-full aspect-[9/16] bg-[#0a0a0a] rounded-xl overflow-hidden">
+                  <div className="relative w-full aspect-[9/16] bg-[#FBF4E4] rounded-xl overflow-hidden">
                     <img src={m.slides[0]} alt="slide" className="w-full h-full object-cover opacity-90" />
                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent" />
-                    <p className="absolute bottom-4 inset-x-4 text-white text-sm text-center font-medium" style={{ fontFamily: 'Noto Sans Bengali, Hind Siliguri, sans-serif' }}>
+                    <p className="absolute bottom-4 inset-x-4 text-[#1C1917] text-sm text-center font-medium" style={{ fontFamily: 'Noto Sans Bengali, Hind Siliguri, sans-serif' }}>
                       {m.captions[0] || previewVideo.title}
                     </p>
                     <div className="absolute top-3 right-3 w-10 h-10 rounded-full bg-[#0E7C3A]/85 flex items-center justify-center text-white font-bold">H</div>
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 rounded text-white text-xs">
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 rounded text-[#1C1917] text-xs">
                       ১/{m.slides.length} স্লাইড · ৩ সে/স্লাইড
                     </div>
                   </div>

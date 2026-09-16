@@ -70,8 +70,8 @@ export default function EmployeesTab() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-white">এমপ্লয়িজ <span className="text-xs font-normal text-zinc-500">· Ops Center · 16 lanes</span></h2>
-          <p className="text-xs text-zinc-500">GET /api/admin/ops/status + /feed · 10s live feed · POST /api/admin/ops/control</p>
+          <h2 className="text-lg font-bold text-[#1C1917]">এমপ্লয়িজ <span className="text-xs font-normal text-[#57534E]">· Ops Center · 16 lanes</span></h2>
+          <p className="text-xs text-[#57534E]">GET /api/admin/ops/status + /feed · 10s live feed · POST /api/admin/ops/control</p>
         </div>
         <button onClick={refreshAll} className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white text-sm flex items-center gap-2 hover:bg-[#0a5c2a]"><RefreshCw className="w-4 h-4"/>Refresh</button>
       </div>
@@ -92,7 +92,7 @@ export default function EmployeesTab() {
         <OpsLaneDrawer lane={selectedLane} events={events} onClose={() => setSelected(null)} onControl={control} />
       )}
 
-      <p className="text-[11px] text-zinc-600">Autonomy: autonomous = internal work no approval · supervised = external actions need owner approval · halted/paused = no runs (control sync).</p>
+      <p className="text-[11px] text-[#57534E]">Autonomy: autonomous = internal work no approval · supervised = external actions need owner approval · halted/paused = no runs (control sync).</p>
     </div>
   )
 }

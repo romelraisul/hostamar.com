@@ -51,7 +51,7 @@ export default function AdminServicesClient() {
 
   if (loading) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center text-slate-300">
+      <div className="min-h-[40vh] flex items-center justify-center text-[#57534E]">
         Loading services...
       </div>
     )
@@ -69,47 +69,47 @@ export default function AdminServicesClient() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Services</div>
-          <div className="text-2xl font-semibold text-white">{stats.total}</div>
+          <div className="text-sm text-[#78716C]">Services</div>
+          <div className="text-2xl font-semibold text-[#1C1917]">{stats.total}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Active</div>
+          <div className="text-sm text-[#78716C]">Active</div>
           <div className="text-2xl font-semibold text-emerald-400">{stats.active}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Inactive</div>
+          <div className="text-sm text-[#78716C]">Inactive</div>
           <div className="text-2xl font-semibold text-amber-400">{stats.inactive}</div>
         </div>
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-white/5">
-          <h3 className="text-lg font-semibold text-white">Services</h3>
+          <h3 className="text-lg font-semibold text-[#1C1917]">Services</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Customer</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Service</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Price</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Status</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Customer</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Service</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Price</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
               {services.map((service) => (
                 <tr key={service.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                  <td className="px-6 py-4 text-sm text-white">
+                  <td className="px-6 py-4 text-sm text-[#1C1917]">
                     {service.customer?.name || '—'}
-                    <div className="text-xs text-slate-400">{service.customer?.email || '—'}</div>
+                    <div className="text-xs text-[#78716C]">{service.customer?.email || '—'}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-white capitalize">
+                  <td className="px-6 py-4 text-sm text-[#1C1917] capitalize">
                     <div>{service.name || 'Unnamed service'}</div>
                     {service.description && (
-                      <div className="text-xs text-slate-400">{service.description}</div>
+                      <div className="text-xs text-[#78716C]">{service.description}</div>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-white">
+                  <td className="px-6 py-4 text-sm text-[#1C1917]">
                     {service.price !== undefined ? formatCurrency(service.price) : '—'}
                   </td>
                   <td className="px-6 py-4">
@@ -128,7 +128,7 @@ export default function AdminServicesClient() {
               ))}
               {!services.length && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={4} className="px-6 py-8 text-center text-[#78716C]">
                     No services found.
                   </td>
                 </tr>

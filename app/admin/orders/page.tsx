@@ -61,7 +61,7 @@ export default function AdminOrdersClient() {
 
   if (loading) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center text-slate-300">
+      <div className="min-h-[40vh] flex items-center justify-center text-[#57534E]">
         Loading orders...
       </div>
     )
@@ -79,49 +79,49 @@ export default function AdminOrdersClient() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Total Orders</div>
-          <div className="text-2xl font-semibold text-white">{stats.total}</div>
+          <div className="text-sm text-[#78716C]">Total Orders</div>
+          <div className="text-2xl font-semibold text-[#1C1917]">{stats.total}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Completed</div>
+          <div className="text-sm text-[#78716C]">Completed</div>
           <div className="text-2xl font-semibold text-emerald-400">{stats.completed}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Pending</div>
+          <div className="text-sm text-[#78716C]">Pending</div>
           <div className="text-2xl font-semibold text-amber-400">{stats.pending}</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-          <div className="text-sm text-slate-400">Revenue</div>
+          <div className="text-sm text-[#78716C]">Revenue</div>
           <div className="text-2xl font-semibold text-[#0E7C3A]">{formatCurrency(stats.revenue)}</div>
         </div>
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-white/5">
-          <h3 className="text-lg font-semibold text-white">Orders</h3>
+          <h3 className="text-lg font-semibold text-[#1C1917]">Orders</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/5">
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Customer</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Plan</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Amount</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Status</th>
-                <th className="text-left px-6 py-3 text-xs text-slate-400 font-medium">Date</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Customer</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Plan</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Amount</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Status</th>
+                <th className="text-left px-6 py-3 text-xs text-[#78716C] font-medium">Date</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                  <td className="px-6 py-4 text-sm text-white">
+                  <td className="px-6 py-4 text-sm text-[#1C1917]">
                     {order.customer?.name || '—'}
-                    <div className="text-xs text-slate-400">{order.customer?.email || '—'}</div>
+                    <div className="text-xs text-[#78716C]">{order.customer?.email || '—'}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-white capitalize">
+                  <td className="px-6 py-4 text-sm text-[#1C1917] capitalize">
                     {order.plan.toLowerCase()}
                   </td>
-                  <td className="px-6 py-4 text-sm text-white">
+                  <td className="px-6 py-4 text-sm text-[#1C1917]">
                     {formatCurrency(order.amount, order.currency)}
                   </td>
                   <td className="px-6 py-4">
@@ -138,12 +138,12 @@ export default function AdminOrdersClient() {
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{formatDate(order.createdAt)}</td>
+                  <td className="px-6 py-4 text-sm text-[#57534E]">{formatDate(order.createdAt)}</td>
                 </tr>
               ))}
               {!orders.length && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-8 text-center text-[#78716C]">
                     No orders found.
                   </td>
                 </tr>

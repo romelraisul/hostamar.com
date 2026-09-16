@@ -218,13 +218,13 @@ export default function ReelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917]">
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="flex items-center gap-3 mb-6">
           <Video className="h-7 w-7 text-[#10B981]" />
           <h1 className="text-2xl font-bold">AI রিল জেনারেটর</h1>
           <span className="rounded-full bg-[#10B981]/15 text-[#10B981] text-[11px] font-bold px-2 py-0.5 border border-[#10B981]/30">NEW</span>
-          {loading && <Loader2 className="h-5 w-5 animate-spin text-zinc-500 ml-1" />}
+          {loading && <Loader2 className="h-5 w-5 animate-spin text-[#57534E] ml-1" />}
         </div>
 
         <div className="grid md:grid-cols-[380px_1fr] gap-8 items-start">
@@ -232,10 +232,10 @@ export default function ReelPage() {
             <ReelPreview images={images} captions={captions} logoUrl={logoUrl} />
             <div className="flex flex-wrap gap-2">
               <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={onLogoUpload} />
-              <button onClick={() => logoInputRef.current?.click()} className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-[#1C1917] hover:bg-zinc-800 px-4 py-2 text-sm font-medium">
+              <button onClick={() => logoInputRef.current?.click()} className="flex items-center gap-1.5 rounded-full border border-[#D8CDB4] bg-[#FFFDF6] hover:bg-[#FFFDF6] px-4 py-2 text-sm font-medium">
                 <Upload className="h-4 w-4" /> লোগো আপলোড
               </button>
-              <button onClick={toggleVoice} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition ${speaking ? 'bg-[#10B981] animate-pulse' : 'bg-[#0E7C3A] hover:bg-[#10B981]'}`}>
+              <button onClick={toggleVoice} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-white transition ${speaking ? 'bg-[#10B981] animate-pulse' : 'bg-[#0E7C3A] hover:bg-[#10B981] text-white'}`}>
                 {speaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 {speaking ? 'বন্ধ করুন' : 'বাংলা ভয়েসওভার চালু করুন'}
               </button>
@@ -243,7 +243,7 @@ export default function ReelPage() {
                 {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                 ভিডিও এক্সপোর্ট (১২ সেকেন্ড)
               </button>
-              <button onClick={load} disabled={loading} className="rounded-full border border-zinc-700 bg-[#1C1917] hover:bg-zinc-800 px-4 py-2 text-sm">
+              <button onClick={load} disabled={loading} className="rounded-full border border-[#D8CDB4] bg-[#FFFDF6] hover:bg-[#FFFDF6] px-4 py-2 text-sm">
                 রিফ্রেশ
               </button>
             </div>
@@ -251,27 +251,27 @@ export default function ReelPage() {
           </div>
 
           <div className="space-y-5">
-            <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/60 p-4">
+            <div className="rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/60 p-4">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="font-semibold text-sm">স্ক্রিপ্ট</h2>
-                <button onClick={() => { navigator.clipboard?.writeText(data?.script || ''); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white">
+                <button onClick={() => { navigator.clipboard?.writeText(data?.script || ''); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex items-center gap-1 text-xs text-[#78716C] hover:text-[#1C1917]">
                   <Copy className="h-3 w-3" /> {copied ? 'কপি হয়েছে' : 'কপি'}
                 </button>
               </div>
-              <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+              <p className="text-sm text-[#57534E] leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "'Noto Sans Bengali', sans-serif" }}>
                 {data?.script || 'প্লাস্টিক → গ্রাফিন — $১ → $১২৫০ রিল স্ক্রিপ্ট লোড হচ্ছে…'}
               </p>
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/60 p-4">
+            <div className="rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/60 p-4">
               <h2 className="font-semibold text-sm mb-2">ক্যাপশন (৪ স্লাইড)</h2>
-              <ol className="text-sm text-zinc-300 space-y-1 list-decimal list-inside" style={{ fontFamily: "'Noto Sans Bengali', sans-serif" }}>
+              <ol className="text-sm text-[#57534E] space-y-1 list-decimal list-inside" style={{ fontFamily: "'Noto Sans Bengali', sans-serif" }}>
                 {captions.map((c, i) => <li key={i}>{c}</li>)}
               </ol>
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-[#1C1917]/60 p-4 text-sm text-zinc-400">
-              <p className="mb-2 font-semibold text-zinc-200">HD এক্সপোর্ট চাই? Pro নিন</p>
+            <div className="rounded-xl border border-[#D8CDB4] bg-[#FFFDF6]/60 p-4 text-sm text-[#78716C]">
+              <p className="mb-2 font-semibold text-[#1C1917]">HD এক্সপোর্ট চাই? Pro নিন</p>
               <p>Pro ১২৯৯ TK → 13000cr — bKash <span className="text-[#10B981] font-semibold">01822417463</span></p>
               <Link href="/dashboard/payment" className="inline-flex mt-3 rounded-full bg-[#0E7C3A] hover:bg-[#10B981] text-white px-4 py-1.5 font-semibold text-xs">আপগ্রেড করুন →</Link>
             </div>

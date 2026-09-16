@@ -205,7 +205,7 @@ export default function CloudDashboard() {
                         <td className="py-2 pr-3 text-[#4A5D54]">{s.port ?? '—'}</td>
                         <td className="py-2 pr-3">
                           <span className={`inline-flex items-center gap-1 ${s.status === 'up' ? 'text-[#0E7C3A]' : 'text-red-500'}`}>
-                            <span className={`inline-block h-2 w-2 rounded-full ${s.status === 'up' ? 'bg-[#0E7C3A]' : 'bg-red-500'}`} />
+                            <span className={`inline-block h-2 w-2 rounded-full ${s.status === 'up' ? 'bg-[#0E7C3A] text-white' : 'bg-red-500'}`} />
                             {s.status === 'up' ? 'চালু' : 'বন্ধ'}
                           </span>
                         </td>

@@ -83,32 +83,32 @@ export default function ApiKeysPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917]">
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Key className="w-7 h-7 text-emerald-400" /> API Keys
           </h1>
-          <p className="text-zinc-400 mt-1">
+          <p className="text-[#78716C] mt-1">
             Use API keys to call Hostamar APIs programmatically. Pass as{' '}
-            <code className="text-emerald-300 bg-[#1C1917] px-1.5 py-0.5 rounded text-sm">Authorization: Bearer &lt;key&gt;</code>
+            <code className="text-emerald-300 bg-[#FFFDF6] px-1.5 py-0.5 rounded text-sm">Authorization: Bearer &lt;key&gt;</code>
           </p>
         </div>
 
         {/* Create key */}
-        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 p-6 mb-6">
+        <div className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               value={newKeyName}
               onChange={(e) => setNewKeyName(e.target.value)}
               placeholder="Key name (e.g. my-app)"
-              className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none"
+              className="flex-1 rounded-lg border border-[#D8CDB4] bg-[#FFFDF6] px-4 py-2.5 text-sm text-[#1C1917] placeholder-[#A89E8C] focus:border-emerald-500 focus:outline-none"
               onKeyDown={(e) => e.key === 'Enter' && createKey()}
             />
             <button
               onClick={createKey}
               disabled={creating || !newKeyName.trim()}
-              className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition"
+              className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-2.5 text-sm font-semibold text-white flex items-center justify-center gap-2 transition"
             >
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Create Key
@@ -121,9 +121,9 @@ export default function ApiKeysPage() {
                 <Shield className="w-3.5 h-3.5" /> Copy this key now — it won't be shown again.
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 font-mono text-sm text-white bg-[#1C1917] rounded px-3 py-2 break-all">{newKey}</code>
-                <button onClick={copyKey} className="shrink-0 p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition">
-                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-400" />}
+                <code className="flex-1 font-mono text-sm text-[#1C1917] bg-[#FFFDF6] rounded px-3 py-2 break-all">{newKey}</code>
+                <button onClick={copyKey} className="shrink-0 p-2 rounded-lg bg-[#FFFDF6] hover:bg-[#FDF8EC] transition">
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-[#78716C]" />}
                 </button>
               </div>
             </div>
@@ -135,32 +135,32 @@ export default function ApiKeysPage() {
         )}
 
         {/* Keys list */}
-        <div className="rounded-2xl border border-zinc-800 bg-[#1C1917]/50 overflow-hidden">
-          <div className="px-6 py-4 border-b border-zinc-800">
+        <div className="rounded-2xl border border-[#D8CDB4] bg-[#FFFDF6]/50 overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#D8CDB4]">
             <h2 className="font-semibold">Your Keys ({keys.length}/5)</h2>
           </div>
           {loading ? (
-            <div className="px-6 py-10 text-center text-zinc-500">Loading...</div>
+            <div className="px-6 py-10 text-center text-[#57534E]">Loading...</div>
           ) : keys.length === 0 ? (
-            <div className="px-6 py-10 text-center text-zinc-500 text-sm">No API keys yet. Create one above.</div>
+            <div className="px-6 py-10 text-center text-[#57534E] text-sm">No API keys yet. Create one above.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Name</th>
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Permissions</th>
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Requests</th>
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Last Used</th>
-                    <th className="text-left px-6 py-3 text-xs text-zinc-500 font-medium">Status</th>
-                    <th className="text-right px-6 py-3 text-xs text-zinc-500 font-medium"></th>
+                  <tr className="border-b border-[#D8CDB4]">
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Name</th>
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Permissions</th>
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Requests</th>
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Last Used</th>
+                    <th className="text-left px-6 py-3 text-xs text-[#57534E] font-medium">Status</th>
+                    <th className="text-right px-6 py-3 text-xs text-[#57534E] font-medium"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {keys.map((k) => (
-                    <tr key={k.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                      <td className="px-6 py-3 text-sm font-medium text-white">{k.name}</td>
-                      <td className="px-6 py-3 text-xs text-zinc-400">
+                    <tr key={k.id} className="border-b border-[#D8CDB4]/50 hover:bg-[#FFFDF6]/30">
+                      <td className="px-6 py-3 text-sm font-medium text-[#1C1917]">{k.name}</td>
+                      <td className="px-6 py-3 text-xs text-[#78716C]">
                         {[
                           k.canGenerateVideo && 'video',
                           k.canGenerateImage && 'image',
@@ -169,8 +169,8 @@ export default function ApiKeysPage() {
                           .filter(Boolean)
                           .join(', ') || 'none'}
                       </td>
-                      <td className="px-6 py-3 text-sm text-zinc-300">{k.totalRequests}</td>
-                      <td className="px-6 py-3 text-sm text-zinc-400">
+                      <td className="px-6 py-3 text-sm text-[#57534E]">{k.totalRequests}</td>
+                      <td className="px-6 py-3 text-sm text-[#78716C]">
                         {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : 'never'}
                       </td>
                       <td className="px-6 py-3">
@@ -186,7 +186,7 @@ export default function ApiKeysPage() {
                       <td className="px-6 py-3 text-right">
                         <button
                           onClick={() => deleteKey(k.id)}
-                          className="p-1.5 rounded-lg hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition"
+                          className="p-1.5 rounded-lg hover:bg-red-500/20 text-[#57534E] hover:text-red-400 transition"
                           title="Delete key"
                         >
                           <Trash2 className="w-4 h-4" />

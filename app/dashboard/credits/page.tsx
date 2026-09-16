@@ -190,7 +190,7 @@ export default function CreditsPage() {
           <h2 className="text-sm font-semibold text-gray-700">প্রতি কাজের খরচ</h2>
           <div className="flex flex-wrap gap-2">
             {COST_PILLS.map(p => (
-              <span key={p.cost} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-900 text-white border border-gray-800">
+              <span key={p.cost} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-900 text-[#1C1917] border border-gray-800">
                 {p.label} {toBn(p.cost)}cr
               </span>
             ))}
