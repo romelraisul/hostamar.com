@@ -544,6 +544,7 @@ export default function TvPage() {
                 { f: 'receipt-checkout.mp4', t: 'Checkout — ৪s, bKash/Nagad/Rocket' },
                 { f: 'receipt-paste.mp4', t: 'Checkout v2 — phone-paste fix, live today' },
                 { f: 'dream-job-email.mp4', t: 'AI ব্রাউজার — স্বপ্নের চাকরির ইমেইল লেখা' },
+                { f: 'receipt-workforce-10items.mp4', t: 'AI Workforce — ১০-টা রেসিপ্ট একসাথে' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
