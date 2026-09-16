@@ -38,6 +38,8 @@ def main():
         log("og:", og_path, os.path.getsize(og_path))
     except Exception as e:
         log("og skipped:", e)
+        if os.path.exists(og_path) and os.path.getsize(og_path) > 1000:
+            log("og reused:", og_path)
 
     schema = {
         "@context": "https://schema.org",
