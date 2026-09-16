@@ -1,0 +1,6 @@
+# Live HLS output — written by the podman nginx-rtmp container as a different
+# uid, so git cannot stat it and every pull/push dies with
+# "fatal: Unable to process path .../hls-archive/tv/25593.ts".
+# Generated output, never source.
+hls-archive/
+hls2/
