@@ -121,8 +121,10 @@ body {
 
 /* Hostamar green links — not blue */
 a { text-underline-offset: 4px; }
-a:not(.no-green) { color: #0E7C3A; }
-a:not(.no-green):hover { color: #0A5A2B; }
+/* :where() = zero specificity: content links stay green, but any class that
+   sets a color (.text-white, .bp-btn-primary) wins. NOVA 2026-09-16 */
+:where(a:not(.no-green)) { color: #0E7C3A; }
+:where(a:not(.no-green):hover) { color: #0A5A2B; }
 .prose a { color: #0E7C3A; }
 .prose a:hover { color: #0A5A2B; }
 /* Code blocks stay neutral/blue — override via .prose code */
@@ -153,8 +155,8 @@ body.bp-theme{
 }
 body.bp-theme h1,body.bp-theme h2,body.bp-theme h3{letter-spacing:0}
 .bp-theme ::selection{background:var(--bp-green);color:var(--bp-card)}
-.bp-theme a:not(.no-green){color:var(--bp-green)}
-.bp-theme a:not(.no-green):hover{color:var(--bp-green-deep)}
+:where(.bp-theme a:not(.no-green)){color:var(--bp-green)}
+:where(.bp-theme a:not(.no-green):hover){color:var(--bp-green-deep)}
 .bp-theme :focus-visible{outline:3px solid var(--bp-blue);outline-offset:3px;border-radius:6px}
 
 .bp-wrap{max-width:1200px;margin-inline:auto;padding-inline:clamp(1rem,4vw,2.5rem)}
