@@ -47,12 +47,12 @@ export default function AdminMarket() {
           Sync now
         </button>
       </div>
-      {msg && <p className="rounded bg-slate-100 px-3 py-2 text-xs">{msg}</p>}
-      <p className="text-xs text-slate-500">
+      {msg && <p className="rounded bg-[#FBF4E4] px-3 py-2 text-xs">{msg}</p>}
+      <p className="text-xs text-[#57534E]">
         Plans: Starter 599 · Basic 1199 · Pro 2499 · Premium 4999 Taka.
         AUTO_ADJUST = off. Drift &gt;10% is queued for your approval.
       </p>
-      {trends.length === 0 && <p className="text-sm text-slate-500">No drift pending. Prices are at market.</p>}
+      {trends.length === 0 && <p className="text-sm text-[#57534E]">No drift pending. Prices are at market.</p>}
       {trends.map(t => (
         <div key={t.id} className="rounded-xl border bg-[#FFFDF6] p-4">
           <div className="flex items-center justify-between">
@@ -68,7 +68,7 @@ export default function AdminMarket() {
               ({t.driftPct > 0 ? '+' : ''}{t.driftPct}%)
             </span>
           </p>
-          <p className="text-xs text-slate-500">via {t.source}</p>
+          <p className="text-xs text-[#57534E]">via {t.source}</p>
           {t.status === 'pending_approval' && (
             <div className="mt-3 flex gap-2">
               <button onClick={() => decide(t.id, 'approve')}
@@ -76,7 +76,7 @@ export default function AdminMarket() {
                 <Check className="h-3 w-3" /> Apply
               </button>
               <button onClick={() => decide(t.id, 'reject')}
-                className="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white">
+                className="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1 text-xs font-semibold text-[#1C1917]">
                 <X className="h-3 w-3" /> Reject
               </button>
             </div>

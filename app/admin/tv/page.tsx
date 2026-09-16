@@ -82,7 +82,7 @@ export default function AdminTvControls() {
     finally { setBusy(false); }
   };
 
-  if (loading) return <div className="p-6 text-zinc-400">Loading TV controls...</div>;
+  if (loading) return <div className="p-6 text-[#78716C]">Loading TV controls...</div>;
 
   const isLive = status?.isLive;
 
@@ -92,7 +92,7 @@ export default function AdminTvControls() {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Tv className="w-6 h-6 text-emerald-400" /> TV Station Controls
         </h1>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${isLive ? 'bg-red-500/20 text-red-400' : 'bg-zinc-800 text-zinc-400'}`}>
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${isLive ? 'bg-red-500/20 text-red-400' : 'bg-[#FFFDF6] text-[#78716C]'}`}>
           <Radio className={`w-4 h-4 ${isLive ? 'animate-pulse' : ''}`} />
           {isLive ? 'LIVE' : 'OFFLINE'}
         </div>
@@ -103,63 +103,63 @@ export default function AdminTvControls() {
 
       {/* Controls */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <button onClick={startStream} disabled={busy || isLive} className="p-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-700 disabled:text-zinc-500 font-semibold flex items-center justify-center gap-2">
+        <button onClick={startStream} disabled={busy || isLive} className="p-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-[#FDF8EC] disabled:text-white/70 font-semibold flex items-center justify-center gap-2">
           {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />} Start Stream
         </button>
-        <button onClick={stopStream} disabled={busy || !isLive} className="p-4 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-zinc-700 disabled:text-zinc-500 font-semibold flex items-center justify-center gap-2">
+        <button onClick={stopStream} disabled={busy || !isLive} className="p-4 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-[#FDF8EC] disabled:text-[#57534E] font-semibold flex items-center justify-center gap-2">
           {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Square className="w-5 h-5" />} Stop Stream
         </button>
-        <button onClick={generateNow} disabled={busy} className="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:text-zinc-500 font-semibold flex items-center justify-center gap-2">
+        <button onClick={generateNow} disabled={busy} className="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-[#FDF8EC] disabled:text-[#57534E] font-semibold flex items-center justify-center gap-2">
           {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />} Generate Video
         </button>
       </div>
 
       {/* Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#FDF8EC] border border-[#D8CDB4] p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Zap className="w-4 h-4 text-amber-400" /> Stream Status</h3>
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-zinc-400">Channel</dt><dd>{status?.channelName || '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-zinc-400">Playlist</dt><dd>{status?.playlistLength || 0} items</dd></div>
-            <div className="flex justify-between"><dt className="text-zinc-400">Auto-generate</dt><dd>{status?.autoGenerateEnabled ? 'ON' : 'OFF'}</dd></div>
-            <div className="flex justify-between"><dt className="text-zinc-400">Live since</dt><dd>{status?.liveSince ? new Date(status.liveSince).toLocaleString() : '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-[#78716C]">Channel</dt><dd>{status?.channelName || '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-[#78716C]">Playlist</dt><dd>{status?.playlistLength || 0} items</dd></div>
+            <div className="flex justify-between"><dt className="text-[#78716C]">Auto-generate</dt><dd>{status?.autoGenerateEnabled ? 'ON' : 'OFF'}</dd></div>
+            <div className="flex justify-between"><dt className="text-[#78716C]">Live since</dt><dd>{status?.liveSince ? new Date(status.liveSince).toLocaleString() : '—'}</dd></div>
           </dl>
         </div>
-        <div className="rounded-xl bg-[#23201D] border border-zinc-800 p-4">
+        <div className="rounded-xl bg-[#FDF8EC] border border-[#D8CDB4] p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2"><Globe className="w-4 h-4 text-blue-400" /> Destinations</h3>
           {status?.destinations?.length ? (
             <div className="space-y-2">
               {status.destinations.map((d) => (
                 <div key={d.platform} className="flex items-center justify-between text-sm">
                   <span>{d.label || d.platform}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${d.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${d.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#FFFDF6] text-[#57534E]'}`}>
                     {d.isActive ? 'active' : 'off'}
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-zinc-500">No destinations configured.</p>
+            <p className="text-sm text-[#57534E]">No destinations configured.</p>
           )}
         </div>
       </div>
 
       {/* Playlist */}
-      <div className="rounded-xl bg-[#23201D] border border-zinc-800 overflow-hidden">
-        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+      <div className="rounded-xl bg-[#FDF8EC] border border-[#D8CDB4] overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#D8CDB4] flex items-center justify-between">
           <h3 className="font-semibold">Playlist ({playlist.length})</h3>
-          <button onClick={load} className="p-1.5 rounded-lg hover:bg-zinc-800"><RefreshCw className="w-4 h-4 text-zinc-400" /></button>
+          <button onClick={load} className="p-1.5 rounded-lg hover:bg-[#FFFDF6]"><RefreshCw className="w-4 h-4 text-[#78716C]" /></button>
         </div>
-        <div className="divide-y divide-zinc-800 max-h-[300px] overflow-auto">
+        <div className="divide-y divide-[#D8CDB4] max-h-[300px] overflow-auto">
           {playlist.length === 0 ? (
-            <div className="p-6 text-center text-zinc-500 text-sm">No videos in playlist. Click "Generate Video" to add content.</div>
+            <div className="p-6 text-center text-[#57534E] text-sm">No videos in playlist. Click "Generate Video" to add content.</div>
           ) : (
             playlist.slice(0, 15).map((item, idx) => (
               <div key={item.id} className="px-4 py-3 flex items-center gap-4">
-                <span className="text-zinc-500 text-sm w-6">{idx + 1}</span>
+                <span className="text-[#57534E] text-sm w-6">{idx + 1}</span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm text-white truncate">{item.title}</div>
-                  <div className="text-xs text-zinc-500">{item.source}</div>
+                  <div className="text-sm text-[#1C1917] truncate">{item.title}</div>
+                  <div className="text-xs text-[#57534E]">{item.source}</div>
                 </div>
               </div>
             ))

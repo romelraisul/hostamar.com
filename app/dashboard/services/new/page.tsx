@@ -9,7 +9,7 @@ export default async function ServicesNewPage() {
   const user = await getAuthUser()
   if (!user) redirect('/login')
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-zinc-500">লোড হচ্ছে...</div>}>
+    <Suspense fallback={<div className="p-6 text-sm text-[#57534E]">লোড হচ্ছে...</div>}>
       <NewServiceForm />
     </Suspense>
   )
