@@ -483,7 +483,13 @@ function curlJson(url, extraArgs = []) {
   // never throw on transient net/parse failure — {} = "no job", loop retries in 10s
   try {
     const out = execFileSync('curl', ['-4', '-s', '--connect-timeout', '3', '--retry', '5', '--retry-all-errors', '--retry-delay', '2', '--max-time', '60', ...extraArgs, url], { encoding: 'utf8', timeout: 70000 })
-    return JSON.parse(out)
+    // curl --retry can concatenate two attempt bodies on a stalled WSL->CF conn (seen 09-16 13:10)
+    // -> trailing-garbage parse error = real claim silently dropped. Parse the first JSON object only.
+    let _d = 0, _e = out.length, _q = false, _x = false
+    for (let i = 0; i < out.length; i++) { const c = out[i]
+      if (_q) { if (_x) _x = false; else if (c === '\\') _x = true; else if (c === '"') _q = false }
+      else if (c === '"') _q = true; else if (c === '{') _d++; else if (c === '}' && --_d === 0) { _e = i + 1; break } }
+    return JSON.parse(out.slice(0, _e))
   } catch (e) {
     console.warn('[worker] curl claim failed (will retry):', String(e?.message || e).slice(0, 100))
     return {}
