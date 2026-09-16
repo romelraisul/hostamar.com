@@ -55,9 +55,16 @@ def destinations():
 
 
 def source_args():
+    # The concatenated playlist has broken/negative timestamps (that is why the
+    # working local publisher carries +genpts/-avoid_negative_ts/-use_wallclock).
+    # Without them the encoder stalls on the loop boundary and falls behind
+    # realtime (speed 0.68x, drops climbing) even on an idle box.
+    TS = ['-fflags', '+genpts', '-avoid_negative_ts', 'make_zero',
+          '-use_wallclock_as_timestamps', '0']
     if os.path.exists(PLAYLIST) and os.path.getsize(PLAYLIST) > 0:
-        return ['-re', '-f', 'concat', '-safe', '0', '-stream_loop', '-1', '-i', PLAYLIST]
-    return ['-re', '-fflags', '+genpts', '-i', RTMP_IN]
+        return ['-re', '-f', 'concat', '-safe', '0', '-stream_loop', '-1',
+                '-i', PLAYLIST] + TS
+    return ['-re'] + TS + ['-i', RTMP_IN]
 
 
 def launch(dests):
