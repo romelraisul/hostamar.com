@@ -25,6 +25,26 @@ export default function TvPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
+  // JSON-LD VideoObject for the live channel + the edge-served shelf — points
+  // ONLY at hostamar.com URLs (Vercel/CF), so it is valid even with the PC off.
+  const channelLd = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: 'Hostamar TV — ২৪/৭ লাইভ বাংলা টিভি',
+    description: '২৪/৭ লাইভ বাংলা চ্যানেল — edge-served mp4 + HLS, প্লেয়ার সর্বক্ষেত্রে।',
+    thumbnailUrl: 'https://hostamar.com/icons/icon-tv.svg',
+    contentUrl: 'https://hostamar.com/tv',
+    embedUrl: 'https://hostamar.com/tv',
+    uploadDate: '2026-08-22',
+    duration: 'PT24H',
+    inLanguage: 'bn-BD',
+    publisher: {
+      '@type': 'Organization',
+      name: 'Hostamar',
+      logo: { '@type': 'ImageObject', url: 'https://hostamar.com/logo.png' },
+    },
+  };
+
   const [status, setStatus] = useState<TvStatus | null>(null);
   const [channels, setChannels] = useState<PlaylistItem[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -258,6 +278,8 @@ export default function TvPage() {
 
   return (
     <div className="min-h-screen bg-[#080a0c] text-white selection:bg-emerald-500/30">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(channelLd) }} />
+
       <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Instrument+Serif&display=swap');
         .mono{font-family:"JetBrains Mono",monospace}.serif{font-family:"Instrument Serif",serif}
         @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0.3}} .live-dot{animation:blink 1.2s infinite}
@@ -520,6 +542,7 @@ export default function TvPage() {
                 { f: 'receipt-support.mp4', t: 'AI সাপোর্ট — 24/7, $0.00' },
                 { f: 'receipt-checkout.mp4', t: 'Checkout — ৪s, bKash/Nagad/Rocket' },
                 { f: 'receipt-paste.mp4', t: 'Checkout v2 — phone-paste fix, live today' },
+                { f: 'dream-job-email.mp4', t: 'AI ব্রাউজার — স্বপ্নের চাকরির ইমেইল লেখা' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
