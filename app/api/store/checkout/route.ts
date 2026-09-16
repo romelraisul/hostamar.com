@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
   const address1 = String(body.address1 || '').trim().slice(0, 200) || 'N/A'
   const city = String(body.city || '').trim().slice(0, 60) || 'Dhaka'
   const postcode = String(body.postcode || '').trim().slice(0, 12) || '1207'
-  const phone = String(body.phone || '').trim().slice(0, 11)
+  let phone = String(body.phone || '').replace(/\D/g, '').replace(/^8801/, '01') // FORGE 09-16: buyers paste +880/8801711000001 (bKash style) — normalize to 01X instead of failing the 2nd click. ponytail: handles 880-prefix only, add other locales if ever needed
   if (phone && !/^01[3-9]\d{8}$/.test(phone)) return NextResponse.json({ error: 'ফোন নম্বর ১১ সংখ্যার হতে হবে (01XXXXXXXXX)' }, { status: 400 })
   const [first, ...rest] = name.split(' ')
 

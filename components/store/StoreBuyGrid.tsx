@@ -146,7 +146,7 @@ export default function StoreBuyGrid() {
                 <input name="email" required type="email" placeholder="ইমেইল (রসিদ এখানে আসবে)" className="w-full rounded-xl border px-3 py-2 outline-none focus:border-[#0E7C3A]" />
                 <input name="address1" required maxLength={200} placeholder="ঠিকানা" className="w-full rounded-xl border px-3 py-2 outline-none focus:border-[#0E7C3A]" />
                 <input name="city" required maxLength={60} defaultValue="Dhaka" className="w-full rounded-xl border px-3 py-2 outline-none focus:border-[#0E7C3A]" />
-                <input name="phone" required inputMode="numeric" maxLength={11} pattern="01[3-9][0-9]{8}" placeholder="মোবাইল নম্বর (যে সিম থেকে সেন্ড মানি করবেন)" className="w-full rounded-xl border px-3 py-2 outline-none focus:border-[#0E7C3A]" />
+                <input name="phone" required inputMode="tel" maxLength={14} pattern="(\+?880|0)1[3-9][0-9]{8}" placeholder="মোবাইল নম্বর (যে সিম থেকে সেন্ড মানি করবেন)" className="w-full rounded-xl border px-3 py-2 outline-none focus:border-[#0E7C3A]" />
                 {phase === 'error' && <div className="rounded-xl bg-red-50 border border-red-200 p-2 text-xs text-red-700">{err}</div>}
                 <button
                   type="submit"
