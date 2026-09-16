@@ -148,6 +148,20 @@ export default function TvPage() {
       if (sRes) setStatus(sRes);
       if (chRes?.items?.length) {
         const items = chRes.items.filter((i: any) => i.url);
+        // Our own broadcast goes FIRST. The iptv-stable list is third-party
+        // (jmp2.uk / mediatailor / streamlock) and is the slow part; when we are
+        // live, hostamar's own HLS from Cloudflare is the source to watch.
+        if (sRes?.isLive && sRes?.hlsUrl) {
+          items.unshift({
+            id: 'hostamar-live',
+            title: `${sRes.channelName || 'Hostamar TV'} — LIVE`,
+            url: sRes.hlsUrl,
+            source: 'hostamar-live',
+            position: 0,
+            category: 'live',
+            country: 'bd',
+          });
+        }
         setChannels(items);
         setTotalChannels(chRes.total || items.length);
         // Save the top stable channelId as default
@@ -169,14 +183,20 @@ export default function TvPage() {
 
   useEffect(() => { load(); registerTvSw(); const t = setInterval(load, 30000); return () => clearInterval(t); }, []);
 
-  // Rotate among stable 20 every 10s (not 3700 scan) — saves bandwidth
+  // Auto-rotate among the third-party channels every 10s — but NOT off our own
+  // live HLS. Re-attaching hls.js every 10s is what made the player buffer
+  // constantly; our own stream stays put until the viewer changes channel.
   useEffect(() => {
     if (channels.length <= 1) return
     const rot = setInterval(() => {
-      setCurrentIdx((i) => (i + 1) % channels.length)
+      setCurrentIdx((i) => {
+        const cur = channels[i]
+        if (cur?.source === 'hostamar-live') return i   // stay on our broadcast
+        return (i + 1) % channels.length
+      })
     }, 10000)
     return () => clearInterval(rot)
-  }, [channels.length])
+  }, [channels])
 
   const isLive = status?.isLive && status?.hlsReachable !== false;
 
