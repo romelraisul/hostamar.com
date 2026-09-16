@@ -30,7 +30,7 @@ run_once() {
   # NOTE: $JOBS and $job MUST be quoted — messages contain spaces; unquoted echo
   # splits the JSON and jq dies ("Invalid numeric literal"), which under set -e
   # killed the whole script before any job ever executed (the 2026-09-15 bug).
-  echo "$JOBS" | jq -c '.[]' 2>/dev/null | while read -r job; do
+  echo "${JOBS:-[]}" | jq -c '.[]' 2>/dev/null | while read -r job; do
     ID=$(echo "$job" | jq -r '.id' || true)
     TYPE=$(echo "$job" | jq -r '.type' || true)
     echo "[$(date)] executing $ID $TYPE" >> $LOG
