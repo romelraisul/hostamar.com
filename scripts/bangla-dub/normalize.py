@@ -55,6 +55,26 @@ def has_audio(path):
                        capture_output=True, text=True)
     return bool(r.stdout.strip())
 
+
+def has_audible_audio(path, floor_db=-50.0):
+    """True only when the audio carries real signal.
+
+    `has_audio` above checks for a STREAM, which is not the same thing: an
+    anullsrc track is a perfectly good stream of digital silence, and relying on
+    the stream test filled the whole channel with silent audio (max|x|=0 across
+    120491 samples on every own render). Callers deciding whether a viewer will
+    HEAR anything must use this, not has_audio.
+    """
+    r = subprocess.run(["ffmpeg", "-v", "info", "-i", path, "-af", "volumedetect",
+                        "-f", "null", "-"], capture_output=True, text=True)
+    for line in r.stderr.splitlines():
+        if "mean_volume:" in line:
+            try:
+                return float(line.split("mean_volume:")[1].split("dB")[0]) >= floor_db
+            except ValueError:
+                return False
+    return False  # no measurement -> fail closed
+
 def normalize(src, dst):
     tmp = tempfile.mktemp(suffix=".mp4", dir=os.path.dirname(dst) or ".")
     if has_audio(src):
