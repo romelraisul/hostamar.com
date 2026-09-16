@@ -46,8 +46,18 @@ live=$(curl -sL --max-time 25 -A 'Mozilla/5.0' \
   | grep -oE '"videoId":"[A-Za-z0-9_-]{11}"' | head -1 | sed 's/.*:"//;s/"//')
 echo "youtube_video=$live"
 if [ -n "$live" ]; then
-  curl -sL --max-time 25 -A 'Mozilla/5.0' "https://www.youtube.com/watch?v=$live" 2>/dev/null \
-    | grep -oE '"isLiveNow":true' | head -1 >/dev/null && echo "youtube_live=yes" || echo "youtube_live=no"
+  # The channel's /live URL keeps returning the LAST broadcast's videoId even
+  # after it ends, so "is there an id" is NOT "are we live". Read the id's own
+  # isLiveNow, and treat a network/parse failure as unknown rather than as live
+  # (this probe once reported live=yes with zero pushers, i.e. a false green).
+  body=$(curl -sL --max-time 25 -A 'Mozilla/5.0' "https://www.youtube.com/watch?v=$live" 2>/dev/null)
+  if printf '%s' "$body" | grep -q '"isLiveNow":true'; then
+    echo "youtube_live=yes"
+  elif printf '%s' "$body" | grep -q '"isLiveNow":false'; then
+    echo "youtube_live=no"
+  else
+    echo "youtube_live=unknown"
+  fi
 fi
 echo "edge_videos=$(cd $REPO 2>/dev/null && git ls-files 'public/tv/*.mp4' 2>/dev/null | wc -l)"
 [ -s "$REPO/docker/tv-station/videos/loop.mp4" ] && echo "loop_present=yes" || echo "loop_present=no"
