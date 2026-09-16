@@ -372,7 +372,15 @@ def generate_seo_for_source(src, use_rafan=False):
 
 
 # ── OG image ────────────────────────────────────────────────────────────────
-def video_file_for(src_id):
+def video_file_for(src_id, local_path=None):
+    # Root fix: own shelf renders are not FreeVideoSource hunter rows and never
+    # lived in VIRAL_DIR, so id-based lookup missed them and their VideoObject
+    # fell back to the tunnel/HLS. A caller-supplied local path (FreeVideoSource
+    # .localPath, e.g. public/tv/receipt-x.mp4) wins when it exists on disk.
+    if local_path:
+        p = local_path if os.path.isabs(local_path) else os.path.join(REPO, local_path)
+        if os.path.exists(p):
+            return p
     for suffix in ("_free_bn.mp4", "_viral_bn.mp4"):
         p = os.path.join(VIRAL_DIR, src_id + suffix)
         if os.path.exists(p):
@@ -427,7 +435,7 @@ def make_og_image(seo, src_id, product):
     draw = ImageDraw.Draw(img)
 
     # background: video frame blurred + dark overlay, else gradient
-    vf = video_file_for(src_id)
+    vf = video_file_for(src_id, seo.get("_localPath"))
     frame = None
     if vf:
         tmp = "/tmp/og_frame.jpg"
@@ -503,8 +511,8 @@ def video_duration(path):
         return "PT30S"
 
 
-def build_schema(seo, src_id, created_at):
-    vf = video_file_for(src_id)
+def build_schema(seo, src_id, created_at, local_path=None):
+    vf = video_file_for(src_id, local_path)
     # PC-off-safe first: if this render is on the edge shelf, point VideoObject
     # contentUrl at hostamar.com. Otherwise fall back to the tunnel-served copy
     # (works only with the box on) and finally the live HLS.
@@ -522,7 +530,7 @@ def build_schema(seo, src_id, created_at):
         "contentUrl": content_url,
         "embedUrl": seo["canonicalUrl"],
         "uploadDate": created_at,
-        "duration": video_duration(vf) if vf else "PT30S",
+        "duration": video_duration(vf) if vf else "PT30S",  # vf already localPath-aware
         "inLanguage": "bn-BD",
         "keywords": ", ".join(seo["keywords"]),
         "publisher": {
@@ -540,7 +548,8 @@ def upsert_seo(conn, src, seo):
     canonical = f"{SITE}/tv/watch/{seo['slug']}"
     seo["canonicalUrl"] = canonical
     created_at = src.get("createdAt") or datetime.now(timezone.utc).isoformat()
-    schema = build_schema(seo, src["id"], created_at)
+    schema = build_schema(seo, src["id"], created_at, src.get("localPath"))
+    seo["_localPath"] = src.get("localPath")
     og_path = make_og_image(seo, src["id"], src["product"])
     og_rel = "/og/tv/" + seo["slug"] + ".jpg"
 
@@ -554,7 +563,7 @@ def upsert_seo(conn, src, seo):
                 seo["slug"] = f"{seo['slug']}-{src['id'][-4:]}"
                 canonical = f"{SITE}/tv/watch/{seo['slug']}"
                 seo["canonicalUrl"] = canonical
-                schema = build_schema(seo, src["id"], created_at)
+                schema = build_schema(seo, src["id"], created_at, src.get("localPath"))
                 os.rename(og_path, os.path.join(OG_DIR, seo["slug"] + ".jpg"))
                 og_rel = "/og/tv/" + seo["slug"] + ".jpg"
 
