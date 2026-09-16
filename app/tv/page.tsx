@@ -546,6 +546,8 @@ export default function TvPage() {
                 { f: 'dream-job-email.mp4', t: 'AI ব্রাউজার — স্বপ্নের চাকরির ইমেইল লেখা' },
                 { f: 'receipt-workforce-10items.mp4', t: 'AI Workforce — ১০-টা রেসিপ্ট একসাথে' },
                 { f: 'programme-build-log-001.mp4', t: 'Build Log 001 — সম্পূর্ণ পর্ব (৫৯s, নেরেশনসহ)' },
+                { f: 'build-log-003---free-gpu-lab.mp4', t: 'Build Log 003 — ফ্রি GPU ল্যাব (২০৭s)' },
+                { f: 'build-log-003---free-gpu-lab-short.mp4', t: 'Build Log 003 Short — ফ্রি GPU ল্যাব (৩০s)' },
                 { f: 'receipt-uptime-sla.mp4', t: 'Uptime SLA — ডাউন হলে টাকা ফেরত' },
                 { f: 'receipt-mrr-30d.mp4', t: 'MRR — ৩০ দিনের গণনা' },
                 ].map((v) => (
