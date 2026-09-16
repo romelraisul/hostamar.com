@@ -18,6 +18,11 @@ type Canned = { keywords: RegExp; reply: string };
 
 const CANNED: Canned[] = [
   {
+    keywords: /(agent\s*cloud|एजेन्ट क्लाउड|এজেন্ট ক্লাউড|how to buy|কিনতে|অর্ডার করুন|সাবস্ক্রিপশন|subscription|কিভাবে কেনে)/i,
+    reply:
+      "Agent Cloud — হ্যাঁ, আছে। আপনার এজেন্ট একটা কম্পিউটারের মতো চলতে থাকে — মেমরি আছে, সেশন শেষ হলেও কনটেক্সট হারায় না। দাম: **৳২,৯০০/মাস** (Starter ৳৫৯৯ · Pro ৳১,২৯৯ · Business ৳২,৯৯৯)। পেমেন্ট: bKash/Nagad/Rocket **Send Money** → **০১৮২২৪১৭৪৬৩**, তারপর TrxID দিয়ে `/dashboard/payment` থেকে সাবমিট করুন — কার্ড লাগে না, COD নেই। ইচ্ছা হলে ৬০ সেকেন্ডের ডেমো রেন্ডার পাঠিয়ে দেই, কপি লিখুন। — Hostamar team",
+  },
+  {
     keywords: /(payment|pay|bkash|nagad|rocket|পেমেন্ট|টাকা|বিকাশ|নগদ)/i,
     reply:
       "পেমেন্ট নিয়ে চিন্তার কিছু নেই! Hostamar এ bKash / Nagad / Rocket — সবগুলো সাপোর্ট করে। পেমেন্ট করার পর tran_id দিয়ে আমাদের জানান, আমরা সাথে সাথে ভেরিফাই করে দেব। কোনো সমস্যা হলে /api/support-chat এ tran_id পাঠান। — Hostamar #2563EB",
