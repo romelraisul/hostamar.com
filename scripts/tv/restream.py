@@ -76,22 +76,21 @@ def launch(dests):
     src = source_args()
     procs = []
     for platform, url in dests:
-        # RE-ENCODE, never -c copy: a stream copy carries the source's broken
-        # timeline (ffmpeg showed time=-00:01:27 with frames stalled) and the
-        # ingest never starts the broadcast. -g 60 = the keyframe cadence YouTube
-        # wants. NO -r: forcing 15fps onto a variable-rate source made the
-        # encoder fall behind (speed=0.78x, drop ~20/s).
-        # Deliberately cheaper than the local publisher (854x480 2Mbps): this box
-        # also runs the TV mixers and the agent, and any contention showed up as
-        # drops (speed 0.79x, drop climbing) which is exactly what buffers the
-        # viewer. 640x360 @1200k leaves real headroom and YouTube serves it fine.
+        # BITRATE IS SET BY THE MEASURED UPLINK, NOT BY TASTE.
+        # This line uploads 18-44 KB/s (0.15-0.35 Mbps, 3 samples). The egress was
+        # 1200 kbps / 150 KB/s — about 4x over budget — so ffmpeg read the source
+        # fine but the RTMP socket could not drain, giving speed 0.94x with drop
+        # climbing and the broadcast dying after ~30 min. An earlier 20s test
+        # "passed" only because lavfi needs no sustained throughput.
+        # 180k video + 32k audio = 212 kbps (26 KB/s), which fits with headroom,
+        # and still looks like TV at 360p. Raise only after re-measuring upload.
         cmd = (['ffmpeg'] + src + ['-map', '0',
                '-vf', 'scale=640:360:force_original_aspect_ratio=decrease,'
                       'pad=640:360:(ow-iw)/2:(oh-ih)/2',
                '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency',
-               '-b:v', '1200k', '-maxrate', '1300k', '-bufsize', '2600k',
+               '-b:v', '180k', '-maxrate', '200k', '-bufsize', '400k',
                '-pix_fmt', 'yuv420p', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0',
-               '-c:a', 'aac', '-b:a', '96k', '-ar', '44100', '-ac', '2',
+               '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2',
                '-f', 'flv', url])
         # stderr MUST go to a file, never a PIPE: nothing drains a PIPE while the
         # process runs, so ffmpeg fills the 64K pipe buffer and blocks — the
