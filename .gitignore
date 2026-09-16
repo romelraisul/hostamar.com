@@ -189,3 +189,11 @@ data/leads/
 # agent backup artifacts
 *.bak_*
 *.bak-*
+
+# Third-party footage must NEVER ship to the edge shelf. CC0 (nasa/prelinger) and
+# downloaded (cmt*) clips are not our content; publishing them at hostamar.com/tv/
+# presents other people's work as ours (YouTube reused-content / copyright).
+# Kept on disk for the local tunnel feed; excluded from git and the deploy.
+public/tv/cc0_*.mp4
+public/tv/clean_cc0_*.mp4
+public/tv/cmt[0-9]*.mp4
