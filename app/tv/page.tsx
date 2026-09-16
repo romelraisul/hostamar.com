@@ -494,6 +494,8 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'build-log-003---free-gpu-lab.mp4', t: 'Build Log 003 — The Free GPU Lab' },
+                { f: 'build-log-001.mp4', t: 'Build Log 001 — Agent Cloud' },
                 { f: 'receipt-hosting.mp4', t: 'Hostamar Hosting' },
                 { f: 'receipt-gpu.mp4', t: 'GPU Spot Market' },
                 { f: 'receipt-agentcloud.mp4', t: 'Agent Cloud Receipt' },
