@@ -55,10 +55,14 @@ def destinations():
 
 
 def source_args():
-    # The concatenated playlist has broken/negative timestamps (that is why the
-    # working local publisher carries +genpts/-avoid_negative_ts/-use_wallclock).
-    # Without them the encoder stalls on the loop boundary and falls behind
-    # realtime (speed 0.68x, drops climbing) even on an idle box.
+    # Prefer the pre-concatenated loop.mp4. The raw concat playlist STALLS
+    # mid-run (measured: freeze at frame 3350, then speed 0.78x with drops
+    # climbing) because the demuxer re-opens the list at a member boundary and
+    # the timestamps are broken. loop.mp4 is one flat file, built once by
+    # docker/tv-station/makeloop.sh. Fall back to the playlist, then RTMP.
+    loop = os.path.join(os.path.dirname(PLAYLIST), 'loop.mp4')
+    if os.path.exists(loop) and os.path.getsize(loop) > 0:
+        return ['-re', '-stream_loop', '-1', '-i', loop]
     TS = ['-fflags', '+genpts', '-avoid_negative_ts', 'make_zero',
           '-use_wallclock_as_timestamps', '0']
     if os.path.exists(PLAYLIST) and os.path.getsize(PLAYLIST) > 0:
