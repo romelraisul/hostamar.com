@@ -271,6 +271,7 @@ export default function TvPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080a0c] text-white flex items-center justify-center">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(channelLd) }} />
         <div className="text-center"><Tv className="w-12 h-12 text-emerald-400 mx-auto mb-3 animate-pulse" /><p className="mono text-sm text-zinc-400">Loading 3700 channels...</p></div>
       </div>
     );
