@@ -125,6 +125,7 @@ export async function middleware(request: NextRequest) {
     '/api/tv/agent',
     '/api/admin/seed-tv-channels',
     '/api/cron/tv-stability',
+    '/api/debug/env-check',
     '/api/cron/surveillance', // V65 Layer 5 — self-guards via x-vercel-cron/CRON_SECRET at the route
     '/api/cron/heartbeat', // V8 Phase B — self-guards via x-vercel-cron/CRON_SECRET at the route
     '/api/orchestrator', // V86: Cloudflare Worker orchestrator proxy (catch-all)
