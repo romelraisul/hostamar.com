@@ -76,21 +76,21 @@ def launch(dests):
     src = source_args()
     procs = []
     for platform, url in dests:
-        # BITRATE IS SET BY THE MEASURED UPLINK, NOT BY TASTE.
-        # This line uploads 18-44 KB/s (0.15-0.35 Mbps, 3 samples). The egress was
-        # 1200 kbps / 150 KB/s — about 4x over budget — so ffmpeg read the source
-        # fine but the RTMP socket could not drain, giving speed 0.94x with drop
-        # climbing and the broadcast dying after ~30 min. An earlier 20s test
-        # "passed" only because lavfi needs no sustained throughput.
-        # 180k video + 32k audio = 212 kbps (26 KB/s), which fits with headroom,
-        # and still looks like TV at 360p. Raise only after re-measuring upload.
+        # BITRATE IS SET BY THE MEASURED UPLINK FLOOR, NOT BY TASTE OR AVERAGE.
+        # Measured upload on this line: 21 / 120 / 118 / 21 KB/s + one outright
+        # failure — swinging ~5x with no stability. A live stream needs a
+        # *sustained floor*, not a good average, so the budget is the ~21 KB/s
+        # worst case, not the ~120 KB/s peak.
+        # 128 kbps total (112k v + 16k a) = 16 KB/s sits under that floor.
+        # History: 1200k needed 150 KB/s (died in ~30 min), 212k needed 26 KB/s
+        # (drop still climbing). Re-measure upload before raising this.
         cmd = (['ffmpeg'] + src + ['-map', '0',
                '-vf', 'scale=640:360:force_original_aspect_ratio=decrease,'
                       'pad=640:360:(ow-iw)/2:(oh-ih)/2',
                '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency',
-               '-b:v', '180k', '-maxrate', '200k', '-bufsize', '400k',
+               '-b:v', '112k', '-maxrate', '124k', '-bufsize', '250k',
                '-pix_fmt', 'yuv420p', '-g', '60', '-keyint_min', '60', '-sc_threshold', '0',
-               '-c:a', 'aac', '-b:a', '32k', '-ar', '44100', '-ac', '2',
+               '-c:a', 'aac', '-b:a', '16k', '-ar', '44100', '-ac', '2',
                '-f', 'flv', url])
         # stderr MUST go to a file, never a PIPE: nothing drains a PIPE while the
         # process runs, so ffmpeg fills the 64K pipe buffer and blocks — the
