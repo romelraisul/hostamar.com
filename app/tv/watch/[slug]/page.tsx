@@ -114,7 +114,9 @@ export default async function WatchPage({ params }: { params: { slug: string } }
   if (!seo) notFound()
 
   const schema = (seo.schemaJson || {}) as Record<string, unknown>
-  const mp4Url = typeof schema.contentUrl === 'string' && schema.contentUrl.includes('/videos/')
+  // Edge-served mp4: /tv/*.mp4 (Vercel/CF, PC-off-safe) or the legacy
+  // /videos/* path. Anything else (HLS) falls back to the live stream.
+  const mp4Url = typeof schema.contentUrl === 'string' && schema.contentUrl.match(/\.(mp4)(\?|$)/i)
     ? schema.contentUrl
     : null
   const related = await getRelated(seo.product, seo.slug)
