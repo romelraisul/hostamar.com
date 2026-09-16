@@ -114,6 +114,11 @@ const nextConfig = {
       '/api/harness/run': ['./lib/tools/codeact-worker.js'],
       '/api/telegram/webhook': ['./lib/tools/codeact-worker.js'],
     },
+    // Exclude the 362MB docker/tv-station/videos from serverless function traces
+    // (api/tv/viral/create* routes were pulling it in, blowing past 250MB limit).
+    outputFileTracingExcludes: {
+      '*': ['docker/tv-station/videos/**'],
+    },
   },
   // Vercel frontend calls the API through the Cloudflare Worker router
   // (api.hostamar.com), which routes to the computer tunnel (primary) and
