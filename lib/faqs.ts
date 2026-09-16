@@ -165,6 +165,14 @@ export const FAQS: Faq[] = [
     link: { href: '/contact', label: 'মেমরি হোস্টিং জানুন' },
   },
   {
+    // ORACLE V66 2026-09-16 17:00 — rides Trend 1 (agent security wave): China MOCA "Skill Poisoning turning AI agents into malware droppers" (HN 49719882) + Noma "GitLost: We Tricked GitHub's AI Agent into Leaking Private Repos" (HN 49719458) + "One seeded bug, 26 AI agents: all passed the tests, all stayed broken" (HN 49721214)
+    id: 'agent-security',
+    cat: 'chat',
+    q: 'agent সুরক্ষিত থাকবে কেমন?',
+    a: 'আমাদের agents isolated container-এ চলে, প্রতিটি run-এর অডিট ট্রেইল (Infisical vault + OpenObserve log) জমা হয় — সরকারি সতর্কতা ও GitHub agent leak ঘটনার পর এটাই নতুন মান। কোনো skill/tool অনুমোদন না থাকলে agent চলবে না; সব টুল call Fleet ট্যাবে রিভিউয়ের জন্য রাখে।',
+    link: { href: '/contact', label: 'নিরাপদ এজেন্ট হোস্টিং জানুন' },
+  },
+  {
     // ORACLE V66 2026-09-14 22:30 — rides Trend 7 (agent-first infra): AgentDrive 49699287 + Botbin 49698661 + ProGantt 49698952 launched same day
     id: 'agent-mcp-tools',
     cat: 'chat',
