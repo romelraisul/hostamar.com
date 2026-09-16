@@ -118,7 +118,11 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
 
 export async function computeNowPlaying(channelId: string): Promise<NowPlaying> {
   const items = await prisma.tvPlaylistItem.findMany({
-    where: { channelId },
+    // played=false only. `played` is the retire flag (set by the no-repeat
+    // watcher, and by safety work retiring third-party footage). Without this
+    // filter "now playing" reported RETIRED third-party titles while the encoder
+    // was actually streaming our own renders.
+    where: { channelId, played: false },
     orderBy: { position: 'asc' },
   })
   if (!items.length) {
