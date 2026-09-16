@@ -49,7 +49,7 @@ def backup_playlist():
 def hls_ok():
     r = subprocess.run(
         ['curl', '-s', '-o', '/dev/null', '-w', '%{http_code}',
-         '--max-time', '10', 'https://tv.hostamar.com/hls/tv/index.m3u8'],
+         '--max-time', '10', 'https://tv.hostamar.com/master.m3u8'],
         capture_output=True, text=True, timeout=20)
     return r.stdout.strip() == '200'
 

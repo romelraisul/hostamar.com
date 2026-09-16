@@ -518,7 +518,7 @@ def build_schema(seo, src_id, created_at, local_path=None):
     # (works only with the box on) and finally the live HLS.
     content_url = edge_url_for(vf) \
         or (f"https://tv.hostamar.com/videos/viral/{os.path.basename(vf)}" if vf else None) \
-        or "https://tv.hostamar.com/hls/tv/index.m3u8"
+        or "https://tv.hostamar.com/master.m3u8"
     if hasattr(created_at, "isoformat"):
         created_at = created_at.isoformat()
     return {

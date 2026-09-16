@@ -18,7 +18,7 @@
 const { PrismaClient } = require('@prisma/client')
 
 const REPO = '/home/romel/hostamar-build'
-const HLS = 'https://tv.hostamar.com/hls/tv/index.m3u8'
+const HLS = 'https://tv.hostamar.com/master.m3u8'
 
 // Vercel only ships git-tracked files, so disk presence is NOT the test —
 // a file can sit on disk but 404 at hostamar.com/tv/ (the 098f227 safety
