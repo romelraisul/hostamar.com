@@ -29,6 +29,7 @@ from datetime import datetime, timezone
 
 REPO = "/home/romel/hostamar-build"
 VIRAL_DIR = os.path.join(REPO, "docker/tv-station/videos/viral")
+EDGE = os.path.join(REPO, "public/tv")
 OG_DIR = os.path.join(REPO, "public/og/tv")
 BENGALI_FONT = "/usr/share/fonts/truetype/noto/NotoSansBengali-Bold.ttf"
 BENGALI_FONT_REG = "/usr/share/fonts/truetype/noto/NotoSansBengali-Regular.ttf"
@@ -379,6 +380,20 @@ def video_file_for(src_id):
     return None
 
 
+def edge_url_for(local_path):
+    """If this render is ALSO on the edge shelf (public/tv/*.mp4), return the
+    PC-off-safe hostamar.com URL. The shelf is the only delivery path that
+    survives the box being off, so VideoObject contentUrl must point there."""
+
+    if not local_path:
+        return None
+    base = os.path.basename(local_path)
+    for cand in (base, base.replace("_free_bn", "").replace("_viral_bn", "")):
+        if os.path.exists(os.path.join(EDGE, cand)):
+            return f"{SITE}/tv/{cand}"
+    return None
+
+
 def extract_frame(video_path, out_jpg):
     try:
         subprocess.run(["ffmpeg", "-y", "-ss", "2", "-i", video_path, "-frames:v", "1",
@@ -490,7 +505,12 @@ def video_duration(path):
 
 def build_schema(seo, src_id, created_at):
     vf = video_file_for(src_id)
-    content_url = f"https://tv.hostamar.com/videos/viral/{os.path.basename(vf)}" if vf else "https://tv.hostamar.com/hls/tv/index.m3u8"
+    # PC-off-safe first: if this render is on the edge shelf, point VideoObject
+    # contentUrl at hostamar.com. Otherwise fall back to the tunnel-served copy
+    # (works only with the box on) and finally the live HLS.
+    content_url = edge_url_for(vf) \
+        or (f"https://tv.hostamar.com/videos/viral/{os.path.basename(vf)}" if vf else None) \
+        or "https://tv.hostamar.com/hls/tv/index.m3u8"
     if hasattr(created_at, "isoformat"):
         created_at = created_at.isoformat()
     return {
