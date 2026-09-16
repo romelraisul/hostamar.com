@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Hostamar TV tab icon: same brand green/rounded-square language as favicon.svg,
+       but a television instead of the play triangle, so the TV tab is
+       distinguishable in a crowded tab bar. -->
+  <defs>
+    <linearGradient id="tvg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0E7C3A"/>
+      <stop offset="100%" stop-color="#0A5E2C"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="22" fill="url(#tvg)"/>
+  <!-- antennae -->
+  <path d="M38 22 L48 32 M62 22 L52 32" stroke="#FFFDF6" stroke-width="4"
+        stroke-linecap="round" fill="none" opacity="0.9"/>
+  <!-- screen body -->
+  <rect x="20" y="34" width="60" height="42" rx="7" fill="#FFFDF6"/>
+  <!-- live dot, brand green, reads as "on air" -->
+  <circle cx="50" cy="55" r="9" fill="#0E7C3A"/>
+</svg>
