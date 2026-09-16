@@ -24,8 +24,9 @@ body.bp-theme{
 }
 body.bp-theme h1,body.bp-theme h2,body.bp-theme h3{letter-spacing:0}
 .bp-theme ::selection{background:var(--bp-green);color:var(--bp-card)}
-.bp-theme a:not(.no-green){color:var(--bp-green)}
-.bp-theme a:not(.no-green):hover{color:var(--bp-green-deep)}
+/* :where(.bp-theme) = drop class specificity so .text-white / button classes win over the site-wide green-link rule. NOVA 2026-09-16 */
+:where(.bp-theme a:not(.no-green)){color:var(--bp-green)}
+:where(.bp-theme a:not(.no-green):hover){color:var(--bp-green-deep)}
 .bp-theme :focus-visible{outline:3px solid var(--bp-blue);outline-offset:3px;border-radius:6px}
 
 .bp-wrap{max-width:1200px;margin-inline:auto;padding-inline:clamp(1rem,4vw,2.5rem)}

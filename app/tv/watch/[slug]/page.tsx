@@ -162,7 +162,7 @@ export default async function WatchPage({ params }: { params: { slug: string } }
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={`/dashboard/video/create?template=${seo.slug}`}
-            className="rounded-lg bg-[#0E7C3A] hover:bg-[#0c6b32] px-5 py-2.5 text-[15px] font-bold"
+            className="rounded-lg bg-[#0E7C3A] text-white hover:bg-[#0c6b32] px-5 py-2.5 text-[15px] font-bold"
           >
             এই ভিডিয়োর মতো নিজের ভিডিয়ো বানান — 100 ক্রেডিট
           </Link>
