@@ -163,6 +163,9 @@ export async function middleware(request: NextRequest) {
     '/api/harness/run',       // harness plan/execute — x-internal-api-key
     '/api/telegram/webhook',  // Telegram bot callback (cannot carry our session cookie)
     '/api/inngest',           // Inngest serve endpoint (dev server self-validates its handshake)
+    '/api/webhooks/telegram',   // customer chat intake (Telegram secret-token guard at route)
+    '/api/webhooks/messenger',  // Meta verify handshake + Messenger intake (dormant until tokens)
+    '/api/webhooks/whatsapp',   // WhatsApp Cloud API intake (dormant until tokens)
     '/api/webhooks/call-ended', // voice post-call webhook (server-to-server, no session cookie)
     '/api/auth/saml/metadata', // SAML SP metadata (IdP fetch, no session cookie)
     '/api/auth/saml/acs',     // SAML ACS — IdP POST, cannot carry our session cookie
