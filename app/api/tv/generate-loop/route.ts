@@ -3,6 +3,7 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { env } from '@/lib/env'
+import { prisma } from '@/lib/prisma'
 import {
   generateTvVideo,
   getOrCreateDefaultChannel,
@@ -50,7 +51,18 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const result = await generateTvVideo()
+    // V17 content calendar: if a TvSchedule row's cron hour matches now (Dhaka),
+    // its promptTemplate/style drives this generation instead of raw RSS topic.
+    // Minimal hour-match (not full cron parser) — schedules are daily-hour plans.
+    const dhakaHour = Number(
+      new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Asia/Dhaka' }).format(new Date())
+    )
+    const schedules = await prisma.tvSchedule.findMany({ where: { isActive: true } })
+    const due = schedules.find(s => Number(s.cron.trim().split(/\s+/)[1] ?? -1) === dhakaHour)
+
+    const result = await generateTvVideo(
+      due ? { style: due.style } : undefined
+    )
     if (!result.ok) {
       return NextResponse.json({ ok: false, error: result.error }, { status: 502 })
     }
@@ -60,6 +72,7 @@ export async function POST(req: NextRequest) {
       generated: true,
       videoId: result.videoId,
       topic: result.topic,
+      scheduleId: due?.id ?? null,
       playlistLength: length + 1,
     })
   } catch (err) {
