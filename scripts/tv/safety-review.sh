@@ -76,4 +76,21 @@ else
 fi
 # NOTE: no age value here - an hour-ticking value would change the hash hourly
 # and wake the agent every tick instead of every SHIFT_HOURS.
+# 6. THIRD-PARTY FOOTAGE ON OUR OWN PROPERTIES.
+#    CHANNEL once copied 33 CC0/downloaded clips into public/tv/ and put them on the
+#    /tv shelf, presenting other people's work as ours (reused-content + copyright
+#    risk). .gitignore now blocks the patterns; this asserts the block still holds.
+cd /home/romel/hostamar-build 2>/dev/null || exit 0
+tp_tracked=$(git ls-files 'public/tv/*.mp4' 2>/dev/null | grep -cE '(^|/)(cc0_|clean_cc0_|cmt[0-9])' || true)
+echo "thirdparty_on_edge_tracked=$((tp_tracked+0))"
+tp_page=$(grep -cE "f: '(cc0_|clean_cc0_|cmt[0-9])" app/tv/page.tsx 2>/dev/null || true)
+echo "thirdparty_cards_on_tv_page=$((tp_page+0))"
+# the live encoder playlist must be our content, not third-party
+pl=docker/tv-station/videos/playlist.host.txt
+if [ -f "$pl" ]; then
+  echo "playlist_thirdparty=$(grep -cE '(cc0_|clean_cc0_|/viral/|cmt[0-9])' "$pl" 2>/dev/null || true)"
+  echo "playlist_total=$(grep -c '^file ' "$pl" 2>/dev/null || true)"
+fi
+# and the ignore guard must still exist
+echo "ignore_guard=$(grep -c 'Third-party footage must NEVER ship' .gitignore 2>/dev/null || true)"
 echo "# END SAFETY"
