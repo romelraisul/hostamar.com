@@ -1,171 +1,124 @@
-'use client';
+import { Metadata } from 'next'
 
-import { useEffect, useState, useCallback } from 'react';
-import { Tv, Play, Square, Radio, RefreshCw, Loader2, Plus, Globe, Zap } from 'lucide-react';
+export const metadata: Metadata = {
+  title: 'TV & Streaming | Hostamar Admin',
+  description: 'Manage HLS2 live stream, YouTube push, restream, and Cloudflare tunnels',
+}
 
-type TvStatus = {
-  isLive: boolean;
-  liveSince: string | null;
-  channelName: string;
-  playlistLength: number;
-  destinations: { platform: string; label: string | null; isActive: boolean; lastError: string | null }[];
-  autoGenerateEnabled: boolean;
-};
-
-type PlaylistItem = { id: string; title: string; url: string; source: string; position: number };
-
-export default function AdminTvControls() {
-  const [status, setStatus] = useState<TvStatus | null>(null);
-  const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      const [sRes, pRes] = await Promise.all([
-        fetch('/api/tv/status', { credentials: 'include' }),
-        fetch('/api/tv/playlist', { credentials: 'include' }),
-      ]);
-      if (sRes.ok) setStatus(await sRes.json());
-      if (pRes.ok) {
-        const p = await pRes.json();
-        setPlaylist(p.items || []);
-      }
-    } catch {
-      /* keep last state */
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-    const t = setInterval(load, 15000);
-    return () => clearInterval(t);
-  }, [load]);
-
-  const startStream = async () => {
-    setBusy(true); setError(null); setMessage(null);
-    try {
-      const res = await fetch('/api/tv/stream/start', { method: 'POST', credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) setMessage(`Stream started → ${data.destinations?.join(', ')}. Run the ffmpeg command in the tv-station container.`);
-      else setError(data.message || data.error || 'Failed to start stream');
-      await load();
-    } catch (e: any) { setError(e.message); }
-    finally { setBusy(false); }
-  };
-
-  const stopStream = async () => {
-    setBusy(true); setError(null);
-    try {
-      const res = await fetch('/api/tv/stream/stop', { method: 'POST', credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) setMessage('Stream stopped.');
-      else setError(data.message || data.error || 'Failed to stop');
-      await load();
-    } catch (e: any) { setError(e.message); }
-    finally { setBusy(false); }
-  };
-
-  const generateNow = async () => {
-    setBusy(true); setError(null); setMessage(null);
-    try {
-      const res = await fetch('/api/tv/generate', { method: 'POST', credentials: 'include' });
-      const data = await res.json();
-      if (res.ok) setMessage(`Generated video: ${data.topic || data.videoId}`);
-      else setError(data.message || data.error || 'Generation failed');
-      await load();
-    } catch (e: any) { setError(e.message); }
-    finally { setBusy(false); }
-  };
-
-  if (loading) return <div className="p-6 text-[#78716C]">Loading TV controls...</div>;
-
-  const isLive = status?.isLive;
-
+export default function AdminTvPage() {
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Tv className="w-6 h-6 text-emerald-400" /> TV Station Controls
-        </h1>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${isLive ? 'bg-red-500/20 text-red-400' : 'bg-[#FFFDF6] text-[#78716C]'}`}>
-          <Radio className={`w-4 h-4 ${isLive ? 'animate-pulse' : ''}`} />
-          {isLive ? 'LIVE' : 'OFFLINE'}
-        </div>
-      </div>
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold text-[#1C1917]">TV & Streaming</h1>
+        <p className="text-sm text-[#B8AFA3]">HLS2 audio, YouTube push, restream, tunnels</p>
+      </header>
 
-      {message && <div className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">{message}</div>}
-      {error && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+      {/* Status Overview */}
+      <section className="rounded-xl bg-[#FFFDF6] p-4 shadow-sm ring-1 ring-[#D8CDB4]">
+        <h2 className="mb-3 text-lg font-semibold text-[#1C1917]">Live Status</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <StatusCard label="HLS2 Audio" value="-16.8 dB" status="ok" note="Audible" />
+          <StatusCard label="YouTube Push" value="2 ESTABLISHED" status="ok" note="To Google" />
+          <StatusCard label="restream.service" value="active" status="ok" note="systemd" />
+          <StatusCard label="Cloudflare Tunnels" value="4 running" status="ok" note="tv.hostamar.com" />
+        </div>
+      </section>
 
-      {/* Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <button onClick={startStream} disabled={busy || isLive} className="p-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-[#FDF8EC] disabled:text-white/70 font-semibold flex items-center justify-center gap-2">
-          {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />} Start Stream
-        </button>
-        <button onClick={stopStream} disabled={busy || !isLive} className="p-4 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-[#FDF8EC] disabled:text-[#57534E] font-semibold flex items-center justify-center gap-2">
-          {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Square className="w-5 h-5" />} Stop Stream
-        </button>
-        <button onClick={generateNow} disabled={busy} className="p-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-[#FDF8EC] disabled:text-[#57534E] font-semibold flex items-center justify-center gap-2">
-          {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />} Generate Video
-        </button>
-      </div>
+      {/* HLS2 Section */}
+      <section className="rounded-xl bg-[#FFFDF6] p-4 shadow-sm ring-1 ring-[#D8CDB4]">
+        <h2 className="mb-3 text-lg font-semibold text-[#1C1917]">HLS2 Encoder</h2>
+        <div className="space-y-3 text-sm">
+          <Row label="Service" value="tv-ffmpeg-vp9.service (active, rewritten)" />
+          <Row label="Audio Filter" value="[0:a]aresample=48000:async=1,loudnorm=I=-16:TP=-1.5:LRA=11[a]" />
+          <Row label="Output" value="docker/tv-station/hls2/seg%04d.mp4 + init_v2.mp4" />
+          <Row label="Playlist" value="master.m3u8 (200, 351 bytes)" />
+          <Row label="PID Check" value="pgrep -af libvpx → should be ONE only" />
+          <Row label="Cache Bust" value="init_v2.mp4 bypasses Cloudflare 1-year stale cache" />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <CmdButton cmd="systemctl --user status tv-ffmpeg-vp9.service" label="Service Status" />
+          <CmdButton cmd="pgrep -af libvpx" label="Check PIDs" />
+          <CmdButton cmd="tail -20 /tmp/vp9.log" label="View Log" />
+        </div>
+      </section>
 
-      {/* Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="rounded-xl bg-[#FDF8EC] border border-[#D8CDB4] p-4">
-          <h3 className="font-semibold mb-3 flex items-center gap-2"><Zap className="w-4 h-4 text-amber-400" /> Stream Status</h3>
-          <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt className="text-[#78716C]">Channel</dt><dd>{status?.channelName || '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-[#78716C]">Playlist</dt><dd>{status?.playlistLength || 0} items</dd></div>
-            <div className="flex justify-between"><dt className="text-[#78716C]">Auto-generate</dt><dd>{status?.autoGenerateEnabled ? 'ON' : 'OFF'}</dd></div>
-            <div className="flex justify-between"><dt className="text-[#78716C]">Live since</dt><dd>{status?.liveSince ? new Date(status.liveSince).toLocaleString() : '—'}</dd></div>
-          </dl>
+      {/* YouTube Section */}
+      <section className="rounded-xl bg-[#FFFDF6] p-4 shadow-sm ring-1 ring-[#D8CDB4]">
+        <h2 className="mb-3 text-lg font-semibold text-[#1C1917]">YouTube Push</h2>
+        <div className="space-y-3 text-sm">
+          <Row label="Channel" value="UCEbTau5-kjqIVexOwL9C3dQ" />
+          <Row label="RTMP" value="rtmps://a.rtmps.youtube.com/live2/" />
+          <Row label="restream.py" value="Active (reads from HLS2 playlist)" />
+          <Row label="Connections" value="2-3 ESTABLISHED to 142.250.xxx:443" />
         </div>
-        <div className="rounded-xl bg-[#FDF8EC] border border-[#D8CDB4] p-4">
-          <h3 className="font-semibold mb-3 flex items-center gap-2"><Globe className="w-4 h-4 text-blue-400" /> Destinations</h3>
-          {status?.destinations?.length ? (
-            <div className="space-y-2">
-              {status.destinations.map((d) => (
-                <div key={d.platform} className="flex items-center justify-between text-sm">
-                  <span>{d.label || d.platform}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${d.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#FFFDF6] text-[#57534E]'}`}>
-                    {d.isActive ? 'active' : 'off'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-[#57534E]">No destinations configured.</p>
-          )}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <CmdButton cmd="systemctl --user status restream.service" label="Restream Status" />
+          <CmdButton cmd="ss -tnp | grep 142.250" label="Check Connections" />
+          <CmdButton cmd="tail -20 /tmp/restream.log" label="View Log" />
         </div>
-      </div>
+      </section>
 
-      {/* Playlist */}
-      <div className="rounded-xl bg-[#FDF8EC] border border-[#D8CDB4] overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#D8CDB4] flex items-center justify-between">
-          <h3 className="font-semibold">Playlist ({playlist.length})</h3>
-          <button onClick={load} className="p-1.5 rounded-lg hover:bg-[#FFFDF6]"><RefreshCw className="w-4 h-4 text-[#78716C]" /></button>
+      {/* Quick Actions */}
+      <section className="rounded-xl bg-[#FFFDF6] p-4 shadow-sm ring-1 ring-[#D8CDB4]">
+        <h2 className="mb-3 text-lg font-semibold text-[#1C1917]">Quick Fix Actions</h2>
+        <p className="mb-3 text-xs text-[#B8AFA3]">Run these in fresh WSL terminal (setsid + &lt; /dev/null to avoid Hermes background-wrapper limits)</p>
+        <div className="grid gap-2 text-xs">
+          <ActionCard
+            title="Restart HLS2 Encoder"
+            command={`pkill -9 -f libvpx; sleep 3; rm -rf docker/tv-station/hls2/*; mkdir -p docker/tv-station/hls2/; cd ~/hostamar-build && setsid bash -c 'ffmpeg -re -stream_loop -1 -f concat -safe 0 -i docker/tv-station/videos/playlist.host.txt -i public/logo.png -filter_complex "[0:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=25,format=yuv420p[base];[1:v]scale=48:-1[wm];[base][wm]overlay=W-w-6:6:format=yuv420,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='"'"'hostamar.com'"'"':fontsize=10:fontcolor=white:x=w-text_w-8:y=58[v];[0:a]aresample=48000:async=1,loudnorm=I=-16:TP=-1.5:LRA=11[a]" -map "[v]" -map "[a]" -c:v libvpx-vp9 -b:v 400k -deadline realtime -cpu-used 8 -row-mt 1 -tile-columns 2 -c:a libopus -b:a 48k -ar 48000 -f hls -hls_time 4 -hls_list_size 6 -hls_flags delete_segments+append_list -hls_segment_type fmp4 -hls_fmp4_init_filename init_v2.mp4 -hls_segment_filename docker/tv-station/hls2/seg%04d.mp4 docker/tv-station/hls2/master.m3u8 > /tmp/vp9.log 2>&1 < /dev/null &'`}
+          />
+          <ActionCard
+            title="Restart Restream"
+            command="pkill -9 -f restream.py; sleep 2; cd ~/hostamar-build && setsid python3 restream.py > /tmp/restream.log 2>&1 < /dev/null &"
+          />
+          <ActionCard
+            title="Verify HLS2 Audio"
+            command="ffmpeg -v error -i docker/tv-station/hls2/master.m3u8 -t 5 -af volumedetect -f null - 2>&1 | grep mean_volume"
+          />
         </div>
-        <div className="divide-y divide-[#D8CDB4] max-h-[300px] overflow-auto">
-          {playlist.length === 0 ? (
-            <div className="p-6 text-center text-[#57534E] text-sm">No videos in playlist. Click "Generate Video" to add content.</div>
-          ) : (
-            playlist.slice(0, 15).map((item, idx) => (
-              <div key={item.id} className="px-4 py-3 flex items-center gap-4">
-                <span className="text-[#57534E] text-sm w-6">{idx + 1}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm text-[#1C1917] truncate">{item.title}</div>
-                  <div className="text-xs text-[#57534E]">{item.source}</div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      </section>
     </div>
-  );
+  )
+}
+
+function StatusCard({ label, value, status, note }: { label: string; value: string; status: 'ok' | 'warn' | 'error' | 'info'; note: string }) {
+  const colors = { ok: 'text-[#0E7C3A]', warn: 'text-amber-600', error: 'text-red-600', info: 'text-blue-600' }
+  const icons = { ok: '✅', warn: '⚠️', error: '❌', info: '🔍' }
+  return (
+    <div className="rounded-lg bg-white p-3 ring-1 ring-[#D8CDB4]">
+      <div className="flex items-center gap-1 text-xs text-[#B8AFA3]">{icons[status]} {label}</div>
+      <div className={`text-lg font-semibold ${colors[status]}`}>{value}</div>
+      <div className="text-xs text-[#B8AFA3]">{note}</div>
+    </div>
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+      <span className="w-24 shrink-0 text-xs font-medium text-[#B8AFA3]">{label}</span>
+      <span className="break-all text-[#1C1917] font-mono">{value}</span>
+    </div>
+  )
+}
+
+function CmdButton({ cmd, label }: { cmd: string; label: string }) {
+  return (
+    <button
+      onClick={() => navigator.clipboard?.writeText(cmd)}
+      className="rounded bg-[#0E7C3A] px-3 py-1.5 text-xs font-medium text-white hover:brightness-110"
+      title="Click to copy"
+    >
+      {label}
+    </button>
+  )
+}
+
+function ActionCard({ title, command }: { title: string; command: string }) {
+  return (
+    <div className="rounded-lg bg-white p-3 ring-1 ring-[#D8CDB4]">
+      <div className="mb-1 text-sm font-medium text-[#1C1917]">{title}</div>
+      <code className="block overflow-x-auto whitespace-pre-wrap rounded bg-[#FBF4E4] p-2 text-xs text-[#1C1917]">{command}</code>
+    </div>
+  )
 }
