@@ -10,10 +10,13 @@ Usage:
   python local-runner/edge_collect.py --verify  # verify existing logins only
 """
 import sys
+import io
 import json
 import time
 import os
 import re
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 try:
     from pywinauto import Application, Desktop
@@ -29,10 +32,10 @@ RESULTS_FILE = os.environ.get("RESULTS_FILE", r"C:\Users\User\hostamar-build\.en
 
 # Platform URL → window title keyword mapping
 PLATFORMS = {
-    "Google":    ["google", "gmail", "drive", "gsc"],
-    "Facebook":  ["facebook"],
-    "X":         ["x.com", "twitter"],
-    "YouTube":   ["youtube"],
+    "Google":    ["google", "gmail", "drive", "gsc", "console"],
+    "Facebook":  ["facebook", "meta"],
+    "X":         ["x.com", "twitter", "developer"],
+    "YouTube":   ["youtube", "studio"],
 }
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
@@ -65,7 +68,7 @@ def get_window_titles():
 
 
 def check_platforms():
-    """Check which platforms are logged in via window title sniffing."""
+    """Check which platforms are logged in via Edge window title + tab bar."""
     result = {p: False for p in PLATFORMS}
     result["Edge"] = False
     titles = get_window_titles()
@@ -82,6 +85,23 @@ def check_platforms():
         if "edge" in title.lower():
             result["Edge"] = True
             break
+
+    # Also check Edge tab bar for individual tab titles
+    if result["Edge"]:
+        try:
+            app = Application(backend="uia").connect(title_re=".*Edge.*", timeout=5)
+            edge = app.window(title_re=".*Edge.*")
+            tabs = edge.descendants(control_type="Tab")
+            for t in tabs:
+                tt = t.window_text().lower()
+                for platform, keywords in PLATFORMS.items():
+                    if not result[platform]:
+                        for kw in keywords:
+                            if kw in tt:
+                                result[platform] = True
+                                break
+        except Exception:
+            pass
     return result
 
 
@@ -331,8 +351,8 @@ def main():
     print("\n[2] Checking platform logins...")
     platforms = check_platforms()
     for p, ok in platforms.items():
-        mark = "✓" if ok else "✗"
-        print(f"  {mark} {p}")
+        mark = "OK" if ok else "MISS"
+        print(f"  [{mark}] {p}")
 
     if mode == "--verify":
         print("\nVerification complete. Platforms not detected need their tabs opened.")

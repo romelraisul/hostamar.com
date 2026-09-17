@@ -94,10 +94,9 @@ def publish_video(source_path, title):
 
 
 def fetch_nasa_video(query="space", max_results=3):
-    """Search NASA Video Library for public-domain video clips.
-       STUB: not yet verified in this session — needs network run."""
+    """Search NASA Video Library for public-domain video clips."""
     url = NASA_API + "?media_type=video&q=" + urllib.parse.quote(query)
-    url = url + "&page=1&per_page=" + str(max_results)
+    url = url + "&page=1&page_size=" + str(max_results)
     try:
         data = json.loads(http_get(url))
         items = data.get("collection", {}).get("items", [])
@@ -146,37 +145,52 @@ def download_nasa_clip(url, dest_dir):
 
 
 def check_comfyui_queue():
-    """Check if ComfyUI queue is empty. Verified: ComfyUI running on :8188."""
+    """Check if ComfyUI queue is empty. ComfyUI has no /queue endpoint; /prompt GET returns queue state."""
     try:
-        rc, out, err = run("curl -s " + COMFYUI + "/queue", timeout=10)
+        rc, out, err = run("curl -s " + COMFYUI + "/prompt", timeout=10)
         if rc == 0:
             data = json.loads(out)
-            pending = (data.get("queue", {}) or {}).get("pending", [])
-            return pending == []
+            remaining = (data.get("exec_info") or {}).get("queue_remaining", 0)
+            return remaining == 0
     except Exception:
         pass
     return True
 
 
 def generate_comfyui_image(prompt, width=1024, height=576):
-    """Submit a prompt to ComfyUI for image generation.
-       STUB: submits to queue; actual generation depends on ComfyUI workflow."""
+    """Submit a simple txt2img workflow to ComfyUI.
+       Builds a minimal workflow: CheckpointLoader -> CLIPTextEncode -> KSampler -> VAEEncode -> SaveImage."""
     if not check_comfyui_queue():
         print("  ComfyUI queue not empty, skipping")
         return None
+
+    # Build minimal txt2img workflow (node IDs are strings per ComfyUI spec)
+    workflow = {
+        "3": {"inputs": {"seed": 42, "steps": 20, "cfg": 7.0, "sampler_name": "euler",
+                         "scheduler": "normal", "denoise": 1.0,
+                         "model": ["4", 0], "positive": ["6", 0], "negative": ["7", 0],
+                         "latent_image": ["5", 0]}, "class_type": "KSampler"},
+        "4": {"inputs": {"ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"}, "class_type": "CheckpointLoaderSimple"},
+        "5": {"inputs": {"width": width, "height": height, "batch_size": 1}, "class_type": "EmptyLatentImage"},
+        "6": {"inputs": {"text": prompt, "clip": ["4", 1]}, "class_type": "CLIPTextEncode"},
+        "7": {"inputs": {"text": "text, watermark, low quality", "clip": ["4", 1]}, "class_type": "CLIPTextEncode"},
+        "8": {"inputs": {"samples": ["3", 0], "vae": ["4", 2]}, "class_type": "VAEDecode"},
+        "9": {"inputs": {"images": ["8", 0]}, "filename_prefix": "hostamar_tv", "class_type": "PreviewImage"}
+    }
+
     try:
-        body = json.dumps({"prompt": prompt, "width": width, "height": height})
+        payload = json.dumps({"prompt": workflow})
         rc, out, err = run(
-            "curl -s -X POST " + COMFYUI + "/prompt"
-            " -d '{\"prompt\": " + body + "}' 2>&1",
-            timeout=10,
+            "curl -s -X POST " + COMFYUI + "/prompt -H 'Content-Type:' -d '" + payload.replace("'", "'\\''") + "'",
+            timeout=15,
         )
         if rc == 0:
             data = json.loads(out)
-            print("  ComfyUI prompt submitted: " + str(data))
-            return data.get("prompt_id")
+            pid = data.get("prompt_id")
+            print(f"  ComfyUI submitted: {pid}")
+            return pid
     except Exception as e:
-        print("  ComfyUI submission error: " + str(e))
+        print(f"  ComfyUI error: {e}")
     return None
 
 
