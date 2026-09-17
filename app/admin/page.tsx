@@ -28,6 +28,10 @@ export default function AdminOverview() {
   return (
     <div className="space-y-6">
       <header>
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-xs font-bold tracking-widest uppercase text-[#0E7C3A] bg-[#0E7C3A]/10 px-3 py-1 rounded-full border border-[#0E7C3A]/30">এডমিন প্যানেল</span>
+          <span className="text-xs text-[#57534E]">/admin</span>
+        </div>
         <h1 className="text-2xl font-bold text-[#1C1917]">Admin Overview</h1>
         <p className="text-sm text-[#57534E]">Completion: {ok}/{components.length} ({pct}%) — Updated: live</p>
       </header>
