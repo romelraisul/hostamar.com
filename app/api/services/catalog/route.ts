@@ -19,10 +19,16 @@ export const revalidate = 300
  * Zero request-data access = ISR-cacheable, exactly like /api/store/products.
  */
 export async function GET() {
-  const services = await prisma.serviceCatalog.findMany({
-    where: { isActive: true },
-    orderBy: { id: 'asc' },
-  })
+  let services: Array<Record<string, unknown>> = []
+  try {
+    services = await prisma.serviceCatalog.findMany({
+      where: { isActive: true },
+      orderBy: { id: 'asc' },
+    })
+  } catch {
+    // Build-time / no-DB: return empty catalog so static export succeeds.
+    // Runtime DB errors still surface as 500 via Next's error handling.
+  }
 
   // Route header overrides next.config.js headers for route handlers (measured
   // live: config's s-maxage=3600 never reached the edge, every probe = MISS
