@@ -30,6 +30,9 @@ export default function Navbar() {
             <Link href="/pricing" className="transition hover:text-[#18181B]">
               {isBengali ? 'প্রাইসিং' : 'Pricing'}
             </Link>
+            <Link href="https://tv.hostamar.com" className="bangla transition font-medium hover:text-[#0E7C3A] flex items-center gap-1.5">
+              {isBengali ? '📺 লাইভ টিভি' : '📺 Live TV'}
+            </Link>
             <div className="group relative">
               <button
                 type="button"
