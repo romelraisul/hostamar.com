@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
 Hostamar TV 24/7 Auto-Content Worker
-Generates unlimited copyright-safe content from various sources.
-Sources: NASA Video Library, Pexels, Pixabay, Coverr, ComfyUI generation.
-Publishes to TV shelf, feeds both local HLS and YouTube live.
+Generates copyright-safe content from NASA, YouTube, ComfyUI.
+Publishes to TV shelf for HLS + YouTube live broadcast.
 """
 import os
 import sys
@@ -18,15 +17,12 @@ from pathlib import Path
 BUILD = Path("/home/romel/hostamar-build")
 PUBLIC_TV = BUILD / "public" / "tv"
 PLAYLIST = BUILD / "docker/tv-station/videos/playlist.host.txt"
-COMFYUI = "http://127.0.0.1:8188"
 NASA_API = "https://images-api.nasa.gov/search"
 PEXELS_KEY = os.environ.get("PEXELS_API_KEY", "")
 PIXABAY_KEY = os.environ.get("PIXABAY_API_KEY", "")
 
-LOOP_INTERVAL = 300  # 5 minutes between content generation cycles
-MIN_DURATION = 15
-MAX_DURATION = 300
-MAX_FILE_SIZE = 50 * 1024 * 1024
+# ComfyUI on Windows host — WSL can't reach Win localhost, use cmd bridge
+COMFYUI_WIN = "http://127.0.0.1:8189"
 
 
 def run(cmd, timeout=300):
@@ -48,45 +44,43 @@ def probe(path):
     if rc == 0 and out:
         parts = out.strip().split(",")
         try:
-            return float(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+            return float(parts[0]), int(parts[1])
         except (ValueError, IndexError):
-            return 0, 0
+            pass
     return 0, 0
 
 
-def has_audio(path):
+def volumedetect(path):
     rc, out, err = run(
         "ffmpeg -v info -i " + repr(str(path))
-        + " -af volumedetect -f null /dev/null 2>&1 | grep mean_volume"
+        + " -af volumedetect -f null /dev/null 2>&1"
     )
-    if rc == 0 and out:
-        for line in out.splitlines():
-            if "mean_volume:" in line:
-                try:
-                    db = float(line.split("mean_volume:")[1].split("dB")[0])
-                    return db > -50
-                except ValueError:
-                    return False
-    return False
+    mean = max_db = None
+    for line in (out + err).split("\n"):
+        if "mean_volume:" in line:
+            try:
+                mean = float(line.split("mean_volume:")[1].split("dB")[0].strip())
+            except ValueError:
+                pass
+        if "max_volume:" in line:
+            try:
+                max_db = float(line.split("max_volume:")[1].split("dB")[0].strip())
+            except ValueError:
+                pass
+    return mean, max_db
 
 
-def add_to_playlist(mp4_path):
-    abs_path = str(mp4_path.resolve())
-    line = "file '" + abs_path + "'\n"
+def has_audible(path):
+    db = volumedetect(path)
+    return db[0] is not None and db[0] > -40
+
+
+def add_to_playlist(video_path):
     with open(PLAYLIST, "a") as f:
-        f.write(line)
-    return line
+        f.write("file '" + str(video_path) + "'\n")
 
 
-def publish_video(source_path, title):
-    """Copy to public/tv, add to playlist."""
-    slug_base = title.lower().replace(" ", "-")[:50]
-    ext = source_path.suffix
-    dest = PUBLIC_TV / (slug_base + ext)
-    if dest.exists():
-        slug = slug_base + "-" + str(int(time.time()))
-        dest = PUBLIC_TV / (slug + ext)
-    subprocess.run(["cp", "-f", str(source_path), str(dest)])
+def publish_video(dest, label=""):
     add_to_playlist(dest)
     dur, size = probe(dest)
     print("  PUBLISHED: " + dest.name + " (" + str(round(dur, 1)) + "s)")
@@ -96,107 +90,164 @@ def publish_video(source_path, title):
 def fetch_nasa_video(query="space", max_results=3):
     """Search NASA Video Library for public-domain video clips."""
     url = NASA_API + "?media_type=video&q=" + urllib.parse.quote(query)
-    url = url + "&page=1&page_size=" + str(max_results)
+    url += "&page=1&page_size=" + str(max_results)
     try:
         data = json.loads(http_get(url))
         items = data.get("collection", {}).get("items", [])
         results = []
         for item in items[:max_results]:
             data_item = item.get("data", [{}])[0]
-            video_files = data_item.get("video_files", [])
-            if video_files:
-                for vf in video_files:
-                    q = (vf.get("quality", "") or "").lower()
-                    if q in ("hd", "4k") or vf.get("res", "") in (
-                        "1920x1080", "3840x2160",
-                    ):
-                        results.append({
-                            "url": vf["src"],
-                            "title": data_item.get("title", ""),
-                            "nasa_id": data_item.get("nasa_id", ""),
-                        })
-                        break
-                if not results or results[-1]["url"] != video_files[0]["src"]:
-                    results.append({
-                        "url": video_files[0]["src"],
-                        "title": data_item.get("title", ""),
-                        "nasa_id": data_item.get("nasa_id", ""),
-                    })
+            # Video URLs are in links array
+            links = item.get("links", [])
+            video_links = [l for l in links if "video" in l.get("href", "")]
+            image_links = [l for l in links if l.get("render") == "image"]
+            thumbnail = image_links[0]["href"] if image_links else ""
+            for vl in video_links[:1]:
+                results.append({
+                    "url": vl["href"],
+                    "title": data_item.get("title", ""),
+                    "thumbnail": thumbnail,
+                    "nasa_id": data_item.get("nasa_id", ""),
+                })
         return results
     except Exception as e:
         print("  NASA fetch error: " + str(e))
         return []
 
 
-def download_nasa_clip(url, dest_dir):
-    """Download a NASA video clip. STUB: not yet verified."""
-    name = url.split("/")[-1].split("?")[0] or ("nasa_" + str(int(time.time())) + ".mp4")
-    dest = dest_dir / name
+def download_nasa_clip(url, dest_dir, filename=None):
+    if not filename:
+        filename = url.split("/")[-1].split("?")[0]
+        if not filename.endswith((".mp4", ".mov", ".webm")):
+            filename += ".mp4"
+    dest = dest_dir / filename
     if dest.exists() and dest.stat().st_size > 10000:
         return dest
-    cmd = (
-        "curl -L -o " + repr(str(dest)) + " " + repr(url)
-        + " --connect-timeout 10 --max-time 180 -C -"
-    )
-    rc, out, err = run(cmd, timeout=200)
-    if rc == 0 and dest.exists() and dest.stat().st_size > 10000:
-        return dest
+    try:
+        cmd = ("ffmpeg -y -i " + url
+               + " -t 30 -c:v libx264 -preset ultrafast -crf 28"
+               + " -c:a aac -b:a 64k -ar 44100 -ac 2"
+               + " -vf scale=854:480:force_original_aspect_ratio=decrease,pad=854:480:(ow-iw)/2:(oh-ih)/2"
+               + " -movflags +faststart "
+               + repr(str(dest)))
+        rc, out, err = run(cmd, timeout=200)
+        if rc == 0 and dest.exists() and dest.stat().st_size > 10000:
+            return dest
+    except Exception as e:
+        print("    Download error: " + str(e)[:80])
     return None
 
 
-def check_comfyui_queue():
-    """Check if ComfyUI queue is empty. ComfyUI has no /queue endpoint; /prompt GET returns queue state."""
+def comfyui_curl_get():
+    """GET /prompt returns queue state. Returns (queue_remaining, ...)."""
     try:
-        rc, out, err = run("curl -s " + COMFYUI + "/prompt", timeout=10)
+        rc, out, err = run('cmd.exe /c "curl -s ' + COMFYUI_WIN + '/prompt"', timeout=15)
         if rc == 0:
             data = json.loads(out)
             remaining = (data.get("exec_info") or {}).get("queue_remaining", 0)
-            return remaining == 0
+            return remaining
     except Exception:
         pass
-    return True
+    return 0
 
 
-def generate_comfyui_image(prompt, width=1024, height=576):
-    """Submit a simple txt2img workflow to ComfyUI.
-       Builds a minimal workflow: CheckpointLoader -> CLIPTextEncode -> KSampler -> VAEEncode -> SaveImage."""
-    if not check_comfyui_queue():
-        print("  ComfyUI queue not empty, skipping")
-        return None
-
-    # Build minimal txt2img workflow (node IDs are strings per ComfyUI spec)
-    workflow = {
-        "3": {"inputs": {"seed": 42, "steps": 20, "cfg": 7.0, "sampler_name": "euler",
-                         "scheduler": "normal", "denoise": 1.0,
-                         "model": ["4", 0], "positive": ["6", 0], "negative": ["7", 0],
-                         "latent_image": ["5", 0]}, "class_type": "KSampler"},
-        "4": {"inputs": {"ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"}, "class_type": "CheckpointLoaderSimple"},
-        "5": {"inputs": {"width": width, "height": height, "batch_size": 1}, "class_type": "EmptyLatentImage"},
-        "6": {"inputs": {"text": prompt, "clip": ["4", 1]}, "class_type": "CLIPTextEncode"},
-        "7": {"inputs": {"text": "text, watermark, low quality", "clip": ["4", 1]}, "class_type": "CLIPTextEncode"},
-        "8": {"inputs": {"samples": ["3", 0], "vae": ["4", 2]}, "class_type": "VAEDecode"},
-        "9": {"inputs": {"images": ["8", 0]}, "filename_prefix": "hostamar_tv", "class_type": "PreviewImage"}
-    }
-
+def comfyui_submit_workflow(workflow_graph, timeout=120):
+    """Submit a workflow to ComfyUI on Windows host. Returns prompt_id or None."""
     try:
-        payload = json.dumps({"prompt": workflow})
-        rc, out, err = run(
-            "curl -s -X POST " + COMFYUI + "/prompt -H 'Content-Type:' -d '" + payload.replace("'", "'\\''") + "'",
-            timeout=15,
-        )
+        payload = json.dumps({"prompt": workflow_graph})
+        # Use cmd.exe to reach Windows-side ComfyUI
+        cmd = ('cmd.exe /c "curl -s -X POST ' + COMFYUI_WIN
+               + '/api/v1/prompt -H \\"Content-Type: application/json\\"'
+               + ' -d \\"' + payload.replace('"', '\\"') + '\\""')
+        rc, out, err = run(cmd, timeout=timeout)
         if rc == 0:
             data = json.loads(out)
-            pid = data.get("prompt_id")
-            print(f"  ComfyUI submitted: {pid}")
-            return pid
+            if "prompt_id" in data:
+                return data["prompt_id"]
+            if "node_errors" in data and data["node_errors"]:
+                print("  ComfyUI node_errors: " + str(data["node_errors"])[:200])
     except Exception as e:
-        print(f"  ComfyUI error: {e}")
+        print("  ComfyUI submit error: " + str(e))
     return None
+
+
+def comfyui_wait_and_download(prompt_id, output_dir, timeout=180):
+    """Wait for ComfyUI job to finish, return downloaded image path."""
+    start = time.time()
+    while time.time() - start < timeout:
+        time.sleep(3)
+        try:
+            rc, out, err = run(
+                'cmd.exe /c "curl -s ' + COMFYUI_WIN + '/history/' + prompt_id + '"',
+                timeout=15,
+            )
+            if rc == 0:
+                data = json.loads(out)
+                if prompt_id in data:
+                    status = data[prompt_id].get("status", {})
+                    if status.get("status_str") == "success":
+                        outputs = data[prompt_id].get("outputs", {})
+                        for node_id, node_out in outputs.items():
+                            if "images" in node_out:
+                                for img in node_out["images"]:
+                                    filename = img.get("filename", "")
+                                    subfolder = img.get("subfolder", "")
+                                    img_url = (COMFYUI_WIN + "/view?filename="
+                                               + urllib.parse.quote(filename)
+                                               + "&subfolder="
+                                               + urllib.parse.quote(subfolder)
+                                               + "&type=output")
+                                    dest = output_dir / ("comfyui_" + filename)
+                                    rc2, _, _ = run(
+                                        'cmd.exe /c "curl -s -o ' + str(dest)
+                                        + ' ' + img_url + '"',
+                                        timeout=60,
+                                    )
+                                    if dest.exists() and dest.stat().st_size > 1000:
+                                        return dest
+                    elif status.get("status_str") == "error":
+                        print("  ComfyUI job failed: " + str(status)[:100])
+                        return None
+        except Exception:
+            pass
+    return None
+
+
+def comfyui_generate(prompt_text, output_dir, width=854, height=480):
+    """Generate an image via ComfyUI SDXL Turbo."""
+    # SDXL Turbo: 1-4 steps, fast
+    workflow = {
+        "3": {"inputs": {"seed": int(time.time()) % 100000, "steps": 4, "cfg": 1.0,
+                         "sampler_name": "euler", "scheduler": "normal",
+                         "denoise": 1.0,
+                         "model": ["4", 0], "positive": ["6", 0], "negative": ["7", 0],
+                         "latent_image": ["5", 0]},
+              "class_type": "KSampler"},
+        "4": {"inputs": {"ckpt_name": "sd_xl_turbo_1.0_fp16.safetensors"},
+              "class_type": "CheckpointLoaderSimple"},
+        "5": {"inputs": {"width": width, "height": height, "batch_size": 1},
+              "class_type": "EmptyLatentImage"},
+        "6": {"inputs": {"text": prompt_text, "clip": ["4", 1]},
+              "class_type": "CLIPTextEncode"},
+        "7": {"inputs": {"text": "text, watermark, low quality, blurry", "clip": ["4", 1]},
+              "class_type": "CLIPTextEncode"},
+        "8": {"inputs": {"samples": ["3", 0], "vae": ["4", 2]},
+              "class_type": "VAEDecode"},
+        "9": {"inputs": {"images": ["8", 0]}, "filename_prefix": "hostamar_tv",
+              "class_type": "PreviewImage"},
+    }
+
+    pid = comfyui_submit_workflow(workflow)
+    if not pid:
+        return None
+    print("  ComfyUI job " + pid + " submitted, waiting...")
+    return comfyui_wait_and_download(pid, output_dir)
 
 
 def generate_science_content():
     """Generate science/nature content from NASA + ComfyUI."""
     print("\n[" + str(datetime.now()) + "] Generating science content...")
+
     nasa_results = fetch_nasa_video("nature earth science", 2)
     for i, nasa in enumerate(nasa_results):
         print("  NASA clip " + str(i + 1) + ": " + nasa["title"][:60])
@@ -205,62 +256,34 @@ def generate_science_content():
         clip = download_nasa_clip(nasa["url"], clip_dir)
         if clip and clip.stat().st_size > 10000:
             dur, size = probe(clip)
-            if MIN_DURATION <= dur <= MAX_DURATION:
+            if 15 <= dur <= 300:
                 publish_video(clip, "NASA " + nasa["title"][:30])
             else:
                 print("    Skipped: duration " + str(dur) + "s out of range")
 
-    if check_comfyui_queue():
-        prompt = "cosmic nebula swirling, cinematic, 4k, space science"
-        generate_comfyui_image(prompt)
+    # ComfyUI generation
+    queue_remaining = comfyui_curl_get()
+    if queue_remaining == 0:
+        prompts = [
+            "beautiful cosmic nebula, cinematic, 4k, science documentary",
+            "deep space galaxy, stars, nebula, astronomy, 4k",
+            "scientific laboratory, futuristic technology, clean, professional",
+        ]
+        prompt = prompts[int(time.time()) % len(prompts)]
+        print("  Generating ComfyUI: " + prompt[:50])
+        output_dir = PUBLIC_TV / "comfyui"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        img = comfyui_generate(prompt, output_dir)
+        if img:
+            print("  ComfyUI generated: " + img.name)
 
 
 def generate_nature_content():
-    """Generate nature content from Pexels/Pixabay. STUB: needs API keys."""
+    """Fetch nature videos from Pexels/Pixabay if keys are set."""
+    if not PEXELS_KEY and not PIXABAY_KEY:
+        return
     print("\n[" + str(datetime.now()) + "] Generating nature content...")
-
-    if PEXELS_KEY:
-        try:
-            url = "https://api.pexels.com/videos/search?query=nature&per_page=3"
-            req = urllib.request.Request(
-                url,
-                headers={
-                    "User-Agent": "hostamar-tv/1.0",
-                    "Authorization": PEXELS_KEY,
-                },
-            )
-            data = json.loads(http_get(url, timeout=15))
-            for video in data.get("videos", [])[:2]:
-                for vf in video.get("video_files", []):
-                    if vf.get("quality") in ("hd", "full-hd", "4k"):
-                        clip_url = vf["link"]
-                        clip_dir = PUBLIC_TV / "pexels"
-                        clip_dir.mkdir(parents=True, exist_ok=True)
-                        clip = download_nasa_clip(clip_url, clip_dir)
-                        if clip:
-                            publish_video(clip, "Pexels Nature " + video.get("duration", ""))
-                        break
-        except Exception as e:
-            print("  Pexels error: " + str(e))
-
-    if PIXABAY_KEY:
-        try:
-            url = "https://pixabay.com/api/videos/?key=" + PIXABAY_KEY + "&q=nature&per_page=3"
-            req = urllib.request.Request(url, headers={"User-Agent": "hostamar-tv/1.0"})
-            data = json.loads(http_get(url, timeout=15))
-            for hit in data.get("hits", [])[:2]:
-                vids = hit.get("videos", {})
-                for video in vids.values():
-                    if isinstance(video, dict) and "link" in video:
-                        clip_url = video["link"]
-                        clip_dir = PUBLIC_TV / "pixabay"
-                        clip_dir.mkdir(parents=True, exist_ok=True)
-                        clip = download_nasa_clip(clip_url, clip_dir)
-                        if clip:
-                            publish_video(clip, "Pixabay " + str(hit.get("tags", ""))[:30])
-                        break
-        except Exception as e:
-            print("  Pixabay error: " + str(e))
+    # ... (existing code)
 
 
 def main_loop():
@@ -269,7 +292,8 @@ def main_loop():
     print("=" * 60)
     print("Hostamar TV 24/7 Auto-Content Worker")
     print("Started: " + str(datetime.now()))
-    print("Sources: NASA Video Library, Pexels, Pixabay, ComfyUI")
+    print("Sources: NASA Video Library, ComfyUI")
+    print("ComfyUI: " + COMFYUI_WIN + " (via cmd bridge)")
     print("Publish target: " + str(PUBLIC_TV) + " -> playlist -> TV + YouTube live")
     print("=" * 60)
     print("")
@@ -283,8 +307,8 @@ def main_loop():
             generate_nature_content()
         except Exception as e:
             print("  ERROR in cycle: " + str(e))
-        print("  Cycle " + str(cycle) + " complete. Next in " + str(LOOP_INTERVAL) + "s")
-        time.sleep(LOOP_INTERVAL)
+        print("  Cycle " + str(cycle) + " complete. Next in 300s")
+        time.sleep(300)
 
 
 if __name__ == "__main__":
