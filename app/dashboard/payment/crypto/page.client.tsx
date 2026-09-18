@@ -19,7 +19,7 @@ export default function CryptoPaymentPageClient() {
 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className="bg-[#FFFDF6] rounded-xl border p-6">
+            <div className="bg-white rounded-xl border p-6">
               <h2 className="text-xl font-bold mb-4">{t('crypto.howItWorks')}</h2>
               <div className="space-y-4">
                 <div className="flex gap-4">
@@ -61,7 +61,7 @@ export default function CryptoPaymentPageClient() {
               </div>
             </div>
 
-            <div className="bg-[#FFFDF6] rounded-xl border p-6">
+            <div className="bg-white rounded-xl border p-6">
               <h2 className="text-xl font-bold mb-4">{t('crypto.pricing')}</h2>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
@@ -81,7 +81,7 @@ export default function CryptoPaymentPageClient() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-[#FFFDF6] rounded-xl border p-6">
+            <div className="bg-white rounded-xl border p-6">
               <h2 className="text-xl font-bold mb-4">{t('crypto.walletAddress')}</h2>
               <p className="text-sm text-gray-600 mb-4">{t('ossu.network')}</p>
               <div className="bg-gray-900 rounded-xl p-4 text-center">
@@ -96,7 +96,7 @@ export default function CryptoPaymentPageClient() {
               </div>
             </div>
 
-            <div className="bg-[#FFFDF6] rounded-xl border p-6">
+            <div className="bg-white rounded-xl border p-6">
               <h2 className="text-xl font-bold mb-4">{t('crypto.verifyPayment')}</h2>
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm space-y-2">
                 <p className="font-semibold">{t('ossu.verifySteps')}</p>
@@ -116,7 +116,7 @@ export default function CryptoPaymentPageClient() {
           </div>
         </div>
 
-        <div className="bg-[#FFFDF6] rounded-xl border p-6 mt-8">
+        <div className="bg-white rounded-xl border p-6 mt-8">
           <h2 className="text-lg font-bold mb-3">{t('crypto.otherMethods')}</h2>
           <a href="/dashboard/payment" className="block mb-4">
             <button className="w-full py-3 border rounded-lg font-semibold">

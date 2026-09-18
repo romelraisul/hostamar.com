@@ -284,7 +284,7 @@ export default function PaymentPage() {
             {/* QR Code Display - Show when method is selected */}
             {selectedMethod && (
               <div className="text-center py-4">
-                <div className="inline-block bg-[#FFFDF6] rounded-2xl p-4 shadow-lg shadow-black/20">
+                <div className="inline-block bg-white rounded-2xl p-4 shadow-lg shadow-black/20">
                   <NextImage
                     src={`/qr/${selectedMethod}.png`}
                     alt={`${PAYMENT_METHODS[selectedMethod].name} QR Code`}
@@ -318,7 +318,7 @@ export default function PaymentPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={t('payment.phonePlaceholder')}
                   disabled={state.status === 'creating' || state.status === 'verifying'}
-                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-[#1C1917] placeholder-gray-600 focus:outline-none focus:border-[#0E7C3A]/50 focus:ring-2 focus:ring-[#0E7C3A]/20 transition"
+                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#0E7C3A]/50 focus:ring-2 focus:ring-[#0E7C3A]/20 transition"
                 />
                 <p className="text-xs text-gray-500 mt-2">{t('payment.phoneHint')}</p>
               </div>
@@ -334,7 +334,7 @@ export default function PaymentPage() {
                   onChange={(e) => setWalletAddress(e.target.value)}
                   placeholder={t('payment.walletPlaceholder')}
                   disabled={state.status === 'creating' || state.status === 'verifying'}
-                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-[#1C1917] placeholder-gray-600 focus:outline-none focus:border-[#0E7C3A]/50 focus:ring-2 focus:ring-[#0E7C3A]/20 transition font-mono"
+                  className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#0E7C3A]/50 focus:ring-2 focus:ring-[#0E7C3A]/20 transition font-mono"
                 />
                 <p className="text-xs text-gray-500 mt-2">Send <strong>{(selectedPlan && PLANS[selectedPlan]?.amount) || 0 * 0.0025} USDT</strong> to: <code className="text-[#0E7C3A]">0x16Bfd806297feaC12FC4b8A6c95079E8aADeC858</code></p>
               </div>
@@ -433,7 +433,7 @@ export default function PaymentPage() {
                   )}
                 </button>
 
-                <button onClick={reset} className="w-full py-3 mt-3 text-gray-400 hover:text-[#1C1917] transition text-sm">
+                <button onClick={reset} className="w-full py-3 mt-3 text-gray-400 hover:text-white transition text-sm">
                   {t('payment.cancelResetBtn')}
                 </button>
               </div>

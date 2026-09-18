@@ -82,7 +82,7 @@ export default function AdminCustomersPage() {
       </div>
 
       {/* Customers Table */}
-      <div className="bg-[#FFFDF6] rounded-xl border overflow-hidden">
+      <div className="bg-white rounded-xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -202,7 +202,7 @@ function CustomerDetailModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#FFFDF6] rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">{t('admin.customers.details')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">

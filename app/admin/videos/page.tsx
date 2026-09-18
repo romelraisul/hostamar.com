@@ -122,7 +122,7 @@ export default function AdminVideosPage() {
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'queue'
               ? 'bg-[#0E7C3A] text-white'
-              : 'bg-[#FFFDF6] border text-gray-600 hover:bg-gray-50'
+              : 'bg-white border text-gray-600 hover:bg-gray-50'
           }`}
         >
           Processing Queue ({queue.filter(q => q.status === 'pending' || q.status === 'processing').length})
@@ -132,7 +132,7 @@ export default function AdminVideosPage() {
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'videos'
               ? 'bg-[#0E7C3A] text-white'
-              : 'bg-[#FFFDF6] border text-gray-600 hover:bg-gray-50'
+              : 'bg-white border text-gray-600 hover:bg-gray-50'
           }`}
         >
           All Videos ({videos.length})
@@ -141,7 +141,7 @@ export default function AdminVideosPage() {
 
       {/* Queue Tab */}
       {activeTab === 'queue' && (
-        <div className="bg-[#FFFDF6] rounded-xl border overflow-hidden">
+        <div className="bg-white rounded-xl border overflow-hidden">
           {queue.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -240,7 +240,7 @@ export default function AdminVideosPage() {
 
       {/* Videos Tab */}
       {activeTab === 'videos' && (
-        <div className="bg-[#FFFDF6] rounded-xl border overflow-hidden">
+        <div className="bg-white rounded-xl border overflow-hidden">
           {videos.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
