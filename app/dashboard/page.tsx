@@ -13,15 +13,6 @@ import { PRODUCT_NAV } from '@/lib/products'
 import NodeStatus from '@/components/dashboard/NodeStatus'
 import { fetchCatalog, decodeIcon, type CatalogService } from '@/lib/services'
 
-const PICON: Record<string, React.ReactNode> = {
-  'ai-video': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor" stroke="none" /></svg>,
-  'cloud-hosting': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2" /><rect x="3" y="13" width="18" height="7" rx="2" /><path d="M7 7.5h.01M7 16.5h.01" /></svg>,
-  'ai-chat': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" /><path d="M9 11h6M9 14h4" /></svg>,
-  'dev-ide': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6" /></svg>,
-  'ai-browser': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18" /></svg>,
-  'game': <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5" /><path d="M7 11v3M5.5 12.5h3M16 11.5h.01M18.5 13.5h.01" /></svg>,
-};
-
 interface DashboardStats {
   videos: { total: number; thisMonth: number }
   services: { active: number; total: number }
@@ -59,16 +50,16 @@ function CreditMeter({ credits, loading }: { credits: number; loading: boolean }
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-3xl font-black tabular-nums">{loading ? '—' : credits.toLocaleString()}</span>
           <span className="text-white/70 text-sm">/ 6,000</span>
-          <span className="ml-auto text-xs bg-[#FFFDF6] text-[#0E7C3A] px-2.5 py-1 rounded-full font-bold">{pct}%</span>
+          <span className="ml-auto text-xs bg-white text-[#0E7C3A] px-2.5 py-1 rounded-full font-bold">{pct}%</span>
         </div>
-        <div className="mt-3 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full bg-[#FFFDF6] rounded-full transition-all" style={{ width: `${pct}%` }} /></div>
+        <div className="mt-3 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full bg-white rounded-full transition-all" style={{ width: `${pct}%` }} /></div>
         <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">Used {used.toLocaleString()}</span>
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">Video 100</span>
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">IDE 10</span>
         </div>
         <div className="mt-2 flex gap-2 text-[11px] text-white/70 justify-center">Chat 1 • Browser 5 • Game 20 • Hosting 0</div>
-        <Link href="/dashboard/payment" className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#FFFDF6] text-[#0E7C3A] text-sm font-bold py-2.5 hover:bg-[#ECFDF5] transition">
+        <Link href="/dashboard/payment" className="mt-4 flex items-center justify-center gap-2 rounded-full bg-white text-[#0E7C3A] text-sm font-bold py-2.5 hover:bg-[#ECFDF5] transition">
           <CreditCard className="w-4 h-4" /> bKash Renew →
         </Link>
       </div>
@@ -81,7 +72,7 @@ function RecentCard({ videos }: { videos: RecentVideo[] }) {
   return (
     <div className="bp-card overflow-hidden">
       <div className="px-5 py-4 border-b flex items-center justify-between">
-        <h3 className="font-semibold text-[#1C1917] flex items-center gap-2"><Clock className="w-4 h-4 text-[#57534E]" /> Recent Projects</h3>
+        <h3 className="font-semibold text-[#0F172A] flex items-center gap-2"><Clock className="w-4 h-4 text-[#64748B]" /> Recent Projects</h3>
         <Link href="/dashboard/videos" className="text-xs font-semibold text-[#2563EB] hover:underline">View all →</Link>
       </div>
       {videos.length ? (
@@ -89,18 +80,18 @@ function RecentCard({ videos }: { videos: RecentVideo[] }) {
           {videos.slice(0, 3).map(v => (
             <div key={v.id} className="flex items-center justify-between px-5 py-4 hover:bg-[#F8FAFC]">
               <div className="flex items-center gap-3 min-w-0">
-                <span className="w-9 h-9 rounded-lg bg-[#F1F5F9] border flex items-center justify-center shrink-0"><Video className="w-4 h-4 text-[#57534E]" /></span>
-                <div className="min-w-0"><p className="text-sm font-medium text-[#1C1917] truncate">{v.title}</p><p className="text-xs text-[#57534E] flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(v.createdAt).toLocaleDateString()} • -100cr</p></div>
+                <span className="w-9 h-9 rounded-lg bg-[#F1F5F9] border flex items-center justify-center shrink-0"><Video className="w-4 h-4 text-[#64748B]" /></span>
+                <div className="min-w-0"><p className="text-sm font-medium text-[#0F172A] truncate">{v.title}</p><p className="text-xs text-[#64748B] flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(v.createdAt).toLocaleDateString()} • -100cr</p></div>
               </div>
               <span className="text-xs px-2.5 py-1 rounded-full bg-[#ECFDF5] text-[#0E7C3A] border border-[#A7F3D0]">{v.status}</span>
             </div>
           ))}
-          <div className="px-5 py-3 bg-[#F8FAFC] text-xs text-[#57534E]">Hosting deploy 0cr • Chat embed -5cr</div>
+          <div className="px-5 py-3 bg-[#F8FAFC] text-xs text-[#64748B]">Hosting deploy 0cr • Chat embed -5cr</div>
         </div>
       ) : (
         <div className="p-8 text-center">
-          <Video className="w-10 h-10 text-[#57534E] mx-auto" />
-          <p className="text-sm text-[#57534E] mt-2">{t('dashboard.noVideos') || 'No videos yet'}</p>
+          <Video className="w-10 h-10 text-[#CBD5E1] mx-auto" />
+          <p className="text-sm text-[#64748B] mt-2">{t('dashboard.noVideos') || 'No videos yet'}</p>
           <Link href="/dashboard/videos/new" className="text-sm font-medium text-[#0E7C3A] hover:underline">Create first →</Link>
         </div>
       )}
@@ -123,11 +114,11 @@ function ServicesStrip() {
     return open ? list : list.slice(0, 6)
   })()
   return (
-    <div className="rounded-2xl border bg-[#FFFDF6] p-5">
+    <div className="rounded-2xl border bg-white p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-semibold text-[#1C1917] flex items-center gap-2">
+        <h2 className="font-semibold text-[#0F172A] flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[#0E7C3A]" />
-          ৫০+ AI সার্ভিস <span className="text-xs font-normal text-[#57534E]">({services.length} live • 15–100 cr)</span>
+          ৫০+ AI সার্ভিস <span className="text-xs font-normal text-[#64748B]">({services.length} live • 15–100 cr)</span>
         </h2>
         <div className="flex items-center gap-2">
           <input
@@ -224,9 +215,9 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 rounded bg-[#F6EBD2] animate-pulse" />
+        <div className="h-8 w-48 rounded bg-[#E2E8F0] animate-pulse" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 space-y-6"><div className="h-64 rounded-2xl border bg-[#FFFDF6] animate-pulse" /></div>
+          <div className="lg:col-span-8 space-y-6"><div className="h-64 rounded-2xl border bg-white animate-pulse" /></div>
           <div className="lg:col-span-4 space-y-4"><div className="h-48 rounded-2xl bg-[#0E7C3A]/20 animate-pulse" /></div>
         </div>
       </div>
@@ -235,29 +226,19 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <header style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-bn)', fontWeight: 700, fontSize: '1.55rem', lineHeight: 1.2, color: 'var(--bp-ink)' }}>ড্যাশবোর্ড</h1>
-          <p style={{ color: 'var(--bp-ink-soft)', fontSize: '.95rem' }}>সব টুল এক জায়গায়, এক সাবস্ক্রিপশনে</p>
-        </div>
-        <span className="bp-stamp" style={{ padding: '.4rem 1rem', fontSize: '.86rem' }}>
-          <svg className="bp-stamp-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-          {plan} প্ল্যান
-        </span>
-      </header>
       {/* Command palette */}
       {cmdOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-[20vh] p-4" onClick={() => setCmdOpen(false)}>
-          <div className="w-full max-w-lg rounded-2xl bg-[#FFFDF6] shadow-2xl border overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 px-4 py-3 border-b">
-              <Search className="w-4 h-4 text-[#78716C]" />
+              <Search className="w-4 h-4 text-zinc-400" />
               <input autoFocus placeholder="Search products, videos, settings..." className="flex-1 outline-none text-sm" />
-              <button onClick={() => setCmdOpen(false)} className="p-1 hover:bg-[#FBF4E4] rounded"><X className="w-4 h-4" /></button>
+              <button onClick={() => setCmdOpen(false)} className="p-1 hover:bg-zinc-100 rounded"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-2 text-sm">
               {PRODUCT_NAV.map(p => (
-                <Link key={p.slug} href={`/dashboard/${p.slug === 'ai-video' ? 'videos' : p.slug === 'cloud-hosting' ? 'hosting' : p.slug === 'dev-ide' ? 'ide' : p.slug === 'game' ? 'game' : p.slug.slice(3)}`} onClick={() => setCmdOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#ECFDF5] text-[#1C1917]">
-                  <span>{PICON[p.slug]}</span> {p.nameEn} <span className="ml-auto text-xs text-[#57534E]">{COST_HINT[p.slug]}</span>
+                <Link key={p.slug} href={`/dashboard/${p.slug === 'ai-video' ? 'videos' : p.slug === 'cloud-hosting' ? 'hosting' : p.slug === 'dev-ide' ? 'ide' : p.slug === 'game' ? 'game' : p.slug.slice(3)}`} onClick={() => setCmdOpen(false)} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#ECFDF5] text-[#0F172A]">
+                  <span>{p.emoji}</span> {p.nameEn} <span className="ml-auto text-xs text-zinc-500">{COST_HINT[p.slug]}</span>
                 </Link>
               ))}
             </div>
@@ -265,11 +246,27 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="w-9 h-9 rounded-xl bg-[#0E7C3A] text-white grid place-items-center font-black">H</span>
+          <div>
+            <h1 className="text-xl font-bold text-[#0F172A] leading-none">
+              {locale === 'bn' ? 'ওভারভিউ • Dashboard' : locale === 'ur' ? 'جائزہ • Dashboard' : 'Dashboard • 6 products • 6000 credit'}
+            </h1>
+            <p className="text-xs text-[#64748B] mt-1">Hostamar • Video 100 • Hosting 0 • Chat 1 • Browser 5 • IDE 10 • Game 20</p>
+          </div>
+        </div>
+        <button onClick={() => setCmdOpen(true)} className="hidden sm:flex items-center gap-2 rounded-full border bg-white px-3 py-2 text-xs text-[#64748B] hover:border-[#0E7C3A]/30">
+          <Command className="w-3.5 h-3.5" /> ⌘K
+        </button>
+      </div>
+
       {/* Mobile credit bar */}
       <div className="sm:hidden rounded-full bg-[#F1F5F9] p-1 flex items-center gap-2 text-xs">
         <span className="px-3 py-1.5 rounded-full bg-[#0E7C3A] text-white font-bold">{shownCredits.toLocaleString()} / 6000</span>
-        <span className="text-[#57534E]">{creditPct}% • {plan}</span>
-        <Link href="/dashboard/payment" className="ml-auto px-3 py-1 rounded-full bg-[#FFFDF6] border text-[#0E7C3A] font-semibold">bKash</Link>
+        <span className="text-[#64748B]">{creditPct}% • {plan}</span>
+        <Link href="/dashboard/payment" className="ml-auto px-3 py-1 rounded-full bg-white border text-[#0E7C3A] font-semibold">bKash</Link>
       </div>
 
       {error && <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">Live stats unavailable ({error}) — showing fallback.</div>}
@@ -279,25 +276,25 @@ export default function DashboardPage() {
         <div className="lg:col-span-8 space-y-6">
           {/* Credit + Usage row */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-2xl border-2 border-[#D8CDB4] bg-[#FFFDF6] p-5 text-[#1C1917]">
-              <div className="text-[11px] tracking-[0.2em] text-[#57534E]">CREDITS</div>
-              <div className="text-2xl font-black tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#57534E]">/ 6,000</span></div>
-              <div className="text-xs text-[#57534E] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
-              <div className="h-2 rounded-full bg-[#FDF8EC] mt-3 overflow-hidden"><div className="h-full bg-[#0E7C3A] rounded-full" style={{ width: `${creditPct}%` }} /></div>
+            <div className="rounded-2xl border bg-white p-5">
+              <div className="text-[11px] tracking-[0.2em] text-[#64748B]">CREDITS</div>
+              <div className="text-2xl font-black text-[#0F172A] tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#64748B]">/ 6,000</span></div>
+              <div className="text-xs text-[#64748B] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
+              <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#0E7C3A] rounded-full" style={{ width: `${creditPct}%` }} /></div>
             </div>
-            <div className="rounded-2xl border-2 border-[#D8CDB4] bg-[#FFFDF6] p-5 text-[#1C1917]">
-              <div className="text-[11px] tracking-[0.2em] text-[#57534E]">STORAGE</div>
-              <div className="text-2xl font-black mt-1">{storageUsed} <span className="text-sm font-normal text-[#57534E]">/ {storageTotal} GB</span></div>
-              <div className="text-xs text-[#57534E] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
+            <div className="rounded-2xl border bg-white p-5">
+              <div className="text-[11px] tracking-[0.2em] text-[#64748B]">STORAGE</div>
+              <div className="text-2xl font-black text-[#0F172A] mt-1">{storageUsed} <span className="text-sm font-normal text-[#64748B]">/ {storageTotal} GB</span></div>
+              <div className="text-xs text-[#64748B] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
               <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${storagePct}%` }} /></div>
             </div>
           </div>
 
           {/* 6 Products grid */}
-          <div className="rounded-2xl border bg-[#FFFDF6] p-5">
+          <div className="rounded-2xl border bg-white p-5">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-[#1C1917] flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#0E7C3A]" /> Your 6 Products</h2>
-              <span className="text-xs text-[#57534E] hidden sm:inline">Video 100 • Chat 1 • Browser 5 • IDE 10 • Game 20 • Hosting 0</span>
+              <h2 className="font-semibold text-[#0F172A] flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#0E7C3A]" /> Your 6 Products</h2>
+              <span className="text-xs text-[#64748B] hidden sm:inline">Video 100 • Chat 1 • Browser 5 • IDE 10 • Game 20 • Hosting 0</span>
             </div>
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {PRODUCT_NAV.map(p => {
@@ -308,14 +305,14 @@ export default function DashboardPage() {
                   <button
                     key={p.slug}
                     onClick={() => setActiveProduct(p.slug)}
-                    className={`text-left bp-card p-4 transition ${isActive ? 'bg-[#0E7C3A] text-white border-[#0E7C3A] shadow' : 'bg-[#FFFDF6] hover:border-[#0E7C3A]/30 hover:bg-[#ECFDF5]/40'}`}
+                    className={`text-left rounded-2xl border p-4 transition ${isActive ? 'bg-[#0E7C3A] text-white border-[#0E7C3A] shadow' : 'bg-white hover:border-[#0E7C3A]/30 hover:bg-[#ECFDF5]/40'}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`w-9 h-9 rounded-xl grid place-items-center text-lg ${isActive ? 'bg-white/20' : 'bg-[#F8FAFC] border'}`}>{PICON[p.slug]}</span>
-                      <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${isActive ? 'bg-[#FFFDF6] text-[#0E7C3A]' : p.slug === 'ai-video' ? 'bg-[#0E7C3A] text-white' : p.slug === 'cloud-hosting' ? 'bg-[#2563EB] text-white' : 'bg-[#FFFDF6] text-[#1C1917]'}`}>{BADGE[p.slug]}</span>
+                      <span className={`w-9 h-9 rounded-xl grid place-items-center text-lg ${isActive ? 'bg-white/20' : 'bg-[#F8FAFC] border'}`}>{p.emoji}</span>
+                      <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${isActive ? 'bg-white text-[#0E7C3A]' : p.slug === 'ai-video' ? 'bg-[#0E7C3A] text-white' : p.slug === 'cloud-hosting' ? 'bg-[#2563EB] text-white' : 'bg-zinc-900 text-white'}`}>{BADGE[p.slug]}</span>
                     </div>
-                    <div className={`mt-2 font-semibold ${isActive ? 'text-white' : 'text-[#1C1917]'}`}>{p.nameEn}</div>
-                    <div className={`text-xs ${isActive ? 'text-white/70' : 'text-[#57534E]'}`}>{p.taglineEn}</div>
+                    <div className={`mt-2 font-semibold ${isActive ? 'text-white' : 'text-[#0F172A]'}`}>{p.nameEn}</div>
+                    <div className={`text-xs ${isActive ? 'text-white/70' : 'text-[#64748B]'}`}>{p.taglineEn}</div>
                     <div className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-[#F1F5F9] text-[#475569]'}`}>{COST_HINT[p.slug]} <ArrowRight className="w-3 h-3" /></div>
                   </button>
                 )
@@ -327,13 +324,13 @@ export default function DashboardPage() {
           <ServicesStrip />
 
           {/* Per-tab main */}
-          <div className="bp-tile">
+          <div className="rounded-2xl border bg-white p-5 sm:p-6">
             {activeProduct === 'ai-video' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#1C1917]">Video — AI মার্কেটিং ভিডিও</h3><span className="text-xs bg-[#0E7C3A] text-white px-2.5 py-1 rounded-full">100cr</span></div>
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Video — AI মার্কেটিং ভিডিও</h3><span className="text-xs bg-[#0E7C3A] text-white px-2.5 py-1 rounded-full">100cr</span></div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { t: 'Eid Collection', d: '9:16 24s', g: 'from-[#0E7C3A] to-[#065F46] text-white' },
+                    { t: 'Eid Collection', d: '9:16 24s', g: 'from-[#0E7C3A] to-[#065F46]' },
                     { t: 'Boishakh', d: 'Square 1:1', g: 'from-[#F59E0B] to-[#D97706]' },
                     { t: '11.11 Sale', d: '16:9 30s', g: 'from-[#2563EB] to-[#1D4ED8]' },
                   ].map(c => (
@@ -344,34 +341,34 @@ export default function DashboardPage() {
                   ))}
                 </div>
                 <div className="rounded-xl border bg-[#F8FAFC] p-4">
-                  <input placeholder="একটা প্রম্পট দিন — e.g. Eid sale 20% off pants" className="w-full px-4 py-3 rounded-xl border bg-[#FFFDF6] text-sm focus:outline-none focus:border-[#0E7C3A]" />
-                  <div className="mt-3 flex items-center gap-2 text-xs text-[#57534E]">Trust: bKash • Nagad • Rocket • BDIX 20ms • InVideo $17 vs ৳0 • Pictory $19 vs ৳0</div>
+                  <input placeholder="একটা প্রম্পট দিন — e.g. Eid sale 20% off pants" className="w-full px-4 py-3 rounded-xl border bg-white text-sm focus:outline-none focus:border-[#0E7C3A]" />
+                  <div className="mt-3 flex items-center gap-2 text-xs text-[#64748B]">Trust: bKash • Nagad • Rocket • BDIX 20ms • InVideo $17 vs ৳0 • Pictory $19 vs ৳0</div>
                 </div>
                 <Link href="/generate" className="flex items-center justify-center gap-2 rounded-full bg-[#0E7C3A] text-white font-bold py-3 hover:bg-[#0c6a32]"><Zap className="w-4 h-4" /> Generate -100cr →</Link>
-                <p className="text-xs text-center text-[#57534E]">FAQ: 90s video • 9:16 ready • bKash auto • 6000 → 5900 after generate</p>
+                <p className="text-xs text-center text-[#64748B]">FAQ: 90s video • 9:16 ready • bKash auto • 6000 → 5900 after generate</p>
               </div>
             )}
             {activeProduct === 'cloud-hosting' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#1C1917]">Hosting — BDIX</h3><span className="text-xs bg-[#2563EB] text-white px-2.5 py-1 rounded-full">20% • 0cr</span></div>
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Hosting — BDIX</h3><span className="text-xs bg-[#2563EB] text-white px-2.5 py-1 rounded-full">20% • 0cr</span></div>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-xl border p-4 text-center"><HardDrive className="w-6 h-6 mx-auto text-[#0E7C3A]" /><div className="text-sm font-bold mt-1">5GB Free</div><div className="text-xs text-[#57534E]">NVMe</div></div>
-                  <div className="rounded-xl border p-4 text-center"><Zap className="w-6 h-6 mx-auto text-[#F59E0B]" /><div className="text-sm font-bold mt-1">20ms</div><div className="text-xs text-[#57534E]">Dhaka PoP</div></div>
-                  <div className="rounded-xl border p-4 text-center"><TrendingUp className="w-6 h-6 mx-auto text-[#2563EB]" /><div className="text-sm font-bold mt-1">99.9%</div><div className="text-xs text-[#57534E]">Uptime</div></div>
+                  <div className="rounded-xl border p-4 text-center"><HardDrive className="w-6 h-6 mx-auto text-[#0E7C3A]" /><div className="text-sm font-bold mt-1">5GB Free</div><div className="text-xs text-[#64748B]">NVMe</div></div>
+                  <div className="rounded-xl border p-4 text-center"><Zap className="w-6 h-6 mx-auto text-[#F59E0B]" /><div className="text-sm font-bold mt-1">20ms</div><div className="text-xs text-[#64748B]">Dhaka PoP</div></div>
+                  <div className="rounded-xl border p-4 text-center"><TrendingUp className="w-6 h-6 mx-auto text-[#2563EB]" /><div className="text-sm font-bold mt-1">99.9%</div><div className="text-xs text-[#64748B]">Uptime</div></div>
                 </div>
                 <div className="rounded-xl bg-[#F8FAFC] border p-4 text-sm">
                   <div className="font-semibold">ExonHost ~৳834/mo vs Hostamar ৳0 bundle</div>
-                  <div className="text-[#57534E]">HostSeba: No AI vs Hostamar: AI সহ • LiteSpeed + JetBackup 7pts • bKash auto</div>
+                  <div className="text-[#64748B]">HostSeba: No AI vs Hostamar: AI সহ • LiteSpeed + JetBackup 7pts • bKash auto</div>
                 </div>
                 <Link href="/dashboard/hosting" className="flex items-center justify-center gap-2 rounded-full bg-[#2563EB] text-white font-bold py-3">Open Hosting →</Link>
               </div>
             )}
             {activeProduct === 'ai-chat' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#1C1917]">Chat — AI চ্যাট বাংলা</h3><span className="text-xs bg-[#FFFDF6] text-[#1C1917] px-2.5 py-1 rounded-full">1cr/msg • 100/day</span></div>
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Chat — AI চ্যাট বাংলা</h3><span className="text-xs bg-zinc-900 text-white px-2.5 py-1 rounded-full">1cr/msg • 100/day</span></div>
                 <div className="rounded-xl border bg-[#F8FAFC] p-4">
                   <div className="flex gap-2"><span className="w-8 h-8 rounded-full bg-[#0E7C3A] text-white grid place-items-center text-xs">AI</span><div className="bp-card px-4 py-3 text-sm shadow-sm max-w-[85%]">হ্যালো! আমি Hostamar AI — বাংলায় সাহায্য করি।</div></div>
-                  <div className="mt-3 rounded-xl bg-[#FFFDF6] border p-3 text-xs text-[#57534E]">Tawk.to FREE fallback + Hostamar AI assist • Messenger till 11pm</div>
+                  <div className="mt-3 rounded-xl bg-white border p-3 text-xs text-[#64748B]">Tawk.to FREE fallback + Hostamar AI assist • Messenger till 11pm</div>
                 </div>
                 <div className="flex gap-2"><input placeholder="মেসেজ লিখুন..." className="flex-1 px-4 py-3 rounded-xl border text-sm focus:outline-none focus:border-[#0E7C3A]" /><button className="px-5 py-3 rounded-xl bg-[#0E7C3A] text-white font-bold">Send</button></div>
                 <Link href="/chat" className="flex items-center justify-center gap-2 rounded-full border font-semibold py-2.5">Open Chat →</Link>
@@ -379,35 +376,35 @@ export default function DashboardPage() {
             )}
             {activeProduct === 'ai-browser' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#1C1917]">Browser — AI Browser</h3><span className="text-xs bg-[#FFFDF6] text-[#1C1917] px-2.5 py-1 rounded-full">5cr/summary</span></div>
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Browser — AI Browser</h3><span className="text-xs bg-zinc-900 text-white px-2.5 py-1 rounded-full">5cr/summary</span></div>
                 <div className="flex gap-2"><input defaultValue="https://browser.hostamar.com" className="flex-1 px-4 py-2.5 rounded-xl border bg-[#F8FAFC] text-sm font-mono" /><button className="px-4 py-2.5 rounded-xl bg-[#0E7C3A] text-white text-sm font-bold">Go</button><button className="px-4 py-2.5 rounded-xl bg-[#2563EB] text-white text-sm">Summarize 5cr</button></div>
-                <div className="rounded-xl border bg-[#F8FAFC] h-40 grid place-items-center text-sm text-[#57534E]"><Globe className="w-6 h-6 mb-1" /> browser.hostamar.com iframe (530 tunnel — start cloudflared)</div>
-                <p className="text-xs text-[#57534E]">Like Opera Aria FREE — Page Context + Tabs</p>
+                <div className="rounded-xl border bg-[#F8FAFC] h-40 grid place-items-center text-sm text-[#64748B]"><Globe className="w-6 h-6 mb-1" /> browser.hostamar.com iframe (530 tunnel — start cloudflared)</div>
+                <p className="text-xs text-[#64748B]">Like Opera Aria FREE — Page Context + Tabs</p>
               </div>
             )}
             {activeProduct === 'dev-ide' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#1C1917]">IDE — 93 models</h3><span className="text-xs bg-[#8B5CF6] text-[#1C1917] px-2.5 py-1 rounded-full">10cr/run</span></div>
-                <select className="w-full px-3 py-2.5 rounded-xl border bg-[#FFFDF6] text-sm">
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">IDE — 93 models</h3><span className="text-xs bg-[#8B5CF6] text-white px-2.5 py-1 rounded-full">10cr/run</span></div>
+                <select className="w-full px-3 py-2.5 rounded-xl border bg-white text-sm">
                   <option>rafan — RAG + 93 • ai.hostamar.com LIVE</option>
                   <option>sora2 • veo3.1 • kling3</option>
                   <option>gpt-4o • claude-3.5 • gemini-2.5</option>
                 </select>
-                <div className="rounded-xl bg-[#FBF4E4] text-[#1C1917] p-4 font-mono text-xs">
-                  <div className="text-[#57534E]">// Monaco dark — WebContainers</div>
+                <div className="rounded-xl bg-[#0F172A] text-white p-4 font-mono text-xs">
+                  <div className="text-zinc-500">// Monaco dark — WebContainers</div>
                   <div>console.log(&quot;Hello Hostamar&quot;)</div>
-                  <div className="mt-3 flex gap-2"><button className="px-3 py-1.5 rounded-lg bg-[#0E7C3A] text-white">Run -10cr ▶</button><span className="text-[#57534E]">terminal: ready</span></div>
+                  <div className="mt-3 flex gap-2"><button className="px-3 py-1.5 rounded-lg bg-[#0E7C3A] text-white">Run -10cr ▶</button><span className="text-zinc-500">terminal: ready</span></div>
                 </div>
-                <Link href="/ide" className="flex items-center justify-center gap-2 rounded-full bg-[#FBF4E4] text-[#1C1917] font-bold py-3"><Code2 className="w-4 h-4" /> Open IDE →</Link>
+                <Link href="/ide" className="flex items-center justify-center gap-2 rounded-full bg-[#0F172A] text-white font-bold py-3"><Code2 className="w-4 h-4" /> Open IDE →</Link>
               </div>
             )}
             {activeProduct === 'game' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between"><h3 className="font-bold text-[#1C1917]">Game — Playground</h3><span className="text-xs bg-[#F59E0B] text-white px-2.5 py-1 rounded-full">20cr/play</span></div>
-                <div className="rounded-xl border bg-[#FBF4E4] h-40 grid place-items-center">
-                  <div className="text-center"><Gamepad2 className="w-8 h-8 text-[#1C1917]/60 mx-auto" /><div className="text-[#1C1917] text-sm mt-2">Canvas Phaser — Play 60fps</div><button className="mt-3 px-4 py-2 rounded-full bg-[#0E7C3A] text-white text-sm font-bold">Play -20cr ▶</button></div>
+                <div className="flex items-center justify-between"><h3 className="font-bold text-[#0F172A]">Game — Playground</h3><span className="text-xs bg-[#F59E0B] text-white px-2.5 py-1 rounded-full">20cr/play</span></div>
+                <div className="rounded-xl border bg-[#0F172A] h-40 grid place-items-center">
+                  <div className="text-center"><Gamepad2 className="w-8 h-8 text-white/60 mx-auto" /><div className="text-white text-sm mt-2">Canvas Phaser — Play 60fps</div><button className="mt-3 px-4 py-2 rounded-full bg-[#0E7C3A] text-white text-sm font-bold">Play -20cr ▶</button></div>
                 </div>
-                <div className="text-xs text-[#57534E] text-center">Credit meter: 6000 → Playground • tunnel DOWN — host needed</div>
+                <div className="text-xs text-[#64748B] text-center">Credit meter: 6000 → Playground • tunnel DOWN — host needed</div>
               </div>
             )}
           </div>
@@ -425,24 +422,24 @@ export default function DashboardPage() {
         {/* Right column 4 */}
         <div className="lg:col-span-4 space-y-6">
           <CreditMeter credits={shownCredits} loading={loading} />
-          <div className="rounded-2xl border bg-[#FFFDF6] p-5">
-            <h3 className="font-semibold text-[#1C1917] flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#0E7C3A]" /> Credit Usage</h3>
+          <div className="rounded-2xl border bg-white p-5">
+            <h3 className="font-semibold text-[#0F172A] flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#0E7C3A]" /> Credit Usage</h3>
             <div className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-[#57534E]">Video</span><span className="font-mono font-bold">100cr</span></div>
-              <div className="flex justify-between"><span className="text-[#57534E]">IDE</span><span className="font-mono">10cr</span></div>
-              <div className="flex justify-between"><span className="text-[#57534E]">Chat</span><span className="font-mono">1cr</span></div>
-              <div className="flex justify-between"><span className="text-[#57534E]">Browser</span><span className="font-mono">5cr</span></div>
-              <div className="flex justify-between"><span className="text-[#57534E]">Game</span><span className="font-mono">20cr</span></div>
-              <div className="flex justify-between"><span className="text-[#57534E]">Hosting</span><span className="font-mono">0cr</span></div>
+              <div className="flex justify-between"><span className="text-[#64748B]">Video</span><span className="font-mono font-bold">100cr</span></div>
+              <div className="flex justify-between"><span className="text-[#64748B]">IDE</span><span className="font-mono">10cr</span></div>
+              <div className="flex justify-between"><span className="text-[#64748B]">Chat</span><span className="font-mono">1cr</span></div>
+              <div className="flex justify-between"><span className="text-[#64748B]">Browser</span><span className="font-mono">5cr</span></div>
+              <div className="flex justify-between"><span className="text-[#64748B]">Game</span><span className="font-mono">20cr</span></div>
+              <div className="flex justify-between"><span className="text-[#64748B]">Hosting</span><span className="font-mono">0cr</span></div>
             </div>
             <div className="mt-4 h-2 rounded-full bg-[#F1F5F9] overflow-hidden"><div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${Math.min(100, Math.round((used / 6000) * 100))}%` }} /></div>
-            <div className="text-xs text-center text-[#57534E] mt-2">Used {used.toLocaleString()} / 6000</div>
+            <div className="text-xs text-center text-[#64748B] mt-2">Used {used.toLocaleString()} / 6000</div>
           </div>
-          <div className="rounded-2xl border bg-[#FFFDF6] p-5">
-            <h3 className="text-sm font-semibold text-[#1C1917]">Quick Actions</h3>
+          <div className="rounded-2xl border bg-white p-5">
+            <h3 className="text-sm font-semibold text-[#0F172A]">Quick Actions</h3>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <Link href="/generate" className="rounded-xl border p-3 hover:border-[#0E7C3A] hover:bg-[#ECFDF5]/50"><Video className="w-5 h-5 text-[#0E7C3A]" /><div className="text-sm font-medium mt-1">Generate</div><div className="text-xs text-[#57534E]">Video 100cr</div></Link>
-              <Link href="/pricing" className="rounded-xl border p-3 hover:border-[#F59E0B] hover:bg-[#FFFBEB]"><CreditCard className="w-5 h-5 text-[#F59E0B]" /><div className="text-sm font-medium mt-1">Upgrade</div><div className="text-xs text-[#57534E]">bKash</div></Link>
+              <Link href="/generate" className="rounded-xl border p-3 hover:border-[#0E7C3A] hover:bg-[#ECFDF5]/50"><Video className="w-5 h-5 text-[#0E7C3A]" /><div className="text-sm font-medium mt-1">Generate</div><div className="text-xs text-[#64748B]">Video 100cr</div></Link>
+              <Link href="/pricing" className="rounded-xl border p-3 hover:border-[#F59E0B] hover:bg-[#FFFBEB]"><CreditCard className="w-5 h-5 text-[#F59E0B]" /><div className="text-sm font-medium mt-1">Upgrade</div><div className="text-xs text-[#64748B]">bKash</div></Link>
             </div>
           </div>
         </div>
@@ -450,7 +447,7 @@ export default function DashboardPage() {
 
       {/* Sticky CTA */}
       <div className="sticky bottom-4 z-10">
-        <div className="mx-auto max-w-3xl rounded-full bg-[#FBF4E4] text-[#1C1917] px-4 py-3 flex items-center justify-between gap-3 shadow-xl border border-white/10">
+        <div className="mx-auto max-w-3xl rounded-full bg-[#0F172A] text-white px-4 py-3 flex items-center justify-between gap-3 shadow-xl border border-white/10">
           <span className="text-sm"><span className="font-bold">{shownCredits.toLocaleString()} credit</span> • {COST_HINT[activeProduct] || '—'} per use</span>
           <Link href={DASHBOARD_ROUTES[activeProduct] ?? '/dashboard'} className="shrink-0 rounded-full bg-[#0E7C3A] text-white px-5 py-2 text-sm font-bold hover:bg-[#0c6a32] flex items-center gap-2">
             Use now <ArrowRight className="w-4 h-4" />

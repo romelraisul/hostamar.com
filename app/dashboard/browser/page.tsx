@@ -87,7 +87,7 @@ export default function DashboardBrowserPage() {
           className="flex items-center gap-1.5 rounded-xl bg-[#0E7C3A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0c6a32] disabled:opacity-50">
           <Plus className="h-4 w-4" /> {creating ? 'তৈরি হচ্ছে...' : 'নতুন ব্রাউজার (ফ্রি)'}
         </button>
-        <div className="flex flex-1 items-center gap-2 rounded-xl border bg-[#FFFDF6] px-3 py-2">
+        <div className="flex flex-1 items-center gap-2 rounded-xl border bg-white px-3 py-2">
           <Globe className="h-4 w-4 text-[#0E7C3A]" />
           <input
             value={url}
@@ -106,9 +106,9 @@ export default function DashboardBrowserPage() {
         </button>
       </form>
 
-      <div className="relative min-h-[60vh] flex-1 overflow-hidden rounded-xl border bg-[#FFFDF6]">
+      <div className="relative min-h-[60vh] flex-1 overflow-hidden rounded-xl border bg-white">
         {!src && !loading && (
-          <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center text-sm text-[#57534E]">
+          <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center text-sm text-slate-500">
             <ShieldCheck className="h-8 w-8 text-[#0E7C3A]" />
             Enter a URL above and click Browse. Sites load through Hostamar&apos;s
             same-origin proxy so almost everything renders right here.
@@ -134,11 +134,11 @@ export default function DashboardBrowserPage() {
       {sessMsg && <div className="rounded-xl border border-[#0E7C3A] bg-[#ECFDF5] p-3 text-sm text-[#0E7C3A]">{sessMsg}</div>}
 
       {sessions.length > 0 && (
-        <div className="rounded-xl border bg-[#FFFDF6] p-3">
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-[#57534E]"><History className="h-3.5 w-3.5" /> আমার সেশন ({sessions.length})</p>
+        <div className="rounded-xl border bg-white p-3">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-zinc-600"><History className="h-3.5 w-3.5" /> আমার সেশন ({sessions.length})</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {sessions.map(s => (
-              <span key={s.id} className="rounded-full bg-[#FBF4E4] px-2.5 py-1 text-xs text-[#57534E]">
+              <span key={s.id} className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600">
                 {s.inputs?.sessionId || s.id} • {s.status === 'processing' ? 'running' : s.status}
               </span>
             ))}
@@ -147,7 +147,7 @@ export default function DashboardBrowserPage() {
       )}
 
       {summary && (
-        <div className="rounded-xl border bg-[#FFFDF6] p-4 text-sm">
+        <div className="rounded-xl border bg-white p-4 text-sm">
           <p className="mb-1 font-semibold text-[#0E7C3A]">AI Summary</p>
           <p className="whitespace-pre-wrap">{summary}</p>
         </div>

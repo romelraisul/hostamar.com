@@ -147,7 +147,7 @@ export default function CreditsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Circular Meter Card */}
-        <div className="bg-[#FFFDF6] rounded-2xl p-6 shadow-sm border flex flex-col items-center">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border flex flex-col items-center">
           <h2 className="text-sm font-semibold text-gray-700 mb-4">ক্রেডিট ব্যালেন্স</h2>
           <div className="relative w-[160px] h-[160px]">
             <svg width="160" height="160" className="-rotate-90">
@@ -186,11 +186,11 @@ export default function CreditsPage() {
         </div>
 
         {/* Cost pills + bKash Renew */}
-        <div className="bg-[#FFFDF6] rounded-2xl p-6 shadow-sm border space-y-4">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-4">
           <h2 className="text-sm font-semibold text-gray-700">প্রতি কাজের খরচ</h2>
           <div className="flex flex-wrap gap-2">
             {COST_PILLS.map(p => (
-              <span key={p.cost} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-900 text-[#1C1917] border border-gray-800">
+              <span key={p.cost} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-900 text-white border border-gray-800">
                 {p.label} {toBn(p.cost)}cr
               </span>
             ))}
@@ -209,7 +209,7 @@ export default function CreditsPage() {
         </div>
 
         {/* Subscription Card */}
-        <div className="bg-[#FFFDF6] rounded-2xl p-6 shadow-sm border space-y-4">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-4">
           <h2 className="text-sm font-semibold text-gray-700">আপনার প্ল্যান</h2>
           <div className="bg-gradient-to-br from-[#0E7C3A] to-[#0a5e2c] rounded-xl p-4 text-white">
             <div className="text-sm opacity-90">আপনার প্ল্যান:</div>
@@ -221,7 +221,7 @@ export default function CreditsPage() {
             <button
               onClick={handleCancel}
               disabled={cancelling || sub?.status === 'cancelled'}
-              className="py-2.5 rounded-xl border font-semibold text-sm bg-[#FFFDF6] text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="py-2.5 rounded-xl border font-semibold text-sm bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
               {cancelling ? '...' : 'Cancel'}
             </button>
@@ -234,7 +234,7 @@ export default function CreditsPage() {
       </div>
 
       {/* Chart recharge vs spend */}
-      <div className="bg-[#FFFDF6] rounded-2xl p-6 shadow-sm border">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">রিচার্জ বনাম খরচ (গত ৬ মাস)</h2>
         {chart.length === 0 ? (
           <div className="text-xs text-gray-400 py-8 text-center">কোনো লেনদেন নেই — প্রথম রিচার্জে চার্ট দেখা যাবে।</div>
@@ -271,7 +271,7 @@ export default function CreditsPage() {
       </div>
 
       {/* Credit History Table Bangla */}
-      <div className="bg-[#FFFDF6] rounded-2xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
         <div className="px-6 py-4 border-b flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">ক্রেডিট হিস্ট্রি</h2>
           <span className="text-xs text-gray-400">{toBn(history.length)} টি লেনদেন</span>

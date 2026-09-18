@@ -103,7 +103,7 @@ export default function ServicesPage() {
             const specs = parseSpecs(service.specs)
             
             return (
-              <div key={service.id} className="bg-[#FFFDF6] rounded-xl border p-6 hover:shadow-sm transition-shadow">
+              <div key={service.id} className="bg-white rounded-xl border p-6 hover:shadow-sm transition-shadow">
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   {/* Icon & Basic Info */}
                   <div className="flex items-center gap-4">
@@ -189,7 +189,7 @@ export default function ServicesPage() {
           })}
         </div>
       ) : (
-        <div className="bg-[#FFFDF6] rounded-xl border p-12 text-center">
+        <div className="bg-white rounded-xl border p-12 text-center">
           <Server className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('dashServices.noServices')}</h3>
           <p className="text-gray-500 mb-4">{t('dashServices.orderFirst')}</p>
@@ -272,7 +272,7 @@ function CreateServiceModal({ onClose, onCreated }: { onClose: () => void; onCre
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#FFFDF6] rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">{t('dashServices.orderNewTitle')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">

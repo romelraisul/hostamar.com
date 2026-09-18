@@ -30,21 +30,21 @@ export default function OpsFeed({
   )
 
   return (
-    <div className="rounded-2xl bg-[#FFFDF6] border border-[#0E7C3A]/20 overflow-hidden">
+    <div className="rounded-2xl bg-black border border-[#0E7C3A]/20 overflow-hidden">
       <div className="px-4 py-3 border-b border-[#0E7C3A]/10 flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-          <h3 className="font-semibold text-[#1C1917] text-sm">LIVE FEED</h3>
-          <span className="text-[10px] text-[#57534E] font-mono">10s</span>
+          <h3 className="font-semibold text-white text-sm">LIVE FEED</h3>
+          <span className="text-[10px] text-zinc-600 font-mono">10s</span>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <select value={type} onChange={(e) => setType(e.target.value)} className="px-2 py-1.5 rounded-lg bg-[#FFFDF6] border border-[#D8CDB4] text-xs text-[#1C1917]">
+          <select value={type} onChange={(e) => setType(e.target.value)} className="px-2 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white">
             {types.map((t) => <option key={t} value={t}>{t === 'all' ? 'All types' : t}</option>)}
           </select>
-          <select value={lane} onChange={(e) => setLane(e.target.value)} className="px-2 py-1.5 rounded-lg bg-[#FFFDF6] border border-[#D8CDB4] text-xs text-[#1C1917]">
+          <select value={lane} onChange={(e) => setLane(e.target.value)} className="px-2 py-1.5 rounded-lg bg-black border border-zinc-800 text-xs text-white">
             {lanes.map((l) => <option key={l} value={l}>{l === 'all' ? 'All lanes' : l}</option>)}
           </select>
-          <span className="text-[11px] text-[#57534E]">{filtered.length}/{events.length}</span>
+          <span className="text-[11px] text-zinc-500">{filtered.length}/{events.length}</span>
         </div>
       </div>
       <div className="p-3 space-y-1.5 max-h-96 overflow-y-auto">
@@ -55,12 +55,12 @@ export default function OpsFeed({
               <span className={`mt-1.5 w-2 h-2 rounded-full ${s.dot} shrink-0`} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#FFFDF6] text-[#57534E]">{e.lane}</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">{e.lane}</span>
                   <span className={`text-[10px] font-semibold tracking-wide ${s.text}`}>{e.type}</span>
-                  <span className="text-sm text-[#1C1917] font-medium">{e.title}</span>
-                  <span className="ml-auto text-[10px] text-[#57534E] font-mono whitespace-nowrap">{relTime(e.createdAt)}</span>
+                  <span className="text-sm text-white font-medium">{e.title}</span>
+                  <span className="ml-auto text-[10px] text-zinc-600 font-mono whitespace-nowrap">{relTime(e.createdAt)}</span>
                 </div>
-                {e.body && <div className="text-[11px] text-[#78716C] mt-0.5 whitespace-pre-wrap break-words">{String(e.body).slice(0, 400)}</div>}
+                {e.body && <div className="text-[11px] text-zinc-400 mt-0.5 whitespace-pre-wrap break-words">{String(e.body).slice(0, 400)}</div>}
               </div>
             </div>
           )
@@ -68,9 +68,9 @@ export default function OpsFeed({
         {!filtered.length && (
           <div className="p-8 text-center text-sm">
             {err ? <span className="text-red-300">{err}</span>
-              : loading ? <span className="text-[#57534E]">Loading live feed…</span>
-              : events.length ? <span className="text-[#57534E]">No events match this filter.</span>
-              : <span className="text-[#57534E]">No events yet — the fleet posts here on each run.</span>}
+              : loading ? <span className="text-zinc-500">Loading live feed…</span>
+              : events.length ? <span className="text-zinc-600">No events match this filter.</span>
+              : <span className="text-zinc-600">No events yet — the fleet posts here on each run.</span>}
           </div>
         )}
       </div>

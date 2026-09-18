@@ -116,7 +116,7 @@ export default function SettingsPage() {
         <SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div className="flex-1">
-          <div className="bg-[#FFFDF6] rounded-xl border p-6">
+          <div className="bg-white rounded-xl border p-6">
             {activeTab === 'profile' && (
               <ProfileTab profile={profile} setProfile={setProfile} />
             )}
