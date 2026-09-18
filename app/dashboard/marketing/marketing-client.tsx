@@ -112,7 +112,7 @@ export default function MarketingClient() {
       </div>
 
       {/* Video list */}
-      <div className="bg-[#FFFDF6] rounded-xl border p-4">
+      <div className="bg-white rounded-xl border p-4">
         <h2 className="font-semibold text-gray-900 mb-3">সম্পন্ন ভিডিও ({videos.length})</h2>
         {loading ? (
           <p className="text-sm text-gray-400">লোড হচ্ছে…</p>

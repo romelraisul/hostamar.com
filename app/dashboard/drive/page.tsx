@@ -112,7 +112,7 @@ export default function DriveApp() {
 
   if (!me) {
     return (
-      <div className="p-6 text-sm text-[#57534E]">
+      <div className="p-6 text-sm text-zinc-500">
         ড্রাইভ লোড হচ্ছে… লগ ইন না থাকলে <a className="text-[#0E7C3A] underline" href="/login">লগ ইন করুন</a>।
       </div>
     )
@@ -158,26 +158,26 @@ export default function DriveApp() {
       {uploadPct !== null && (
         <div className="rounded-md border p-3 text-sm">
           আপলোড হচ্ছে {uploadName}… {uploadPct}%
-          <div className="mt-2 h-2 rounded bg-[#FBF4E4]"><div className="h-2 rounded bg-[#0E7C3A]" style={{ width: `${uploadPct}%` }} /></div>
+          <div className="mt-2 h-2 rounded bg-zinc-200"><div className="h-2 rounded bg-[#0E7C3A]" style={{ width: `${uploadPct}%` }} /></div>
         </div>
       )}
       {msg && <div className="rounded-md border bg-zinc-50 p-3 text-sm">{msg}</div>}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[200px_1fr]">
         <aside className="space-y-1 text-sm">
-          <div className="font-semibold text-[#57534E]">ফোল্ডার</div>
-          <button onClick={() => setFolderId(null)} className={`block w-full rounded px-2 py-1 text-left ${!folderId ? 'bg-[#0E7C3A]/10' : 'hover:bg-[#FBF4E4]'}`}>রুট</button>
+          <div className="font-semibold text-zinc-600">ফোল্ডার</div>
+          <button onClick={() => setFolderId(null)} className={`block w-full rounded px-2 py-1 text-left ${!folderId ? 'bg-[#0E7C3A]/10' : 'hover:bg-zinc-100'}`}>রুট</button>
           {folders.map((f) => (
-            <button key={f.id} onClick={() => setFolderId(f.id)} className="block w-full rounded px-2 py-1 text-left hover:bg-[#FBF4E4]">📁 {f.name}</button>
+            <button key={f.id} onClick={() => setFolderId(f.id)} className="block w-full rounded px-2 py-1 text-left hover:bg-zinc-100">📁 {f.name}</button>
           ))}
         </aside>
 
         <main className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {files.length === 0 && <div className="col-span-full text-sm text-[#57534E]">কোনো ফাইল নেই — আপলোড করুন।</div>}
+          {files.length === 0 && <div className="col-span-full text-sm text-zinc-500">কোনো ফাইল নেই — আপলোড করুন।</div>}
           {files.map((f) => (
             <div key={f.id} className="rounded-lg border p-3 text-sm space-y-2 hover:border-[#0E7C3A]">
               <button onClick={() => setPreview(f)} className="block w-full truncate text-left font-medium">{f.fileName}</button>
-              <div className="text-xs text-[#57534E]">{fmtBytes(Number(f.fileSize))}</div>
+              <div className="text-xs text-zinc-500">{fmtBytes(Number(f.fileSize))}</div>
               <div className="flex gap-2 text-xs">
                 <a href={`/api/drive/file/${f.id}`} target="_blank" className="underline">খুলুন</a>
                 <button onClick={() => share(f.id)} className="underline">শেয়ার</button>
@@ -190,10 +190,10 @@ export default function DriveApp() {
 
       {preview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setPreview(null)}>
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-lg bg-[#FFFDF6] p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-lg bg-white p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <div className="font-semibold truncate">{preview.fileName}</div>
-              <button onClick={() => setPreview(null)} className="text-sm text-[#57534E]">✕</button>
+              <button onClick={() => setPreview(null)} className="text-sm text-zinc-500">✕</button>
             </div>
             {isPreviewable ? (
               preview.mimeType.startsWith('image/') ? (
@@ -203,7 +203,7 @@ export default function DriveApp() {
                 <video src={`/api/drive/file/${preview.id}`} controls className="max-h-[65vh] w-full" />
               )
             ) : (
-              <div className="text-sm text-[#57534E]">প্রিভিউ নেই — <a className="underline" href={`/api/drive/file/${preview.id}`} target="_blank">ডাউনলোড করুন</a></div>
+              <div className="text-sm text-zinc-500">প্রিভিউ নেই — <a className="underline" href={`/api/drive/file/${preview.id}`} target="_blank">ডাউনলোড করুন</a></div>
             )}
             <div className="flex gap-3 text-sm">
               <a href={`/api/drive/file/${preview.id}`} download className="underline">ডাউনলোড</a>
@@ -214,7 +214,7 @@ export default function DriveApp() {
         </div>
       )}
 
-      <div className="rounded-md border bg-zinc-50 p-3 text-xs text-[#57534E] space-y-1">
+      <div className="rounded-md border bg-zinc-50 p-3 text-xs text-zinc-600 space-y-1">
         <div className="font-semibold">সীমাবদ্ধতা (সৎ তথ্য):</div>
         <div>• প্রতি ফাইল ২GB (ফ্রি) / ৪GB (প্রিমিয়াম) — বড় ফাইল অটো-চাংকড</div>
         <div>• Vercel থেকে ছোট আপলোড; বড় আপলোড VPS (vps.hostamar.com) বা মাইগ্রেশন স্ক্রিপ্ট দিয়ে</div>

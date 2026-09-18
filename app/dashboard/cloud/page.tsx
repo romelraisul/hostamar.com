@@ -120,7 +120,7 @@ export default function CloudDashboard() {
               V31 — আপনার কম্পিউটারই ক্লাউড। বিদ্যুৎ খরচ ছাড়া $0।
             </p>
           </div>
-          <div className="rounded-xl bg-[#FFFDF6] px-4 py-2 shadow-sm">
+          <div className="rounded-xl bg-white px-4 py-2 shadow-sm">
             <span className="text-sm font-semibold text-[#1B3B2F]">💰 Cost: $0</span>
             <span className="ml-2 text-xs text-[#4A5D54]">PC electricity only</span>
           </div>
@@ -163,7 +163,7 @@ export default function CloudDashboard() {
         )}
 
         {/* Service table */}
-        <div className="rounded-2xl bg-[#FFFDF6] p-5 shadow-sm">
+        <div className="rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-bold text-[#1B3B2F]">সার্ভিস ট্র্যাকার ({upCount}/{services.length || 15} চালু)</h2>
             <span className="text-xs text-[#4A5D54]">প্রোফাইল অনুযায়ী · ৩০ সেকেন্ডে অটো-রিফ্রেশ</span>
@@ -205,7 +205,7 @@ export default function CloudDashboard() {
                         <td className="py-2 pr-3 text-[#4A5D54]">{s.port ?? '—'}</td>
                         <td className="py-2 pr-3">
                           <span className={`inline-flex items-center gap-1 ${s.status === 'up' ? 'text-[#0E7C3A]' : 'text-red-500'}`}>
-                            <span className={`inline-block h-2 w-2 rounded-full ${s.status === 'up' ? 'bg-[#0E7C3A] text-white' : 'bg-red-500'}`} />
+                            <span className={`inline-block h-2 w-2 rounded-full ${s.status === 'up' ? 'bg-[#0E7C3A]' : 'bg-red-500'}`} />
                             {s.status === 'up' ? 'চালু' : 'বন্ধ'}
                           </span>
                         </td>
