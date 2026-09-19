@@ -1,8 +1,8 @@
 # Hostamar V28 — Fix 5 Blockers — 67% → 100%
 
-**Generated:** 2026-09-19 07:35 BST
+**Generated:** 2026-09-19 08:20 BST
 **Repo:** /home/romel/hostamar-build
-**HEAD:** d930e4b (V27)
+**HEAD:** 3c58ba8 (V28)
 
 ---
 
@@ -25,20 +25,19 @@ Admin page had **stale hardcoded values**. Real verification:
 
 ---
 
-## PHASE 1 — FIXED: HLS2 -91 SILENT → -19.6 dB AUDIBLE
+## PHASE 1 — FIXED: HLS2 -91 SILENT → -19.7 dB AUDIBLE
 
-**Root cause:** `libvpx-vp9` + `opus` in MP4 container produces MPEG transport stream data, not valid MP4. ffmpeg writes TS data but names it `.mp4`. HLS player fails to parse → -91 dB digital silence.
+**Root cause:** `libvpx-vp9` + `opus` in MP4 container writes MPEG transport stream data, not valid MP4. ffmpeg writes TS data but names it `.mp4`. HLS player fails to parse → -91 dB digital silence.
 
-**Fix:**
-- Kill duplicate encoders (`pgrep -af libvpx-vp9` → ONE only)
-- Use `hls_segment_type fmp4` + **relative** `init_v2.mp4` (absolute path caused double-prefix bug)
-- `hls_segment_filename docker/tv-station/hls2/seg%04d.mp4` (relative, not absolute)
-- `docker/tv-station/hls2/master.m3u8` (relative)
+**Fix in `docker/tv-station/vp9-encoder.sh`:**
+- Use `hls_segment_type fmp4` + **relative** `init_v2.mp4` (absolute path caused double-prefix bug: `docker/tv-station/hls2/docker/tv-station/hls2/init_v2.mp4`)
+- `hls_segment_filename` and `master.m3u8` use absolute paths (systemd runs from different cwd)
+- `systemctl --user restart tv-ffmpeg-vp9.service`
 
 **Verified:**
-- `mean_volume: -19.6 dB` `max_volume: -1.7 dB` — AUDIBLE
+- `mean_volume: -19.7 dB` `max_volume: -1.5 dB` — AUDIBLE
 - `tv.hostamar.com/master.m3u8` → 200
-- ONE VP9 encoder running
+- ONE VP9 encoder running via systemd
 
 ---
 
