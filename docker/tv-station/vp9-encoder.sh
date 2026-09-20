@@ -1,6 +1,5 @@
 #!/bin/bash
-exec ffmpeg -re -stream_loop -1 -f concat -safe 0 \
-  -i /home/romel/hostamar-build/docker/tv-station/videos/playlist.host.txt \
+exec ffmpeg -re -stream_loop -1 -i /home/romel/hostamar-build/docker/tv-station/videos/loop.mp4 \
   -i /home/romel/hostamar-build/public/logo.png \
   -filter_complex \
   "[0:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=25,format=yuv420p[base];\
