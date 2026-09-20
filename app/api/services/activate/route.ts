@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
           data: {
             status: 'delivered',
             resultUrl,
-            resultJson: { mock: true, serviceId: service.id, inputs, generatedAt: new Date().toISOString() },
+            resultString: JSON.stringify({ mock: true, serviceId: service.id, inputs, generatedAt: new Date().toISOString() }),
           },
         })
       } catch {}

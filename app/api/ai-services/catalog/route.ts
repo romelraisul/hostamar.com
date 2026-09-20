@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
         const p = priceService(svc.id, svc.category, svc.creditCost)
         await prisma.serviceCatalog.update({
           where: { id: svc.id },
-          data: { inputs: { ...inp, tiers: p.tiers, marketFiverrUSD: p.fiverrUSD, marketFiverrBDT: `৳${Math.round(p.fiverrAvgUSD * 120)}`, hostamarDiscountPct: p.hostamarDiscountPct } },
+          data: { inputs: JSON.stringify({ ...inp, tiers: p.tiers, marketFiverrUSD: p.fiverrUSD, marketFiverrBDT: `৳${Math.round(p.fiverrAvgUSD * 120)}`, hostamarDiscountPct: p.hostamarDiscountPct }) },
         }).catch(() => {})
       }
     }

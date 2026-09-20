@@ -37,11 +37,11 @@ export const billingPaymentSucceeded = inngest.createFunction(
               schedule: '0 9 * * *', // 9am daily; goal-loop picks it up
               enabled: true,
               status: 'idle',
-              configJson: {
+              configString: JSON.stringify({
                 title: 'MRR milestone reached 🎉',
                 prompt: `Hostamar crossed ৳${metrics.mrr.toLocaleString('en-IN')} MRR from ${metrics.payingOrgs} paying orgs / ${metrics.payingUsers} paying users. Publish a milestone blog post + customer story.`,
                 priority: 'high',
-              },
+              }),
             },
           })
         }

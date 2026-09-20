@@ -245,23 +245,19 @@ def comfyui_generate(prompt_text, output_dir, width=854, height=480):
 
 
 def generate_science_content():
-    """Generate science/nature content from NASA + ComfyUI."""
-    print("\n[" + str(datetime.now()) + "] Generating science content...")
+    """Generate science/nature content from ComfyUI only.
+    NASA content fetching DISABLED per monitor alert: armed automation
+    publishing third-party content without human review risks YouTube
+    monetization/brand issues. Re-enable only with owner approval + attribution.
+    """
+    print("\n[" + str(datetime.now()) + "] Generating science content (ComfyUI only)...")
 
-    nasa_results = fetch_nasa_video("nature earth science", 2)
-    for i, nasa in enumerate(nasa_results):
-        print("  NASA clip " + str(i + 1) + ": " + nasa["title"][:60])
-        clip_dir = PUBLIC_TV / "nasa"
-        clip_dir.mkdir(parents=True, exist_ok=True)
-        clip = download_nasa_clip(nasa["url"], clip_dir)
-        if clip and clip.stat().st_size > 10000:
-            dur, size = probe(clip)
-            if 15 <= dur <= 300:
-                publish_video(clip, "NASA " + nasa["title"][:30])
-            else:
-                print("    Skipped: duration " + str(dur) + "s out of range")
+    # NASA FETCH DISABLED - see monitor alert URGENT CHANGED
+    # nasa_results = fetch_nasa_video("nature earth science", 2)
+    # for i, nasa in enumerate(nasa_results):
+    #     ...
 
-    # ComfyUI generation
+    # ComfyUI generation (original AI content = safe)
     queue_remaining = comfyui_curl_get()
     if queue_remaining == 0:
         prompts = [
@@ -276,6 +272,8 @@ def generate_science_content():
         img = comfyui_generate(prompt, output_dir)
         if img:
             print("  ComfyUI generated: " + img.name)
+    else:
+        print("  ComfyUI queue busy (" + str(queue_remaining) + " remaining), skipping generation")
 
 
 def generate_nature_content():
@@ -286,11 +284,11 @@ def generate_nature_content():
     # ... (existing code)
 
 
-def main_loop():
-    """Main 24/7 content generation loop."""
+def main():
+    """Single-cycle content generation. Cron provides the scheduling; this script must exit."""
     print("")
     print("=" * 60)
-    print("Hostamar TV 24/7 Auto-Content Worker")
+    print("Hostamar TV Auto-Content Worker")
     print("Started: " + str(datetime.now()))
     print("Sources: NASA Video Library, ComfyUI")
     print("ComfyUI: " + COMFYUI_WIN + " (via cmd bridge)")
@@ -298,18 +296,13 @@ def main_loop():
     print("=" * 60)
     print("")
 
-    cycle = 0
-    while True:
-        cycle += 1
-        print("\n--- Cycle " + str(cycle) + " ---")
-        try:
-            generate_science_content()
-            generate_nature_content()
-        except Exception as e:
-            print("  ERROR in cycle: " + str(e))
-        print("  Cycle " + str(cycle) + " complete. Next in 300s")
-        time.sleep(300)
+    try:
+        generate_science_content()
+        generate_nature_content()
+    except Exception as e:
+        print("  ERROR in cycle: " + str(e))
+    print("  Cycle complete. Exiting (cron re-runs every 5min).")
 
 
 if __name__ == "__main__":
-    main_loop()
+    main()
