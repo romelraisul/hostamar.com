@@ -25,7 +25,8 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const hasLocalDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgresql://')
+  // ponytail: any DATABASE_URL means local DB path (postgres on Neon, libsql on Turso)
+  const hasLocalDb = !!process.env.DATABASE_URL && !process.env.API_BACKEND_URL
 
   if (hasLocalDb) {
     try {
