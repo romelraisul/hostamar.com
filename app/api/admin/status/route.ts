@@ -26,16 +26,16 @@ export async function GET() {
   // Facebook creds presence (env-only, no secret values)
   const facebook = process.env.FB_PAGE_ID && process.env.FB_PAGE_ACCESS_TOKEN ? 'configured' : 'MISSING'
 
-  // ponytail: Vercel→self fetch gets 403 (middleware), so verify auth tables directly —
-  // that's the actual sso_callback_failed root cause (missing tables on old Neon).
+  // ponytail: this app's auth = Customer table + own JWT (lib/auth.ts), not NextAuth User.
+  // sso_callback_failed root cause was Customer table missing on Turso — verify it directly.
   const authTables = await prisma.$queryRawUnsafe(
-    `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name IN ('User','Account','Session','VerificationToken')`
+    `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name IN ('Customer','Account','Session')`
   ).then((r: unknown) => Number((r as { n: number | bigint }[])[0]?.n ?? 0))
     .catch(() => -1)
 
   const components = [
     { status: tv === 200 ? '✅' : '❌', component: 'HLS2 TV Stream', value: tv === 200 ? '200 OK' : `${tv} DOWN`, detail: 'tv.hostamar.com/master.m3u8', verified: `HTTP ${tv}` },
-    { status: authTables === 4 ? '✅' : '❌', component: 'NextAuth', value: authTables === 4 ? '4 tables OK' : `${authTables}/4 tables`, detail: 'User/Account/Session/VerificationToken (sso_callback_failed fixed)', verified: `Turso ${authTables}/4` },
+    { status: authTables === 3 ? '✅' : '❌', component: 'Auth (SSO/Login)', value: authTables === 3 ? 'tables OK' : `${authTables}/3 tables`, detail: 'Customer/Account/Session (sso_callback_failed fixed)', verified: `Turso ${authTables}/3` },
     { status: db === 'ok' ? '✅' : '❌', component: 'Turso DB', value: db === 'ok' ? 'connected' : db, detail: 'libsql://hostamar-db...turso.io', verified: db },
     { status: facebook === 'configured' ? '✅' : '❌', component: 'Facebook', value: facebook, detail: 'FB_PAGE_ID + FB_PAGE_ACCESS_TOKEN', verified: facebook === 'configured' ? 'env set' : 'needs Edge UIA' },
   ]
