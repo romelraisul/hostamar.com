@@ -29,6 +29,21 @@ bash ~/hostamar-migrate/omnirouter/check-models-health.sh # trigger now
 curl -s https://hostamar.com/api/v1/models | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('healthFiltered'), 'filtered;', len(d['data']), 'listed')"
 ```
 
+## Correction (same session): OmniRoute IS real and now wired in
+
+OmniRoute is a systemd service (not docker — no container exists), v16.3.1, port 20128, serving **604 models** (nvidia 126, aihorde 163, dva 125, auto 38, ...). It was unreachable because its `api_keys` table was empty (every key 401'd).
+
+Fixes applied:
+1. Inserted API key `sk-hostamar-wsl-2026` directly into its sqlite (`api_keys` table, plaintext `key` column) → 604 models listed
+2. `proxy_enabled=0` on the nvidia-hostamar connection + service restart → inference works (`auto/fast` 200)
+3. **Known wedge:** omniroute v16.3.1 queues its nvidia connection until `maxWaitMs=15000` expires (504) while the same key 200s direct in ~4s. Workaround in the probe: `nvidia/*` models are probed against `integrate.api.nvidia.com` directly (ground truth); `auto/*` via omniroute. Upstream bug, not ours.
+
+## Probe pipeline (final)
+
+- `probe-omniroute.js`: chat-capable ids only (`auto/*` + `nvidia/*`, 164), rotating 2/hour, merges into Upstash `omnirouter:health` alongside the serverless kilocode probes
+- Verified: dead models correctly marked down (palmyra 404, starcoder2 404, dbrx 404 — removed upstream), live glm-5.3-flash marked healthy (200, 15s), image-only families (aihorde) excluded
+- `OMNIROUTE_API_KEY` saved to `.env.local` + Infisical
+
 ## Skipped
 
 - Turso `ModelRegistry` table — Upstash already is the store; a second one would drift.
