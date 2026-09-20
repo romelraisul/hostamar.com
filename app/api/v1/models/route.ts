@@ -35,7 +35,11 @@ export async function GET(_req: NextRequest) {
   ])
   // V41: filter out models the hourly health-checker marked down.
   // Unknown models (not yet probed) stay listed — probe is rotating, absence of data ≠ down.
-  const down = new Set(healthP ? Object.values(healthP).filter(e => !e.ok).map(e => e.id) : [])
+  // Circuit breaker: if >50% of probed models are down, it's a PROVIDER outage
+  // (e.g. kilocode daily quota exhausted) — don't nuke the catalog, serve it all.
+  const entries = healthP ? Object.values(healthP) : []
+  const downRatio = entries.length ? entries.filter(e => !e.ok).length / entries.length : 0
+  const down = new Set(downRatio > 0.5 ? [] : entries.filter(e => !e.ok).map(e => e.id))
   const onlyHealthy = (list: any[]) => list.filter((m: any) => !down.has(m.id))
   if (edgeP && Array.isArray(edgeP?.data) && edgeP.data.length) {
     const kvIds = new Set(edgeP.data.map((m: any) => m.id))
