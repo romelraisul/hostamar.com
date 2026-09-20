@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
   const [alertReports, alertEvents] = await Promise.all([
     safe(
       prisma.fleetReport.count({
-        where: { runAt: { gte: since24h }, verdict: { equals: 'ALERT', mode: 'insensitive' } },
+        where: { runAt: { gte: since24h }, verdict: { equals: 'ALERT' } },
       }),
       0
     ),

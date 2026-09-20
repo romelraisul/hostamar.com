@@ -65,7 +65,7 @@ export async function ensureFiverrCatalog(): Promise<number> {
           perfectForBn: j.perfectFor,
           promptTemplate: `You are delivering the "${j.name}" service (model target: ${j.model}) for {{brandName}}. Requirements: {{requirements}}. Produce the complete, production-grade deliverable.`,
           model: j.model,
-          inputs: { fields: j.inputs, tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: j.hostamarDiscountPct ?? fiverrBasicDiscount(j) },
+          inputs: JSON.stringify({ fields: j.inputs, tiers: j.tiers, marketFiverrUSD: j.marketFiverrUSD, marketFiverrBDT: j.marketFiverrBDT, hostamarDiscountPct: j.hostamarDiscountPct ?? fiverrBasicDiscount(j) }),
           icon: j.icon,
           isActive: true,
         },
@@ -172,8 +172,8 @@ export async function activateService(
       serviceId: service.id,
       creditCost,
       status,
-      inputs: (inputs || {}) as any,
-      missingFields,
+      inputs: JSON.stringify(inputs || {}),
+      missingFields: JSON.stringify(missingFields),
       isPinned: true,
     },
   })
@@ -272,7 +272,7 @@ export async function pinnedChatMessage(
     }
     await prisma.serviceOrder.update({
       where: { id: order.id },
-      data: { inputs: inputs as any, missingFields: stillMissing, status: status === 'delivered' ? 'delivered' : 'collecting_material' },
+      data: { inputs: JSON.stringify(inputs), missingFields: JSON.stringify(stillMissing), status: status === 'delivered' ? 'delivered' : 'collecting_material' },
     }).catch(() => {})
   } else if (status === 'delivered') {
     // REVISION — PAID (V12): costs the SAME as the product (order.creditCost).
@@ -335,7 +335,7 @@ async function generateDeliverable(
     data: {
       status: 'delivered',
       resultUrl,
-      resultJson: { deliverable: text.slice(0, 8000), model: service?.model, generatedAt: new Date().toISOString() } as any,
+      resultString: JSON.stringify({ deliverable: text.slice(0, 8000), model: service?.model, generatedAt: new Date().toISOString() }),
     },
   }).catch(() => {})
 

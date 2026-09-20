@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       serviceId: 's01',
       creditCost,
       status: 'processing',
-      inputs: { ideType: type, serverId, fsRoot: `ide/${user.id}/${serverId}/`, starterCode: starter || null },
+      inputs: JSON.stringify({ ideType: type, serverId, fsRoot: `ide/${user.id}/${serverId}/`, starterCode: starter || null }),
       resultUrl: `/ide/preview?serverId=${serverId}`,
     },
   }).catch(() => null)

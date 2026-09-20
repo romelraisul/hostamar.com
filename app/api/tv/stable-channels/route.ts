@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
             failCount: 0,
             avgLoadTimeMs: 9999,
           })),
-          skipDuplicates: true,
+          // skipDuplicates: true,
         })
       }
     }

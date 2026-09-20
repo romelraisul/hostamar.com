@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     data: {
       status: 'delivered',
       resultUrl,
-      resultJson,
+      resultString: JSON.stringify(resultJson),
     },
   })
 

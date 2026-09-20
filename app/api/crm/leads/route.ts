@@ -113,7 +113,7 @@ export async function PUT(req: NextRequest) {
         tags: l.tags || null,
         notes: l.notes || null,
       })),
-      skipDuplicates: true,
+      // skipDuplicates not supported in SQLite — duplicates handled by @@unique
     });
 
     return NextResponse.json({

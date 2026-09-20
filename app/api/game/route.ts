@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
       serviceId: 's01', // FK anchor; real product context is in inputs.gameId
       creditCost,
       status: 'processing',
-      inputs: { gameId, action, gameName: game.name, price: game.price, serverConfig: config || null },
+      inputs: JSON.stringify({ gameId, action, gameName: game.name, price: game.price, serverConfig: config || null }),
       resultUrl: `/game/${gameId}`,
     },
   }).catch(() => null)

@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     try {
       const where: any = {}
       if (country) where.country = country
-      if (category) where.category = { contains: category, mode: 'insensitive' }
+      if (category) where.category = { contains: category }
 
       const [items, total] = await Promise.all([
         prisma.tvIptvChannel.findMany({

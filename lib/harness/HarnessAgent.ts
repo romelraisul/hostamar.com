@@ -109,7 +109,7 @@ export class HarnessAgent {
     }
     // Enqueue and wait for a human decision (async — caller decides how to wait).
     const row = await prisma.approvalQueue.create({
-      data: { toolName, argsJson: args as object, status: 'pending' },
+      data: { toolName, argsString: JSON.stringify(args), status: 'pending' },
     })
     await sendApprovalRequest({
       approvalId: row.id,
@@ -147,7 +147,7 @@ export class HarnessAgent {
     const parsed = this.safeParsePlan(model)
     if (parsed) {
       const row = await prisma.approvalQueue
-        .create({ data: { toolName: 'harness_plan', argsJson: { prompt } as object, status: 'pending' } })
+        .create({ data: { toolName: 'harness_plan', argsString: JSON.stringify({ prompt }), status: 'pending' } })
         .catch(() => null)
       await sendApprovalRequest({
         approvalId: row?.id ?? 'n/a',
@@ -159,7 +159,7 @@ export class HarnessAgent {
 
     // Deterministic fallback so plan mode always returns a valid schema.
     const row = await prisma.approvalQueue
-      .create({ data: { toolName: 'harness_plan', argsJson: { prompt } as object, status: 'pending' } })
+      .create({ data: { toolName: 'harness_plan', argsString: JSON.stringify({ prompt }), status: 'pending' } })
       .catch(() => null)
     await sendApprovalRequest({
       approvalId: row?.id ?? 'n/a',
@@ -515,8 +515,8 @@ export class HarnessAgent {
       await prisma.harnessSession
         .upsert({
           where: { id: sessionId },
-          update: { mode: 'execute', todosJson: todos as object },
-          create: { id: sessionId, mode: 'execute', todosJson: todos as object },
+          update: { mode: 'execute', todosString: JSON.stringify(todos) },
+          create: { id: sessionId, mode: 'execute', todosString: JSON.stringify(todos) },
         })
         .catch(() => undefined)
     }

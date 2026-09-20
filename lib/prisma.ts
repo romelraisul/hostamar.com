@@ -2,20 +2,24 @@
 // node:dns.lookup before any neon-style TCP socket is created.
 import './dns-bootstrap'
 import { PrismaClient } from '@prisma/client'
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
+import { createClient } from '@libsql/client'
 import { env } from '@/lib/env'
-
-// Prisma Client with Neon serverless connection pooling
-// Neon uses PgBouncer which requires:
-// 1. ?pgbouncer=true in connection string (set in DATABASE_URL)
-// 2. connection_limit in env var or default 5
-// 3. Pool timeout to prevent hanging connections
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
 const prismaClientSingleton = () => {
+  // Turso/libSQL adapter — works in both edge and node runtimes
+  const url = process.env.DATABASE_URL?.split('?')[0] || ''
+  const authToken = process.env.DATABASE_URL?.split('authToken=')[1] || ''
+
+  const libsql = createClient({ url, authToken })
+  const adapter = new PrismaLibSQL(libsql)
+
   return new PrismaClient({
+    adapter,
     log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   })
 }

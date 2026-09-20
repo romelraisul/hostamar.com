@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
           balanceId,
           customerId,
           bet,
-          reels,
+          reels: JSON.stringify(reels),
           won: result.won,
           multiplier: result.multiplier,
           amount: result.amount,

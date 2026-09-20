@@ -14,5 +14,5 @@ export async function GET(req: NextRequest) {
   await ensureHarnessSchema().catch(() => undefined)
   if (!sessionId) return NextResponse.json({ todos: [] })
   const s = await prisma.harnessSession.findUnique({ where: { id: sessionId } })
-  return NextResponse.json({ mode: s?.mode || 'plan', todos: s?.todosJson || [] })
+  return NextResponse.json({ mode: s?.mode || 'plan', todos: s?.todosString ? JSON.parse(s.todosString) : [] })
 }

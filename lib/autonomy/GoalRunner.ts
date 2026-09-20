@@ -47,8 +47,8 @@ export interface GoalState {
 interface GoalRow {
   slug: string
   objective: string
-  kpiTarget: Record<string, unknown>
-  kpiCurrent: Record<string, unknown>
+  kpiTarget: string | null
+  kpiCurrent: string | null
   strategy?: Record<string, unknown> | null
   status: string
   iterations: number
@@ -56,6 +56,11 @@ interface GoalRow {
 }
 
 const WORKING_REPORTS = path.join(process.cwd(), 'working', 'reports')
+
+// ponytail: rows store JSON in String columns (SQLite/Turso) — one shared parser
+function parseJson(v: string | null | undefined): Record<string, unknown> {
+  try { return v ? JSON.parse(v) : {} } catch { return {} }
+}
 
 async function sendTelegram(text: string): Promise<void> {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
@@ -225,11 +230,11 @@ export class GoalRunner {
       qdrantPoints: metrics.qdrantPoints,
       updatedAt: metrics.asOf,
     }
-    const gap = computeGap(row.kpiTarget as Record<string, unknown>, kpiCurrent)
+    const gap = computeGap(parseJson(row.kpiTarget), kpiCurrent)
     const runs = await recentRuns()
     const state: GoalState = {
       objective: row.objective,
-      kpiTarget: row.kpiTarget as Record<string, unknown>,
+      kpiTarget: parseJson(row.kpiTarget),
       kpiCurrent,
       gap,
       recentRuns: runs,
@@ -251,17 +256,17 @@ export class GoalRunner {
     }
 
     const iteration = row.iterations + 1
-    const achieved = (Number(kpiCurrent.mrr) >= Number((row.kpiTarget as Record<string, unknown>).mrr ?? 0))
+    const achieved = (Number(kpiCurrent.mrr) >= Number(parseJson(row.kpiTarget).mrr ?? 0))
     const gapMrr = Number(gap.mrr ?? 0)
 
     await prisma.goal.update({
       where: { slug: goalSlug },
       data: {
         iterations: iteration,
-        kpiCurrent,
+        kpiCurrent: JSON.stringify(kpiCurrent),
         status: achieved ? 'achieved' : 'active',
         updatedAt: new Date(),
-        strategy: decision as unknown as Prisma.InputJsonValue,
+        strategy: JSON.stringify(decision),
       },
     }).catch(() => undefined)
 
@@ -320,12 +325,12 @@ export class GoalRunner {
             schedule: '0 */2 * * *',
             status: 'idle',
             enabled: true,
-            configJson: {
+            configString: JSON.stringify({
               prompt: a.prompt,
               name: a.slug,
               autoApprove: true,
               tools: ['codeact', 'qdrant', 'file_access'],
-            },
+            }),
           },
         })
         // eslint-disable-next-line no-console
@@ -344,10 +349,10 @@ export class GoalRunner {
       case 'update_prompt': {
         const task = await prisma.autonomousTask.findUnique({ where: { slug: a.slug } }).catch(() => null)
         if (!task) return
-        const cfg = (task.configJson as Record<string, unknown>) || {}
+        const cfg = task.configString ? JSON.parse(task.configString) : {}
         await prisma.autonomousTask.update({
           where: { slug: a.slug },
-          data: { configJson: { ...cfg, prompt: a.prompt } },
+          data: { configString: JSON.stringify({ ...cfg, prompt: a.prompt }) },
         })
         // eslint-disable-next-line no-console
         console.log(`[GOAL] updated prompt for ${a.slug}`)

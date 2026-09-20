@@ -1,6 +1,5 @@
 generator client {
   provider      = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
   binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
 }
 
@@ -238,7 +237,7 @@ model Subtitle {
   videoId    String?
   language   String? @default("bn")
   content    String?
-  timestamps String?
+  timestamps Json?
   text       String?
   start      Float   @default(0)
   end        Float   @default(0)
@@ -586,6 +585,13 @@ model UserProgress {
   @@index([courseId, completed])
 }
 
+enum BetaStatus {
+  PENDING
+  ACTIVE
+  USED
+  EXPIRED
+}
+
 model RateLimitEvent {
   id        String   @id @default(cuid())
   bucket    String // "ip:path" hash
@@ -626,7 +632,7 @@ model Incident {
   status          String   @default("open") // open | ack | resolved
   service         String
   title           String
-  timeline        String? // append-only: { at, actor, action, result }
+  timeline        Json[] // append-only: { at, actor, action, result }
   onCallCustomerId String?
   createdAt       DateTime @default(now())
   resolvedAt      DateTime?
@@ -641,7 +647,7 @@ model BetaInvite {
   email           String
   name            String
   phone           String?
-  status         String    @default("PENDING")
+  status          BetaStatus @default(PENDING)
   discountPercent Float      @default(10)
 
   usedAt    DateTime?
@@ -666,8 +672,8 @@ model Conversation {
 
   // V8 memory lifecycle (runtime DDL in lib/kai9000/memory-lifecycle.ts
   // applies these to prod; schema kept in sync so prisma generate types them)
-  memories       String?   @default("{}")
-  hitCountMap    String?   @default("{}")
+  memories       Json?   @default("{}")
+  hitCountMap    Json?   @default("{}")
   promotedPrompt String? @default("")
 
   @@index([userId, createdAt])
@@ -707,7 +713,7 @@ model GameSpin {
   balance    GameBalance @relation(fields: [balanceId], references: [id], onDelete: Cascade)
   customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   bet        Int
-  reels      String?
+  reels      String[]
   won        Boolean     @default(false)
   multiplier Int         @default(0)
   amount     Float       @default(0)
@@ -732,7 +738,7 @@ model ProvisioningLedger {
   plan          String
   amount        Float?
   gateway       String    @default("mock")
-  rawPayload    String?
+  rawPayload    Json?
   accountId     String?
   loginUrl      String?
   provisionedAt DateTime?
@@ -762,7 +768,7 @@ model AutonomousTask {
   enabled    Boolean   @default(true)
   lastRunAt  DateTime?
   nextRunAt  DateTime?
-  configString String?
+  configJson Json?
   status     String    @default("idle") // idle | running | error | paused
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -781,7 +787,7 @@ model TaskRunLog {
   startedAt  DateTime       @default(now())
   finishedAt DateTime?
   status     String         @default("running") // running | completed | failed | blocked
-  outputString String?
+  outputJson Json?
   error      String?
   approvalId String?
 
@@ -791,7 +797,7 @@ model TaskRunLog {
 model ApprovalQueue {
   id        String    @id @default(cuid())
   toolName  String
-  argsString  String?
+  argsJson  Json
   status    String    @default("pending") // pending | approved | denied
   createdAt DateTime  @default(now())
   decidedAt DateTime?
@@ -803,7 +809,7 @@ model ApprovalQueue {
 model HarnessSession {
   id        String   @id @default(cuid())
   mode      String   @default("plan") // plan | execute
-  todosString String?
+  todosJson Json?
   memoryRef String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -822,9 +828,9 @@ model Goal {
   id         String   @id @default(uuid())
   slug       String   @unique
   objective  String
-  kpiTarget  String?
-  kpiCurrent String?
-  strategy   String?
+  kpiTarget  Json
+  kpiCurrent Json
+  strategy   Json?
   status     String   @default("active") // active | paused | achieved
   iterations Int      @default(0)
   maxIter    Int      @default(100)
@@ -841,10 +847,10 @@ model VoiceCall {
   id             String   @id
   userId         String? // customerId alias
   organizationId String? // NEW (PR d): tenant FK via userId->customer->membership (Decision A)
-  transcript     String?
+  transcript     Json
   summary        String?
-  actionItems    String?
-  reportString    String?
+  actionItems    Json?
+  reportJson     Json?
   createdAt      DateTime @default(now())
 
   @@index([createdAt])
@@ -884,7 +890,7 @@ model OidcConnection {
 
   issuer        String // https://acme.okta.com/oauth2/default
   clientId      String
-  clientSecretEncrypted String  // encrypted at rest
+  clientSecretEncrypted String @db.Text // encrypted at rest
   authorizationEndpoint String?
   tokenEndpoint String?
   userInfoEndpoint String?
@@ -916,13 +922,13 @@ model SamlConnection {
 
   // Tenant-specific IdP config — keyed per Organization.slug.
   idpMetadataUrl   String? // https://acme.okta.com/app/xxx/sso/saml/metadata
-  idpMetadataXml   String?   // raw XML upload fallback
+  idpMetadataXml   String?  @db.Text // raw XML upload fallback
   idpEntityId      String? // IdP issuer
   idpSsoUrl        String? // IdP login URL
-  idpX509Cert      String?   // IdP signing cert
+  idpX509Cert      String?  @db.Text // IdP signing cert
   spEntityId       String // https://hostamar.com/api/auth/saml/metadata?tenant=acme-corp
   spAcsUrl         String // https://hostamar.com/api/auth/saml/acs?tenant=acme-corp
-  attributeMapping String?     @default("{\"email\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress\",\"firstName\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname\",\"lastName\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname\"}")
+  attributeMapping Json     @default("{\"email\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress\",\"firstName\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname\",\"lastName\":\"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname\"}")
   isActive         Boolean  @default(false)
   isTested         Boolean  @default(false)
   createdAt        DateTime @default(now())
@@ -1242,7 +1248,7 @@ model CryptoWallet {
   id                  String   @id @default(cuid())
   userId              String
   address             String   @unique
-  privateKeyEncrypted String   
+  privateKeyEncrypted String   @db.Text
   chain               String   @default("ethereum") // ethereum | base | solana | bitcoin
   createdAt           DateTime @default(now())
 
@@ -1288,7 +1294,7 @@ model TvSettings {
   rtmpUrl        String?  @default("rtmp://localhost:1935/live/tv")
   tunnelAutoUrl  String?
   autoGenerate   Boolean  @default(true)
-  rssFeeds       String? @default("{}")
+  rssFeeds       String[] @default([])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -1296,7 +1302,7 @@ model TvSettings {
 model TvCommand {
   id         String    @id @default(cuid())
   action     String    // START_WEBSITE | START_ALL | STOP | RELOAD_PLAYLIST | GENERATE_VIDEO
-  payload    String?
+  payload    Json?
   status     String    @default("PENDING") // PENDING | RUNNING | DONE | FAILED
   createdAt  DateTime  @default(now())
   executedAt DateTime?
@@ -1346,7 +1352,7 @@ model FreeVideoSourceResearch {
   relevanceScore Float?
   category       String?
   summaryBn      String?
-  keywords       String?
+  keywords       String[]
   researchedBy   String? // e.g. "nemotron-nano-vl+llama-3.1-8b" or "llama-only"
   accepted       Boolean @default(false)
   createdAt      DateTime @default(now())
@@ -1362,9 +1368,9 @@ model TvVideoSeo {
   slug            String   @unique // ai-video-generator-bangla-tutorial-2025
   titleBn         String // SEO title ~60 chars with product keyword + Bangla + Hostamar TV
   metaDescription String // ~155 chars Bangla with CTA (bKash, Daraz)
-  keywords        String? // 6-8 mixed Bangla + English keywords
-  transcriptBn    String?   // full Bangla transcript for SEO index
-  schemaString       String? // VideoObject schema.org payload
+  keywords        String[] // 6-8 mixed Bangla + English keywords
+  transcriptBn    String?  @db.Text // full Bangla transcript for SEO index
+  schemaJson      Json? // VideoObject schema.org payload
   ogImage         String? // /og/tv/{slug}.jpg — 1200x630 with watermark + titleBn
   canonicalUrl    String // https://hostamar.com/tv/watch/{slug}
   product         String // Video | Hosting | Chat | Browser | IDE | Gaming
@@ -1387,7 +1393,7 @@ model ViralTrend {
   views        Int?
   viralScore   Float        @default(0)
   category     String? // fashion | food | ecommerce | beauty | electronics | news
-  rawData      String?
+  rawData      Json?
   used         Boolean      @default(false)
   videoCreated Boolean      @default(false)
   createdAt    DateTime     @default(now())
@@ -1456,7 +1462,7 @@ model HostingRequest {
   ram      Int     @default(1)
   storage  Int     @default(25)
   os       String?
-  ports    String?
+  ports    String[]
   domain   String?
   ssl      Boolean @default(false)
 
@@ -1484,9 +1490,9 @@ model ServiceCatalog {
   benefitBn      String
   perfectFor     String
   perfectForBn   String
-  promptTemplate String   
+  promptTemplate String   @db.Text
   model          String?  @default("flux-pro")
-  inputs         String?     @default("{}")
+  inputs         Json     @default("{}")
   icon           String
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
@@ -1504,10 +1510,10 @@ model ServiceOrder {
   service    ServiceCatalog @relation(fields: [serviceId], references: [id])
   creditCost Int
   status     String   @default("queued") // queued | collecting_material | processing | generating | delivered | failed | revising
-  inputs     String?     @default("{}")
-  missingFields String?
+  inputs     Json     @default("{}")
+  missingFields Json?
   resultUrl  String?
-  resultString String?
+  resultJson Json?
   isPinned   Boolean  @default(true)
   createdAt  DateTime @default(now())
 
@@ -1533,8 +1539,8 @@ model ServiceChatMessage {
   id         String   @id @default(cuid())
   chatId     String
   role       String   // user | ai | system
-  content    String   
-  attachments String?
+  content    String   @db.Text
+  attachments Json?
   creditCost  Int?
   createdAt  DateTime @default(now())
 
@@ -1549,7 +1555,7 @@ model BlogPost {
   title           String
   excerpt         String?
   metaDescription String?
-  keywords        String?
+  keywords        String[]
   content         String
   serviceId       String?
   authorId        String?
@@ -1575,8 +1581,8 @@ model SeoEvent {
 model AgentChat {
   id        String   @id @default(cuid())
   role      String // user | assistant | tool
-  content   String   
-  toolCalls String?
+  content   String   @db.Text
+  toolCalls Json?
   customerId String   // founder customerId (owner)
   createdAt DateTime @default(now())
 
@@ -1587,8 +1593,8 @@ model AgentTask {
   id        String   @id @default(cuid())
   type      String // health | seo_audit | bkash_plan | build
   status    String   @default("pending") // pending | running | done | failed
-  input     String?
-  output    String?
+  input     Json
+  output    Json?
   createdAt DateTime @default(now())
 
   @@index([type, status])
@@ -1602,9 +1608,9 @@ model CloudState {
   pcOn        Boolean  @default(false)
   lastSeen    DateTime @default(now())
   pcUptimeSec Int      @default(0)
-  gpu         String?
+  gpu         Json?
   tailscaleIp String?
-  services    String?
+  services    Json?
   updatedAt   DateTime @updatedAt
 }
 

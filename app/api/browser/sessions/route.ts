@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       serviceId: 'browser-cloud',
       creditCost: CREDIT_PER_HOUR,
       status: 'processing',
-      inputs: { sessionId, type },
+      inputs: JSON.stringify({ sessionId, type }),
       resultUrl: `/dashboard/browser?session=${sessionId}`,
     },
   }).catch(() => null)

@@ -54,7 +54,7 @@ export async function processPostCall(payload: CallEndedPayload): Promise<CallRe
         transcript: (payload.transcript ?? []) as any,
         summary: report.summary,
         actionItems: (report.action_items ?? []) as any,
-        reportJson: report as any,
+        reportString: report as any,
       },
     })
   } catch (e) {

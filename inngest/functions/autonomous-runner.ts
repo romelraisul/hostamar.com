@@ -65,7 +65,7 @@ export const autonomousRunner = inngest.createFunction(
         })
         try {
           const agent = new HarnessAgent({ fileRoot: '/app/working' })
-          const cfg = (task.configJson as Record<string, unknown>) || {}
+          const cfg = JSON.parse(task.configString || '{}')
           const prompt =
             (cfg.prompt as string) ||
             `Run autonomous task ${task.slug}: research leads and generate an SEO report.`
@@ -81,7 +81,7 @@ export const autonomousRunner = inngest.createFunction(
           })
           await prisma.taskRunLog.update({
             where: { id: log.id },
-            data: { status: 'completed', finishedAt: new Date(), outputJson: result as object },
+            data: { status: 'completed', finishedAt: new Date(), outputString: JSON.stringify(result) },
           })
           return { runId: log.id, status: 'completed' }
         } catch (err) {
