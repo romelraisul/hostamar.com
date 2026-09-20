@@ -9,7 +9,7 @@ async function checkHttp(url: string): Promise<number> {
   try {
     const ctl = new AbortController()
     const t = setTimeout(() => ctl.abort(), 8000)
-    const res = await fetch(url, { signal: ctl.signal, cache: 'no-store' })
+    const res = await fetch(url, { signal: ctl.signal, cache: 'no-store', headers: { 'User-Agent': 'hostamar-status-check/1.0' } })
     clearTimeout(t)
     return res.status
   } catch { return 0 }
