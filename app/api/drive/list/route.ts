@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth-utils'
+import { cachedTurso } from '@/lib/upstash-cache'
 
 /**
  * GET /api/drive/list?folderId=&q= — V34.
@@ -35,22 +36,29 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    const [folders, files, agg] = await Promise.all([
-      prisma.driveFolder.findMany({
-        where: { ownerId, parentId: folderId },
-        orderBy: { name: 'asc' },
-        select: { id: true, name: true, parentId: true, createdAt: true },
-      }),
-      prisma.driveFile.findMany({
-        where: { ownerId, folderId, chunkGroupId: null },
-        orderBy: { createdAt: 'desc' }, take: 200,
-        select: { id: true, fileName: true, fileSize: true, mimeType: true, folderId: true, createdAt: true },
-      }),
-      prisma.driveFile.aggregate({
-        where: { ownerId, chunkGroupId: null },
-        _sum: { fileSize: true },
-      }),
-    ])
+    // ponytail: cache-aside 30s — one Upstash get per request instead of 3 Turso reads (500M/mo cap)
+    const { folders, files, agg } = await cachedTurso(
+      `drive:list:${ownerId}:${folderId || 'root'}`, 30,
+      async () => {
+        const [folders, files, agg] = await Promise.all([
+          prisma.driveFolder.findMany({
+            where: { ownerId, parentId: folderId },
+            orderBy: { name: 'asc' },
+            select: { id: true, name: true, parentId: true, createdAt: true },
+          }),
+          prisma.driveFile.findMany({
+            where: { ownerId, folderId, chunkGroupId: null },
+            orderBy: { createdAt: 'desc' }, take: 200,
+            select: { id: true, fileName: true, fileSize: true, mimeType: true, folderId: true, createdAt: true },
+          }),
+          prisma.driveFile.aggregate({
+            where: { ownerId, chunkGroupId: null },
+            _sum: { fileSize: true },
+          }),
+        ])
+        return { folders, files, agg: { _sum: { fileSize: agg._sum.fileSize == null ? null : String(agg._sum.fileSize) } } }
+      },
+    )
     // BigInt-safe JSON: Prisma fileSize is BigInt — stringify per row.
     const filesJson = files.map((f) => ({
       ...f,

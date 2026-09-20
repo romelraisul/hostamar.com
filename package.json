@@ -36,6 +36,7 @@
     "@prisma/client": "^5.22.0",
     "@sentry/nextjs": "^10.53.1",
     "@tursodatabase/api": "^2.0.5",
+    "@upstash/redis": "^1.38.4",
     "@vercel/functions": "^3.9.7",
     "ai": "^7.0.83",
     "bcryptjs": "^2.4.3",
