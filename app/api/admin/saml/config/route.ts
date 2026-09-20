@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       idpMetadataXml: idpMetadataXml?.trim() || null,
       spEntityId,
       spAcsUrl,
-      attributeMapping: ATTR_DEFAULT,
+      attributeMapping: JSON.stringify(ATTR_DEFAULT),
       isActive: true,
     },
     update: {
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       idpMetadataXml: idpMetadataXml?.trim() || null,
       spEntityId,
       spAcsUrl,
-      attributeMapping: ATTR_DEFAULT,
+      attributeMapping: JSON.stringify(ATTR_DEFAULT),
       isActive: true,
     },
   })

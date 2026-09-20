@@ -31,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
 
   return NextResponse.json({
     success: true,
-    chat: { chatId, title: chat.title, status: order?.status || 'queued', resultUrl: order?.resultUrl, resultJson: order?.resultJson },
+    chat: { chatId, title: chat.title, status: order?.status || 'queued', resultUrl: order?.resultUrl, resultJson: order?.resultString },
     messages: messages.map((m: any) => ({ id: m.id, role: m.role, content: m.content, attachments: m.attachments, creditCost: m.creditCost, createdAt: m.createdAt })),
   })
 }

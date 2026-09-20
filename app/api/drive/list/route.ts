@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
     if (q) {
       const files = await prisma.driveFile.findMany({
-        where: { ownerId, fileName: { contains: q, mode: 'insensitive' }, chunkGroupId: null },
+        where: { ownerId, fileName: { contains: q }, chunkGroupId: null },
         orderBy: { createdAt: 'desc' }, take: 100,
         select: { id: true, fileName: true, fileSize: true, mimeType: true, folderId: true, createdAt: true },
       })

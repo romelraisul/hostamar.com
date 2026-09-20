@@ -73,7 +73,7 @@ ${actionMd}
           slug,
           owner: item.owner,
           schedule: item.schedule,
-          configJson: { title: item.title, sourceIncident: incidentId } as any,
+          configString: { title: item.title, sourceIncident: incidentId } as any,
           status: 'idle',
         },
       })

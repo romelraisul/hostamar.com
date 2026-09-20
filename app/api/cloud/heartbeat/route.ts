@@ -31,9 +31,16 @@ export async function POST(req: NextRequest) {
       where: { id: 'pc' },
       create: {
         id: 'pc', pcOn: true, lastSeen: new Date(), pcUptimeSec,
-        gpu: gpu as object | undefined, tailscaleIp, services: services as object | undefined,
+        gpu: typeof gpu === 'string' ? gpu : JSON.stringify(gpu),
+        tailscaleIp,
+        services: typeof services === 'string' ? services : JSON.stringify(services),
       },
-      update: { pcOn: true, lastSeen: new Date(), pcUptimeSec, gpu: gpu as object | undefined, tailscaleIp, services: services as object | undefined },
+      update: {
+        pcOn: true, lastSeen: new Date(), pcUptimeSec,
+        gpu: typeof gpu === 'string' ? gpu : JSON.stringify(gpu),
+        tailscaleIp,
+        services: typeof services === 'string' ? services : JSON.stringify(services),
+      },
     }).catch((e: any) => {
       console.warn('[cloud/heartbeat] upsert failed:', String(e?.message || e).slice(0, 160))
       return null

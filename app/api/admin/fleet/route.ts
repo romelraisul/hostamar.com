@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
       "couldnt" TEXT,
       "needsYou" TEXT,
       "raw" TEXT,
-      "runAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "runAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       CONSTRAINT "FleetReport_pkey" PRIMARY KEY ("id")
     )`)
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_employee_runAt_idx" ON "FleetReport"("employee", "runAt" DESC)`)

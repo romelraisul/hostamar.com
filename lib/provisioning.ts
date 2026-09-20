@@ -53,7 +53,7 @@ export async function upsertPayment(input: UpsertPaymentInput) {
       plan,
       amount: input.amount ?? undefined,
       gateway: input.gateway ?? 'mock',
-      rawPayload: (input.rawPayload ?? undefined) as unknown as Prisma.InputJsonValue,
+      rawPayload: input.rawPayload ? JSON.stringify(input.rawPayload) : undefined,
       updatedAt: new Date(),
     },
     create: {
@@ -63,7 +63,7 @@ export async function upsertPayment(input: UpsertPaymentInput) {
       amount: input.amount ?? undefined,
       gateway: input.gateway ?? 'mock',
       status,
-      rawPayload: (input.rawPayload ?? undefined) as unknown as Prisma.InputJsonValue,
+      rawPayload: input.rawPayload ? JSON.stringify(input.rawPayload) : undefined,
     },
   })
 }
