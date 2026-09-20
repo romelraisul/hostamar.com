@@ -12,7 +12,6 @@ exec ffmpeg -re -stream_loop -1 -f concat -safe 0 \
   -c:v libvpx-vp9 -row-mt 1 -deadline realtime -cpu-used 8 -b:v 400k -maxrate 430k -bufsize 860k \
   -c:a libopus -b:a 48k -ar 48000 \
   -f hls -hls_time 4 -hls_list_size 6 -hls_flags delete_segments+omit_endlist+append_list \
-  -hls_segment_type fmp4 \
-  -hls_fmp4_init_filename init_v2.mp4 \
-  -hls_segment_filename /home/romel/hostamar-build/docker/tv-station/hls2/seg%04d.mp4 \
+  -hls_segment_type mpegts \
+  -hls_segment_filename /home/romel/hostamar-build/docker/tv-station/hls2/seg%04d.ts \
   /home/romel/hostamar-build/docker/tv-station/hls2/master.m3u8

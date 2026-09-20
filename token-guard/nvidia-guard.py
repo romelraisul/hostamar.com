@@ -292,9 +292,9 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
 
             try:
                 ctx = ssl.create_default_context()
-                # Use socket-level timeout for both connect + read — 30s fail-fast so large-context requests fallback quickly to tokenrouter
+                # Use socket-level timeout 120s fail-fast so large-context requests fallback quickly to tokenrouter
                 import socket
-                socket.setdefaulttimeout(30)
+                socket.setdefaulttimeout(120)
                 try:
                     with urllib.request.urlopen(req, context=ctx) as resp:
                         status = resp.status
@@ -307,7 +307,7 @@ class NvidiaGuardHandler(http.server.BaseHTTPRequestHandler):
                 finally:
                     socket.setdefaulttimeout(None)
             except socket.timeout:
-                log("UPSTREAM_TIMEOUT: Nvidia timeout (30s) → circuit OPEN → qwen3.8 fallback + auto-probe later")
+                log("UPSTREAM_TIMEOUT: Nvidia timeout (120s) → circuit OPEN → qwen3.8 fallback + auto-probe later")
                 if model:
                     # Put circuit OPEN so next requests fast-fail to qwen3.8 without 30s wait (prevents APIConnectionError thread exhaustion)
                     rpm_now = get_current_rpm(conn, model)

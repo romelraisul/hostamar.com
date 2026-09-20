@@ -110,6 +110,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, id: recent.id, deduped: true })
   }
 
+  // V70: self-heal the FleetReport table on first use. The schema has the
+  // model but no migration created it (same pattern as ensureOpsSchema for
+  // FleetEvent) — without this every POST 500s on a fresh DB.
+  try {
+    await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "FleetReport" (
+      "id" TEXT NOT NULL,
+      "employee" TEXT NOT NULL,
+      "jobId" TEXT NOT NULL,
+      "verdict" TEXT,
+      "finished" TEXT,
+      "couldnt" TEXT,
+      "needsYou" TEXT,
+      "raw" TEXT,
+      "runAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "FleetReport_pkey" PRIMARY KEY ("id")
+    )`)
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_employee_runAt_idx" ON "FleetReport"("employee", "runAt" DESC)`)
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_jobId_idx" ON "FleetReport"("jobId")`)
+  } catch {
+    // Best-effort: if the table already exists or DDL is rejected, fall through
+    // to the create() call below (which will surface the real error if any).
+  }
+
   const row = await prisma.fleetReport.create({
     data: {
       employee,
