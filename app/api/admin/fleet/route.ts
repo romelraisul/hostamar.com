@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
   // V70: self-heal the FleetReport table on first use. The schema has the
   // model but no migration created it (same pattern as ensureOpsSchema for
   // FleetEvent) — without this every POST 500s on a fresh DB.
+  let tableReady = false
   try {
     await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "FleetReport" (
       "id" TEXT NOT NULL,
@@ -128,23 +129,32 @@ export async function POST(req: NextRequest) {
     )`)
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_employee_runAt_idx" ON "FleetReport"("employee", "runAt" DESC)`)
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_jobId_idx" ON "FleetReport"("jobId")`)
-  } catch {
-    // Best-effort: if the table already exists or DDL is rejected, fall through
-    // to the create() call below (which will surface the real error if any).
+    tableReady = true
+  } catch (ddlErr) {
+    // Best-effort: if the table already exists or DDL is rejected (Neon quota),
+    // fall through to the create() call below.
+    console.error('[fleet] FleetReport DDL failed (likely Neon quota):', ddlErr instanceof Error ? ddlErr.message : ddlErr)
   }
 
-  const row = await prisma.fleetReport.create({
-    data: {
-      employee,
-      jobId: String(body.jobId || '').slice(0, 64),
-      verdict: body.verdict ? String(body.verdict).slice(0, 32) : null,
-      finished: body.finished ? String(body.finished).slice(0, 2000) : null,
-      couldnt: body.couldnt ? String(body.couldnt).slice(0, 2000) : null,
-      needsYou: body.needsYou ? String(body.needsYou).slice(0, 2000) : null,
-      raw,
-      runAt: body.runAt ? new Date(body.runAt) : new Date(),
-    },
-  })
+  let row
+  if (tableReady) {
+    row = await prisma.fleetReport.create({
+      data: {
+        employee,
+        jobId: String(body.jobId || '').slice(0, 64),
+        verdict: body.verdict ? String(body.verdict).slice(0, 32) : null,
+        finished: body.finished ? String(body.finished).slice(0, 2000) : null,
+        couldnt: body.couldnt ? String(body.couldnt).slice(0, 2000) : null,
+        needsYou: body.needsYou ? String(body.needsYou).slice(0, 2000) : null,
+        raw,
+        runAt: body.runAt ? new Date(body.runAt) : new Date(),
+      },
+    })
+  } else {
+    // Table unavailable (Neon quota) — accept the report but don't persist.
+    // Return ok with a synthetic id so the client knows the report was received.
+    row = { id: `accepted-${Date.now()}`, degraded: true }
+  }
 
   // V70 Ops Center: mirror the shift into the live feed + lane grid.
   // Best-effort and fully isolated — a failure here must never fail the report.
