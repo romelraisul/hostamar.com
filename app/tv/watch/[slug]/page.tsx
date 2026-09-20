@@ -146,7 +146,7 @@ export default async function WatchPage({ params }: { params: { slug: string } }
 
         {/* title + badges */}
         <div className="mt-5 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-[#0E7C3A] px-3 py-1 text-[13px] font-bold">
+          <span className="rounded-full bg-[#0E7C3A] text-white px-3 py-1 text-[13px] font-bold">
             {PRODUCT_BADGE[seo.product] || seo.product}
           </span>
           {seo.viralScore != null && seo.viralScore > 0 && (
