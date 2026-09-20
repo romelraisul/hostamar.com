@@ -55,7 +55,7 @@ export default function LoginPage() {
       // SECURITY: cookie is now set SERVER-side by /api/auth/login (HttpOnly,
       // Secure, SameSite=Strict) — nothing to do here. Token in JSON is for
       // Bearer/CLI use only, never persisted to localStorage.
-      router.push('/dashboard')
+      router.push(data.user?.role === 'admin' || data.user?.role === 'superadmin' ? '/admin' : '/dashboard')
       router.refresh()
     } catch {
       setError('লগইন করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।')
