@@ -197,6 +197,10 @@ export async function middleware(request: NextRequest) {
 
   // API routes — validate token (cookie or Authorization Bearer)
   if (pathname.startsWith('/api/')) {
+    // Public admin-status endpoint — no auth required (dashboard overview reads live)
+    if (pathname.startsWith('/api/admin/status')) {
+      return NextResponse.next()
+    }
     const authHeader = request.headers.get('authorization') || ''
     const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
     const tokenToVerify = authToken || bearerToken
