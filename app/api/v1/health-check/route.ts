@@ -31,9 +31,18 @@ export async function POST(req: NextRequest) {
   const slice = Array.from({ length: SAMPLE }, (_, i) => ids[(hour * SAMPLE + i) % ids.length])
 
   const prev = (await getHealth()) || {}
-  const results = await Promise.all(slice.map(id => pingModel(id)))
+  // ponytail: burst of 12 parallel pings trips the gateway's rate limit (429) —
+  // stagger 400ms apart and treat 429 as unknown (skip, don't mark down).
+  const results: { id: string; latencyMs: number; ok: boolean; error?: string }[] = []
+  for (const id of slice) {
+    results.push(await pingModel(id))
+    await new Promise(r => setTimeout(r, 400))
+  }
   const merged = { ...prev }
-  for (const r of results) merged[r.id] = r
+  for (const r of results) {
+    if (r.error?.startsWith('HTTP 429')) continue // rate-limited probe ≠ model down
+    merged[r.id] = r
+  }
   // ponytail: entries older than 48 checks (~2 days) age out via sweep below
   await setHealth(merged)
 
