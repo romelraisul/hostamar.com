@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
   // rotating slice: 12 per run
   const hour = Math.floor(Date.now() / 3_600_000)
-  const SAMPLE = 12
+  const SAMPLE = 4
   const slice = Array.from({ length: SAMPLE }, (_, i) => ids[(hour * SAMPLE + i) % ids.length])
 
   const prev = (await getHealth()) || {}
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   const results: { id: string; latencyMs: number; ok: boolean; error?: string }[] = []
   for (const id of slice) {
     results.push(await pingModel(id))
-    await new Promise(r => setTimeout(r, 400))
+    await new Promise(r => setTimeout(r, 1500))
   }
   const merged = { ...prev }
   for (const r of results) {
