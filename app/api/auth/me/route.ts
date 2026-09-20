@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 const BACKEND_URL = process.env.API_BACKEND_URL || 'https://api.hostamar.com'
 
 export async function GET(request: NextRequest) {
-  const hasLocalDb = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgresql://')
+  const hasLocalDb = !!process.env.DATABASE_URL && !process.env.API_BACKEND_URL
 
   if (hasLocalDb) {
     try {
