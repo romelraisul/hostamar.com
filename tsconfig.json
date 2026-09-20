@@ -39,6 +39,7 @@
   ],
   "exclude": [
     "docker/tv-station/hls-archive",
+    "docker/tv-station/hls2",
     "cloudflare-worker",
     "node_modules",
     "camofox",
