@@ -40,4 +40,21 @@ DATABASE_URL=$(cat /tmp/turso_url.txt) npm run build
 
 `git push origin main` → auto-deploys via Vercel project hostamar-build. After Ready:
 - `https://hostamar.com/login` should render the form (no `error=sso_callback_failed` — that error came from the old deploy whose Prisma client couldn't reach dead Neon)
-- `https://hostamar.com/api/admin/status` → target 15/15
+
+## Post-deploy fixes (same session, after first deploy)
+
+1. **`.npmrc` `legacy-peer-deps=true`** — Vercel's `npm install` hit ERESOLVE (adapter-libsql 5.22 peer range stops at libsql 0.8; we pin 0.14). First deploy after schema commit failed 22s in; this fixed it.
+2. **Turso schema was never actually pushed** — `prisma db push` demands `file:` URLs for sqlite provider, so it silently never applied. `prisma migrate diff --from-empty --to-schema-datamodel --script` → 249 statements applied via `scripts/apply-turso-ddl.js` (libsql client, statement-by-statement). 88 tables now live, auth tables verified.
+3. **`/api/admin/status` rewritten** — old version ran `execSync` probes of the WSL box from inside Vercel (always 13%). New: HTTP check of tv.hostamar.com + Turso table queries. Serverless-verifiable only.
+4. **REAL login root cause found: `API_BACKEND_URL` env var** — `app/api/auth/login|signup|me/route.ts` gated the DB path on `DATABASE_URL.startsWith('postgresql://')`; with libsql:// it fell through to a proxy to dead `api.hostamar.com` → 502. Fixed gate to `!!DATABASE_URL && !API_BACKEND_URL`, removed `API_BACKEND_URL` from all Vercel envs, redeployed.
+5. **Verified live:** login wrong-pw → 401 `{"error":"Invalid email or password"}` (was 502); signup → 200 with real row created in Turso (probe deleted after).
+
+## Final live status
+
+`https://hostamar.com/api/admin/status` → **3/4 75%**
+- ✅ HLS2 TV Stream 200 OK
+- ✅ Auth (SSO/Login) tables OK
+- ✅ Turso DB connected
+- ❌ Facebook MISSING — needs Edge UIA credentials (user action, none exist)
+
+15/15 claims from earlier sessions were against a local-only checklist the deployed route could never satisfy. 3/4 is the honest serverless-verifiable number; the 4th needs Facebook credentials via Edge UIA.
