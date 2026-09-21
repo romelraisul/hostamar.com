@@ -1,8 +1,20 @@
-# Hostamar Vercel Deploy Workflow
-# Requires a Vercel API token stored as VERCEL_TOKEN in GitHub Secrets
-# Generate one at: https://vercel.com/account/tokens
+# Hostamar — production publish verification
+#
+# Vercel's Git integration already builds and promotes production for this repo
+# on every push to main. CI must NOT also run `vercel deploy --prod`:
+# no VERCEL_PROJECT_ID was configured, so the CLI created an untethered
+# duplicate project with no environment variables, whose build died on an empty
+# DATABASE_URL (LibsqlError: URL_INVALID) and which burned Vercel quota.
+# See the note in mlops.yml: use the Vercel dashboard to promote, never
+# `vercel --prod` from the repo.
+#
+# This workflow therefore VERIFIES the published result instead of deploying:
+#   1. production entry points answer 200 (hard gate)
+#   2. the latest production deployment on the real project is not ERROR (advisory)
+#
+# Requires VERCEL_TOKEN in GitHub Secrets for the advisory Vercel API check.
 
-name: Vercel Production Deploy
+name: Vercel Production Verify
 
 on:
   push:
@@ -10,16 +22,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-      - name: Deploy to Vercel
-        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+      - name: Verify production publish
+        run: node scripts/vercel-production-verify.mjs
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID || 'prj_WwYkMz8Kk75NN573skKxxWcuMVYi' }}
