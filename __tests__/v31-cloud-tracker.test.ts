@@ -70,10 +70,14 @@ describe('V31 heartbeat — tracker → DB (fail-closed auth)', () => {
     const j = await r.json()
     expect(j.ok).toBe(true)
     const row = __getCloudState()
+    // services/gpu are persisted as JSON text (String columns); assert the
+    // stored payload round-trips. The API layer parses them for consumers.
+    const storedServices = typeof row.services === 'string' ? JSON.parse(row.services) : row.services
+    const storedGpu = typeof row.gpu === 'string' ? JSON.parse(row.gpu) : row.gpu
     expect(row.pcOn).toBe(true)
     expect(row.tailscaleIp).toBe('100.68.12.15')
-    expect((row.services as any[]).length).toBe(1)
-    expect((row.gpu as any).utilPct).toBe(100)
+    expect(storedServices.length).toBe(1)
+    expect(storedGpu.utilPct).toBe(100)
   })
 })
 

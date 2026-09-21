@@ -391,7 +391,7 @@ export default function DashboardPage() {
                   <option>gpt-4o • claude-3.5 • gemini-2.5</option>
                 </select>
                 <div className="rounded-xl bg-[#0F172A] text-white p-4 font-mono text-xs">
-                  <div className="text-zinc-500">// Monaco dark — WebContainers</div>
+                  <div className="text-zinc-500">{'// Monaco dark — WebContainers'}</div>
                   <div>console.log(&quot;Hello Hostamar&quot;)</div>
                   <div className="mt-3 flex gap-2"><button className="px-3 py-1.5 rounded-lg bg-[#0E7C3A] text-white">Run -10cr ▶</button><span className="text-zinc-500">terminal: ready</span></div>
                 </div>

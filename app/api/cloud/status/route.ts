@@ -5,6 +5,14 @@ export const maxDuration = 30
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
+/** CloudState stores services/gpu as JSON text in String columns; the
+ *  dashboard and the API contract expect parsed shapes, so normalise on the way out. */
+function asJson<T = unknown>(v: unknown): T | null {
+  if (v == null) return null
+  if (typeof v !== 'string') return v as T
+  try { return JSON.parse(v) as T } catch { return null }
+}
+
 /**
  * GET /api/cloud/status — V31.
  *
@@ -72,9 +80,9 @@ export async function GET(req: NextRequest) {
       lastSeen: row.lastSeen,
       lastSeenAgoSec: Math.round(ageMs / 1000),
       pcUptimeSec: row.pcUptimeSec,
-      gpu: row.gpu,
+      gpu: asJson(row.gpu),
       tailscaleIp: row.tailscaleIp,
-      services: row.services,
+      services: asJson(row.services),
       queuedVideos: pendingQueue,
       cost: '$0 — runs on your PC, electricity only',
     })

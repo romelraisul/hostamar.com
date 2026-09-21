@@ -18,7 +18,6 @@ type Props = {
 
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     preferredSource?: { addPreferredSource?: (domain: string) => void }
   }
 }
@@ -40,7 +39,6 @@ export default function PreferredSourceBadge({ variant = 'standard', theme = 'li
     if (firedRef.current) return
     firedRef.current = true
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const gtag = (window as any).gtag
       if (typeof gtag === 'function') gtag('event', 'preferred_source_click', { source: 'hostamar_badge' })
     } catch {}
