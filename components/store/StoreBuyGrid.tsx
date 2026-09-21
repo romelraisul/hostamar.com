@@ -35,10 +35,12 @@ export default function StoreBuyGrid() {
       .catch(() => setAll([]))
   }, [])
 
-  // Default = 12 flagships; search or "সব দেখাও" unlocks the other 111 (they
-  // had NO buy button — StoreCatalog below still routes to /signup).
+  // FORGE 2026-09-20: default = ALL 123 products. The 12-product cap was the
+  // last backend friction blocking 2-click checkout — 111 catalog items had no
+  // buy button by default and buyers had to hunt for the "সব দেখাও" toggle.
+  // ponytail: one-line slice removal; search still filters, toggle still exists.
   const ql = q.trim().toLowerCase()
-  const shown = ql ? all.filter((p) => p.title.toLowerCase().includes(ql)) : showAll ? all : all.slice(0, 12)
+  const shown = ql ? all.filter((p) => p.title.toLowerCase().includes(ql)) : all
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
