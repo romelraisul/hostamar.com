@@ -28,7 +28,7 @@ jobs:
           JWT_SECRET: dummy
           NEXTAUTH_SECRET: dummy
           NEXTAUTH_URL: https://hostamar.com
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'file:./ci.db' }}
       # Canary/rollback: Vercel dashboard promote (never `vercel --prod` from repo —
       # the CLI recreates the duplicate project and burns quota).
       # Model eval: run scripts/model-smoke.mjs against a PR preview when a
