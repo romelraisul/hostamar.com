@@ -8,7 +8,27 @@ export async function POST(req: Request) {
   // RTX 5060 8GB VRAM AI STUDIO - ComfyUI v0.3.8+ CUDA 12.6
   // Qwen 2.1 = RGBA logo factory (native transparent RGBA, no Photoshop needed)
   // MiniMax H3 NF4 = Ref2Video + native stereo audio (10 refs, turbo LoRA)
+  // Laya = Decision router Jev free alt (33ms, 1GB RAM, Apache 2.0)
   // Golden rule: Qwen + MiniMax can't share VRAM at the same time
+
+  if (type === 'laya') {
+    return NextResponse.json({
+      clarification: 'এবার ক্লিয়ার হলো! তুমি যে রিলটা দিয়েছো ওটা GF মডেল না, Laya মডেলের। ওই রিলে যাকে দেখছো Mahan Jafari - ও Laya কে প্রমোট করছে, যেটা হলো Jev এর ওপেন-সোর্স, পুরোপুরি ফ্রী অল্টারনেটিভ।',
+      brand: 'hostamar.com', product: 'Video OS + Agent Cloud Decision Router — Laya Jev Free Alt',
+      model: 'Laya — Open Source Jev Alternative Apache 2.0 — NandhaKishor M',
+      details: {
+        speed: '33ms single forward pass, T4 GPU 32.8ms vs Jev 236-276ms 7x faster — runs under 1GB RAM',
+        accuracy: '0.766 typed-decisions benchmark vs Jev 0.727',
+        license: 'Apache 2.0 weights on Hugging Face Convai Innovations',
+        jev_closed: 'Jev by TypeSafe AI Diogo Almeida Sep 2026 — no papers, no weights, no datasets — $0.042/M',
+        laya_open: 'Laya 7x faster 33ms vs 150ms — 0.766 vs 0.727 accuracy — Self-hosted $0 inference cost',
+        usage: 'Decision routing: Is customer angry? 0.9 probability — route Qwen logo → MiniMax filler → Laya decision',
+        repo: 'https://github.com/NandhaKishorM/laya',
+      },
+      download: { huggingface: 'Laya weights Apache 2.0', local: '~/ComfyUI/models/laya — WSL ONLY' },
+      wsl_only: 'WSL ~/ not /mnt/c — Windows C: no space — ext4.vhdx',
+    }, { headers: { 'Access-Control-Allow-Origin': '*' } })
+  }
 
   if (type === 'qwen-logo') {
     return NextResponse.json({
