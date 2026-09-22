@@ -167,6 +167,35 @@ function looksLikeCot(t: string): boolean {
     return { text: txt, model: m, provider: 'kilo-edge' };
   };
 
+  // V47: OmniRoute local — your PC as VPS (Cloudflare Tunnel hostamar-local -> :20128)
+  // Zero cost: self-healed verified-good model, only works when WSL is running.
+  const OMNI_URL = 'https://omni.hostamar.com/v1';
+  const omniCall = (capMs?: number) => async (): Promise<Res> => {
+    const bestModel = process.env.OMNI_BEST_MODEL || 'nvidia/meta/llama-3.2-11b-vision-instruct';
+    const r = await fetch(`${OMNI_URL}/chat/completions`, {
+      method: 'POST',
+      signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer sk-hostamar-wsl-2026' },
+      body: JSON.stringify({ model: bestModel, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
+    });
+    if (!r.ok) throw new Error(`omni ${r.status}`);
+    const j: any = await r.json();
+    const rawChoice = j.choices?.[0];
+    if (rawChoice?.message?.tool_calls?.length) {
+      return {
+        text: '',
+        model: bestModel,
+        provider: 'hostamar-pc-vps',
+        message: rawChoice.message,
+        finish_reason: rawChoice.finish_reason || 'tool_calls',
+      };
+    }
+    const choice = rawChoice?.message;
+    const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
+    if (!rawTxt) throw new Error('empty');
+    return { text: rawTxt, model: bestModel, provider: 'hostamar-pc-vps' };
+  };
+
   // PAID selection first — never silently swap the user's chosen model.
   if (wanted) {
     if (isHostamarModel) {
@@ -198,6 +227,8 @@ function looksLikeCot(t: string): boolean {
     attempts.push({ name: `kilocode:${m}`, fn: kilocodeCall(m) });
     attempts.push({ name: `edge:${m}`, fn: edgeCall(m) });
   }
+  // V47: OmniRoute local PC-VPS after free tiers — zero cost, requires WSL up
+  attempts.push({ name: 'hostamar-pc-vps:omni', fn: omniCall(12_000) });
 
   // V100: with tools in play, try the kilocode gateway slots FIRST — kilo.ai
   // is OpenAI-compatible and forwards tools to the underlying model. Plain
