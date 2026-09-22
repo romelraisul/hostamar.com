@@ -143,6 +143,12 @@ export async function middleware(request: NextRequest) {
     '/api/v1',
     '/api/v1/models',
     '/api/v1/chat/completions',
+    '/api/v1/final-goal',
+    '/api/v1/chat-all-answers',
+    '/api/v1/good-models',
+    '/api/agent/run',
+    '/api/video-os/render',
+    '/api/gpu-spot/list',
     '/api/showcase',
     '/api/showcase/:path*',
     // V25 AI Reel — public preview via x-user-id; full features require login.
