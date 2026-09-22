@@ -14,6 +14,8 @@ export default function ChatOsClient({ user }: { user: any }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<any>(null)
+  const [best, setBest] = useState('llama-3.2-11b-vision-instruct')
+  const [omniUp, setOmniUp] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(()=>{
@@ -21,6 +23,19 @@ export default function ChatOsClient({ user }: { user: any }) {
     setAutonomous(v==='true')
     fetchHistory()
     fetchStatus()
+    // V47: check if OmniRoute PC-VPS tunnel is up (zero cost local model)
+    fetch('https://omni.hostamar.com/v1/models', {
+      headers: { 'Authorization': 'Bearer sk-hostamar-wsl-2026' },
+      signal: AbortSignal.timeout(5000)
+    }).then(r => r.json()).then(d => {
+      if (d?.data?.length) {
+        setOmniUp(true)
+        // Pick fastest verified-good model from self-heal list
+        fetch('/api/v1/good-models').then(r => r.json()).then(g => {
+          if (g?.data?.[0]?.id) setBest(g.data[0].id)
+        }).catch(() => {})
+      }
+    }).catch(() => setOmniUp(false))
   },[])
 
   useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:'smooth'}) },[messages])
@@ -138,7 +153,7 @@ export default function ChatOsClient({ user }: { user: any }) {
           <button onClick={send} disabled={loading} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg text-sm flex items-center gap-1"><Send size={14}/>Send</button>
         </div>
         <div className="px-3 py-1.5 text-[10px] text-zinc-600 border-t border-zinc-900 flex gap-3">
-          <span>⛓️ Conductor: hostamar-build nr0m6sbnr → next (one-push)</span><span>•</span><span>B2 005a26c99e410200000000001 s3.us-east-005 ✅</span><span>•</span><span>TV 20 ✅ Storage 0/5GB</span>
+          <span className="flex items-center gap-1"><span className={`w-1.5 h-1.5 rounded-full ${omniUp ? 'bg-green-500' : 'bg-red-500'}`}/>PC-VPS {omniUp ? `LIVE ${best}` : 'down'}</span><span>•</span><span>Fleet 19 | 3 products | Year1-2 $3M ARR → trillion</span>
         </div>
       </div>
 
