@@ -148,6 +148,7 @@ export async function middleware(request: NextRequest) {
     '/api/v1/good-models',
     '/api/agent/run',
     '/api/video-os/render',
+    '/api/video-os/comfyui',
     '/api/gpu-spot/list',
     '/api/billing/checkout',
     '/api/marketing/first10',
