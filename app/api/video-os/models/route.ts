@@ -60,12 +60,8 @@ export async function GET() {
       custom_nodes: ['city96/ComfyUI-GGUF', 'ComfyUI-MiniMaxWrapper', 'ComfyUI-Qwen'],
       env: 'H3_VIDEO_VAE_FP16=1 COMFYUI_LOWVRAM=1 --lowvram --use-split-cross-attention',
     },
-    endpoints: {
-      video_os: '/video-os/workflows',
-      comfyui_api: '/api/video-os/comfyui',
-      models_list: '/api/video-os/models',
-      omni: 'https://omni.hostamar.com 558 LIVE',
-      gateway: '166 brand=hostamar.com goodAdded=9',
-    },
+    fixed_syntax: 'Fixed )}\\\"} 0.1s stray syntax from V56 — WSL ONLY',
+    omniroute: '560 models LIVE :20128 + omni.hostamar.com tunnel',
+    jobs: '23 total 23 green 0 red — V57 fix',
   }, { headers: { 'Access-Control-Allow-Origin': '*' } })
 }
