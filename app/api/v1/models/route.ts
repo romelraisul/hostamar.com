@@ -20,18 +20,32 @@ import { MODELS_95 } from '@/lib/gateway/95-models'
 import { fetchAllFreeModels } from '@/lib/free-model-router'
 import { getHealth } from '@/lib/model-health'
 
+// V47: also pull the hourly self-healed "good models" list (live 200-OK verified)
+import { Redis } from '@upstash/redis'
+const modelRedis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
+  : null
+const GOOD_MODELS_KEY = 'omnirouter:good-models'
+type GoodEntry = { id: string; ms: number; base: string }
+async function getGoodModels(): Promise<GoodEntry[]> {
+  if (!modelRedis) return []
+  try { return await modelRedis.get<GoodEntry[]>(GOOD_MODELS_KEY) ?? [] } catch { return [] }
+}
+
 export const maxDuration = 15
 
 export async function GET(_req: NextRequest) {
   // V74: KV catalog + live free-model discovery in parallel — the 120-model
   // catalog is enriched with the hourly free shortlist (kilo/openrouter/
   // opencode zen/tokenrouter) so /api/v1 lists ALL free top-quality models.
-  const [edgeP, freeP, healthP] = await Promise.all([
+  // V47: goodModels = hourly self-healed verified-working models (brand promise).
+  const [edgeP, freeP, healthP, goodModels] = await Promise.all([
     fetch(EDGE_MODELS_URL, { signal: AbortSignal.timeout(4000), cache: 'no-store' })
       .then(r => (r.ok ? r.json() : null))
       .catch(() => null),
     fetchAllFreeModels().catch(() => [] as Awaited<ReturnType<typeof fetchAllFreeModels>>),
     getHealth(),
+    getGoodModels(),
   ])
   // V41: filter out models the hourly health-checker marked down.
   // Unknown models (not yet probed) stay listed — probe is rotating, absence of data ≠ down.
@@ -58,8 +72,22 @@ export async function GET(_req: NextRequest) {
         price: 0,
       }))
     const data = onlyHealthy([...edgeP.data, ...extras])
+    // V47: merge verified-good models (hourly self-healed) and add brand
+    const goodExtras = goodModels
+      .filter((g: GoodEntry) => !kvIds.has(g.id) && !data.find((m: any) => m.id === g.id))
+      .map((g: GoodEntry) => ({
+        id: g.id,
+        object: 'model',
+        owned_by: 'hostamar',
+        display_name: g.id,
+        context: 32768,
+        context_length: 32768,
+        free: true,
+        verified_ms: g.ms,
+      }))
+    const merged = [...data, ...goodExtras]
     return NextResponse.json(
-      { object: 'list', data, source: edgeP.source || 'kv', freeAdded: extras.length, healthFiltered: down.size },
+      { object: 'list', data: merged, source: edgeP.source || 'kv', freeAdded: extras.length, healthFiltered: down.size, brand: 'hostamar.com', goodAdded: goodExtras.length },
       { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
     )
   }
