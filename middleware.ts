@@ -149,6 +149,8 @@ export async function middleware(request: NextRequest) {
     '/api/agent/run',
     '/api/video-os/render',
     '/api/gpu-spot/list',
+    '/api/billing/checkout',
+    '/api/marketing/first10',
     '/api/showcase',
     '/api/showcase/:path*',
     // V25 AI Reel — public preview via x-user-id; full features require login.
