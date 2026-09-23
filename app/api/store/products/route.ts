@@ -16,7 +16,7 @@ import { NextResponse } from 'next/server'
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
 export async function GET() {
-  const base = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers' + '.dev'
+  const base = process.env.MEDUSA_URL || 'https://store.hostamar.com'
   const pk = process.env.MEDUSA_PK
   if (!pk) return NextResponse.json({ error: 'not configured' }, { status: 500 })
   try {
