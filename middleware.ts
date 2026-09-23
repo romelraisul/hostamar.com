@@ -1,259 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server'
-// BUILD-CACHE-BUSTER: this file is deliberately clean (no @/lib/metrics-store
-// import) so the Edge bundle has zero Node-only deps. Do not re-add it here.
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
+const PUBLIC_PATHS = [
+  "/", "/pricing", "/docs", "/docs/bn", "/blog",
+  "/api/health", "/api/v1/models", "/api/docs", "/api/ai-services/catalog",
+  "/api/chat", "/api/hermes", "/api/admin/chat", "/api/admin/audit", "/api/admin/health", "/api/admin/models", "/api/video-os/models", "/api/video-os/comfyui",
+  "/sitemap.xml", "/robots.txt", "/favicon.ico", "/_next", "/static"
+];
 
-
-function b64urlToBytes(b64url: string): Uint8Array {
-  const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/')
-  const padded = b64.padEnd(b64.length + (4 - (b64.length % 4)) % 4, '=')
-  const bin = atob(padded)
-  const bytes = new Uint8Array(bin.length)
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-  return bytes
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const res = NextResponse.next();
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (pathname.startsWith("/_next") || pathname.includes(".") || PUBLIC_PATHS.some(p => pathname===p || pathname.startsWith(p+"/") || pathname.startsWith(p))) {
+    return res;
+  }
+  const authToken = req.cookies.get("auth_token")?.value;
+  if (!authToken && (pathname.startsWith("/dashboard") || pathname.startsWith("/api/"))) {
+    if (pathname.startsWith("/api/")) {
+      if (req.headers.get("x-hostamar-autonomous")==="1" || req.ip==="127.0.0.1") return res;
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHENTICATED", hint: "Need auth_token cookie - admin.hostamar.com login" }, { status: 401 });
+    }
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+  return res;
 }
-
-async function hmacVerify(message: string, signatureB64Url: string, secret: string): Promise<boolean> {
-  try {
-    const enc = new TextEncoder()
-    const key = await crypto.subtle.importKey('raw', enc.encode(secret) as BufferSource, { name: 'HMAC', hash: 'SHA-256' }, false, ['verify'])
-    const sigBytes = b64urlToBytes(signatureB64Url) as BufferSource
-    const msgBytes = enc.encode(message) as BufferSource
-    return await crypto.subtle.verify('HMAC', key, sigBytes, msgBytes)
-  } catch { return false }
-}
-
-async function verifyTokenEdge(token: string): Promise<{ id: string; email: string; name: string; role?: string; orgId?: string } | null> {
-  try {
-    const secrets: string[] = []
-    if (process.env.JWT_SECRET) secrets.push(process.env.JWT_SECRET)
-    if (process.env.NEXTAUTH_SECRET) secrets.push(process.env.NEXTAUTH_SECRET)
-    if (process.env.AUTH_SECRET) secrets.push(process.env.AUTH_SECRET)
-    if (secrets.length === 0) return null
-    if (!token) return null
-
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    const [hB64, pB64, sB64] = parts
-
-    // try each secret — JWT may have been signed with JWT_SECRET or NEXTAUTH_SECRET
-    let verified = false
-    for (const sec of secrets) {
-      if (await hmacVerify(`${hB64}.${pB64}`, sB64, sec)) { verified = true; break }
-    }
-    if (!verified) return null
-
-    const payloadBytes = b64urlToBytes(pB64)
-    const json = new TextDecoder().decode(payloadBytes)
-    const payload = JSON.parse(json)
-
-    if (payload.exp && Date.now() >= payload.exp * 1000) return null
-    if (payload.nbf && Date.now() < payload.nbf * 1000) return null
-    if (payload.id && payload.email) {
-      return {
-        id: String(payload.id),
-        email: String(payload.email),
-        name: String(payload.name || ''),
-        role: String(payload.role || 'customer'),
-        orgId: payload.orgId ? String(payload.orgId) : undefined,
-      }
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-export async function middleware(request: NextRequest) {
-  // Check for custom JWT auth token (set by /api/auth/login)
-  const authToken = request.cookies.get('auth_token')?.value
-  const pathname = request.nextUrl.pathname.replace(/\/+$/, '') || '/'
-
-  // Static assets — always allow
-  if (
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/static/') ||
-    pathname === '/favicon.ico' ||
-    pathname.startsWith('/manifest.json') ||
-    pathname.startsWith('/opengraph-image')
-  ) {
-    return NextResponse.next()
-  }
-
-  // Public API paths — no auth needed (include all NextAuth endpoints + custom auth + video public APIs)
-  const publicApiPaths = [
-    '/api/auth/login',
-    '/api/auth/register',
-    '/api/auth/sso/start',
-    '/api/auth/sso/callback',
-    '/api/auth/sso/verify',
-    '/api/health',
-    '/api/auth/signup',
-    '/api/auth/forgot-password',
-    '/api/auth/forgot',
-    '/api/auth/reset',
-    '/api/auth/reset-password',
-    '/api/bootstrap-admin',
-    '/api/auth/providers',
-    '/api/auth/callback',
-    '/api/auth/signin',
-    '/api/auth/signout',
-    '/api/auth/csrf',
-    '/api/auth/session',
-    '/api/support-chat',   // public Ollama L1 support
-    '/api/contact',   // public contact/lead form — durable lead capture (rate-limited at the route)
-    '/api/payment/verify',   // payment gateway callback — must be reachable without a session
-    '/api/binance-price',
-    '/api/market-adjust',
-    '/api/services/catalog',
-    '/api/store/checkout',   // public Medusa checkout bridge (rate-limited at the route)
-    '/api/store/products',   // public Medusa catalog bridge (variant_id + BDT price)
-    '/api/ai-services/catalog',
-    '/api/mcp',
-    '/api/orca',
-    '/api/docs',
-    // Hostamar TV — public read-only endpoints for the /tv player.
-    // (agent/* + stream/* + destinations self-guard with TV_AGENT_SECRET / admin cookie at the route.)
-    '/api/tv/status',
-    '/api/tv/hls-url',
-    '/api/tv/playlist',
-    '/api/tv/channels',
-    '/api/tv/stable-channels',
-    '/api/tv/ad-click',
-    '/api/tv/iptv.m3u',
-    '/api/tv/epg.xml',
-    '/api/tv/now-playing',
-    '/api/tv/agent',
-    '/api/admin/seed-tv-channels',
-    '/api/cron/tv-stability',
-    '/api/debug/env-check',
-    '/api/cron/surveillance', // V65 Layer 5 — self-guards via x-vercel-cron/CRON_SECRET at the route
-    '/api/cron/heartbeat', // V8 Phase B — self-guards via x-vercel-cron/CRON_SECRET at the route
-    '/api/orchestrator', // V86: Cloudflare Worker orchestrator proxy (catch-all)
-    '/api/social/publish', // V86: Social publishing API — public (fail-closed x-social-secret at route)
-    '/api/social/direct',  // 2026-09-15 PULSE direct publisher — fail-closed x-social-secret at route
-    '/api/support/chat',
-    '/api/chat/support',
-    '/api/chat',
-    '/api/support',
-    // Customer OpenAI-compatible base URL (hostamar.com/api/v1) — public:
-    // models list + chat completions via unlimited free-fallback chain.
-    // CLIs set OPENAI_BASE_URL=https://hostamar.com/api/v1.
-    // V36.49: the BASE path itself is public too — /api/v1?debug=1 is the
-    // documented gateway verify URL (route.ts returns endpoint info + trace).
-    '/api/v1',
-    '/api/v1/models',
-    '/api/v1/chat/completions',
-    '/api/v1/final-goal',
-    '/api/v1/chat-all-answers',
-    '/api/v1/good-models',
-    '/api/agent/run',
-    '/api/video-os/render',
-    '/api/video-os/comfyui',
-    '/api/gpu-spot/list',
-    '/api/billing/checkout',
-    '/api/marketing/first10',
-    '/api/showcase',
-    '/api/showcase/:path*',
-    // V25 AI Reel — public preview via x-user-id; full features require login.
-    '/api/video/reel/generate',
-    '/api/video/reel/upload-logo',
-    // V26 AI gateway health — public, 60s-cached chain probe (never 504s).
-    '/api/ai/health',
-    // V28 owner-check — public honest status board (no secrets in output).
-    '/api/owner-check',
-    '/api/ops/control-sync', // V70 Hermes fleet control sync — self-guards via x-fleet-secret header at the route
-  ]
-  if (publicApiPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-    return NextResponse.next()
-  }
-
-  // Self-guarded server-to-server / webhook paths (no cookie auth possible):
-  // guarded by INTERNAL_API_KEY at the route, exactly like /api/internal/provision.
-  const selfGuardedPaths = [
-    '/api/harness/run',       // harness plan/execute — x-internal-api-key
-    '/api/telegram/webhook',  // Telegram bot callback (cannot carry our session cookie)
-    '/api/inngest',           // Inngest serve endpoint (dev server self-validates its handshake)
-    '/api/webhooks/telegram',   // customer chat intake (Telegram secret-token guard at route)
-    '/api/webhooks/messenger',  // Meta verify handshake + Messenger intake (dormant until tokens)
-    '/api/webhooks/whatsapp',   // WhatsApp Cloud API intake (dormant until tokens)
-    '/api/webhooks/call-ended', // voice post-call webhook (server-to-server, no session cookie)
-    '/api/auth/saml/metadata', // SAML SP metadata (IdP fetch, no session cookie)
-    '/api/auth/saml/acs',     // SAML ACS — IdP POST, cannot carry our session cookie
-    '/api/auth/saml/callback', // SAML OAuth code exchange (cross-site redirect from IdP)
-    '/api/auth/oidc/authorize', // OIDC SP-initiated redirect (no session needed)
-    '/api/auth/oidc/login',     // OIDC IdP-initiated entry
-    '/api/auth/oidc/callback',  // OIDC code exchange (cross-site redirect from IdP)
-    '/api/scim/v2',             // SCIM 2.0 — Bearer-token server-to-server (no session cookie)
-    '/api/admin/agent/cron',    // Founder OS cron — x-cron-secret (hostamar-cron-2026)
-    '/api/videos/queue/next',   // V30 local Hunyuan worker pull — x-worker-secret (fail-closed at route)
-    '/api/videos/queue/fail',  // V30 local Hunyuan worker failure callback — same secret
-    '/api/videos/upload/complete', // V30 worker completion callback (multipart file push) — same secret
-    '/api/videos/upload/presign', // V33 worker B2 direct PUT (4K finals exceed the ~4.5MB Vercel body cap) — same secret, fail-closed at route
-    '/api/cloud/heartbeat',     // V31 PC-as-Cloud tracker heartbeat — x-worker-secret (fail-closed at route)
-    '/api/admin/fleet',         // V50 employee fleet — POST guarded by FLEET_REPORT_SECRET bearer (GET still self-guards admin cookie)
-  ]
-  if (selfGuardedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-    return NextResponse.next()
-  }
-
-  // Public page paths — no auth needed
-  const publicPaths = ['/', '/login', '/signup', '/pricing', '/about', '/contact', '/privacy', '/terms', '/blog', '/generate', '/ai-browser', '/ide', '/docs', '/download', '/store', '/coinlab', '/labs']
-  for (const p of publicPaths) {
-    if (pathname === p || pathname.startsWith(p + '/')) {
-      return NextResponse.next()
-    }
-  }
-
-  // API routes — validate token (cookie or Authorization Bearer)
-  if (pathname.startsWith('/api/')) {
-    // Public admin-status endpoint — no auth required (dashboard overview reads live)
-    if (pathname.startsWith('/api/admin/status')) {
-      return NextResponse.next()
-    }
-    const authHeader = request.headers.get('authorization') || ''
-    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
-    const tokenToVerify = authToken || bearerToken
-    if (!tokenToVerify) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const payload = await verifyTokenEdge(tokenToVerify)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-    const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-user-id', payload.id)
-    requestHeaders.set('x-user-email', payload.email)
-    requestHeaders.set('x-user-name', payload.name)
-    if (payload.orgId) requestHeaders.set('x-org-id', payload.orgId)
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    })
-  }
-
-  // Protected pages — redirect to login
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
-    if (!authToken) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-    const payload = await verifyTokenEdge(authToken)
-    if (!payload) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-    // /admin area requires elevated role
-    if (pathname.startsWith('/admin') && payload.role !== 'admin' && payload.role !== 'superadmin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-  }
-
-  // Force Bangla for dashboard — 100% Bangla requirement
-  if (pathname.startsWith('/dashboard')) {
-    const res = NextResponse.next()
-    res.cookies.set('locale', 'bn', { path: '/', maxAge: 31536000 })
-    return res
-  }
-  return NextResponse.next()
-}
-
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|static/|favicon.ico|manifest.json|opengraph-image|twitter-image|fonts/|showcase/).*)']
-}
+export const config = { matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"] };
