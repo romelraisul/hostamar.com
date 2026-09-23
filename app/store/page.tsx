@@ -196,75 +196,75 @@ export default function StorePage() {
       </div>
 
       {/* FREESTACK 10 Repos - Hyperautomation Labs */}
-      <div className="mt-16 border-t-2 border-green-500/30 pt-10">
+      <div className="mt-16 border-t-2 border-[#0e7c3a]/20 pt-10">
         <div className="flex flex-wrap justify-between items-center mb-4">
           <div>
-            <div className="text-xs font-bold tracking-widest text-yellow-400">FREESTACK — Hyperautomation Labs</div>
+            <div className="text-xs font-bold tracking-widest text-[#0E7C3A]">FREESTACK — Hyperautomation Labs</div>
             <h2 className="text-3xl font-bold mt-1">10 Repos So Good They Shouldn't Be Free</h2>
-            <p className="text-gray-400 text-sm mt-2 max-w-2xl">হাজার ডলারের paid SaaS এর free open-source alternative — কমেন্টে FREESTACK লিখলে free PDF guide — 100% free & open source but most need API key / Cloudflare Paid plan, trading educational only</p>
+            <p className="text-[#57534e] text-sm mt-2 max-w-2xl">হাজার ডলারের paid SaaS এর free open-source alternative — কমেন্টে FREESTACK লিখলে free PDF guide — 100% free & open source but most need API key / Cloudflare Paid plan, trading educational only</p>
           </div>
           <div className="flex gap-2 mt-2">
-            <a href="/freestack" className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">/freestack 200</a>
-            <a href="/api/freestack" className="text-xs bg-zinc-800 text-white px-3 py-1 rounded hover:bg-zinc-700">/api/freestack 200</a>
+            <a href="/freestack" className="text-xs bg-[#0E7C3A] text-white px-3 py-1 rounded hover:bg-[#0a5e2c]">/freestack 200</a>
+            <a href="/api/freestack" className="text-xs bg-white border px-3 py-1 rounded hover:bg-[#fbf4e4]">/api/freestack 200</a>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#01 AutoHedge</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Quant Trading Desk $10k+/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#01 AutoHedge</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Quant Trading Desk $10k+/mo</span></div>
             <p className="text-sm">4 AI Agent Director Quant Risk Manager Execution দিয়ে Solana autonomous hedge fund pip install autohedge live trading</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: Old+New+Laya together</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: Old+New+Laya together</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#02 Vibe-Trading</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Trading Terminal $500/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#02 Vibe-Trading</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Trading Terminal $500/mo</span></div>
             <p className="text-sm">DAG-based multi-agent trading floor 77 finance skill 29 agent swarm 452+ alpha Bull vs Bear debate</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: 603 LIVE models</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: 603 LIVE models</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#03 Fincept Terminal</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Bloomberg $27,000/year</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#03 Fincept Terminal</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Bloomberg $27,000/year</span></div>
             <p className="text-sm">ল্যাপটপে চলে 37 AI investor agent 100+ data connector CFA-level analytics Wall Street free alt</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: OmniRoute :20128</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: OmniRoute :20128</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#04 LibreChat</span><span className="text-xs bg-red-900 px-2 py-1 rounded">ChatGPT Plus $20/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#04 LibreChat</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">ChatGPT Plus $20/mo</span></div>
             <p className="text-sm">নিজের সার্ভারে hosted ChatGPT clone ChatGPT Claude Gemini Groq own API key</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: hermes-gateway 264MB</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: hermes-gateway 264MB</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#05 Open Generative AI</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Midjourney+Runway+Sora $60+/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#05 Open Generative AI</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Midjourney+Runway+Sora $60+/mo</span></div>
             <p className="text-sm">200+ models Flux Midjourney Kling Sora Veo one dashboard text-to-image video lip-sync</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: Qwen 2.1 + MiniMax 978 nodes</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: Qwen 2.1 + MiniMax 978 nodes</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#06 Open-LLM-VTuber</span><span className="text-xs bg-red-900 px-2 py-1 rounded">AI Companion $10+/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#06 Open-LLM-VTuber</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">AI Companion $10+/mo</span></div>
             <p className="text-sm">Offline voice AI friend screen see Live2D avatar — ComfyUI local LLM Qwen2.5-0.5B</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: ComfyUI :8188</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: ComfyUI :8188</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#07 Claude Ads</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Agency Ad Audit $4,000/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#07 Claude Ads</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Agency Ad Audit $4,000/mo</span></div>
             <p className="text-sm">Claude Code skill Google Meta YouTube LinkedIn TikTok Microsoft Ads 190+ checks 6 agents parallel health score</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: hostamar.com automation</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: hostamar.com automation</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#08 Agentic Inbox</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Superhuman $30/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#08 Agentic Inbox</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Superhuman $30/mo</span></div>
             <p className="text-sm">Cloudflare Workers AI email triage reply draft Durable Object isolated — Hostamar already has Workers</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: Workers KV D1 Queues</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: Workers KV D1 Queues</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#09 Camofox</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Stealth Scraping $200/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#09 Camofox</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Stealth Scraping $200/mo</span></div>
             <p className="text-sm">AI agents anti-detection browser Cloudflare bot bypass Puppeteer Playwright drop-in for browser.hostamar.com</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: browser.hostamar.com</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: browser.hostamar.com</p>
           </div>
-          <div className="border border-green-500/30 bg-zinc-900 p-4 rounded-lg">
-            <div className="flex justify-between items-start mb-2"><span className="text-green-400 font-bold">#10 Hyperframes</span><span className="text-xs bg-red-900 px-2 py-1 rounded">Video Render SaaS $100+/mo</span></div>
+          <div className="border bg-[#fffdf6] p-4 rounded-lg shadow-[5px_5px_0_#1c1917]">
+            <div className="flex justify-between items-start mb-2"><span className="text-[#0E7C3A] font-bold">#10 Hyperframes</span><span className="text-xs bg-[#fbeac6] text-[#92400e] px-2 py-1 rounded">Video Render SaaS $100+/mo</span></div>
             <p className="text-sm">Agent HTML/CSS/JS deterministic MP4 headless Chrome FFmpeg GSAP Lottie Three.js — Bogura TV Factory 10 min</p>
-            <p className="text-xs text-gray-500 mt-2">Hostamar: Bogura TV factory lower third</p>
+            <p className="text-xs text-[#57534e] mt-2">Hostamar: Bogura TV factory lower third</p>
           </div>
         </div>
 
-        <div className="mt-6 p-4 border border-green-500 rounded bg-green-900/10">
+        <div className="mt-6 p-4 border-2 border-[#0e7c3a] rounded bg-[#fffdf6]">
           <h3 className="font-bold mb-2">Hostamar Integration — WSL ONLY NOT /mnt/c — Old+New+Laya+Freestack Together</h3>
-          <p className="text-sm text-gray-300">Qwen 2.1 RGBA logo factory 1024x256 + MiniMax H3 16GB ref2video stereo audio + openJev-verdict-2.0 149.6M 77.10% decision router + Jeff TypeSafe SDK + Camofox browser + Hyperframes HTML→MP4 + Agentic Inbox Workers + ComfyUI :8188 978 nodes + OmniRoute :20128 603 LIVE + 422GB free</p>
+          <p className="text-sm text-[#1c1917]">Qwen 2.1 RGBA logo factory 1024x256 + MiniMax H3 16GB ref2video stereo audio + openJev-verdict-2.0 149.6M 77.10% decision router + Jeff TypeSafe SDK + Camofox browser + Hyperframes HTML→MP4 + Agentic Inbox Workers + ComfyUI :8188 978 nodes + OmniRoute :20128 603 LIVE + 422GB free</p>
         </div>
       </div>
     </div>

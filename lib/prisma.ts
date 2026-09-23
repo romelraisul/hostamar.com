@@ -24,7 +24,21 @@ const prismaClientSingleton = () => {
   })
 }
 
-export const prisma = globalForPrisma.prisma ?? prismaClientSingleton()
+// ponytail: lazy Proxy init — build-time page-data collection imports this module
+// with no DATABASE_URL (Vercel-only var), and eager createClient({url:''}) throws.
+// Upgrade path: plain singleton if DATABASE_URL is always present at import time.
+function getPrisma(): PrismaClient {
+  if (!globalForPrisma.prisma) globalForPrisma.prisma = prismaClientSingleton()
+  return globalForPrisma.prisma
+}
+
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getPrisma()
+    const value = Reflect.get(client, prop, receiver)
+    return typeof value === 'function' ? value.bind(client) : value
+  },
+}) as PrismaClient
 
 if (env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
