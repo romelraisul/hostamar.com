@@ -5,6 +5,7 @@
 // builder prerender bug on internal error pages). Sentry runtime reporting can
 // be re-enabled here once the build is green.
 const nextConfig = {
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
