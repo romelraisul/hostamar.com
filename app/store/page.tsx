@@ -206,6 +206,8 @@ export default function StorePage() {
           <div className="flex gap-2 mt-2">
             <a href="/freestack" className="text-xs bg-[#0E7C3A] text-white px-3 py-1 rounded hover:bg-[#0a5e2c]">/freestack 200</a>
             <a href="/api/freestack" className="text-xs bg-white border px-3 py-1 rounded hover:bg-[#fbf4e4]">/api/freestack 200</a>
+            <a href="/api/decision" className="text-xs bg-white border px-3 py-1 rounded hover:bg-[#fbf4e4]">/api/decision — openJev v2</a>
+            <a href="/api/video-os/qwen-rgba?repo=Hostamar" className="text-xs bg-white border px-3 py-1 rounded hover:bg-[#fbf4e4]">Qwen RGBA 1024x256</a>
           </div>
         </div>
 
