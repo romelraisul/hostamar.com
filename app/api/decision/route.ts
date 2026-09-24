@@ -24,7 +24,9 @@ export async function POST(req: Request) {
   const decision = DECISION_MAP[repo as keyof typeof DECISION_MAP] || { old: 0.33, new: 0.33, laya: 0.34, model: 'auto' }
   return NextResponse.json({
     model: 'openJev-verdict-2.0',
-    weights: { safetensors: 605529340, onnx: 606323181, fp16_onnx: 303785047, verified: true, path: OPENJEV_MODEL, upstream: 'heman10x/rlcd-modernbert-151m' },
+    // ponytail: model.onnx (606,323,181) NOT on disk — only model_fp16.onnx
+    // (303,785,047) + model.safetensors (605,529,340) verified. onnx=0 until downloaded.
+    weights: { safetensors: 605529340, onnx: 0, fp16_onnx: 303785047, verified: true, path: OPENJEV_MODEL, upstream: 'heman10x/rlcd-modernbert-151m' },
     decision,
     reasoning: `openJev 77.10% > Laya 76.60% - routes ${repo || prompt} to ${decision.model}`,
     replaces: 'Laya 401 NandhaKishorM/laya private invite',
