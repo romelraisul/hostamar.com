@@ -26,9 +26,7 @@ export default function StoreBuyGrid() {
   const [err, setErr] = useState('')
 
   useEffect(() => {
-    fetch('/api/store/products', {
-      headers: { 'x-publishable-api-key': 'pk_8aab3...a6ad' }
-    })
+    fetch('/api/store/products')
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d) => {
         const list: Prod[] = (d.products || []).filter((p: Prod) => p.amountBdt > 0)
