@@ -34,20 +34,39 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
 async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
-  const base = process.env.MEDUSA_URL || 'https://store.hostamar.com'
   const pk = process.env.MEDUSA_PK || 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'
   if (!pk) throw new Error('MEDUSA_PK not set')
-  const res = await fetch(`${base}/store${path}`, {
-    ...init,
-    headers: { 'x-publishable-api-key': pk, 'user-agent': 'HostamarStorefront/1.0 (Vercel SSR)', ...(init?.json ? { 'Content-Type': 'application/json' } : {}) },
-    body: init?.json ? JSON.stringify(init.json) : undefined,
-    signal: AbortSignal.timeout(25_000),
-  })
-  const text = await res.text()
-  let data: any = {}
-  try { data = JSON.parse(text) } catch { throw new Error(`medusa ${path} -> ${res.status} ${text.slice(0, 120)}`) }
-  if (!res.ok) throw new Error(`medusa ${path} -> ${res.status} ${data.message || text.slice(0, 120)}`)
-  return data
+
+  // FORGE 2026-09-25: MEDUSA_URL points to broken CF Workers bridge (exit -1).
+  // store.hostamar.com is the actual Medusa storefront and works.
+  // Try bridge first (if configured), fall back to store.hostamar.com on failure.
+  const bridgeUrl = process.env.MEDUSA_URL
+  const primaryBase = bridgeUrl || 'https://store.hostamar.com'
+  const fallbackBase = bridgeUrl ? 'https://store.hostamar.com' : null
+
+  async function tryFetch(base: string) {
+    const res = await fetch(`${base}/store${path}`, {
+      ...init,
+      headers: { 'x-publishable-api-key': pk, 'user-agent': 'HostamarStorefront/1.0 (Vercel SSR)', ...(init?.json ? { 'Content-Type': 'application/json' } : {}) },
+      body: init?.json ? JSON.stringify(init.json) : undefined,
+      signal: AbortSignal.timeout(25_000),
+    })
+    const text = await res.text()
+    let data: any = {}
+    try { data = JSON.parse(text) } catch { throw new Error(`medusa ${path} -> ${res.status} ${text.slice(0, 120)}`) }
+    if (!res.ok) throw new Error(`medusa ${path} -> ${res.status} ${data.message || text.slice(0, 120)}`)
+    return data
+  }
+
+  try {
+    return await tryFetch(primaryBase)
+  } catch (e: any) {
+    if (fallbackBase) {
+      console.warn('[store/checkout] bridge failed, falling back to store.hostamar.com:', e?.message?.slice(0, 120))
+      return await tryFetch(fallbackBase)
+    }
+    throw e
+  }
 }
 
 export async function POST(req: NextRequest) {
