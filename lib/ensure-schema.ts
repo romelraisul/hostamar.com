@@ -12,7 +12,6 @@
 // DDL statement is executed separately.
 // ============================================================================
 import { PrismaClient } from '@prisma/client'
-import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
 
 // One statement per entry — never concatenate.
@@ -483,7 +482,7 @@ const STATEMENTS: string[] = [
 
 let ensured: Promise<void> | null = null
 
-async function tryCreate(client: PrismaClient | typeof prisma): Promise<void> {
+async function tryCreate(client: PrismaClient): Promise<void> {
   for (const sql of STATEMENTS) {
     await client.$executeRawUnsafe(sql)
   }
@@ -492,8 +491,13 @@ async function tryCreate(client: PrismaClient | typeof prisma): Promise<void> {
 export function ensureSchema(): Promise<void> {
   if (!ensured) {
     ensured = (async () => {
+      const dbUrl = (env.DATABASE_URL || '').trim()
+      if (!dbUrl) {
+        throw new Error('DATABASE_URL not configured')
+      }
+      const { prisma } = await import('@/lib/prisma')
       try {
-        await tryCreate(prisma)
+        await tryCreate(prisma as PrismaClient)
       } catch (pooledErr) {
         // Pooled/transaction-mode connection may reject DDL — retry on the
         // direct (non-pooled) endpoint with the same credentials.
