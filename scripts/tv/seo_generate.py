@@ -54,12 +54,8 @@ def log(*a):
 
 # ── config ──────────────────────────────────────────────────────────────────
 def db_url():
-    url = ""
-    for line in open(os.path.join(REPO, ".env.local")):
-        if line.startswith("DATABASE_URL="):
-            url = line.strip().split("=", 1)[1].strip().strip('"').strip("'")
-    url = url.replace("&channel_binding=require", "").replace("-pooler", "")
-    return url
+    # Docker postgres uses password "hostamar"
+    return "postgresql://hostamar:hostamar@localhost:5432/hostamar"
 
 
 def gateway():
@@ -570,7 +566,7 @@ def upsert_seo(conn, src, seo):
             cur.execute("""
                 INSERT INTO "TvVideoSeo"
                   (id, "videoSourceId", slug, "titleBn", "metaDescription", keywords,
-                   "transcriptBn", "schemaJson", "ogImage", "canonicalUrl", product,
+                   "transcriptBn", "schemaString", "ogImage", "canonicalUrl", product,
                    "viralScore", views, "createdAt", "updatedAt")
                 VALUES (gen_random_uuid()::text, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, NOW(), NOW())
                 ON CONFLICT ("videoSourceId") DO UPDATE SET
@@ -579,7 +575,7 @@ def upsert_seo(conn, src, seo):
                   "metaDescription" = EXCLUDED."metaDescription",
                   keywords = EXCLUDED.keywords,
                   "transcriptBn" = EXCLUDED."transcriptBn",
-                  "schemaJson" = EXCLUDED."schemaJson",
+                  "schemaString" = EXCLUDED."schemaString",
                   "ogImage" = EXCLUDED."ogImage",
                   "canonicalUrl" = EXCLUDED."canonicalUrl",
                   product = EXCLUDED.product,
