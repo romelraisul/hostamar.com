@@ -58,10 +58,18 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate-limit only when DB is configured (fail-open when no DATABASE_URL to avoid PrismaClientInitializationError)
+  // ponytail: Prisma Proxy can throw SYNCHRONOUSLY during property access (getPrisma → createPrismaClient fails)
+  // — .catch() on the promise does NOT catch that, because the throw happens before a promise exists.
+  // Wrap in try/catch so the route degrades to no rate-limiting instead of 500.
   let rl = { allowed: true, remaining: 5, resetAt: Date.now() + 10 * 60_000 }
   if (hasDb) {
-    const ip = getClientIp(req)
-    rl = await checkRateLimit(ip, { bucket: 'store.checkout', limit: 5, windowMs: 10 * 60_000 }, '/api/store/checkout')
+    try {
+      const ip = getClientIp(req)
+      rl = await checkRateLimit(ip, { bucket: 'store.checkout', limit: 5, windowMs: 10 * 60_000 }, '/api/store/checkout')
+    } catch {
+      // fail-open: no rate-limiting if Prisma init fails
+      rl = { allowed: true, remaining: 5, resetAt: Date.now() + 10 * 60_000 }
+    }
   }
   if (!rl.allowed) return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
 
