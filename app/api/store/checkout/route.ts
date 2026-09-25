@@ -52,7 +52,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
 
 export async function POST(req: NextRequest) {
   // Ensure DB tables exist before any Prisma operations (prod DB predates Lead/LeadLog/RateLimitEvent)
-  const hasDb = !!process.env.DATABASE_URL
+  const hasDb = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0)
   if (hasDb) {
     await (await import('@/lib/ensure-schema')).ensureSchema()
   }
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
     // can no longer be known at response time → dialog says "sending", not "sent".
     const item: any = order.items?.[0]
     const title = item?.variant?.product?.title || item?.title || variant_id
-    const hasDb = !!process.env.DATABASE_URL
+    const hasDb = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0)
 
     waitUntil(Promise.all([
       (async () => {
