@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin-customers.html
-Disallow: /admin-payments.html
-Disallow: /admin-sso.html
-
-Sitemap: https://hostamar.com/sitemap.xml
