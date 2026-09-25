@@ -6,8 +6,19 @@
  *
  * Free-tier friendly: no Redis/Upstash required.
  */
-import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
+
+let _prisma: any = null
+async function getPrisma() {
+  if (!_prisma) {
+    if (!process.env.DATABASE_URL) {
+      return null // fail-open: no DB = no rate limiting
+    }
+    const mod = await import('@/lib/prisma')
+    _prisma = mod.prisma
+  }
+  return _prisma
+}
 
 export interface RateLimitConfig {
   /** friendly bucket id — e.g. "auth.signup", "auth.login" */
@@ -46,6 +57,12 @@ export async function checkRateLimit(
   const now = Date.now()
   const windowStart = new Date(now - cfg.windowMs)
   const bucket = `${ip}:${cfg.bucket}`
+
+  const prisma = await getPrisma()
+  if (!prisma) {
+    // No DB configured — fail open, always allow
+    return { allowed: true, remaining: cfg.limit, resetAt: now + cfg.windowMs }
+  }
 
   try {
     // Count current events in window
