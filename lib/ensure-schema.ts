@@ -497,7 +497,10 @@ export function ensureSchema(): Promise<void> {
       }
       // Production uses libsql (Turso) — schema is managed by Prisma migrations,
       // not by runtime DDL. Skip ensureSchema entirely for libsql.
-      if (dbUrl.startsWith('libsql://') || dbUrl.startsWith('file:')) {
+      // Local dev uses postgresql:// URL but Prisma redirects to file: SQLite
+      // (lib/prisma.ts lines 31-33). The DDL here is Postgres-specific (TEXT[],
+      // ARRAY[]::TEXT[]) and fails on SQLite. Skip for postgresql:// too.
+      if (dbUrl.startsWith('libsql://') || dbUrl.startsWith('file:') || dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://')) {
         return
       }
       const { prisma } = await import('@/lib/prisma')

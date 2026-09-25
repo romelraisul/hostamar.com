@@ -99,7 +99,8 @@ export async function checkRateLimit(
     return { allowed, remaining, resetAt }
   } catch (error) {
     const msg = String((error as any)?.message || error || '')
-    const missingTable = msg.includes('does not exist') || msg.includes('P2021')
+    // Postgres: "relation ... does not exist" (P2021), SQLite: "no such table: ..."
+    const missingTable = msg.includes('does not exist') || msg.includes('P2021') || msg.includes('no such table')
     if (missingTable) {
       // Self-heal once: ensure-schema creates RateLimitEvent lazily, and
       // auth routes were the one caller that never triggered it — which is
