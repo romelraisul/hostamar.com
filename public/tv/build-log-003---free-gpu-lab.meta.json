@@ -1,0 +1,189 @@
+{
+ "cuts": [
+  {
+   "id": "ident",
+   "source": "",
+   "in_seconds": 0.0,
+   "out_seconds": 6.0,
+   "type": "hero_title",
+   "text": "HOSTAMAR TV",
+   "heroSubtitle": "Episode — Build Log 003 — The Free GPU Lab",
+   "subtitle": "17 September 2026"
+  },
+  {
+   "id": "c1title",
+   "source": "",
+   "in_seconds": 6.0,
+   "out_seconds": 10.0,
+   "type": "text_card",
+   "text": "1. Run a GPU lab for free"
+  },
+  {
+   "type": "terminal_scene",
+   "terminalTitle": "core@lab: ~/demo",
+   "steps": [
+    {
+     "kind": "cmd",
+     "text": "nvidia-smi --query-gpu=name,memory.total --format=csv"
+    },
+    {
+     "kind": "out",
+     "text": "GeForce RTX 5060 Laptop, 8192 MiB"
+    },
+    {
+     "kind": "cmd",
+     "text": "kaggle kernels push gpu-lab --cloud"
+    },
+    {
+     "kind": "out",
+     "text": "free 2xT4 session booted in 2m12s"
+    },
+    {
+     "kind": "cmd",
+     "text": "./train.sh --epochs 3"
+    },
+    {
+     "kind": "out",
+     "text": "val_loss 0.212 -> 0.094, checkpoint saved"
+    },
+    {
+     "kind": "pill",
+     "text": "USD 0.00",
+     "color": "#34D399"
+    }
+   ],
+   "id": "c1s0",
+   "source": "",
+   "in_seconds": 10.0,
+   "out_seconds": 36.0
+  },
+  {
+   "type": "stat_card",
+   "stat": "$0",
+   "subtitle": "lab cost this week",
+   "id": "c1s1",
+   "source": "",
+   "in_seconds": 36.0,
+   "out_seconds": 56.0
+  },
+  {
+   "type": "bar_chart",
+   "title": "GPU cost per hour",
+   "chartData": [
+    {
+     "label": "AWS",
+     "value": 2.9
+    },
+    {
+     "label": "Colab",
+     "value": 1.2
+    },
+    {
+     "label": "T4 free",
+     "value": 0
+    },
+    {
+     "label": "RTX 5060",
+     "value": 0
+    }
+   ],
+   "id": "c1s2",
+   "source": "",
+   "in_seconds": 56.0,
+   "out_seconds": 78.0
+  },
+  {
+   "id": "c2title",
+   "source": "",
+   "in_seconds": 78.0,
+   "out_seconds": 82.0,
+   "type": "text_card",
+   "text": "2. Watch the clock"
+  },
+  {
+   "type": "comparison",
+   "title": "Free vs rented",
+   "leftLabel": "Rented",
+   "leftValue": "billing every hour",
+   "rightLabel": "Free",
+   "rightValue": "checkpoint and resume",
+   "id": "c2s0",
+   "source": "",
+   "in_seconds": 82.0,
+   "out_seconds": 104.0
+  },
+  {
+   "type": "progress_bar",
+   "title": "Checkpoint discipline",
+   "progress": 0.92,
+   "progressLabel": "92% of sessions resumed cleanly",
+   "id": "c2s1",
+   "source": "",
+   "in_seconds": 104.0,
+   "out_seconds": 124.0
+  },
+  {
+   "type": "kpi_grid",
+   "title": "This week in the lab",
+   "chartData": [
+    {
+     "label": "runs",
+     "value": 41
+    },
+    {
+     "label": "USD spent",
+     "value": 0
+    },
+    {
+     "label": "checkpoints",
+     "value": 7
+    }
+   ],
+   "id": "c2s2",
+   "source": "",
+   "in_seconds": 124.0,
+   "out_seconds": 148.0
+  },
+  {
+   "id": "c3title",
+   "source": "",
+   "in_seconds": 148.0,
+   "out_seconds": 152.0,
+   "type": "text_card",
+   "text": "3. A video lab next"
+  },
+  {
+   "type": "comparison",
+   "title": "Where the lab runs",
+   "leftLabel": "Laptop",
+   "leftValue": "RTX 5060 8 GB",
+   "rightLabel": "Cloud free tier",
+   "rightValue": "T4 sessions, time-boxed",
+   "id": "c3s0",
+   "source": "",
+   "in_seconds": 152.0,
+   "out_seconds": 176.0
+  },
+  {
+   "type": "text_card",
+   "text": "Rent is for people who forget to save.",
+   "id": "c3s1",
+   "source": "",
+   "in_seconds": 176.0,
+   "out_seconds": 198.0
+  },
+  {
+   "id": "outro",
+   "source": "",
+   "in_seconds": 198.0,
+   "out_seconds": 206.0,
+   "type": "callout",
+   "callout_type": "info",
+   "title": "Next",
+   "text": "Hostamar — build, ship, host. hostamar.com"
+  }
+ ],
+ "overlays": [],
+ "captions": [],
+ "audio": {}
+}
