@@ -53,7 +53,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
 export async function POST(req: NextRequest) {
   // Ensure DB tables exist before any Prisma operations (prod DB predates Lead/LeadLog/RateLimitEvent)
   if (process.env.DATABASE_URL) {
-    try { await (await import('@/lib/ensure-schema')).ensureSchema() } catch {}
+    await (await import('@/lib/ensure-schema')).ensureSchema()
   }
 
   const ip = getClientIp(req)
