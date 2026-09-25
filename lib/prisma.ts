@@ -4,22 +4,41 @@ import './dns-bootstrap'
 import { PrismaClient } from '@prisma/client'
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 import { env } from '@/lib/env'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-const prismaClientSingleton = () => {
-  // Turso/libSQL adapter — works in both edge and node runtimes
-  const url = process.env.DATABASE_URL?.split('?')[0] || ''
-  const authToken = process.env.DATABASE_URL?.split('authToken=')[1] || ''
-
-  const libsql = createClient({ url, authToken })
-  const adapter = new PrismaLibSQL(libsql)
-
+function createPrismaClient(): PrismaClient {
+  const url = process.env.DATABASE_URL || ''
+  
+  if (url.startsWith('postgresql://') || url.startsWith('postgres://')) {
+    // Neon / PostgreSQL — use pg adapter
+    const pool = new Pool({ connectionString: url, max: 1 })
+    const adapter = new PrismaPg(pool)
+    return new PrismaClient({
+      adapter,
+      log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+    })
+  }
+  
+  if (url.startsWith('libsql://') || url.startsWith('file:')) {
+    // Turso / libSQL — use libsql adapter
+    const cleanUrl = url.split('?')[0]
+    const authToken = url.split('authToken=')[1] || ''
+    const libsql = createClient({ url: cleanUrl, authToken })
+    const adapter = new PrismaLibSQL(libsql)
+    return new PrismaClient({
+      adapter,
+      log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+    })
+  }
+  
+  // No DATABASE_URL or unsupported — return client that fails gracefully
   return new PrismaClient({
-    adapter,
     log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   })
 }
@@ -28,7 +47,7 @@ const prismaClientSingleton = () => {
 // with no DATABASE_URL (Vercel-only var), and eager createClient({url:''}) throws.
 // Upgrade path: plain singleton if DATABASE_URL is always present at import time.
 function getPrisma(): PrismaClient {
-  if (!globalForPrisma.prisma) globalForPrisma.prisma = prismaClientSingleton()
+  if (!globalForPrisma.prisma) globalForPrisma.prisma = createPrismaClient()
   return globalForPrisma.prisma
 }
 
