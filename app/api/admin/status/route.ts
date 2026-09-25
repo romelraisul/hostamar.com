@@ -16,27 +16,31 @@ async function checkHttp(url: string): Promise<number> {
 }
 
 export async function GET() {
-  const [tv, db] = await Promise.all([
+  // Check if DATABASE_URL is configured before any Prisma calls (same pattern as checkout route)
+  const hasDb = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0)
+
+  const [tv, db, authTables] = await Promise.all([
     checkHttp('https://tv.hostamar.com/master.m3u8'),
-    prisma.$queryRaw`SELECT name FROM sqlite_master WHERE type='table' LIMIT 1`
-      .then(() => 'ok')
-      .catch((e: unknown) => `fail: ${(e as Error).message.slice(0, 80)}`),
+    hasDb
+      ? prisma.$queryRaw`SELECT name FROM sqlite_master WHERE type='table' LIMIT 1`
+          .then(() => 'ok')
+          .catch((e: unknown) => `fail: ${(e as Error).message.slice(0, 80)}`)
+      : Promise.resolve('no DATABASE_URL configured'),
+    hasDb
+      ? prisma.$queryRawUnsafe(
+          `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name IN ('Customer','Account','Session')`
+        ).then((r: unknown) => Number((r as { n: number | bigint }[])[0]?.n ?? 0))
+          .catch(() => -1)
+      : Promise.resolve(-2), // -2 = DB not configured
   ])
 
   // Facebook creds presence (env-only, no secret values)
   const facebook = process.env.FB_PAGE_ID && process.env.FB_PAGE_ACCESS_TOKEN ? 'configured' : 'MISSING'
 
-  // ponytail: this app's auth = Customer table + own JWT (lib/auth.ts), not NextAuth User.
-  // sso_callback_failed root cause was Customer table missing on Turso — verify it directly.
-  const authTables = await prisma.$queryRawUnsafe(
-    `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name IN ('Customer','Account','Session')`
-  ).then((r: unknown) => Number((r as { n: number | bigint }[])[0]?.n ?? 0))
-    .catch(() => -1)
-
   const components = [
     { status: tv === 200 ? '✅' : '❌', component: 'HLS2 TV Stream', value: tv === 200 ? '200 OK' : `${tv} DOWN`, detail: 'tv.hostamar.com/master.m3u8', verified: `HTTP ${tv}` },
-    { status: authTables === 3 ? '✅' : '❌', component: 'Auth (SSO/Login)', value: authTables === 3 ? 'tables OK' : `${authTables}/3 tables`, detail: 'Customer/Account/Session (sso_callback_failed fixed)', verified: `Turso ${authTables}/3` },
-    { status: db === 'ok' ? '✅' : '❌', component: 'Turso DB', value: db === 'ok' ? 'connected' : db, detail: 'libsql://hostamar-db...turso.io', verified: db },
+    { status: authTables === 3 ? '✅' : authTables === -2 ? '⏸️' : '❌', component: 'Auth (SSO/Login)', value: authTables === 3 ? 'tables OK' : authTables === -2 ? 'DB not configured' : `${authTables}/3 tables`, detail: 'Customer/Account/Session (sso_callback_failed fixed)', verified: authTables === -2 ? 'no DATABASE_URL' : `Turso ${authTables}/3` },
+    { status: db === 'ok' ? '✅' : db === 'no DATABASE_URL configured' ? '⏸️' : '❌', component: 'Turso DB', value: db === 'ok' ? 'connected' : db, detail: 'libsql://hostamar-db...turso.io', verified: db },
     { status: facebook === 'configured' ? '✅' : '❌', component: 'Facebook', value: facebook, detail: 'FB_PAGE_ID + FB_PAGE_ACCESS_TOKEN', verified: facebook === 'configured' ? 'env set' : 'needs Edge UIA' },
   ]
 
