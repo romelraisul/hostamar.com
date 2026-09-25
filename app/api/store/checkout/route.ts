@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
     // can no longer be known at response time → dialog says "sending", not "sent".
     const item: any = order.items?.[0]
     const title = item?.variant?.product?.title || item?.title || variant_id
+    const hasDb = !!process.env.DATABASE_URL
 
     waitUntil(Promise.all([
       (async () => {
@@ -148,7 +149,7 @@ export async function POST(req: NextRequest) {
       (async () => {
         try {
           // Skip lead mirror entirely if no DATABASE_URL (Prisma not configured in this env)
-          if (!process.env.DATABASE_URL) {
+          if (!hasDb) {
             console.warn('[store/checkout] lead mirror skipped: no DATABASE_URL')
             return
           }
