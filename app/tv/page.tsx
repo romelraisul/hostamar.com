@@ -495,6 +495,8 @@ export default function TvPage() {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { f: 'programme-eu-bd-gpu-spot-narrated.mp4', t: 'EU-BD GPU Spot Market — Narrated (221s, narrated)' },
+                { f: 'build-log-005-narrated.mp4', t: 'Build Log 005 — Infrastructure & Growth (201s, narrated)' },
+                { f: 'shorts-build-log-005.mp4', t: 'Build Log 005 Short — 30s Vertical' },
                 { f: 'shorts-eu-bd-gpu-spot.mp4', t: 'EU-BD GPU Spot Short — 30s Vertical' },
                 { f: 'receipt-openconnector.mp4', t: 'OpenConnector — 1400+ APIs Zero Keys Zero Code' },
                 { f: 'build-log-003---free-gpu-lab.mp4', t: 'Build Log 003 — The Free GPU Lab' },
