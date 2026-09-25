@@ -54,7 +54,11 @@ export async function POST(req: NextRequest) {
   // Ensure DB tables exist before any Prisma operations (prod DB predates Lead/LeadLog/RateLimitEvent)
   const hasDb = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0)
   if (hasDb) {
-    await (await import('@/lib/ensure-schema')).ensureSchema()
+    try {
+      await (await import('@/lib/ensure-schema')).ensureSchema()
+    } catch {
+      // fail-open: skip schema if Prisma init fails (e.g., libsql adapter incompatible)
+    }
   }
 
   // Rate-limit only when DB is configured (fail-open when no DATABASE_URL to avoid PrismaClientInitializationError)
