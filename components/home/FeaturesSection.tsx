@@ -13,7 +13,7 @@ export default function FeaturesSection() {
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-lg dark:hover:shadow-slate-700/50 transition-all">
             <div className="w-12 h-12 bg-[#0E7C3A] dark:bg-green-900/40 rounded-lg flex items-center justify-center mb-4">
-                          <span className="text-2xl text-white">💫</span>
+                                      <span className="text-2xl text-white">💫</span>
             </div>
             <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">{t('features.aiGeneration')}</h3>
             <p className="text-gray-600 dark:text-gray-300">{t('features.aiGenerationDesc')}</p>
