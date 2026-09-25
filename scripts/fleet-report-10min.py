@@ -113,7 +113,7 @@ def push_report(report):
     if REPORT_SCRIPT.exists():
         try:
             result = subprocess.run(
-                ['bash', str(REPORT_SCRIPT), report['job_id'], report['employee']],
+                ['bash', str(REPORT_SCRIPT), report['job_id'], report['employee'], report.get('finished', '')],
                 capture_output=True, text=True, timeout=30,
                 env={**os.environ, 'FLEET_REPORT_SECRET': load_fleet_secret() or ''}
             )
