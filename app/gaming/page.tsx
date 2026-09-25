@@ -281,7 +281,7 @@ export default function App() {
             </div>
             <div className="flex gap-2 text-[12px]">
               <div className="px-3 py-2 rounded-xl bg-white/10 border border-white/10">Anti-cheat ON • AI referee</div>
-              <div className="px-3 py-2 rounded-xl bg-[#0E7C3A]">BD Server • 18ms avg</div>
+              <div className="px-3 py-2 rounded-xl bg-[#0E7C3A] text-white">BD Server • 18ms avg</div>
             </div>
           </div>
 
@@ -331,7 +331,7 @@ export default function App() {
               <div className="mt-5 grid gap-4">
                 {[
                   { n: "১", t: "bKash দিয়ে Join", d: "Entry ফি ৳50-500। Nagad / bKash QR • 5 সেকেন্ডে confirm।", c: "bg-[#E4312B]" },
-                  { n: "২", t: "ব্রাউজারে খেলো", d: "কোনো ডাউনলোড না। 4GB RAM, মোবাইলেও। AI বা মানুষের বিপক্ষে।", c: "bg-[#0E7C3A]" },
+                  { n: "২", t: "ব্রাউজারে খেলো", d: "কোনো ডাউনলোড না। 4GB RAM, মোবাইলেও। AI বা মানুষের বিপক্ষে।", c: "bg-[#0E7C3A] text-white" },
                   { n: "৩", t: "জিতলে bKash এ টাকা", d: "ম্যাচ শেষে 10 মিনিটে payout। লাইভ leaderboard + replay।", c: "bg-white text-zinc-900" },
                 ].map(s => (
                   <div key={s.n} className="flex gap-3">
