@@ -19,12 +19,12 @@ export async function GET() {
   const pk = process.env.MEDUSA_PK
   if (!pk) return NextResponse.json({ error: 'not configured' }, { status: 500 })
 
-  // FORGE 2026-09-25: MEDUSA_URL points to broken CF Workers bridge (exit -1).
+  // FORGE 2026-09-26: MEDUSA_URL points to broken CF Workers bridge (exit -1).
   // store.hostamar.com is the actual Medusa storefront and works.
-  // Try bridge first (if configured), fall back to store.hostamar.com on failure.
+  // Prefer store.hostamar.com as primary; bridge only as fallback.
   const bridgeUrl = process.env.MEDUSA_URL
-  const primaryBase = bridgeUrl || 'https://store.hostamar.com'
-  const fallbackBase = bridgeUrl ? 'https://store.hostamar.com' : null
+  const primaryBase = 'https://store.hostamar.com'
+  const fallbackBase = bridgeUrl
 
   async function tryFetch(base: string) {
     const pk = process.env.MEDUSA_PK
