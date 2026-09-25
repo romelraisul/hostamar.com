@@ -557,7 +557,9 @@ export default function TvPage() {
                 { f: 'build-log-003---free-gpu-lab-short.mp4', t: 'Build Log 003 Short — ফ্রি GPU ল্যাব (৩০s)' },
                 { f: 'receipt-uptime-sla.mp4', t: 'Uptime SLA — ডাউন হলে টাকা ফেরত' },
                 { f: 'receipt-mrr-30d.mp4', t: 'MRR — ৩০ দিনের গণনা' },
-                { f: 'receipt-mrr-30d-narrated2.mp4', t: 'MRR — ৩০ দিনের গণনা (নেরেশনসহ)' },
+                { f: 'receipt-mrr-30d-narrated2.mp4', t: 'MRR — ৩০ দিনের গণনা (নারেশনসহ)' },
+                { f: 'receipt-agentcloudbn-narrated.mp4', t: 'Agent Cloud BN — নেরেশনসহ (৯s)' },
+                { f: 'shorts-eu-bd-gpu-spot2.mp4', t: 'EU-BD GPU Spot Short 2 — ৩০s ভার্টিকেল' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
