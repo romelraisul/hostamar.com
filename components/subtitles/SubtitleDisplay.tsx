@@ -73,7 +73,7 @@ export default function SubtitleDisplay({ subtitle, videoTitle }: { subtitle: Su
             <span className="font-medium text-gray-900 dark:text-white text-sm">
               {subtitle.language === 'bn' ? 'বাংলা সাবটাইটেল' : 'English Subtitles'}
             </span>
-            <span className="text-xs bg-#0E7C3A dark:bg-green-900/30 text-white dark:text-white px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-[#0E7C3A] dark:bg-green-900/30 text-white dark:text-white px-2 py-0.5 rounded-full">
               {subtitle.timestamps.length} segments
             </span>
           </div>
