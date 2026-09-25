@@ -177,7 +177,9 @@ export async function POST(req: NextRequest) {
     // do not exist or belong to a product that is not published" was reported to
     // the buyer as a retryable 502 "Try again" → infinite spin). Buyer-fixable
     // failures now return 400 with an honest refresh message; 5xx/timeout keeps 502.
-    const buyerFixable = / -> 4\d\d/.test(msg)
+    // FORGE 2026-09-25: only 400/404 are buyer-fixable (variant unpublished/validation).
+    // 401=invalid PK, 403=WAF, 429=rate-limit → server-side, NOT buyer-fixable.
+    const buyerFixable = / -> 4(00|04)\b/.test(msg)
     return NextResponse.json(
       { error: buyerFixable ? 'এই প্রোডাক্টটি এখন আর অর্ডারে নেওয়া যাচ্ছে না — পেজ রিফ্রেশ করে অন্য আইটেম দেখুন।' : 'Checkout unavailable. Try again or contact us.' },
       { status: buyerFixable ? 400 : 502 },
