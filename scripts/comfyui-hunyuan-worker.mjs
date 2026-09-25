@@ -78,7 +78,7 @@ const forceVideoId = args.includes('--videoId') ? args[args.indexOf('--videoId')
 // ── The PROVEN workflow (survived the cleanup at C:\hostamar\hostamar.com\workflows\video_hunyuan.json) ──
 // fp8 safetensors + block-swap 20/20 + force_offload; landscape 384x216 (portrait
 // direct-render HANGS on 8GB — verified twice); frames 145 ≈ 6s @24fps.
-const MODEL_PATH = ['split_files', 'diffusion_models', 'hunyuan_video_720_fp8_e4m3fn.safetensors'].join(String.fromCharCode(92))
+const MODEL_PATH = ['split_files', 'diffusion_models', 'hunyuan_video_720_fp8_e4m3fn.safetensors'].join('/') // ponytail: was String.fromCharCode(92) backslash — Windows separator, WSL ComfyUI /prompt 400 value_not_in_list; forward slash is in the /object_info valid list
 // V32: 512x288 landscape @ 120 frames (~5s @ 24fps, 6 scenes = 30s) — proven-safe
 // dims for 8GB (skill: 512x288/320 fine for ≤145 frames). NO 720x1280 direct
 // portrait (288x512 hung twice) and NO transpose (landscape→portrait transpose
@@ -106,7 +106,8 @@ function buildWorkflow(prompt, seed, prefix) {
       model_name: 'hunyuan_video_vae_bf16.safetensors', precision: 'bf16' } },
     '16': { class_type: 'DownloadAndLoadHyVideoTextEncoder', inputs: {
       llm_model: 'Kijai/llava-llama-3-8b-text-encoder-tokenizer',
-      clip_model: 'disabled', precision: 'bf16' } },
+      clip_model: 'disabled', precision: 'fp16', quantization: 'bnb_nf4',
+      load_device: 'offload_device' } },
     '30': { class_type: 'HyVideoTextEncode', inputs: {
       prompt: `${prompt}. Cinematic motion, smooth camera movement, high detail.`,
       text_encoders: ['16', 0] } },
