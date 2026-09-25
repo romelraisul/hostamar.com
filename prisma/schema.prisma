@@ -1701,6 +1701,39 @@ model FleetControl {
   updatedAt DateTime @updatedAt
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// V65 — Layer 5 Surveillance: Abuse & Distillation Detection
+// Sampled request logging (25%) + nightly cron analysis → RiskUser upserts.
+// Raw IPs never stored; only salted SHA-256 ipHash.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model RiskUser {
+  id        String   @id @default(cuid())
+  userId    String   @unique // user_id OR "ip:<ipHash>" OR "cluster:<promptPreview>"
+  ipHash    String?
+  riskScore Int      @default(0) // 0-100
+  reason    String   @default("")
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([riskScore(sort: Desc)])
+  @@index([updatedAt(sort: Desc)])
+}
+
+model RequestLog {
+  id           String   @id @default(cuid())
+  userId       String?  // authenticated user id
+  ipHash       String   // salted SHA-256 hash of ip+ua
+  model        String
+  promptPreview String  // first 400 chars for clustering
+  responseLen  Int
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([ipHash, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
 model FleetLaneStatus {
   id          String    @id @default(cuid())
   employee    String    @unique

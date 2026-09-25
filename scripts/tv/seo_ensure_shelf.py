@@ -34,7 +34,7 @@ BANGLA_RE = re.compile(r"[\u0980-\u09FF]")
 def page_cards():
     """filename -> curated card title from app/tv/page.tsx."""
     cards = {}
-    page = os.path.join(G.REPO, "app/tv/page.tsx")
+    page = os.path.join(os.path.dirname(G.REPO), "hostamar.com", "app/tv/page.tsx")
     for line in open(page, encoding="utf-8"):
         m = CARD_RE.search(line)
         if m:

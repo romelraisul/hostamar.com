@@ -27,7 +27,7 @@ import textwrap
 import urllib.request
 from datetime import datetime, timezone
 
-REPO = "/home/romel/hostamar-build"
+REPO = "/home/romel/hostamar.com"
 VIRAL_DIR = os.path.join(REPO, "docker/tv-station/videos/viral")
 EDGE = os.path.join(REPO, "public/tv")
 OG_DIR = os.path.join(REPO, "public/og/tv")
