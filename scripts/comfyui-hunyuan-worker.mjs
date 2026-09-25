@@ -59,9 +59,9 @@ const SECRET = process.env.COMFYUI_WORKER_SECRET || ''
 const APP = process.env.WORKER_APP_URL || 'https://hostamar.com'
 const COMFY = process.env.COMFYUI_URL || 'http://127.0.0.1:8188'
 const POLL_MS = Number(process.env.WORKER_POLL_MS || 10000)
-const PY = process.env.WORKER_PYTHON || 'C:\\Users\\User\\qwen\\python_embeded\\python.exe'
-const FF = process.env.WORKER_FFMPEG || 'C:\\Users\\User\\qwen\\python_embeded\\Lib\\site-packages\\imageio_ffmpeg\\binaries\\ffmpeg-win-x86_64-v7.1.exe'
-const COMFY_ROOT = process.env.WORKER_COMFYUI_DIR || 'C:\\ComfyUI_Download\\ComfyUI'
+const PY = process.env.WORKER_PYTHON || '/usr/bin/python3'
+const FF = process.env.WORKER_FFMPEG || '/usr/bin/ffmpeg'
+const COMFY_ROOT = process.env.WORKER_COMFYUI_DIR || '/home/romel/ComfyUI'
 const OUT_DIR = join(COMFY_ROOT, 'output')
 const WORK_DIR = join(OUT_DIR, '_worker')
 
@@ -344,9 +344,14 @@ async function run(job) {
   // ── V33 Real-ESRGAN upscale (RTX 5060 via Vulkan, -g 0): 384x224 frames →
   // 1536x896 (~0.85s/frame measured with ComfyUI resident; 726 frames ≈ 10min).
   // Frame-dir batch mode; output reassembled by the final encode below.
-  const ESR = join(process.env.WORKER_ESR_DIR || 'C:\\Users\\User\\hostamar\\tools\\realesrgan', 'realesrgan-ncnn-vulkan.exe')
-  if (!existsSync(ESR)) throw new Error(`Real-ESRGAN not found at ${ESR} — run tools/realesrgan setup first`)
+  // ponytail: WSL fallback — no realesrgan binary on this box, so jobs skip the
+  // upscale (768x224→1080x1920 straight) instead of hard-failing; add a Linux
+  // realesrgan-ncnn-vulkan build to re-enable 4x ESR.
+  const ESR = join(process.env.WORKER_ESR_DIR || '/home/romel/hostamar.com/tools/realesrgan', 'realesrgan-ncnn-vulkan')
+  const hasESR = existsSync(ESR)
   const esrDir = join(WORK_DIR, `${videoId}_esr`)
+  let combinedUp
+  if (hasESR) {
   rmSync(join(esrDir, 'frames'), { recursive: true, force: true })
   rmSync(join(esrDir, 'up'), { recursive: true, force: true })
   mkdirSync(join(esrDir, 'frames'), { recursive: true })
@@ -360,10 +365,14 @@ async function run(job) {
   console.log(`[worker] ESR: ${upCount} frames upscaled`)
   if (upCount === 0) throw new Error('ESR produced no frames')
   // Reassemble the upscaled frames into the combined source for the final burn.
-  const combinedUp = join(WORK_DIR, `${videoId}_combined_up.mp4`)
+  combinedUp = join(WORK_DIR, `${videoId}_combined_up.mp4`)
   execFileSync(FF, ['-y', '-hide_banner', '-loglevel', 'error',
     '-framerate', '24', '-i', join(esrDir, 'up', 'f_%05d.png'),
     '-c:v', 'h264_nvenc', '-preset', 'p4', '-cq', '19', '-pix_fmt', 'yuv420p', combinedUp], { stdio: 'inherit' })
+  } else {
+  console.log(`[worker] ESR skipped (no realesrgan binary at ${ESR}) — final encodes from combined ${combined || ''}`)
+  combinedUp = combined
+  }
 
   // V33 final: ESR-upscaled 1536x896 frames → blur-pad upright 1080x1920 →
   // ASS captions burned by libass+harfbuzz → nvenc h264 ~8M (sellable).
