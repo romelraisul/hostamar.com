@@ -495,6 +495,11 @@ export function ensureSchema(): Promise<void> {
       if (!dbUrl) {
         throw new Error('DATABASE_URL not configured')
       }
+      // Production uses libsql (Turso) — schema is managed by Prisma migrations,
+      // not by runtime DDL. Skip ensureSchema entirely for libsql.
+      if (dbUrl.startsWith('libsql://') || dbUrl.startsWith('file:')) {
+        return
+      }
       const { prisma } = await import('@/lib/prisma')
       try {
         await tryCreate(prisma as PrismaClient)
