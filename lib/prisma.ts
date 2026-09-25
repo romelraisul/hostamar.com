@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
+import pg from 'pg'
 import { env } from '@/lib/env'
 
 const globalForPrisma = globalThis as unknown as {
@@ -17,7 +17,7 @@ function createPrismaClient(): PrismaClient {
   
   if (url.startsWith('postgresql://') || url.startsWith('postgres://')) {
     // Neon / PostgreSQL — use pg adapter
-    const pool = new Pool({ connectionString: url, max: 1 })
+    const pool = new pg.Pool({ connectionString: url, max: 1 })
     const adapter = new PrismaPg(pool)
     return new PrismaClient({
       adapter,
