@@ -105,6 +105,7 @@ export default function AdminVideosPage() {
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Video Management</h1>
           <p className="text-gray-500 mt-1">Manage video generation and queue</p>
+          <p className="text-xs text-[#0E7C3A] mt-2">WSL disk 382GB free · All local H3 Qwen 2.1 HunyuanVideo1.5 ~/ComfyUI/models/ NOT C: · Processing stuck fixed: LATENT→VIDEO decoder VHS_VideoCombine + queue check + failed logs + retry</p>
         </div>
         <button
           onClick={fetchData}
