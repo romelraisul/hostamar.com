@@ -52,12 +52,17 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
 
 export async function POST(req: NextRequest) {
   // Ensure DB tables exist before any Prisma operations (prod DB predates Lead/LeadLog/RateLimitEvent)
-  if (process.env.DATABASE_URL) {
+  const hasDb = !!process.env.DATABASE_URL
+  if (hasDb) {
     await (await import('@/lib/ensure-schema')).ensureSchema()
   }
 
-  const ip = getClientIp(req)
-  const rl = await checkRateLimit(ip, { bucket: 'store.checkout', limit: 5, windowMs: 10 * 60_000 }, '/api/store/checkout')
+  // Rate-limit only when DB is configured (fail-open when no DATABASE_URL to avoid PrismaClientInitializationError)
+  let rl = { allowed: true, remaining: 5, resetAt: Date.now() + 10 * 60_000 }
+  if (hasDb) {
+    const ip = getClientIp(req)
+    rl = await checkRateLimit(ip, { bucket: 'store.checkout', limit: 5, windowMs: 10 * 60_000 }, '/api/store/checkout')
+  }
   if (!rl.allowed) return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
 
   let body: any
