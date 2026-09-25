@@ -63,18 +63,18 @@ def main():
     if row:
         cur.execute(
             'UPDATE "TvVideoSeo" SET "titleBn"=%s, "metaDescription"=%s, '
-            '"schemaJson"=%s::jsonb, "ogImage"=%s, "updatedAt"=NOW() WHERE id=%s',
+            '"schemaString"=%s, "ogImage"=%s, "updatedAt"=NOW() WHERE id=%s',
             (title_bn, desc_bn, json.dumps(schema, ensure_ascii=False), og_rel, row[0]))
         log("updated slug=", slug)
     else:
         cur.execute(
-            'INSERT INTO "TvVideoSeo" ("id","videoSourceId",slug,"titleBn",'
-            '"metaDescription",keywords,"transcriptBn","schemaJson","ogImage",'
-            '"canonicalUrl",product,"createdAt","updatedAt") '
-            'VALUES (%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s,%s,%s)',
-            (str(uuid.uuid4()), f"edge::{edge_file}", slug, title_bn, desc_bn,
-             [product, "Hostamar TV", "\u09ac\u09be\u0982\u09b2\u09be \u09ad\u09bf\u09a1\u09bf\u0993", edge_file],
-             "", json.dumps(schema, ensure_ascii=False), og_rel, canonical, product, now, now))
+                        'INSERT INTO "TvVideoSeo" ("id","videoSourceId",slug,"titleBn",'
+                        '"metaDescription",keywords,"transcriptBn","schemaString","ogImage",'
+                        '"canonicalUrl",product,"createdAt","updatedAt") '
+                        'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+                        (str(uuid.uuid4()), f"edge::{edge_file}", slug, title_bn, desc_bn,
+                         [product, "Hostamar TV", "বাংলা ভিডিও", edge_file],
+                         "", json.dumps(schema, ensure_ascii=False), og_rel, canonical, product, now, now))
         log("inserted slug=", slug)
     conn.commit()
     cur.close()
