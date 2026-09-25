@@ -16,20 +16,31 @@ import { NextResponse } from 'next/server'
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
 export async function GET() {
-  const base = process.env.MEDUSA_URL || 'https://store.hostamar.com'
   const pk = process.env.MEDUSA_PK
   if (!pk) return NextResponse.json({ error: 'not configured' }, { status: 500 })
-  try {
+
+  // FORGE 2026-09-25: MEDUSA_URL points to broken CF Workers bridge (exit -1).
+  // store.hostamar.com is the actual Medusa storefront and works.
+  // Try bridge first (if configured), fall back to store.hostamar.com on failure.
+  const bridgeUrl = process.env.MEDUSA_URL
+  const primaryBase = bridgeUrl || 'https://store.hostamar.com'
+  const fallbackBase = bridgeUrl ? 'https://store.hostamar.com' : null
+
+  async function tryFetch(base: string) {
+    const pk = process.env.MEDUSA_PK
+    if (!pk) throw new Error('MEDUSA_PK not set')
     const res = await fetch(`${base}/store/products?limit=250&region_id=${REGION}&fields=id,title,variants.id,variants.calculated_price.calculated_amount`, {
       headers: { 'x-publishable-api-key': pk, 'user-agent': 'HostamarStorefront/1.0 (Vercel SSR)' },
       signal: AbortSignal.timeout(15_000),
-      // Platform data cache (Vercel): dedupes + serves subsequent requests
-      // without touching the bridge. Was 'no-store' -> every page load ate a
-      // full bridge hop, and 2/3 prod requests measured >20s / timed out.
       cache: 'default',
     })
     const data: any = await res.json().catch(() => null)
-    if (!res.ok || !data) return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
+    if (!res.ok || !data) throw new Error(`catalog ${res.status}`)
+    return data
+  }
+
+  try {
+    const data = await tryFetch(primaryBase)
     const products = (data.products || [])
       .map((p: any) => {
         const v = p.variants?.[0]
@@ -42,12 +53,29 @@ export async function GET() {
         }
       })
       .filter((p: any) => p.variantId)
-    // SWR/SIE: without stale-while-revalidate the first buyer after
-    // s-maxage lapses pays the full blocking origin-fill; with it they get
-    // instant stale while the edge refreshes in background. stale-if-error
-    // keeps serving the catalog even when bridge/tunnel briefly 502s.
     return NextResponse.json({ count: data.count ?? products.length, products }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' } })
-  } catch {
+  } catch (e: any) {
+    if (fallbackBase) {
+      console.warn('[store/products] bridge failed, falling back to store.hostamar.com:', e?.message?.slice(0, 120))
+      try {
+        const data = await tryFetch(fallbackBase)
+        const products = (data.products || [])
+          .map((p: any) => {
+            const v = p.variants?.[0]
+            const cp = v?.calculated_price
+            return {
+              id: p.id,
+              title: p.title,
+              variantId: v?.id,
+              amountBdt: Math.round(((Array.isArray(cp) ? cp[0]?.calculated_amount : cp?.calculated_amount) ?? 0) / 100),
+            }
+          })
+          .filter((p: any) => p.variantId)
+        return NextResponse.json({ count: data.count ?? products.length, products }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' } })
+      } catch {
+        return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
+      }
+    }
     return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
   }
 }
