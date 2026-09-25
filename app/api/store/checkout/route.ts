@@ -51,6 +51,11 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
 }
 
 export async function POST(req: NextRequest) {
+  // Ensure DB tables exist before any Prisma operations (prod DB predates Lead/LeadLog/RateLimitEvent)
+  if (process.env.DATABASE_URL) {
+    try { await (await import('@/lib/ensure-schema')).ensureSchema() } catch {}
+  }
+
   const ip = getClientIp(req)
   const rl = await checkRateLimit(ip, { bucket: 'store.checkout', limit: 5, windowMs: 10 * 60_000 }, '/api/store/checkout')
   if (!rl.allowed) return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
