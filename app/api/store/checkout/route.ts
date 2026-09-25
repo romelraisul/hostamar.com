@@ -37,12 +37,12 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   const pk = process.env.MEDUSA_PK || 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'
   if (!pk) throw new Error('MEDUSA_PK not set')
 
-  // FORGE 2026-09-25: MEDUSA_URL points to broken CF Workers bridge (exit -1).
+  // FORGE 2026-09-26: MEDUSA_URL points to broken CF Workers bridge (exit -1).
   // store.hostamar.com is the actual Medusa storefront and works.
-  // Try bridge first (if configured), fall back to store.hostamar.com on failure.
+  // Prefer store.hostamar.com as primary; bridge only as fallback.
   const bridgeUrl = process.env.MEDUSA_URL
-  const primaryBase = bridgeUrl || 'https://store.hostamar.com'
-  const fallbackBase = bridgeUrl ? 'https://store.hostamar.com' : null
+  const primaryBase = 'https://store.hostamar.com'
+  const fallbackBase = bridgeUrl
 
   async function tryFetch(base: string) {
     const res = await fetch(`${base}/store${path}`, {
