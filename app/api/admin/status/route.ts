@@ -19,20 +19,34 @@ export async function GET() {
   // Check if DATABASE_URL is configured before any Prisma calls (same pattern as checkout route)
   const hasDb = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0)
 
-  const [tv, db, authTables] = await Promise.all([
-    checkHttp('https://tv.hostamar.com/master.m3u8'),
-    hasDb
-      ? prisma.$queryRaw`SELECT name FROM sqlite_master WHERE type='table' LIMIT 1`
-          .then(() => 'ok')
-          .catch((e: unknown) => `fail: ${(e as Error).message.slice(0, 80)}`)
-      : Promise.resolve('no DATABASE_URL configured'),
-    hasDb
-      ? prisma.$queryRawUnsafe(
-          `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name IN ('Customer','Account','Session')`
-        ).then((r: unknown) => Number((r as { n: number | bigint }[])[0]?.n ?? 0))
-          .catch(() => -1)
-      : Promise.resolve(-2), // -2 = DB not configured
-  ])
+  // ponytail: Prisma Proxy can throw SYNCHRONOUSLY during property access
+  // (getPrisma → createPrismaClient fails) — .catch() on the promise does NOT
+  // catch that, because the throw happens before a promise exists. Wrap the
+  // whole block in try/catch so the route returns 200 with degraded state
+  // instead of an unhandled 500. Same root cause as the checkout route's
+  // outer try/catch — the Proxy's get trap is not promise-safe.
+  let tv: number = 0
+  let db: string = 'fail: prisma init'
+  let authTables: number = -1
+  try {
+    [tv, db, authTables] = await Promise.all([
+      checkHttp('https://tv.hostamar.com/master.m3u8'),
+      hasDb
+        ? prisma.$queryRaw`SELECT name FROM sqlite_master WHERE type='table' LIMIT 1`
+            .then(() => 'ok')
+            .catch((e: unknown) => `fail: ${(e as Error).message.slice(0, 80)}`)
+        : Promise.resolve('no DATABASE_URL configured'),
+      hasDb
+        ? prisma.$queryRawUnsafe(
+            `SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name IN ('Customer','Account','Session')`
+          ).then((r: unknown) => Number((r as { n: number | bigint }[])[0]?.n ?? 0))
+            .catch(() => -1)
+        : Promise.resolve(-2), // -2 = DB not configured
+    ])
+  } catch (e) {
+    // Synchronous throw from Prisma Proxy get trap (getPrisma failed)
+    db = `fail: ${(e as Error).message.slice(0, 80)}`
+  }
 
   // Facebook creds presence (env-only, no secret values)
   const facebook = process.env.FB_PAGE_ID && process.env.FB_PAGE_ACCESS_TOKEN ? 'configured' : 'MISSING'
