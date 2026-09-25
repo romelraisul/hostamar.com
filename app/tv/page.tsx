@@ -560,6 +560,7 @@ export default function TvPage() {
                 { f: 'receipt-mrr-30d-narrated2.mp4', t: 'MRR — ৩০ দিনের গণনা (নারেশনসহ)' },
                 { f: 'receipt-agentcloudbn-narrated.mp4', t: 'Agent Cloud BN — নেরেশনসহ (৯s)' },
                 { f: 'shorts-eu-bd-gpu-spot2.mp4', t: 'EU-BD GPU Spot Short 2 — ৩০s ভার্টিকেল' },
+                { f: 'receipt-agentcloud-49-narrated.mp4', t: 'Agent Cloud — ৪৯ টাকার প্যাকেজ (নেরেশনসহ)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
