@@ -147,6 +147,11 @@ export async function POST(req: NextRequest) {
       })(),
       (async () => {
         try {
+          // Skip lead mirror entirely if no DATABASE_URL (Prisma not configured in this env)
+          if (!process.env.DATABASE_URL) {
+            console.warn('[store/checkout] lead mirror skipped: no DATABASE_URL')
+            return
+          }
           const { prisma } = await import('@/lib/prisma')
           await prisma.lead.create({
             data: {
