@@ -155,12 +155,19 @@ export async function POST(req: NextRequest) {
               phone: phone || null,
               source: 'store-checkout',
               status: 'new',
-              score: 50, // an order = hottest lead tier
+              score: 50,
               tags: `order:${order.id};৳${amountBdt}`,
               notes: `Ordered from /store: ${title} — ৳${amountBdt}. Medusa order ${order.id}.`,
             },
           })
-        } catch (e: any) { console.warn('[store/checkout] lead mirror:', e?.message?.slice(0, 120)) }
+        } catch (e: any) {
+          const msg = String(e?.message || '')
+          if (msg.includes('URL_INVALID') || msg.includes('PrismaClient') || msg.includes('DATABASE_URL') || msg.includes('TURSO')) {
+            console.warn('[store/checkout] lead mirror skipped: DB not configured in this env')
+          } else {
+            console.warn('[store/checkout] lead mirror:', msg.slice(0, 120))
+          }
+        }
       })(),
     ]))
 
