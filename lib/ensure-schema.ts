@@ -446,6 +446,39 @@ const STATEMENTS: string[] = [
 )`,
   `CREATE INDEX IF NOT EXISTS "RateLimitEvent_bucket_createdAt_idx" ON "RateLimitEvent"("bucket","createdAt")`,
   `CREATE INDEX IF NOT EXISTS "RateLimitEvent_ip_createdAt_idx" ON "RateLimitEvent"("ip","createdAt")`,
+  // Lead / LeadLog tables (Prisma models exist but prod DB predates them)
+  `CREATE TABLE IF NOT EXISTS "Lead" (
+  "id" TEXT NOT NULL,
+  "customerId" TEXT,
+  "name" TEXT NOT NULL,
+  "email" TEXT,
+  "phone" TEXT,
+  "company" TEXT,
+  "source" TEXT NOT NULL DEFAULT 'manual',
+  "status" TEXT NOT NULL DEFAULT 'new',
+  "score" INTEGER NOT NULL DEFAULT 0,
+  "tags" TEXT,
+  "notes" TEXT,
+  "contactedAt" TIMESTAMP(3),
+  "lastContactAt" TIMESTAMP(3),
+  "attemptCount" INTEGER NOT NULL DEFAULT 0,
+  "convertedAt" TIMESTAMP(3),
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  CONSTRAINT "Lead_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "Lead_status_idx" ON "Lead"("status")`,
+  `CREATE INDEX IF NOT EXISTS "Lead_source_idx" ON "Lead"("source")`,
+  `CREATE TABLE IF NOT EXISTS "LeadLog" (
+  "id" TEXT NOT NULL,
+  "leadId" TEXT NOT NULL,
+  "action" TEXT NOT NULL,
+  "notes" TEXT,
+  "outcome" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "LeadLog_pkey" PRIMARY KEY ("id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "LeadLog_leadId_idx" ON "LeadLog"("leadId")`,
 ]
 
 let ensured: Promise<void> | null = null
