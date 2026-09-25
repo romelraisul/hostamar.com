@@ -1,0 +1,73 @@
+# Wazuh L7 security stack for hostamar.com — single-node all-in-one.
+# Brings up wazuh.manager, wazuh.indexer, wazuh.dashboard on the WSL loopback.
+# The Next.js /api/admin/security endpoint pings indexer :9200 and manager API :55000.
+services:
+  wazuh.manager:
+    image: wazuh/wazuh-manager:4.9.2
+    hostname: wazuh-manager
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1514:1514"   # agent enrollment + connection (T:TCP)
+      - "127.0.0.1:1515:1515"   # agent enrollment (T:TCP)
+      - "127.0.0.1:55000:55000" # Wazuh API
+    environment:
+      WAZUH_API_USER: wazuh-wui
+      # Set a real password before exposing anything beyond loopback:
+      WAZUH_API_PASSWORD: ${WAZUH_API_PASSWORD:-C3ph3rd0c.}
+      INDEXER_URL: https://wazuh.indexer:9200
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: ${INDEXER_PASSWORD:-SecretPassword}
+      FILEBEAT_SSL_VERIFICATION_MODE: full
+      SSL_CERTIFICATE_AUTHORITIES: /etc/ssl/root-ca.pem
+      SSL_CERTIFICATE: /etc/ssl/filebeat.pem
+      SSL_KEY: /etc/ssl/filebeat.key
+      API_USERNAME: ${WAZUH_API_PASSWORD:-C3ph3rd0c.}
+    volumes:
+      - wazuh_api_configuration:/wazuh-config-mount/etc/ossec.conf
+      - wazuh_etc:/var/ossec/etc
+      - wazuh_logs:/var/ossec/logs
+      - ./rules/hostamar_l7_rules.xml:/wazuh-config-mount/etc/ossec.conf.d/hostamar_l7_rules.xml:ro
+      - ./etc/ssl/root-ca.pem:/etc/ssl/root-ca.pem:ro
+      - ./etc/ssl/filebeat.pem:/etc/ssl/filebeat.pem:ro
+      - ./etc/ssl/filebeat.key:/etc/ssl/filebeat.key:ro
+
+  wazuh.indexer:
+    image: wazuh/wazuh-indexer:4.9.2
+    hostname: wazuh-indexer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9200:9200"
+    environment:
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - wazuh_indexer_data:/var/lib/wazuh-indexer
+      - ./indexer/wazuh.indexer.yml:/wazuh-config-mount/etc/wazuh-indexer/opensearch.yml:ro
+      - ./etc/ssl/root-ca.pem:/etc/ssl/root-ca.pem:ro
+      - ./etc/ssl/indexer.pem:/etc/ssl/indexer.pem:ro
+      - ./etc/ssl/indexer.key:/etc/ssl/indexer.key:ro
+
+  wazuh.dashboard:
+    image: wazuh/wazuh-dashboard:4.9.2
+    hostname: wazuh-dashboard
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4443:5601"
+    environment:
+      INDEXER_USERNAME: admin
+      INDEXER_PASSWORD: ${INDEXER_PASSWORD:-SecretPassword}
+      WAZUH_API_URL: https://wazuh.manager
+      DASHBOARD_USERNAME: ${DASHBOARD_USERNAME:-kibanaserver}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:-kibanaserver}
+      API_USERNAME: ${WAZUH_API_PASSWORD:-C3ph3rd0c.}
+      WAZUH_API_PASSWORD: ${WAZUH_API_PASSWORD:-C3ph3rd0c.}
+    volumes:
+      - ./dashboard/opensearch_dashboards.yml:/usr/share/wazuh-dashboard/data/wazuh/config/opensearch_dashboards.yml
+      - ./etc/ssl/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem:ro
+      - ./etc/ssl/dashboard.pem:/usr/share/wazuh-dashboard/certs/dashboard.pem:ro
+      - ./etc/ssl/dashboard.key:/usr/share/wazuh-dashboard/certs/dashboard.key:ro
+
+volumes:
+  wazuh_api_configuration:
+  wazuh_etc:
+  wazuh_logs:
+  wazuh_indexer_data:

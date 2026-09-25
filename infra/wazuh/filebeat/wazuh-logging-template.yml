@@ -1,0 +1,32 @@
+# Wazuh log-collector snippet for hostamar.com (L7 telemetry source).
+# Ships Next.js JSON request logs + rate-limit trip events to the Wazuh manager.
+#
+# On the app host (/home/romel/hostamar.com), emit JSON lines like:
+#   {"event_kind":"http_request","path":"/api/auth/callback","status":401,"ip":"1.2.3.4","method":"POST"}
+#   {"event_kind":"rate_limit_trip","path":"/api/ai/chat","ip":"1.2.3.4","limit":"60/min"}
+#
+# This template follows the same single-node Wazuh pattern as the official
+# wazuh/wazuh Docker distribution: agents or Filebeat forward JSON lines to the
+# manager (tcp:1514), custom rules live in rules/hostamar_l7_rules.xml.
+
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/hostamar/app-requests.log
+      - /var/log/hostamar/rate-limit.log
+    json.keys_under_root: true
+    json.add_error_key: true
+
+output.wazuh:
+  hosts: ["127.0.0.1:1514"]
+
+ssl:
+  enabled: false
+
+logging.to_files: true
+logging.files:
+  path: /var/log/hostamar/filebeat
+  name: hostamar-beat
+  keepfiles: 3
+  rotateeverybytes: 52428800
