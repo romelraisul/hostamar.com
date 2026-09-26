@@ -3,43 +3,43 @@
   "framework": "nextjs",
   "functions": {
       "app/api/**/*.ts": {
-        "runtime": "nodejs20.x"
+        "runtime": "nodejs@20.x"
       },
     "app/api/tv/playlist/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/tv/generate/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/tv/generate-loop/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/tv/now-playing/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/tv/status/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/tv/hls-url/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/tv/channels/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/tv/epg.xml/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/v1/models/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/admin/tv/playlist/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/admin/tv/command/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     },
     "app/api/store/checkout/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     }
   },
   "crons": [
