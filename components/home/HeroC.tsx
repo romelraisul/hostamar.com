@@ -15,7 +15,7 @@ export default function HeroC() {
             {/* LEFT: copy */}
             <div className="min-w-0">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-1 text-[11px] sm:text-[12px] font-medium text-[#475569]">
-                <span className="h-2 w-2 rounded-full bg-[#0E7C3A] animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-[#0E7C3A] animate-pulse text-white" />
                 <span>বাংলাদেশি SME দের জন্য তৈরি</span>
                 <span className="hidden sm:inline text-[#CBD5E1]">|</span>
                 <span className="hidden sm:inline">Made for Bangladesh</span>

@@ -2,8 +2,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export async function POST(req: Request) {
   const pk = process.env.MEDUSA_PK || 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'
-  const targets: any = {}
-  for (const base of ['https://store.hostamar.com', process.env.MEDUSA_URL].filter(Boolean)) {
+  const targets: Record<string, any> = {}
+  const bases: string[] = ['https://store.hostamar.com']
+  if (process.env.MEDUSA_URL) bases.push(process.env.MEDUSA_URL)
+  for (const base of bases) {
     try {
       const r = await fetch(`${base}/store/carts`, {
         method: 'POST',

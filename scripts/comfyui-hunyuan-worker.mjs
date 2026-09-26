@@ -407,10 +407,9 @@ async function run(job) {
   const stats = JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8-esr-v33', clips: clipFiles.length, upscale: 'realesrgan-x4plus 1536x896→1080x1920' })
   let uploadedViaPresign = false
   try {
-    const pr = await fetch(`${APP}/api/videos/upload/presign`, {
+    const pr = await fetchW(`${APP}/api/videos/upload/presign`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ secret: SECRET, videoId, fileSize: buf.length }),
-      signal: AbortSignal.timeout(30000),
     })
     if (pr.ok) {
       const pj = await pr.json()
@@ -442,7 +441,7 @@ async function run(job) {
     form.append('videoId', videoId)
     form.append('stats', stats)
     form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
-    const up = await fetch(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form, signal: AbortSignal.timeout(120000) })
+    const up = await fetchW(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form })
     const upJson = await up.json().catch(() => ({}))
     if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
     console.log(`[worker] DONE videoId=${videoId} → ${upJson.url}`)
@@ -453,14 +452,48 @@ async function run(job) {
 // Upload a FINAL file that already exists on disk (full-result disk-reuse:
 // crashed-after-postprocess recovery — render/concat/post are skipped, only
 // the B2 push + row flip happen).
+// V87: presigned B2 direct PUT — reused finals are 13-30MB, way over Vercel's
+// ~4.5MB body cap (multipart 413'd forever: the 2026-09-26 "Globalization FAILED"
+// retry loop). Same presign path as the normal upload; multipart only if presign 404s.
 async function uploadFinal(final, videoId) {
   const buf = readFileSync(final)
+  let uploadedViaPresign = false
+  try {
+    const pr = await fetchW(`${APP}/api/videos/upload/presign`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: SECRET, videoId, fileSize: buf.length }),
+    })
+    if (pr.ok) {
+      const pj = await pr.json()
+      if (pj?.ok && pj?.url) {
+        const put = await fetch(pj.url, {
+          method: 'PUT', headers: { 'Content-Type': 'video/mp4' }, body: buf,
+          signal: AbortSignal.timeout(300000),
+        })
+        if (!put.ok) throw new Error(`B2 PUT ${put.status}`)
+        const fin = await fetchW(`${APP}/api/videos/upload/complete`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: SECRET, videoId, b2Key: pj.key, stats: { fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', reused: true } }),
+        })
+        const fj = await fin.json().catch(() => ({}))
+        if (!fin.ok || !fj.ok) throw new Error(`upload/complete ${fin.status}: ${JSON.stringify(fj).slice(0, 200)}`)
+        console.log(`[worker] UPLOADED final ${Math.round(buf.length / 1e6)}MB (presigned B2 PUT) → ${fj.url}`)
+        uploadedViaPresign = true
+      }
+    } else if (pr.status !== 404) {
+      console.warn(`[worker] presign ${pr.status} — falling back to multipart`)
+    }
+  } catch (e) {
+    console.warn(`[worker] presigned upload failed (${String(e?.message || e).slice(0, 120)}) — falling back to multipart`)
+  }
+  if (uploadedViaPresign) return
+  // ponytail: multipart only survives <4.5MB — old tiny finals / presign-404 deploys
   const form = new FormData()
   form.append('secret', SECRET)
   form.append('videoId', videoId)
   form.append('stats', JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', reused: true }))
   form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
-  const up = await fetch(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form, signal: AbortSignal.timeout(120000) })
+  const up = await fetchW(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form })
   const upJson = await up.json().catch(() => ({}))
   if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
   console.log(`[worker] UPLOADED final ${Math.round(buf.length / 1e6)}MB → ${upJson.url}`)

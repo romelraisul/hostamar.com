@@ -224,7 +224,7 @@ export default function VoiceAgentClient({ mode = 'chat', className = '' }: Voic
         <div className="flex items-center gap-2">
           <span
             className={`h-2.5 w-2.5 rounded-full ${
-              phase === 'connected' ? 'bg-[#0E7C3A] animate-pulse' : phase === 'error' ? 'bg-[#E4312B]' : 'bg-zinc-300'
+              phase === 'connected' ? 'bg-[#0E7C3A] animate-pulse text-white' : phase === 'error' ? 'bg-[#E4312B]' : 'bg-zinc-300'
             }`}
           />
           <span className="text-[13px] font-bn text-zinc-700">
