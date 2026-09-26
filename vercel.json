@@ -2,9 +2,9 @@
   "buildCommand": "npm run build",
   "framework": "nextjs",
   "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "edge"
-    },
+      "app/api/**/*.ts": {
+        "runtime": "nodejs20.x"
+      },
     "app/api/tv/playlist/route.ts": {
       "runtime": "nodejs20.x"
     },
@@ -27,7 +27,7 @@
       "runtime": "nodejs20.x"
     },
     "app/api/tv/epg.xml/route.ts": {
-      "runtime": "edge"
+      "runtime": "nodejs20.x"
     },
     "app/api/v1/models/route.ts": {
       "runtime": "nodejs20.x"
