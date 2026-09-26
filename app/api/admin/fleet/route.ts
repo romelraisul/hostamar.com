@@ -160,24 +160,28 @@ export async function POST(req: NextRequest) {
 
   // V70 Ops Center: mirror the shift into the live feed + lane grid.
   // Best-effort and fully isolated — a failure here must never fail the report.
+  // V77: Neon is quota-locked; each DB call is individually try/catch so a
+  // missing table / quota error can't turn a 200 into a 500.
   const verdict = row.verdict;
   const snippet = (row.needsYou || row.finished) ? String(row.needsYou || row.finished).slice(0, 240) : null;
   const runAt = new Date();
-  await Promise.allSettled([
-    recordOpsEvent({
+  try {
+    await recordOpsEvent({
       lane: employee,
       type: 'REPORT',
       severity: verdictSeverity(verdict),
       title: `Shift report — ${employee}${verdict ? ` (${verdict})` : ''}`,
       body: snippet,
       meta: { jobId: row.jobId, verdict },
-    }),
-    prisma.fleetLaneStatus.upsert({
+    });
+  } catch (e) { console.error('[fleet] recordOpsEvent failed:', e instanceof Error ? e.message : e); }
+  try {
+    await prisma.fleetLaneStatus.upsert({
       where: { employee },
       create: { employee, lastRunAt: runAt, verdict, lastSnippet: snippet },
       update: { lastRunAt: runAt, verdict, lastSnippet: snippet },
-    }),
-  ]);
+    });
+  } catch (e) { console.error('[fleet] fleetLaneStatus.upsert failed:', e instanceof Error ? e.message : e); }
 
   return NextResponse.json({ ok: true, id: row.id });
 }
