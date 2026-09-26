@@ -9,7 +9,6 @@ import { toScimUser } from '@/lib/scim/mapper'
 import { deepSanitize } from '@/lib/api/validator'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const patchSchema = z.object({

@@ -4,7 +4,6 @@ import { getAuthUser } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 10
-export const runtime = 'nodejs'
 
 /**
  * POST /api/admin/market-decide

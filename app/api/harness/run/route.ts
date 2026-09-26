@@ -6,7 +6,6 @@ import { guardInternal } from '@/lib/harness/guard'
 import { HarnessAgent } from '@/lib/harness/HarnessAgent'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {

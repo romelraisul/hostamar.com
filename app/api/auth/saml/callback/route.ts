@@ -7,7 +7,6 @@ import { getJackson, SAML_PRODUCT } from '@/lib/sso/saml'
 import { jitProvision, mapProfile } from '@/lib/sso/policy'
 import { setSsoSessionCookie } from '@/lib/sso/session'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {

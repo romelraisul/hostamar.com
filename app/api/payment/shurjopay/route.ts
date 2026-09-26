@@ -1,7 +1,5 @@
 export const dynamic = 'force-dynamic'
 
-export const runtime = 'edge'
-
 
 // ============================================================================
 // POST /api/payment/shurjopay — shurjoPay webhook / IPN handler

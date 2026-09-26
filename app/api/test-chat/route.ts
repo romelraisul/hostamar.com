@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 10
-export const runtime = 'nodejs'
 
 export async function GET(req: NextRequest) {
   const key = process.env.OPENROUTER_API_KEY

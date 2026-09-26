@@ -2,8 +2,6 @@ export const dynamic='force-dynamic'
 import { NextRequest } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 
-export const runtime = 'edge'
-
 
 /**
  * GET /api/analytics/models — aggregate KV HOSTAMAR_LOGS logs/usage/{date}/{id}.json

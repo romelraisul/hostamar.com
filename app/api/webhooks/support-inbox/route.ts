@@ -9,7 +9,6 @@ import { inngest } from '@/inngest/client'
 import { z } from 'zod'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const itemSchema = z.object({

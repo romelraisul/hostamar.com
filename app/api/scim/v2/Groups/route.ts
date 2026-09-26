@@ -6,7 +6,6 @@ import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getScimOrg } from '@/lib/scim/auth'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {

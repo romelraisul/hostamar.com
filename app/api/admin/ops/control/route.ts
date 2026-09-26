@@ -7,7 +7,6 @@ import { verifyToken } from '@/lib/auth'
 import { isOpsEmployee } from '@/lib/ops-lanes'
 import { recordOpsEvent } from '@/lib/ops-events'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const AUTONOMY = ['autonomous', 'supervised', 'halted'] as const

@@ -109,5 +109,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-
-export const runtime = 'edge'

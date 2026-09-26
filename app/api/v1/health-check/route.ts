@@ -4,8 +4,6 @@ import { pingModel, setHealth, getHealth, HEALTH_KEY } from '@/lib/model-health'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 55
 
-export const runtime = 'edge'
-
 
 /**
  * POST /api/v1/health-check — hourly model health probe.

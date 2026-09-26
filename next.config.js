@@ -215,6 +215,12 @@ const nextConfig = {
       // fail to resolve at build time. Externalizing keeps it as a runtime
       // require() so connectOverCDP works on the server without a browser binary.
       'playwright-core': 'playwright-core',
+      // Node.js built-ins for Edge runtime compatibility
+      'child_process': false,
+      'fs/promises': false,
+      'path': false,
+      'os': false,
+      'crypto': false,
     }
     // typeorm + protobufjs use dynamic require() for optional drivers; webpack
     // can't statically analyze those, producing "Critical dependency" warnings.

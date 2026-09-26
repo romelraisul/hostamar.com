@@ -12,7 +12,6 @@ import { z } from 'zod'
 import { evaluateToolCall, isDestructive, TOOL_ALLOWLIST } from '@/lib/voice/toolPolicy'
 import { getAuthUser } from '@/lib/auth'
 
-export const runtime = 'nodejs'
 
 const toolRunSchema = z.object({
   tool: z.enum(['get_status', 'create_ticket', 'initiate_bkash_payment', 'create_video']),

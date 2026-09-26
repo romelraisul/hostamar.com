@@ -17,7 +17,6 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getAuthUser } from '@/lib/auth'
 
 // Force Node.js runtime
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const env = {

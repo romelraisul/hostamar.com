@@ -4,8 +4,6 @@ import { allStatuses, quota } from '@/lib/kaggle-on-demand'
 
 export const dynamic = 'force-dynamic'
 
-export const runtime = 'edge'
-
 
 /**
  * GET /api/kaggle/status — CEO On-Demand dashboard data.

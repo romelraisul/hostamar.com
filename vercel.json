@@ -1,5 +1,46 @@
 {
   "buildCommand": "npm run build",
+  "functions": {
+    "app/api/**/*.ts": {
+      "runtime": "edge"
+    },
+    "app/api/tv/playlist/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/tv/generate/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/tv/generate-loop/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/tv/now-playing/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/tv/status/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/tv/hls-url/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/tv/channels/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/tv/epg.xml/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/v1/models/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/health/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/admin/tv/playlist/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/admin/tv/command/route.ts": {
+      "runtime": "nodejs"
+    }
+  },
   "rewrites": [
     {
       "source": "/v1/:path*",

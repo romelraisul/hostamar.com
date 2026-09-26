@@ -4,7 +4,6 @@ import { getAuthUser } from '@/lib/auth'
 import { ensureFiverrCatalog } from '@/lib/pinned-chat'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 export const maxDuration = 60
 
 /**

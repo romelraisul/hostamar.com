@@ -6,7 +6,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { OPS_EMPLOYEES } from '@/lib/ops-lanes'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function authorized(req: NextRequest): boolean {

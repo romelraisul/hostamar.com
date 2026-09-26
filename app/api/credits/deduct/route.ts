@@ -4,7 +4,6 @@ import { deductCredits } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 10
-export const runtime = 'nodejs'
 
 /**
  * POST /api/credits/deduct

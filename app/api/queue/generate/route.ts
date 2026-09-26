@@ -4,8 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/get-auth-user';
 import { enqueueVideoGeneration, type VideoGenerationJobData } from '@/lib/queue';
 
-export const runtime = 'edge'
-
 
 /**
  * POST /api/queue/generate

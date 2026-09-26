@@ -4,8 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
 import { env } from '@/lib/env'
 
-export const runtime = 'edge'
-
 
 /**
  * GET /api/ide/server/[id]/status — workspace readiness check.

@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 // ============================================================================
 // POST /api/contact — public lead capture (no external account required).

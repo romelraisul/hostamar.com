@@ -3,8 +3,6 @@ import { env } from '@/lib/env'
 
 export const dynamic = "force-dynamic";
 
-export const runtime = 'edge'
-
 
 /**
  * OAuth start — defaults to Google OAuth2.

@@ -11,5 +11,3 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ code, link: referralLinkFor(code) })
 }
 
-export const runtime = 'edge'
-

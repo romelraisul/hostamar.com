@@ -5,7 +5,6 @@ import { pinnedChatMessage } from '@/lib/pinned-chat'
 import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 export const maxDuration = 60
 
 /**

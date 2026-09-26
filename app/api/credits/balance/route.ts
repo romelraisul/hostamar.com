@@ -5,8 +5,7 @@ import { chatRateFor } from '@/lib/pricing'
 import { getBinanceRate } from '@/lib/binance'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 10
-export const runtime = 'nodejs' // Vercel hobby cap
+export const maxDuration = 10 // Vercel hobby cap
 
 /**
  * GET /api/credits/balance — current credit balance + optional USD conversion.

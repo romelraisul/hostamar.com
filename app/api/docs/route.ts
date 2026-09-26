@@ -3,7 +3,6 @@ import { join } from 'path'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 /**
  * GET /api/docs?lang=bn — serve the pre-rendered docs content JSON.

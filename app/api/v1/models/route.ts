@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 /**
  * GET /api/v1/models — PUBLIC OpenAI-compatible model list (no auth).

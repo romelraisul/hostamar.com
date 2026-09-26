@@ -8,8 +8,6 @@ export const maxDuration = 10
 
 const CRON_SECRET = process.env.CRON_SECRET || ''
 
-export const runtime = 'edge'
-
 
 /**
  * GET /api/cron/update-models

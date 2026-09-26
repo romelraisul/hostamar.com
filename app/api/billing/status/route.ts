@@ -5,7 +5,6 @@ import { getAuthUser } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
 
 const schema = z.object({ invoiceNumber: z.string().min(3).max(128) })
 

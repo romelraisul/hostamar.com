@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 
-export const runtime = 'edge'
-
 
 // POST /api/auth/logout
 // Clears both the custom JWT cookie (auth_token) and the NextAuth session

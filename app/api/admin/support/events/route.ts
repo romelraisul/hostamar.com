@@ -7,7 +7,6 @@ import { verifyToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { triageEvent } from '@/lib/support/triageAgent'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function requireAdmin(req: NextRequest): { id: string; role?: string } | null {

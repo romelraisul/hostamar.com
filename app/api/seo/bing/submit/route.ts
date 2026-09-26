@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { hasBingKey, submitUrlsToBing } from '@/lib/bing/webmaster'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 20
 

@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { answerCallback } from '@/lib/harness/telegram-approvals'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const BASE = env.APP_BASE_URL || 'http://localhost:3000'

@@ -9,7 +9,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const LOCAL_ASK = process.env.SECOND_BRAIN_ASK_URL || 'http://127.0.0.1:3010/ask'

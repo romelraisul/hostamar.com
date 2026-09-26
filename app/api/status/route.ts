@@ -5,7 +5,6 @@ import { getAuthUser } from '@/lib/get-auth-user'
 import { runAllChecks } from '@/lib/support/checks'
 import { getUserHealthSummary } from '@/lib/support/userHealth'
 
-export const runtime = 'nodejs'
 export const revalidate = 30 // cache 30s
 
 // Map infra services -> the 7 Hostamar products (+ app platform).

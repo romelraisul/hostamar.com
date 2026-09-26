@@ -16,7 +16,6 @@ import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
 import { OPS_EMPLOYEES, LANE_META } from '@/lib/ops-lanes'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const TARGET_CUSTOMERS = 10

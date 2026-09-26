@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server'
 import { getGatewayKey } from '@/lib/ai-gateway'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 /**
  * POST /api/chat/openai-compat

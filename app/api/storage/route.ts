@@ -34,7 +34,6 @@ import { getAuthUser } from '@/lib/auth'
 import { extname, basename } from 'path'
 
 // Force Node.js runtime (this route uses S3 - not Edge compatible)
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 // ============================================================================

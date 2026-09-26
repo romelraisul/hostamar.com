@@ -6,7 +6,6 @@ import { submitUrlsToGoogle } from '@/lib/google/indexingApi'
 import { checkPreferredSourceEligibility } from '@/lib/google/searchConsole'
 import { hasBingKey, submitUrlsToBing, bingSiteUrl } from '@/lib/bing/webmaster'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 

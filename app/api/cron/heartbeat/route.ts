@@ -3,7 +3,6 @@ import { ensureMemorySchema } from '@/lib/kai9000/memory-lifecycle'
 import { heartbeatTick } from '@/lib/kai9000/heartbeat'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 export const maxDuration = 60
 
 const CRON_SECRET = process.env.CRON_SECRET || ''

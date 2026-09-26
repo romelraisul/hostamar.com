@@ -3,8 +3,6 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from "next/server";
 import { env } from '@/lib/env'
 
-export const runtime = 'edge'
-
 
 // Discord webhook notifications for OSSU community
 export async function POST(req: NextRequest) {

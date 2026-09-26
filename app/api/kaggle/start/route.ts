@@ -4,8 +4,6 @@ import { startNotebook, quota, KAGGLE_NOTEBOOKS, NotebookKey } from '@/lib/kaggl
 
 export const dynamic = 'force-dynamic'
 
-export const runtime = 'edge'
-
 
 /**
  * POST /api/kaggle/start — On-Demand START.

@@ -11,7 +11,6 @@ import { checkRateLimit, RATE_LIMITS, getClientIp } from '@/lib/rate-limit'
 import { inngest } from '@/inngest/client'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const schema = z.object({

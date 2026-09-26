@@ -8,7 +8,6 @@ import { getIndexingStatus } from '@/lib/google/searchConsole'
 import { hasBingKey, getBingStats, bingSiteUrl } from '@/lib/bing/webmaster'
 import { POSTS } from '@/lib/blog'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
