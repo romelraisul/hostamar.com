@@ -1,4 +1,3 @@
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export async function POST(req: Request) {
   const pk = process.env.MEDUSA_PK || 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'

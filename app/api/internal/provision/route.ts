@@ -17,7 +17,6 @@ import {
 import { ensureSchema } from '@/lib/ensure-schema'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function checkAuth(request: NextRequest): boolean {

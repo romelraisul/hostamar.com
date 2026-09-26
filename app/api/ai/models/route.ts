@@ -14,5 +14,3 @@ export async function GET(){
   }, { headers: { 'Access-Control-Allow-Origin': '*' } })
 }
 
-export const runtime = 'edge'
-

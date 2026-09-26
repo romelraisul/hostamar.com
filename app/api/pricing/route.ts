@@ -3,8 +3,6 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { PLANS, CURRENCY } from '@/lib/pricing'
 
-export const runtime = 'edge'
-
 
 /**
  * GET /api/pricing

@@ -10,7 +10,6 @@ import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 // NOTE: field names match the real UI contract (slug/name/domain/ssoEnforced/

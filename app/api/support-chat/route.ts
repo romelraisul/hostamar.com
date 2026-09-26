@@ -17,7 +17,6 @@ import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 // Zero third-party API cost; data stays in Bangladesh (dogfooding the AI Chat product).
 // ============================================================================
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const GEN_MODEL = env.OLLAMA_MODEL || 'llama3.2:latest'

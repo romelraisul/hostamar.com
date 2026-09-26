@@ -5,7 +5,6 @@ import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {

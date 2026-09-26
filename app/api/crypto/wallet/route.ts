@@ -15,8 +15,6 @@ function encrypt(text: string, secret: string): string {
   return `${iv.toString('hex')}:${tag}:${enc}`
 }
 
-export const runtime = 'edge'
-
 
 /** POST /api/crypto/wallet/create { userId, chain? } -> { address } */
 export async function POST(req: Request) {

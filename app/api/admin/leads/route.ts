@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 // ============================================================================
 // GET /api/admin/leads?take=50&source=contact-form

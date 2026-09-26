@@ -43,5 +43,3 @@ export default function App(){
   }catch(e:any){ return NextResponse.json({ error: e.message||'generate failed' }, { status:500 }) }
 }
 
-export const runtime = 'edge'
-

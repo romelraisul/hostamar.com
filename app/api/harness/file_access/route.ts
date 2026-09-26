@@ -8,7 +8,6 @@ import { guardInternal } from '@/lib/harness/guard'
 import { FileSystemAgentFileStore } from '@/lib/harness/FileSystemAgentFileStore'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const store = new FileSystemAgentFileStore(env.HARNESS_FILE_ROOT || undefined)

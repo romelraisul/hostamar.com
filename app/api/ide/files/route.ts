@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 // Zero-cost file system: B2 S3 (s3.us-east-005, bucket hostamar-prod, free 10GB)
 // Layout: customers/{userId}/ide/{serverId}/{filename}

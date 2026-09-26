@@ -4,7 +4,6 @@ import { guardInternal } from '@/lib/harness/guard'
 import { prisma } from '@/lib/prisma'
 import { ensureHarnessSchema } from '@/lib/harness/ensure-harness-schema'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {

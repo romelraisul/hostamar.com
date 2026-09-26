@@ -3,8 +3,6 @@ import { TOKENROUTER } from '@/lib/tokenrouter'
 
 export const dynamic = 'force-dynamic'
 
-export const runtime = 'edge'
-
 
 /**
  * GET /api/models/health — CEO Models tab health check.

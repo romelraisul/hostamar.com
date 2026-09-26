@@ -8,8 +8,6 @@ import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 55
 
-export const runtime = 'edge'
-
 
 /**
  * /api/v1/responses — minimal OpenAI Responses API adapter (2026-09-14).

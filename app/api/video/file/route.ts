@@ -6,8 +6,6 @@ export const dynamic = 'force-dynamic'
 
 const OUTPUT_DIR = '/home/romel/ComfyUI/output'
 
-export const runtime = 'edge'
-
 
 /**
  * Serve rendered media straight from WSL ~/ComfyUI/output to the admin tab.

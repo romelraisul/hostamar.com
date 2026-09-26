@@ -3,7 +3,6 @@ import { getAccessToken, hasGraphCreds } from '@/lib/microsoft/graphClient'
 import { sendPreferredSourceCampaign } from '@/lib/microsoft/sendPreferredSourceCampaign'
 import { verifyToken } from '@/lib/auth'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 20
 

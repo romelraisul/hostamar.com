@@ -4,7 +4,6 @@ import { getAuthUser } from '@/lib/auth'
 import { ensurePinnedChatSchema } from '@/lib/pinned-chat-schema'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 /**
  * GET /api/ai-services/chats — the user's 📌 pinned chats for the left

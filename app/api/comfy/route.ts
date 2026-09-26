@@ -40,5 +40,3 @@ export async function POST(req: NextRequest){
   }catch(e:any){ return NextResponse.json({error: e.message, comfy:false}, { status: 200 }) }
 }
 
-export const runtime = 'edge'
-

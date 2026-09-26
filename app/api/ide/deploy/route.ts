@@ -6,7 +6,6 @@ import { promises as fs } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
 
-export const runtime = 'nodejs'
 
 const WORKSPACE_ROOT = path.join(process.cwd(), 'tmp', 'ide-workspace')
 

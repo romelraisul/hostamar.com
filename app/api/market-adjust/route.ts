@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { getBinanceRate } from '@/lib/binance'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 /**
  * GET /api/market-adjust — daily cron: Fetch $HOSTA (Dexscreener) + Binance USDT/BDT + OpenRouter costs

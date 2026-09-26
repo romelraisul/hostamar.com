@@ -10,7 +10,6 @@ import { processPostCall } from '@/lib/voice/postCallProcessor'
 import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
 
 const callEndedSchema = z.object({
   call_id: z.string().regex(/^[a-z0-9_-]{6,64}$/),
