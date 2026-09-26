@@ -101,41 +101,44 @@ export async function POST(req: NextRequest) {
 
   // V50 dedupe guard: same employee+jobId pushing identical raw within 10 min
   // is a retry/double-push, not a new shift — return the existing row instead.
-  const raw = body.raw ? String(body.raw).slice(0, 8000) : null;
-  const recent = await prisma.fleetReport.findFirst({
-    where: { employee, jobId: String(body.jobId || '').slice(0, 64), raw },
-    orderBy: { runAt: 'desc' },
-  });
-  if (recent && Date.now() - recent.runAt.getTime() < 10 * 60 * 1000) {
-    return NextResponse.json({ ok: true, id: recent.id, deduped: true });
-  }
-
   // V70: self-heal the FleetReport table on first use. The schema has the
-  // model but no migration created it (same pattern as ensureOpsSchema for
-  // FleetEvent) — without this every POST 500s on a fresh DB.
-  let tableReady = false;
-  try {
-    await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS \"FleetReport\" (
-      \"id\" TEXT NOT NULL,
-      \"employee\" TEXT NOT NULL,
-      \"jobId\" TEXT NOT NULL,
-      \"verdict\" TEXT,
-      \"finished\" TEXT,
-      \"couldnt\" TEXT,
-      \"needsYou\" TEXT,
-      \"raw\" TEXT,
-      \"runAt\" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT \"FleetReport_pkey\" PRIMARY KEY (\"id\")
-    )`);
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS \"FleetReport_employee_runAt_idx\" ON \"FleetReport\"(\"employee\", \"runAt\" DESC)`);
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_jobId_idx" ON "FleetReport"("jobId")`);
-    tableReady = true;
-    console.log('[fleet] FleetReport table ready');
-  } catch (ddlErr) {
-    // Best-effort: if the table already exists or DDL is rejected (Neon quota),
-    // fall through to the create() call below.
-    console.error('[fleet] FleetReport DDL failed (likely Neon quota):', ddlErr instanceof Error ? ddlErr.message : ddlErr);
-  }
+    // model but no migration created it (same pattern as ensureOpsSchema for
+    // FleetEvent) — without this every POST 500s on a fresh DB.
+    // MUST run before any Prisma fleetReport calls (findFirst, create).
+    let tableReady = false;
+    try {
+      await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS \\\"FleetReport\\\" (
+        \\\"id\\\" TEXT NOT NULL,
+        \\\"employee\\\" TEXT NOT NULL,
+        \\\"jobId\\\" TEXT NOT NULL,
+        \\\"verdict\\\" TEXT,
+        \\\"finished\\\" TEXT,
+        \\\"couldnt\\\" TEXT,
+        \\\"needsYou\\\" TEXT,
+        \\\"raw\\\" TEXT,
+        \\\"runAt\\\" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT \\\"FleetReport_pkey\\\" PRIMARY KEY (\\\"id\\\")
+      )`);
+      await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS \\\"FleetReport_employee_runAt_idx\\\" ON \\\"FleetReport\\\"(\\\"employee\\\", \\\"runAt\\\" DESC)`);
+      await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_jobId_idx" ON "FleetReport"("jobId")`);
+      tableReady = true;
+      console.log('[fleet] FleetReport table ready');
+    } catch (ddlErr) {
+      // Best-effort: if the table already exists or DDL is rejected (Neon quota),
+      // fall through to the create() call below.
+      console.error('[fleet] FleetReport DDL failed (likely Neon quota):', ddlErr instanceof Error ? ddlErr.message : ddlErr);
+    }
+
+    const raw = body.raw ? String(body.raw).slice(0, 8000) : null;
+    if (tableReady) {
+      const recent = await prisma.fleetReport.findFirst({
+        where: { employee, jobId: String(body.jobId || '').slice(0, 64), raw },
+        orderBy: { runAt: 'desc' },
+      });
+      if (recent && Date.now() - recent.runAt.getTime() < 10 * 60 * 1000) {
+        return NextResponse.json({ ok: true, id: recent.id, deduped: true });
+      }
+    }
 
   let row;
   if (tableReady) {
