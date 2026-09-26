@@ -79,11 +79,11 @@ export default function CreditsPage() {
             plan: s.plan || 'Starter',
             status: s.status || 'active',
             nextBillingDate: s.nextBillingDate,
-            price: s.price ?? 599,
+            price: s.price ?? 990,
             creditsPerMonth: s.creditsPerMonth ?? 6000,
           })
         } else if (sb?.data?.currentPlan) {
-          setSub({ plan: sb.data.currentPlan, status: sb.data.subscriptionStatus || 'active', nextBillingDate: new Date(Date.now()+30*86400000).toISOString(), price: 599 })
+          setSub({ plan: sb.data.currentPlan, status: sb.data.subscriptionStatus || 'active', nextBillingDate: new Date(Date.now()+30*86400000).toISOString(), price: 990 })
         }
       } catch {}
       setLoading(false)
@@ -134,7 +134,7 @@ export default function CreditsPage() {
   }
 
   const displayPlan = sub?.plan ? sub.plan.charAt(0).toUpperCase() + sub.plan.slice(1).toLowerCase() : 'Starter'
-  const displayPrice = sub?.price ?? 599
+  const displayPrice = sub?.price ?? 990
   const displayNext = sub?.nextBillingDate ? formatBanglaDate(sub.nextBillingDate) : '২৭ আগস্ট'
   const maxChart = Math.max(1, ...chart.map(c => Math.max(c.recharge, c.spend)))
 

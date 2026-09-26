@@ -30,7 +30,7 @@ const RECEIVER = {
 type Method = keyof typeof RECEIVER
 
 // V-price-unification: subscription.price = amount actually paid (the `amount`
-// argument) — old 2000/2000/3500/6000 table contradicted checkout (599/1299/2999).
+// argument) — old 2000/2000/3500/6000 table contradicted checkout (990/1900/2900).
 const PLAN_MAP: Record<string, { plan: string; videos: number; storage: number }> = {
   starter: { plan: 'STARTER', videos: 20, storage: 10 },
   growth: { plan: 'GROWTH', videos: 30, storage: 50 },

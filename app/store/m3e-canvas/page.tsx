@@ -109,7 +109,7 @@ Screens: AI Video product — (1) Template Gallery: Eid, Pohela Boishakh, 11.11 
 Tech: Next.js App Router + Tailwind CSS, mobile-first.
 Device frames: Desktop 1280x800 and Phone 412x892 side by side — phone primary (90% users mobile).
 Theme: Material 3 palette, seed green #0E7C3A / red #E4312B, rounded shapes, font Roboto Flex.
-Pricing in Bangladeshi Taka: 0 / 599 / 1,299. Payment: bKash + Nagad buttons.
+Pricing in Bangladeshi Taka: 0 / 990 / 1,900. Payment: bKash + Nagad buttons.
 Button tap → next screen (click flow). Output only clean code, no explanation. Design must match 100%.</pre>
         <p className="text-xs text-zinc-500 mt-3">
           এই প্রম্পটটা Qwen 3.6 / Hermes agent-এ পেস্ট করলেই সম্পূর্ণ AI Video ফ্লো-এর কোড পেয়ে যাবে।

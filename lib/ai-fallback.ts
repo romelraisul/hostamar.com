@@ -269,15 +269,15 @@ function looksLikeCot(t: string): boolean {
   const lastUser = messages[messages.length - 1]?.content?.toLowerCase() || '';
   let fallback = '';
   if (lastUser.includes('bkash') || lastUser.includes('বিকাশ') || lastUser.includes('payment') || lastUser.includes('পেমেন্ট') || lastUser.includes('trx')) {
-    fallback = `bKash পেমেন্ট: আমাদের পার্সোনাল নাম্বার 01822417463 তে Send Money করুন। Plans: Starter ৳599 (6000cr) / Pro ৳1,299 (13000cr) / Business ৳2,999 (30000cr) — 1cr = 1TK। তারপর TrxID টি https://hostamar.com/dashboard/payment এ সাবমিট করুন — আমরা ৫ মিনিটে Approve করব।`;
+    fallback = `bKash পেমেন্ট: আমাদের পার্সোনাল নাম্বার 01822417463 তে Send Money করুন। Plans: Starter ৳990 (6000cr) / Pro ৳1,900 (13000cr) / Business ৳2,900 (30000cr) — 1cr = 1TK। তারপর TrxID টি https://hostamar.com/dashboard/payment এ সাবমিট করুন — আমরা ৫ মিনিটে Approve করব।`;
   } else if (lastUser.includes('storage') || lastUser.includes('স্টোরেজ') || lastUser.includes('upload') || lastUser.includes('file')) {
     fallback = `Storage B2: 5GB FREE — https://hostamar.com/dashboard/storage এ upload করুন। S3 endpoint s3.us-east-005.backblazeb2.com bucket hostamar-prod।`;
   } else if (lastUser.includes('tv') || lastUser.includes('channel') || lastUser.includes('চ্যানেল') || lastUser.includes('live')) {
     fallback = `TV: ৫০টি স্টেবল চ্যানেল — https://hostamar.com/tv — API /api/tv/stable-channels`;
   } else if (lastUser.includes('pricing') || lastUser.includes('price') || lastUser.includes('প্রাইস') || lastUser.includes('package')) {
-    fallback = `Pricing: Starter ৳599 (6000cr), Pro ৳1,299 (13000cr), Business ৳2,999 (30000cr) — সাইনআপে 6000cr বোনাস — 1cr = 1TK — https://hostamar.com/pricing`;
+    fallback = `Pricing: Starter ৳990 (6000cr), Pro ৳1,900 (13000cr), Business ৳2,900 (30000cr) — সাইনআপে 3000cr বোনাস — 1cr = 1TK — https://hostamar.com/pricing`;
   } else {
-    fallback = `Hostamar Support: ৫০+ AI সার্ভিস, 120 মডেল চ্যাট, ব্রাউজার IDE, ক্লাউড হোস্টিং, TV ৫০ চ্যানেল — সাইনআপে 6000cr বোনাস (1cr = 1TK = ১ ভবিষ্যৎ HOST কয়েন)। কী জানতে চান?`;
+    fallback = `Hostamar Support: ৫০+ AI সার্ভিস, 120 মডেল চ্যাট, ব্রাউজার IDE, ক্লাউড হোস্টিং, TV ৫০ চ্যানেল — সাইনআপে 3000cr বোনাস (1cr = 1TK = ১ ভবিষ্যৎ HOST কয়েন)। কী জানতে চান?`;
   }
   trace.push({ provider: 'knowledge-base', status: 'fallback', error: 'all-providers-failed' });
   return { text: fallback, model: 'knowledge-base-fallback', provider: 'fallback', trace };

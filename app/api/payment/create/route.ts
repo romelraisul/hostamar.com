@@ -23,7 +23,7 @@ import { PAYMENT_PLANS, BKASH_PERSONAL, type PaymentPlanId } from '@/lib/pricing
 //  3. Honest 503 only when NO receiver is configured at all.
 //
 // V17: prices/credits come ONLY from lib/pricing.ts PAYMENT_PLANS
-// (Starter ৳599→6000cr · Pro ৳1299→13000cr · Business ৳2999→30000cr).
+// (Starter ৳990→6000cr · Pro ৳1900→13000cr · Business ৳2900→30000cr).
 // ============================================================================
 
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // V17: single source of truth — starter | pro | business @ 599/1299/2999
+    // V17: single source of truth — starter | pro | business @ 990/1900/2900
     const planInfo = PAYMENT_PLANS[plan as PaymentPlanId];
     if (!planInfo) {
       return NextResponse.json(

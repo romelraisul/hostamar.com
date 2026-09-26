@@ -107,7 +107,7 @@ export default function OrcaIdePage() {
   const afterAction = (d: any) => {
     if (typeof d.remaining === 'number' && d.remaining >= 0) setCredits(d.remaining)
     if (d.status === 402) {
-      setMsgs(m => [...m, { role: 'system', content: `⚠ ক্রেডিট কম — দরকার ${d.needed}cr। bKash ${d.bkash} → Starter 599TK→6000cr / Pro 1299TK→13000cr / Business 2999TK→30000cr (1cr=1TK)` }])
+      setMsgs(m => [...m, { role: 'system', content: `⚠ ক্রেডিট কম — দরকার ${d.needed}cr। bKash ${d.bkash} → Starter 990TK→6000cr / Pro 1900TK→13000cr / Business 2900TK→30000cr (1cr=1TK)` }])
     }
   }
 

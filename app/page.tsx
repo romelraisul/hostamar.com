@@ -15,11 +15,11 @@ const homeJsonLd = {
   description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং, এক সাবস্ক্রিপশনে',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
-    { '@type': 'Offer', name: 'Starter', price: '599', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Pro', price: '1299', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Business', price: '2999', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Starter', price: '990', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Pro', price: '1900', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Business', price: '2900', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
   ],
-  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '599', highPrice: '2999', priceCurrency: 'BDT' },
+  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '990', highPrice: '2900', priceCurrency: 'BDT' },
   mainEntity: FAQS.slice(0, 6).map((f) => ({
     '@type': 'Question',
     name: f.q,
@@ -259,7 +259,7 @@ export default function HomePage() {
               <div className="bp-tile bp-plan bp-plan-featured">
                 <span className="bp-rosette">সবচেয়ে জনপ্রিয়</span>
                 <span className="bp-plan-name">স্টার্টার</span>
-                <div className="bp-price">৳599 <small>/ মাস</small></div>
+                <div className="bp-price">৳990 <small>/ মাস</small></div>
                 <ul className="bp-check">
                   <li>{CHECK}১০০ AI ভিডিও</li>
                   <li>{CHECK}৫GB হোস্টিং</li>
@@ -271,7 +271,7 @@ export default function HomePage() {
               </div>
               <div className="bp-tile bp-plan">
                 <span className="bp-plan-name">বিজনেস</span>
-                <div className="bp-price">৳2,999 <small>/ মাস</small></div>
+                <div className="bp-price">৳2,900 <small>/ মাস</small></div>
                 <ul className="bp-check">
                   <li>{CHECK}৩০০ AI ভিডিও</li>
                   <li>{CHECK}২০GB হোস্টিং</li>

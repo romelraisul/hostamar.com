@@ -35,9 +35,9 @@ const pricingJsonLd = {
   description: 'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও + BDIX হোস্টিং — ৫০+ বাংলা টেমপ্লেট, bKash/Nagad/Rocket।',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
-    { '@type': 'Offer', name: 'Starter', price: '599', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
-    { '@type': 'Offer', name: 'Pro', price: '1299', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
-    { '@type': 'Offer', name: 'Business', price: '2999', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
+    { '@type': 'Offer', name: 'Starter', price: '990', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
+    { '@type': 'Offer', name: 'Pro', price: '1900', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
+    { '@type': 'Offer', name: 'Business', price: '2900', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing', priceValidUntil: '2026-12-31' },
   ],
 }
 
