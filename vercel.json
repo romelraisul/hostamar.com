@@ -31,13 +31,19 @@
     "app/api/v1/models/route.ts": {
       "runtime": "nodejs"
     },
-    "app/api/health/route.ts": {
-      "runtime": "nodejs"
-    },
     "app/api/admin/tv/playlist/route.ts": {
       "runtime": "nodejs"
     },
     "app/api/admin/tv/command/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/admin/ecosystem/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/ai/android/generate/route.ts": {
+      "runtime": "nodejs"
+    },
+    "app/api/auth/twitter/connect/route.ts": {
       "runtime": "nodejs"
     }
   },
