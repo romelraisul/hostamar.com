@@ -37,12 +37,11 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   const pk = process.env.MEDUSA_PK || 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'
   if (!pk) throw new Error('MEDUSA_PK not set')
 
-  // FORGE 2026-09-26: MEDUSA_URL points to broken CF Workers bridge (exit -1).
-  // store.hostamar.com is the actual Medusa storefront and works.
-  // Prefer store.hostamar.com as primary; bridge only as fallback.
-  const bridgeUrl = process.env.MEDUSA_URL
+  // FORGE 2026-09-26: MEDUSA_URL is empty in production (CF Workers bridge broken).
+  // store.hostamar.com works directly but WAF 403s Vercel SSR egress.
+  // Primary: store.hostamar.com. Fallback: hardcoded CF Workers bridge.
   const primaryBase = 'https://store.hostamar.com'
-  const fallbackBase = bridgeUrl
+  const fallbackBase = process.env.MEDUSA_URL?.trim() || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
 
   async function tryFetch(base: string) {
     const res = await fetch(`${base}/store${path}`, {
@@ -61,11 +60,8 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   try {
     return await tryFetch(primaryBase)
   } catch (e: any) {
-    if (fallbackBase) {
-      console.warn('[store/checkout] primary (store.hostamar.com) failed, falling back to bridge:', e?.message?.slice(0, 120))
-      return await tryFetch(fallbackBase)
-    }
-    throw e
+    console.warn('[store/checkout] primary (store.hostamar.com) failed, falling back to bridge:', e?.message?.slice(0, 120))
+    return await tryFetch(fallbackBase)
   }
 }
 
