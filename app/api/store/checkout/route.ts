@@ -62,7 +62,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
     return await tryFetch(primaryBase)
   } catch (e: any) {
     if (fallbackBase) {
-      console.warn('[store/checkout] bridge failed, falling back to store.hostamar.com:', e?.message?.slice(0, 120))
+      console.warn('[store/checkout] primary (store.hostamar.com) failed, falling back to bridge:', e?.message?.slice(0, 120))
       return await tryFetch(fallbackBase)
     }
     throw e
