@@ -34,3 +34,5 @@ export async function GET() {
     test: 'curl https://hostamar.com/api/auth/providers -> should return google github etc not error'
   })
 }
+
+export const runtime = 'edge'

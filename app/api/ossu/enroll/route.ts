@@ -3,6 +3,9 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from '@/lib/auth';
 
+export const runtime = 'edge'
+
+
 // Enrollment system for OSSU Academy
 export async function POST(req: NextRequest) {
   const authUser = await getAuthUser(req)

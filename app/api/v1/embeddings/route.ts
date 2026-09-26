@@ -22,3 +22,6 @@ export async function POST(req: NextRequest) {
   const text = await res.text()
   return new Response(text, { status: res.status, headers: { 'Content-Type': 'application/json' } })
 }
+
+export const runtime = 'edge'
+

@@ -14,4 +14,7 @@ export async function GET() {
       login: '/login'
     }
   })
-}
+}
+
+export const runtime = 'edge'
+

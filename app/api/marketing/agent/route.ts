@@ -63,3 +63,5 @@ async function runMarketing() {
     nextRun: 'automated queue scheduled',
   }
 }
+
+export const runtime = 'edge'

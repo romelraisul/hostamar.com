@@ -29,3 +29,6 @@ export async function POST(req: NextRequest) {
   }
   return NextResponse.json({ output: `[${lang}] echo:\n${src.slice(0,2000)}`, language: lang })
 }
+
+export const runtime = 'edge'
+

@@ -92,3 +92,6 @@ Respond in JSON format:
     )
   }
 }
+
+export const runtime = 'edge'
+

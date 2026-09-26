@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
+export const runtime = 'edge'
+
+
 /**
  * Social publishing API — wraps Graph API / X API / YouTube Data API.
  * Pushes job to Cloudflare Worker Queue, PC keepalive picks up and executes.

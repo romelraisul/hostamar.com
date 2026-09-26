@@ -4,6 +4,9 @@ import { ensureSchema } from '@/lib/ensure-schema'
 
 export const maxDuration = 300
 
+export const runtime = 'edge'
+
+
 /**
  * POST /api/tv/hunter/tool/search
  * Body: { product: string, query?: string }

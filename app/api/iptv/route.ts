@@ -18,3 +18,6 @@ ${vp9}
     },
   })
 }
+
+export const runtime = 'edge'
+
