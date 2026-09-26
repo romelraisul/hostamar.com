@@ -1,8 +1,9 @@
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser } from '@/lib/get-auth-user';
-import { getQueue, QUEUE_NAMES } from '@/lib/queue';
+import { getAuthUser } from '@/lib/get-auth-user'
+import { getQueue, QUEUE_NAMES } from '@/lib/queue'
 
 
 /**
