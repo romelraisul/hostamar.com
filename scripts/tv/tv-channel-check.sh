@@ -8,7 +8,7 @@
 #   - cacheability is probed by fetching the SAME segment twice, because a first
 #     fetch is always MISS for a brand-new live segment; only the second read
 #     tells you whether the edge is actually caching.
-REPO=/home/romel/hostamar-build
+REPO=/home/romel/hostamar.com
 HLS=https://tv.hostamar.com/master.m3u8
 
 # 1) the public HLS a viewer actually plays
@@ -39,7 +39,7 @@ live=$(curl -sL --max-time 25 -A 'Mozilla/5.0' \
 echo "youtube_video=$live"
 if [ -n "$live" ]; then
   curl -sL --max-time 25 -A 'Mozilla/5.0' "https://www.youtube.com/watch?v=$live" 2>/dev/null \
-    | grep -oE '"isLiveNow":true' | head -1 >/dev/null && echo "youtube_live=yes" || echo "youtube_live=no"
+    | grep -q '"isLiveNow":true' && echo "youtube_live=yes" || echo "youtube_live=no"
 fi
 
 # 4) what can play with the PC OFF (edge-served, git-tracked mp4s)
