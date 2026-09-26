@@ -5,6 +5,7 @@ const PUBLIC_PATHS = [
   "/", "/pricing", "/docs", "/docs/bn", "/blog",
   "/api/health", "/api/v1/models", "/api/docs", "/api/ai-services/catalog",
   "/api/chat", "/api/hermes", "/api/admin/chat", "/api/admin/audit", "/api/admin/health", "/api/admin/models", "/api/video-os/models", "/api/video-os/comfyui",
+  "/api/store/checkout",
   "/sitemap.xml", "/robots.txt", "/favicon.ico", "/_next", "/static"
 ];
 
