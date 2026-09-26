@@ -17,7 +17,7 @@ export const PLANS: Plan[] = [
     id: 'starter',
     name: 'Starter',
     nameBn: 'স্টার্টার',
-    priceMonthly: 599,
+    priceMonthly: 990,
     credits: 6000,
     badge: 'Most Popular',
     tagline: 'শুরু করার জন্য সেরা — ৬০০০ ক্রেডিট',
@@ -35,7 +35,7 @@ export const PLANS: Plan[] = [
     id: 'pro',
     name: 'Pro',
     nameBn: 'প্রো',
-    priceMonthly: 1299,
+    priceMonthly: 1900,
     credits: 13000,
     badge: '2× ভ্যালু',
     tagline: '২× ভ্যালু — ১৩০০০ ক্রেডিট',
@@ -53,7 +53,7 @@ export const PLANS: Plan[] = [
     id: 'business',
     name: 'Business',
     nameBn: 'বিজনেস',
-    priceMonthly: 2999,
+    priceMonthly: 2900,
     credits: 30000,
     tagline: 'আনলিমিটেড হোস্টিং — ৩০০০০ ক্রেডিট',
     cta: 'বিজনেস নিন',
@@ -88,9 +88,9 @@ export const PAYMENT_PLANS: Record<PaymentPlanId, {
   usd: number
   popular: boolean
 }> = {
-  starter:  { id: 'starter',  price: 599,  credits: 6000,  name: 'Starter',  nameBn: 'স্টার্টার', usd: 5,    popular: false },
-  pro:      { id: 'pro',      price: 1299, credits: 13000, name: 'Pro',      nameBn: 'প্রো',     usd: 10.8, popular: true },
-  business: { id: 'business', price: 2999, credits: 30000, name: 'Business', nameBn: 'বিজনেস',  usd: 25,   popular: false },
+  starter:  { id: 'starter',  price: 990,  credits: 6000,  name: 'Starter',  nameBn: 'স্টার্টার', usd: 8.2,  popular: false },
+  pro:      { id: 'pro',      price: 1900, credits: 13000, name: 'Pro',      nameBn: 'প্রো',     usd: 15.7, popular: true },
+  business: { id: 'business', price: 2900, credits: 30000, name: 'Business', nameBn: 'বিজনেস',  usd: 24,   popular: false },
 }
 
 /** Display table used by pricing UIs: [{id, tk, cr, usd}] */
@@ -171,9 +171,9 @@ export function resolveHostingPlan(cpu: number, ram: number, storage: number): H
 // ——— Monetization compat — Stripe/PayPal expect PRICING + normalizeTier ———
 export type Tier = Plan['id']
 export const PRICING: Record<Tier, { taka: number; usd: number; usdCents: number; credits: number; label: string; videosPerMonth: number; storageGB: number }> = {
-  starter: { taka: 599, usd: 4.75, usdCents: 475, credits: 6000, label: 'Starter', videosPerMonth: 10, storageGB: 5 },
-  pro: { taka: 1299, usd: 10.30, usdCents: 1030, credits: 13000, label: 'Pro', videosPerMonth: 30, storageGB: 20 },
-  business: { taka: 2999, usd: 23.75, usdCents: 2375, credits: 30000, label: 'Business', videosPerMonth: 80, storageGB: 100 },
+  starter: { taka: 990, usd: 8.20, usdCents: 820, credits: 6000, label: 'Starter', videosPerMonth: 10, storageGB: 5 },
+  pro: { taka: 1900, usd: 15.70, usdCents: 1570, credits: 13000, label: 'Pro', videosPerMonth: 30, storageGB: 20 },
+  business: { taka: 2900, usd: 24.00, usdCents: 2400, credits: 30000, label: 'Business', videosPerMonth: 80, storageGB: 100 },
 }
 export function normalizeTier(v: unknown): Tier | null {
   const s = String(v || '').toLowerCase().trim()

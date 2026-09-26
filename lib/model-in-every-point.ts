@@ -29,7 +29,7 @@ export function enhanceVideoPrompt(serviceName: string, userPrompt: string): Pro
 /** Services/orders: recommend a plan from usage stats */
 export function recommendPlan(stats: { videos: number; orders: number; credits: number }): Promise<string> {
   return enrich(
-    `গ্রাহকের ব্যবহার: ভিডিও ${stats.videos}টি, অর্ডার ${stats.orders}টি, ক্রেডিট ব্যালেন্স ${stats.credits}। Starter ৳599 / Pro ৳1,299 / Business ৳2,999 — কোন প্ল্যান সাজেস্ট করবেন, এক বাক্যে বাংলায়।`,
+    `গ্রাহকের ব্যবহার: ভিডিও ${stats.videos}টি, অর্ডার ${stats.orders}টি, ক্রেডিট ব্যালেন্স ${stats.credits}। Starter ৳990 / Pro ৳1,900 / Business ৳2,900 — কোন প্ল্যান সাজেস্ট করবেন, এক বাক্যে বাংলায়।`,
     'You are Hostamar plan advisor. One sentence, Bangla, name the plan.',
   )
 }

@@ -44,7 +44,7 @@ export async function supportAgent(message: string): Promise<AgentResult & { esc
   }
   const { text, model, provider } = await callBestModel(
     [{ role: 'user', content: message }],
-    'You are Hostamar Support Agent — Bangla+English. Services: 50 AI services, 120 models, TV 50 channels, Cloud Hosting, IDE, Browser, Game hosting. Pricing: Starter ৳599 / Pro ৳1,299 / Business ৳2,999, 6000 FREE credits. bKash 01822417463. Be concise.',
+    'You are Hostamar Support Agent — Bangla+English. Services: 50 AI services, 120 models, TV 50 channels, Cloud Hosting, IDE, Browser, Game hosting. Pricing: Starter ৳990 / Pro ৳1,900 / Business ৳2,900, 6000 FREE credits. bKash 01822417463. Be concise.',
   )
   return { agent: 'support', ok: text.length > 5, output: text, model, provider }
 }
@@ -54,7 +54,7 @@ export async function supportAgent(message: string): Promise<AgentResult & { esc
 // (used by /api/admin/agent/cron type=auto-payments which owns the DB writes)
 // ---------------------------------------------------------------------------
 export const TRX_PATTERN = /^[A-Za-z0-9]{8,15}$/
-export const PLAN_AMOUNTS = [599, 1299, 2999]
+export const PLAN_AMOUNTS = [990, 1900, 2900]
 
 export function paymentAgent(trxId: string, amount: number): AgentResult & { action: 'auto-approve' | 'review' | 'reject' } {
   const validTrx = TRX_PATTERN.test(String(trxId || ''))

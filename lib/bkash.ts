@@ -9,9 +9,9 @@ export const BKASH_TRX_REGEX = /^[A-Z0-9]{10}$/
 export const BKASH_BUTTON_COLOR = '#E2136E'
 
 export const BKASH_PLAN_MAP: Record<number, { credits: number; plan: string; label: string }> = {
-  599:  { credits: 6000,  plan: 'starter',  label: 'Starter' },
-  1299: { credits: 13000, plan: 'pro',      label: 'Pro' },
-  2999: { credits: 30000, plan: 'business', label: 'Business' },
+  990:  { credits: 6000,  plan: 'starter',  label: 'Starter' },
+  1900: { credits: 13000, plan: 'pro',      label: 'Pro' },
+  2900: { credits: 30000, plan: 'business', label: 'Business' },
 }
 
 export const BKASH_AMOUNTS = Object.keys(BKASH_PLAN_MAP).map(Number)

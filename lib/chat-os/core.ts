@@ -32,11 +32,11 @@ async function bill(userId: string, cost: number): Promise<Bill> {
   const c = await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }).catch(() => null)
   const balance = Number(c?.credits ?? 0)
   if (balance < cost) {
-    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } }
+    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: '990TK → 6000cr', Pro: '1900TK → 13000cr', Business: '2900TK → 30000cr' } }
   }
   const dec: any = await prisma.$executeRaw`UPDATE "Customer" SET credits = credits - ${cost} WHERE id = ${userId} AND credits >= ${cost}`
   if (Number(dec) === 0) {
-    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } }
+    return { ok: false, needed: cost, balance, bkash: '01822417463', plans: { Starter: '990TK → 6000cr', Pro: '1900TK → 13000cr', Business: '2900TK → 30000cr' } }
   }
   const after = await prisma.$queryRaw<any[]>`SELECT credits FROM "Customer" WHERE id = ${userId} LIMIT 1`
   const remaining = Number(after?.[0]?.credits ?? 0)
