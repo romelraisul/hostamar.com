@@ -281,7 +281,8 @@ export default function TvPage() {
     <div className="min-h-screen bg-[#080a0c] text-white selection:bg-emerald-500/30">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(channelLd) }} />
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Instrument+Serif&display=swap');
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Instrument+Serif&display=swap" />
+      <style>{`
         .mono{font-family:"JetBrains Mono",monospace}.serif{font-family:"Instrument Serif",serif}
         @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0.3}} .live-dot{animation:blink 1.2s infinite}
         @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}} .ticker{animation:ticker 22s linear infinite}`}</style>
@@ -550,7 +551,11 @@ export default function TvPage() {
                 { f: 'receipt-order.mp4', t: 'ভিডিও অ্যাড অর্ডার — ৳2,900' },
                 { f: 'receipt-delivery.mp4', t: '৩০-ঘণ্টা ডেলিভারি গ্যারান্টি — ৳2,900' },
                 { f: 'receipt-support.mp4', t: 'AI সাপোর্ট — 24/7, $0.00' },
-                { f: 'receipt-cloud-agents-new.mp4', t: 'Cloud Agents — Persistent Runtime, Memory Graph, GPU Spot, Sovereign CDN' },\n                { f: 'receipt-cloud-agents-new-narrated.mp4', t: 'Cloud Agents Narrated — Persistent Runtime, Memory Graph, GPU Spot, Sovereign CDN' },\n                { f: 'receipt-contextgraph.mp4', t: 'Context Graph — 4 Memory Layers, $0.00' },\n                { f: 'receipt-contextgraph-narrated.mp4', t: 'Context Graph Narrated — 4 Memory Layers, $0.00' },\n                { f: 'receipt-checkout.mp4', t: 'Checkout — ৪s, bKash/Nagad/Rocket' },
+                { f: 'receipt-cloud-agents-new.mp4', t: 'Cloud Agents — Persistent Runtime, Memory Graph, GPU Spot, Sovereign CDN' },
+                { f: 'receipt-cloud-agents-new-narrated.mp4', t: 'Cloud Agents Narrated — Persistent Runtime, Memory Graph, GPU Spot, Sovereign CDN' },
+                { f: 'receipt-contextgraph.mp4', t: 'Context Graph — 4 Memory Layers, $0.00' },
+                { f: 'receipt-contextgraph-narrated.mp4', t: 'Context Graph Narrated — 4 Memory Layers, $0.00' },
+                { f: 'receipt-checkout.mp4', t: 'Checkout — ৪s, bKash/Nagad/Rocket' },
                 { f: 'receipt-paste.mp4', t: 'Checkout v2 — phone-paste fix, live today' },
                 { f: 'dream-job-email.mp4', t: 'AI ব্রাউজার — স্বপ্নের চাকরির ইমেইল লেখা' },
                 { f: 'receipt-workforce-10items.mp4', t: 'AI Workforce — ১০-টা রেসিপ্ট একসাথে' },
