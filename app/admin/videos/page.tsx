@@ -31,6 +31,21 @@ export default async function AdminVideos() {
     files = fs.readdirSync(OUTPUT_DIR).filter((f: string) => f.endsWith('.mp4') || f.endsWith('.png')).slice(-20)
   } catch {}
 
+  // V87: real failure reason per row (VideoQueue.renderError — the worker's
+  // honest error, e.g. "upload/complete 413" from the 2026-09-26 retry loop).
+  let qErrs: Record<string, string> = {}
+  try {
+    const qrows = await prisma.videoQueue.findMany({
+      where: { error: { not: null } },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: { videoId: true, error: true, renderError: true },
+    })
+    for (const q of qrows) {
+      if (q.videoId && !qErrs[q.videoId]) qErrs[q.videoId] = (q.renderError || q.error || '').slice(0, 300)
+    }
+  } catch {}
+
   return (
     <div className="min-h-screen bg-[#fffdf6] p-6 text-black">
       <div className="flex justify-between items-start gap-4">
@@ -80,6 +95,15 @@ export default async function AdminVideos() {
                 </div>
               </div>
               <div className="ml-2 flex flex-col gap-2 shrink-0">
+                {qErrs[v.id] && (
+                  <p className="text-xs text-red-700 border border-red-300 bg-red-50 rounded p-2 max-w-xs break-all">ERROR: {qErrs[v.id]}</p>
+                )}
+                {(v.status === 'failed' || v.status === 'processing') && (
+                  <form action="/api/admin/videos/retry" method="POST">
+                    <input type="hidden" name="videoId" value={v.id} />
+                    <button type="submit" className="text-xs border px-3 py-1 rounded bg-[#0E7C3A] text-white w-full">Retry</button>
+                  </form>
+                )}
                 <a href={`/api/video/logs?videoId=${v.id}`} className="text-xs border px-3 py-1 rounded bg-white text-center">Logs :8188</a>
                 {v.url && (
                   <a href={`/api/video/file?path=${encodeURIComponent(v.url)}&download=1`} className="text-xs border px-3 py-1 rounded bg-white text-center">Download</a>
