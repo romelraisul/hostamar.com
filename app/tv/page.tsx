@@ -550,6 +550,8 @@ export default function TvPage() {
                 { f: 'receipt-order.mp4', t: 'ভিডিও অ্যাড অর্ডার — ৳2,900' },
                 { f: 'receipt-delivery.mp4', t: '৩০-ঘণ্টা ডেলিভারি গ্যারান্টি — ৳2,900' },
                 { f: 'receipt-support.mp4', t: 'AI সাপোর্ট — 24/7, $0.00' },
+                { f: 'receipt-cloud-agents-new.mp4', t: 'Cloud Agents — Persistent Runtime, Memory Graph, GPU Spot, Sovereign CDN' },
+                { f: 'receipt-cloud-agents-new-narrated.mp4', t: 'Cloud Agents Narrated — Persistent Runtime, Memory Graph, GPU Spot, Sovereign CDN' },
                 { f: 'receipt-checkout.mp4', t: 'Checkout — ৪s, bKash/Nagad/Rocket' },
                 { f: 'receipt-paste.mp4', t: 'Checkout v2 — phone-paste fix, live today' },
                 { f: 'dream-job-email.mp4', t: 'AI ব্রাউজার — স্বপ্নের চাকরির ইমেইল লেখা' },
