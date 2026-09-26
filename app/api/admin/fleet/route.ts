@@ -1,17 +1,8 @@
-// /api/admin/fleet — V50 AI Employee Fleet API.
-// GET  ?limit=  → latest FleetReport rows per employee + guardian tick summary.
-// POST {employee, jobId, verdict, finished, couldnt, needsYou, raw, secret}
-//      → insert a shift report (cron employees post via WSL; guarded by
-//        FLEET_REPORT_SECRET so only the local employee chain can write).
-// V70: POST also mirrors the shift into the Ops Center — a REPORT FleetEvent
-//      (live feed) + an upsert of FleetLaneStatus (lane grid). Best-effort.
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { verifyToken } from '@/lib/auth'
-import { recordOpsEvent, verdictSeverity } from '@/lib/ops-events'
-
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/lib/auth";
+import { recordOpsEvent, verdictSeverity } from "@/lib/ops-events";
 
 const EMPLOYEES = [
   'Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill', 'Sage',
@@ -25,32 +16,32 @@ const EMPLOYEES = [
   'Channel',
   // V72: Account Safety Officer — owns suspension/termination prevention
   'Guard',
-] as const
+] as const;
 
 async function isAdmin(req: NextRequest): Promise<boolean> {
-  const token = req.cookies.get('auth_token')?.value
-  if (!token) return false
-  const payload = verifyToken(token)
-  return !!payload && (payload.role === 'admin' || payload.role === 'superadmin')
+  const token = req.cookies.get('auth_token')?.value;
+  if (!token) return false;
+  const payload = verifyToken(token);
+  return !!payload && (payload.role === 'admin' || payload.role === 'superadmin');
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || 10), 50)
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || 10), 50);
 
   // Latest report per employee: fetch recent rows and pick the newest per employee.
   const rows = await prisma.fleetReport.findMany({
     orderBy: { runAt: 'desc' },
     take: limit * EMPLOYEES.length,
-  })
-  const latest: Record<string, (typeof rows)[number] | null> = {}
-  for (const e of EMPLOYEES) latest[e] = rows.find((r) => r.employee === e) || null
+  });
+  const latest: Record<string, (typeof rows)[number] | null> = {};
+  for (const e of EMPLOYEES) latest[e] = rows.find((r) => r.employee === e) || null;
 
   // Storage summary: Telegram-backed DriveFile rows + total bytes.
   const [files, agg] = await Promise.all([
     prisma.driveFile.count(),
     prisma.driveFile.aggregate({ _sum: { fileSize: true } }),
-  ])
+  ]);
 
   return NextResponse.json({
     employees: EMPLOYEES.map((e) => ({
@@ -79,64 +70,74 @@ export async function GET(req: NextRequest) {
       // B2 is the hot cache in front of Telegram; sizes reported by the local
       // WSL syncer when present (not stored in Neon).
     },
-  })
+  });
 }
 
 export async function POST(req: NextRequest) {
+  console.log('[fleet] POST called with url:', req.url);
   // Employees run on the local PC (Hermes cron) and report through the site.
   // Two accepted auth paths: admin cookie OR FLEET_REPORT_SECRET bearer.
-  const secret = (process.env.FLEET_REPORT_SECRET || '').trim()
-  const auth = req.headers.get('authorization') || ''
-  const viaSecret = !!secret && auth === `Bearer ${secret}`
+  const secret = (process.env.FLEET_REPORT_SECRET || '').trim();
+  const auth = req.headers.get('authorization') || '';
+  const viaSecret = !!secret && auth === `Bearer ${secret}`;
+  console.log('[fleet] FLEET_REPORT_SECRET present?', !!secret);
+  console.log('[fleet] viaSecret?', viaSecret);
   if (!viaSecret && !(await isAdmin(req))) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    console.log('[fleet] auth failed');
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  let body: any
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Bad JSON' }, { status: 400 }) }
-  const employee = String(body.employee || '').trim()
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Bad JSON' }, { status: 400 });
+  }
+  console.log('[fleet] parsed body employee:', body.employee);
+  const employee = String(body.employee || '').trim();
   if (!EMPLOYEES.includes(employee as (typeof EMPLOYEES)[number])) {
-    return NextResponse.json({ error: 'Unknown employee' }, { status: 400 })
+    return NextResponse.json({ error: 'Unknown employee' }, { status: 400 });
   }
 
   // V50 dedupe guard: same employee+jobId pushing identical raw within 10 min
   // is a retry/double-push, not a new shift — return the existing row instead.
-  const raw = body.raw ? String(body.raw).slice(0, 8000) : null
+  const raw = body.raw ? String(body.raw).slice(0, 8000) : null;
   const recent = await prisma.fleetReport.findFirst({
     where: { employee, jobId: String(body.jobId || '').slice(0, 64), raw },
     orderBy: { runAt: 'desc' },
-  })
+  });
   if (recent && Date.now() - recent.runAt.getTime() < 10 * 60 * 1000) {
-    return NextResponse.json({ ok: true, id: recent.id, deduped: true })
+    return NextResponse.json({ ok: true, id: recent.id, deduped: true });
   }
 
   // V70: self-heal the FleetReport table on first use. The schema has the
   // model but no migration created it (same pattern as ensureOpsSchema for
   // FleetEvent) — without this every POST 500s on a fresh DB.
-  let tableReady = false
+  let tableReady = false;
   try {
-    await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "FleetReport" (
-      "id" TEXT NOT NULL,
-      "employee" TEXT NOT NULL,
-      "jobId" TEXT NOT NULL,
-      "verdict" TEXT,
-      "finished" TEXT,
-      "couldnt" TEXT,
-      "needsYou" TEXT,
-      "raw" TEXT,
-      "runAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT "FleetReport_pkey" PRIMARY KEY ("id")
-    )`)
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_employee_runAt_idx" ON "FleetReport"("employee", "runAt" DESC)`)
-    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_jobId_idx" ON "FleetReport"("jobId")`)
-    tableReady = true
+    await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS \"FleetReport\" (
+      \"id\" TEXT NOT NULL,
+      \"employee\" TEXT NOT NULL,
+      \"jobId\" TEXT NOT NULL,
+      \"verdict\" TEXT,
+      \"finished\" TEXT,
+      \"couldnt\" TEXT,
+      \"needsYou\" TEXT,
+      \"raw\" TEXT,
+      \"runAt\" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT \"FleetReport_pkey\" PRIMARY KEY (\"id\")
+    )`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS \"FleetReport_employee_runAt_idx\" ON \"FleetReport\"(\"employee\", \"runAt\" DESC)`);
+    await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "FleetReport_jobId_idx" ON "FleetReport"("jobId")`);
+    tableReady = true;
+    console.log('[fleet] FleetReport table ready');
   } catch (ddlErr) {
     // Best-effort: if the table already exists or DDL is rejected (Neon quota),
     // fall through to the create() call below.
-    console.error('[fleet] FleetReport DDL failed (likely Neon quota):', ddlErr instanceof Error ? ddlErr.message : ddlErr)
+    console.error('[fleet] FleetReport DDL failed (likely Neon quota):', ddlErr instanceof Error ? ddlErr.message : ddlErr);
   }
 
-  let row
+  let row;
   if (tableReady) {
     row = await prisma.fleetReport.create({
       data: {
@@ -149,18 +150,18 @@ export async function POST(req: NextRequest) {
         raw,
         runAt: body.runAt ? new Date(body.runAt) : new Date(),
       },
-    })
+    });
   } else {
     // Table unavailable (Neon quota) — accept the report but don't persist.
     // Return ok with a synthetic id so the client knows the report was received.
-    row = { id: `accepted-${Date.now()}`, degraded: true }
+    row = { id: `accepted-${Date.now()}`, degraded: true };
   }
 
   // V70 Ops Center: mirror the shift into the live feed + lane grid.
   // Best-effort and fully isolated — a failure here must never fail the report.
-  const verdict = row.verdict
-  const snippet = (row.needsYou || row.finished) ? String(row.needsYou || row.finished).slice(0, 240) : null
-  const runAt = new Date()
+  const verdict = row.verdict;
+  const snippet = (row.needsYou || row.finished) ? String(row.needsYou || row.finished).slice(0, 240) : null;
+  const runAt = new Date();
   await Promise.allSettled([
     recordOpsEvent({
       lane: employee,
@@ -175,7 +176,7 @@ export async function POST(req: NextRequest) {
       create: { employee, lastRunAt: runAt, verdict, lastSnippet: snippet },
       update: { lastRunAt: runAt, verdict, lastSnippet: snippet },
     }),
-  ])
+  ]);
 
-  return NextResponse.json({ ok: true, id: row.id })
+  return NextResponse.json({ ok: true, id: row.id });
 }
