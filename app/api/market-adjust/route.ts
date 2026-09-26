@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 
 /**
  * GET /api/market-adjust — daily cron: Fetch $HOSTA (Dexscreener) + Binance USDT/BDT + OpenRouter costs
- * Calculates suggested pricing: Starter 599 Taka = $4.74 at 126.24, adjust if USDT/BDT moves >2%
+ * Calculates suggested pricing: Starter 990 Taka = $7.84 at 126.24, adjust if USDT/BDT moves >2%
  * Writes to Neon market_adjustment { suggestedPrice, currentPrice, diff%, status: pending_approval }
  */
 export async function GET(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     if (Number.isFinite(p) && p>0) hostaPrice = p
   } catch {}
 
-  const currentPrice = 599
+  const currentPrice = 990
   const suggestedPrice = Math.round((4.74 * binance.usdtBdt) / 1) // $4.74 * BDT
   const diffPct = Math.round(((suggestedPrice - currentPrice)/currentPrice)*10000)/100
 

@@ -95,7 +95,7 @@ const productJsonLd = {
     {
       '@type': 'Offer',
       name: 'Starter',
-      price: '599',
+      price: '990',
       priceCurrency: 'BDT',
       priceValidUntil: '2026-12-31',
       description: '100 AI videos, 10GB NVMe, .com free',
@@ -103,7 +103,7 @@ const productJsonLd = {
     {
       '@type': 'Offer',
       name: 'Pro',
-      price: '1299',
+      price: '1900',
       priceCurrency: 'BDT',
       description: 'Unlimited AI videos, 20GB NVMe, API',
     },

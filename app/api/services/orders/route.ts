@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
 
   const { type = 'vps', plan = 'starter', location = 'bd', trxId = '', senderNumber = '' } = body
 
-  const planPrices: Record<string, number> = { starter: 599, pro: 1299, business: 2999 }
-  const amount = planPrices[plan] || 599
+  const planPrices: Record<string, number> = { starter: 990, pro: 1900, business: 2900 }
+  const amount = planPrices[plan] || 990
 
   // Create Transaction pending_verification
   const tx = await prisma.transaction.create({

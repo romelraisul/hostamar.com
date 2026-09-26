@@ -72,8 +72,8 @@ export const CURRENCY = 'BDT'
 
 // ============================================================================
 // V17 — PAYMENT PLANS: single source of truth for EVERY money surface.
-// 1cr = 1TK = 1 future HOST coin. Starter ৳599→6000cr · Pro ৳1299→13000cr ·
-// Business ৳2999→30000cr. All payment routes/pages MUST import from here —
+// 1cr = 1TK = 1 future HOST coin. Starter ৳990→6000cr · Pro ৳1900→13000cr ·
+// Business ৳2900→30000cr. All payment routes/pages MUST import from here —
 // no route may hardcode its own price/credit table.
 // ============================================================================
 

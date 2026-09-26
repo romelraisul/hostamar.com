@@ -281,7 +281,7 @@ async function activateSubscription(
   const planKey = (payment.planName || 'starter').toLowerCase()
   // V-price-unification: subscription.price records payment.amount (what was
   // actually paid) — the old hardcoded 500/2000/3500/5000 table contradicted
-  // checkout (599/1299/2999). Provisioning quotas unchanged.
+  // checkout (990/1900/2900). Provisioning quotas unchanged.
   const planMap: Record<string, { plan: string; videos: number; storage: number }> = {
     starter:  { plan: 'STARTER',  videos: 20,  storage: 10  },
     growth:   { plan: 'GROWTH',   videos: 30,  storage: 50  },

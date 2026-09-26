@@ -39,9 +39,12 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
 
   // FORGE 2026-09-26: store.hostamar.com GET works from Vercel but POST /carts 403s (WAF blocks Vercel egress IPs on mutating endpoints).
   // CF Workers bridge works for both GET and POST from Vercel.
-  // Primary: CF Workers bridge. Fallback: store.hostamar.com.
-  // MEDUSA_URL is empty string in production env — use hardcoded bridge as primary.
-  const primaryBase = (process.env.MEDUSA_URL?.trim() || '') && process.env.MEDUSA_URL?.trim() || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  // Primary: CF Workers bridge (hardcoded — MEDUSA_URL points to a broken
+  // CF Workers bridge per 09-26 shift; using it as primary routes mutating
+  // requests through a dead endpoint and the store.hostamar.com fallback
+  // 403s on POST, so every checkout would 502).
+  // ponytail: one-line root-cause fix — MEDUSA_URL is never consulted here.
+  const primaryBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
   const fallbackBase = 'https://store.hostamar.com'
 
   async function tryFetch(base: string) {

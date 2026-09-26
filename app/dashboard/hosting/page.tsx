@@ -71,7 +71,7 @@ export default function HostingDashboardPage() {
       : servers.length === 0 ? (
         <div className="rounded-xl border bg-white p-10 text-center">
           <p className="font-semibold text-[#0F172A]">এখনো কোনো সার্ভার নেই</p>
-          <p className="text-sm text-[#64748B] mt-1">Create one via POST /api/hosting/servers with credits (599 Taka Starter). Queue → pod created.</p>
+          <p className="text-sm text-[#64748B] mt-1">Create one via POST /api/hosting/servers with credits (990 Taka Starter). Queue → pod created.</p>
           <Link href="/dashboard/services/new" className="inline-block mt-4 rounded-full bg-[#0E7C3A] px-6 py-2 text-sm font-semibold text-white">সার্ভার তৈরি করুন</Link>
         </div>
       ) : (
