@@ -1,7 +1,7 @@
 /**
  * PAID MODE (V12) — 1cr = 1TK = 1 future HOST coin. Every customer gets a
  * 6000cr bonus at signup; spend it at products/services; buy more via bKash
- * (Starter ৳599→6000cr, Pro ৳1,299→13000cr, Business ৳2,999→30000cr).
+ * (Starter ৳990→6000cr, Pro ৳1,900→13000cr, Business ৳2,900→30000cr).
  * Race-safe metered implementation ACTIVE; every debit logs a raw-SQL audit
  * row. Insufficient → INSUFFICIENT_CREDITS → callers return 402 + bKash.
  */

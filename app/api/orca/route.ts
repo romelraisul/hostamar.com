@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
     case 'create_worktree': {
       const b = await bill(5)
-      if (!b.ok) return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: b.needed, balance: b.balance, bkash: '01822417463', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } }, { status: 402 })
+      if (!b.ok) return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: b.needed, balance: b.balance, bkash: '01822417463', plans: { Starter: '990TK → 6000cr', Pro: '1900TK → 13000cr', Business: '2900TK → 30000cr' } }, { status: 402 })
       const worktree = await createWorktree(userId, String(body.args?.name || ''), String(body.args?.agent || 'hostamar'))
       return NextResponse.json({ success: true, result: { worktree }, remaining: b.remaining })
     }
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'FORBIDDEN', message: 'Not your worktree', foreign }, { status: 403 })
       }
       const b = await bill(5 * Math.max(1, ids.length))
-      if (!b.ok) return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: b.needed, balance: b.balance, bkash: '01822417463', plans: { Starter: '599TK → 6000cr', Pro: '1299TK → 13000cr', Business: '2999TK → 30000cr' } }, { status: 402 })
+      if (!b.ok) return NextResponse.json({ error: 'INSUFFICIENT_CREDITS', needed: b.needed, balance: b.balance, bkash: '01822417463', plans: { Starter: '990TK → 6000cr', Pro: '1900TK → 13000cr', Business: '2900TK → 30000cr' } }, { status: 402 })
       const results = await fanPrompt(userId, String(body.args?.prompt || ''), ids, body.args?.model)
       return NextResponse.json({ success: true, result: { results }, remaining: b.remaining })
     }
