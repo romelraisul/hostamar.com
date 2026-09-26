@@ -236,6 +236,7 @@ async function run(job) {
       return true
     }
     console.warn('[worker] stale final on disk (brief mismatch / pre-V89) — re-rendering')
+  }
 
   for (let i = 0; i < scenes.length; i++) {
     const prefix = `hsworker_${videoId}_${i + 1}`
