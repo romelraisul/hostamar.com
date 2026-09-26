@@ -4,6 +4,9 @@ import { KAGGLE_NOTEBOOKS, NotebookKey } from '@/lib/kaggle-on-demand'
 
 export const dynamic = 'force-dynamic'
 
+export const runtime = 'edge'
+
+
 /**
  * GET /api/kaggle/logs?notebook=bonter&qwen27b|hunyuanvideo — tail of kernel log.
  * Uses the public kernel URL page (kaggle.com/code/<user>/<slug>) — the RPC

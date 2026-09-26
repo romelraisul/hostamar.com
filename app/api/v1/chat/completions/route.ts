@@ -162,3 +162,6 @@ export async function GET() {
     auth: 'optional — public works, authed users get credit accounting',
   })
 }
+
+export const runtime = 'edge'
+

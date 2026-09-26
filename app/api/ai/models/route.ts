@@ -13,3 +13,6 @@ export async function GET(){
     verification: { fb_proxy_free: true, freebuff_proxy_free: true, deepseek_v4_pro_via_fb_free: true, nvidia_removed: true, hostamar_untouched: true }
   }, { headers: { 'Access-Control-Allow-Origin': '*' } })
 }
+
+export const runtime = 'edge'
+

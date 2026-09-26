@@ -42,3 +42,6 @@ export default function App(){
     return NextResponse.json({ code, message: `✔ Generated (${code.length} chars) — preview ready`, remaining: 5900 })
   }catch(e:any){ return NextResponse.json({ error: e.message||'generate failed' }, { status:500 }) }
 }
+
+export const runtime = 'edge'
+

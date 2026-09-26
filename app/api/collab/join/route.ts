@@ -47,4 +47,7 @@ export async function POST(req: NextRequest) {
     console.error('Failed to join collab session:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}
+
+export const runtime = 'edge'
+

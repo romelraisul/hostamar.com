@@ -41,3 +41,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: e?.message || 'r2 list failed' }, { status: 500 })
   }
 }
+
+export const runtime = 'edge'
+
