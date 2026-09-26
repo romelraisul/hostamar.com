@@ -22,7 +22,7 @@ const faqLd = {
   mainEntity: [
     { '@type': 'Question', name: 'InVideo $17 vs Hostamar?', acceptedAnswer: { '@type': 'Answer', text: 'InVideo Plus $17/mo (75 credits, watermark-free). Hostamar FREE ৳0 — Bangla script + voice + caption + BGM, 10 videos/month free. Pictory Starter $19, Veed Lite $12 — Hostamar still FREE.' } },
     { '@type': 'Question', name: 'AI marketing video Bangladesh কত দ্রুত?', acceptedAnswer: { '@type': 'Answer', text: 'একটা বাংলা প্রম্পট দিন — 90 সেকেন্ডে 4K ভিডিও, watermark-free export। ঈদ/বৈশাখ/11.11 টেমপ্লেট রেডি।' } },
-    { '@type': 'Question', name: 'bKash দিয়ে পেমেন্ট?', acceptedAnswer: { '@type': 'Answer', text: 'হ্যাঁ — bKash/Nagad/Rocket অটো, কোনো ডলার কার্ড লাগবে না। Free থেকে Starter ৳599/মাস।' } },
+    { '@type': 'Question', name: 'bKash দিয়ে পেমেন্ট?', acceptedAnswer: { '@type': 'Answer', text: 'হ্যাঁ — bKash/Nagad/Rocket অটো, কোনো ডলার কার্ড লাগবে না। Free থেকে Starter ৳990/মাস।' } },
     { '@type': 'Question', name: 'Watermark থাকে?', acceptedAnswer: { '@type': 'Answer', text: 'না — FREE তেও watermark-free 1080p, Pro তে 4K। Veed free তে watermark থাকে, Hostamar এ নয়।' } },
     { '@type': 'Question', name: 'Commercial use?', acceptedAnswer: { '@type': 'Answer', text: 'হ্যাঁ — আপনার ব্র্যান্ড, আপনার ভিডিও, ফেসবুক/ইউটিউব/টিকটক সবখানে ব্যবহার করুন।' } },
   ],
@@ -185,12 +185,12 @@ export default function VideoGeneratePage() {
             <div className="rounded-[24px] border border-zinc-200 bg-white p-5">
               <h3 className="font-semibold">কেন Hostamar?</h3>
               <ul className="mt-3 text-sm space-y-2 text-zinc-600">
-                <li>✓ InVideo Max $85 vs Hostamar Starter ৳599 — Bangla-first</li>
+                <li>✓ InVideo Max $85 vs Hostamar Starter ৳990 — Bangla-first</li>
                 <li>✓ Pictory Pro $35 vs Hostamar ৳0 FREE — 10 videos/mo</li>
                 <li>✓ Veed Lite $12 watermark-free — Hostamar FREE watermark-free</li>
                 <li>✓ ১০০+ বাংলা টেমপ্লেট, BETA, bKash • Nagad • Rocket</li>
               </ul>
-              <Link href="/pricing" data-ga="pricing_click" className="mt-4 inline-flex h-10 px-5 rounded-full bg-[#0F172A] text-white text-sm font-semibold items-center">Pricing ৳0/৳599/৳1,299 দেখুন →</Link>
+              <Link href="/pricing" data-ga="pricing_click" className="mt-4 inline-flex h-10 px-5 rounded-full bg-[#0F172A] text-white text-sm font-semibold items-center">Pricing ৳0/৳990/৳1,900 দেখুন →</Link>
             </div>
             {jobId ? (
               <div className="rounded-[24px] border border-zinc-200 bg-white p-5">

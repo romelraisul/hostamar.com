@@ -49,7 +49,7 @@ export default function AdminMarket() {
       </div>
       {msg && <p className="rounded bg-slate-100 px-3 py-2 text-xs">{msg}</p>}
       <p className="text-xs text-slate-500">
-        Plans: Starter 599 · Basic 1199 · Pro 2499 · Premium 4999 Taka.
+        Plans: Starter 990 · Pro 1900 · Business 2900 Taka.
         AUTO_ADJUST = off. Drift &gt;10% is queued for your approval.
       </p>
       {trends.length === 0 && <p className="text-sm text-slate-500">No drift pending. Prices are at market.</p>}

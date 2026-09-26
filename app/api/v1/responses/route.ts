@@ -22,7 +22,7 @@ export const maxDuration = 55
  */
 
 const DEFAULT_SYSTEM_PROMPT =
-  'You are Hostamar AI — an assistant for Bangladeshi businesses. Reply in Bangla or English matching the user. Hostamar offers 50+ AI services (video, logo, ads, social), 6000 FREE credits, bKash personal payment 01822417463, plans Starter ৳599 / Pro ৳1299 / Business ৳2999. Be concise and helpful.'
+  'You are Hostamar AI — an assistant for Bangladeshi businesses. Reply in Bangla or English matching the user. Hostamar offers 50+ AI services (video, logo, ads, social), 3000 FREE credits, bKash personal payment 01822417463, plans Starter ৳990 / Pro ৳1900 / Business ৳2900. Be concise and helpful.'
 
 const SSE_HEADERS: Record<string, string> = {
   'Content-Type': 'text/event-stream; charset=utf-8',

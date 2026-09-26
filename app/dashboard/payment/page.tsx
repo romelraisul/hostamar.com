@@ -10,7 +10,7 @@ import PersonalPaymentPanel from './personal-payment-panel';
 type Plan = 'starter' | 'pro' | 'business';
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';
 
-// V17: single source of truth — lib/pricing.ts (Starter ৳599→6000cr · Pro ৳1299→13000cr · Business ৳2999→30000cr)
+// V17: single source of truth — lib/pricing.ts (Starter ৳990→6000cr · Pro ৳1900→13000cr · Business ৳2900→30000cr)
 import { PAYMENT_PLANS } from '@/lib/pricing';
 
 const PLANS = {

@@ -6,7 +6,7 @@ import { getAuthUser } from '@/lib/auth'
 import { PAYMENT_PLANS } from '@/lib/pricing'
 
 // V-price-unification: plans/prices come ONLY from lib/pricing.ts PAYMENT_PLANS
-// (Starter ৳599 · Pro ৳1,299 · Business ৳2,999). Enterprise is not sold by any
+// (Starter ৳990 · Pro ৳1,900 · Business ৳2,900). Enterprise is not sold by any
 // checkout path and has no authoritative price — removed (2026-09-14 audit).
 const planDetails: Record<string, { price: number; videosPerMonth: number; storageGB: number }> = {
   starter: { price: PAYMENT_PLANS.starter.price, videosPerMonth: 10, storageGB: 5 },

@@ -19,7 +19,7 @@ export default function SupportPage(){
           <div className="mt-3 space-y-2 text-sm text-zinc-300">
             <div><b>Q: bKash করেছি, TrxID কোথায় দেব?</b><br/>A: /dashboard/payment এ TrxID + amount দিন, admin /admin/payments এ approve করবে।</div>
             <div><b>Q: Storage কত?</b><br/>A: 5GB free, endpoint s3.us-east-005 bucket hostamar-prod key 005a26c99e410200000000001</div>
-            <div><b>Q: Pricing?</b><br/>A: Starter 599 / Pro 1299 / Business 2999 BDT</div>
+            <div><b>Q: Pricing?</b><br/>A: Starter 990 / Pro 1900 / Business 2900 BDT</div>
           </div>
         </div>
         <div className="mt-6 text-xs text-zinc-600">Widget uses Google Gemini via Vercel AI Gateway (vgw_...) with fallback to litellm http://litellm:4000/v1 and mock. Model: google/gemini-2.5-flash-lite or gpt-oss-120b.</div>

@@ -74,7 +74,7 @@ export default function SubscriptionPage() {
     {
       id: 'starter',
       name: 'Starter',
-      price: '৳599',
+      price: '৳990',
       period: '/month',
       features: ['20 videos/month', '1080p quality', '10 templates', 'Priority support'],
       current: subscription?.currentPlan === 'STARTER',

@@ -12,7 +12,7 @@ import { z } from 'zod'
 
 export const runtime = 'nodejs'
 
-// V17: single source — amounts from lib/pricing.ts PAYMENT_PLANS (599/1299/2999)
+// V17: single source — amounts from lib/pricing.ts PAYMENT_PLANS (990/1900/2900)
 const PLAN_AMOUNT: Record<string, number> = { starter: PAYMENT_PLANS.starter.price, pro: PAYMENT_PLANS.pro.price, business: PAYMENT_PLANS.business.price }
 
 const schema = z.object({

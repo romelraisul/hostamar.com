@@ -308,12 +308,12 @@ export default function Page() {
               <div className="inline-flex self-start px-3 py-1 rounded-full bg-[#0E7C3A] text-white font-en text-[11px] font-bold tracking-wide">MOST POPULAR</div>
               <div className="font-en font-semibold mt-3">Starter</div>
               <div className="font-bn text-[13px] text-white/60 mt-1">ফ্রিল্যান্সার ও স্টুডেন্ট ফেভারিট</div>
-              <div className="mt-4 flex items-baseline gap-2"><span className="font-en font-bold text-[34px]">৳599</span><span className="font-en text-white/50 text-sm">/mo</span></div>
+              <div className="mt-4 flex items-baseline gap-2"><span className="font-en font-bold text-[34px]">৳990</span><span className="font-en text-white/50 text-sm">/mo</span></div>
               <div className="font-bn text-[11px] text-white/50 mt-1">Includes Video 10 + Hosting 5GB + Chat + Browser + IDE</div>
               <ul className="mt-5 space-y-2.5 font-bn text-[13.5px] text-white/85">
                 <li>✓ 100 hours</li><li>✓ 8GB RAM • 10 projects</li><li>✓ AI unlimited (DeepSeek + CodeLlama)</li><li>✓ Custom domain + Dhaka CDN</li><li>✓ bKash / Nagad auto pay</li>
               </ul>
-              <a href="https://hostamar.com/generate" className="mt-auto pt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-[#0E7C3A] text-white font-bn font-semibold hover:bg-[#0c6a32]">Starter নিন — ৳599/mo</a>
+              <a href="https://hostamar.com/generate" className="mt-auto pt-6 inline-flex h-11 w-full items-center justify-center rounded-full bg-[#0E7C3A] text-white font-bn font-semibold hover:bg-[#0c6a32]">Starter নিন — ৳990/mo</a>
               <div className="font-en text-[11px] text-white/40 text-center mt-2">Cancel anytime • 7-day bKash refund</div>
             </div>
           </div>
@@ -322,7 +322,7 @@ export default function Page() {
           <div className="rounded-[20px] border border-zinc-200 bg-white p-6 flex flex-col">
             <div className="font-en font-semibold">Business</div>
             <div className="font-bn text-[13px] text-zinc-500 mt-1">টিম ও এজেন্সির জন্য</div>
-            <div className="mt-4 flex items-baseline gap-1"><span className="font-en font-bold text-[32px]">৳2,999</span><span className="font-en text-zinc-500 text-sm">/mo</span></div>
+            <div className="mt-4 flex items-baseline gap-1"><span className="font-en font-bold text-[32px]">৳2,900</span><span className="font-en text-zinc-500 text-sm">/mo</span></div>
             <ul className="mt-5 space-y-2.5 font-bn text-[13.5px] text-zinc-700">
               <li>✓ Unlimited hours</li><li>✓ 16GB RAM</li><li>✓ Team Live Share + roles</li><li>✓ API access + priority support</li>
             </ul>

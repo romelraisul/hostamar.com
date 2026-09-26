@@ -6,7 +6,7 @@ import { prisma as prismaClient } from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const SYSTEM = `You are Hostamar Support — you help customers in Bangla + English. You know: hostamar.com has 50 services AI video/image/logo/voiceover, pricing Starter 599/Pro 1299/Business 2999 BDT, bKash personal 01822417463 manual TrxID flow, storage B2 5GB free, TV 3700 channels stable 20, hosting. Be concise, friendly, ask for TrxID if payment issue, link to /dashboard/payment for bKash, /dashboard/storage for storage, /tv for TV, /support for human. Never reveal secrets. Use Bangla if user writes Bangla. Founder solo — autonomous mode handles when out of town.`
+const SYSTEM = `You are Hostamar Support — you help customers in Bangla + English. You know: hostamar.com has 50 services AI video/image/logo/voiceover, pricing Starter 990/Pro 1900/Business 2900 BDT, bKash personal 01822417463 manual TrxID flow, storage B2 5GB free, TV 3700 channels stable 20, hosting. Be concise, friendly, ask for TrxID if payment issue, link to /dashboard/payment for bKash, /dashboard/storage for storage, /tv for TV, /support for human. Never reveal secrets. Use Bangla if user writes Bangla. Founder solo — autonomous mode handles when out of town.`
 
 async function ensureTable(){
   try{ await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "AgentChat" (id TEXT PRIMARY KEY, role TEXT NOT NULL, content TEXT NOT NULL, "toolCalls" JSONB, "customerId" TEXT NOT NULL, "createdAt" TIMESTAMP DEFAULT NOW())`) }catch{}
