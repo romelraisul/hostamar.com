@@ -131,27 +131,34 @@ export async function POST(req: NextRequest) {
 
   // V50 dedupe guard: same employee+jobId pushing identical raw within 10 min
   // is a retry/double-push, not a new shift — return the existing row instead.
-  let row;
+  // V77: Neon is quota-locked; the create() call is individually try/catch so
+  // a quota error can't turn the report into a 500. The report is always acked.
+  let row: any;
   if (tableReady) {
-    const recent = await prisma.fleetReport.findFirst({
-      where: { employee, jobId: String(body.jobId || '').slice(0, 64), raw },
-      orderBy: { runAt: 'desc' },
-    });
-    if (recent && Date.now() - recent.runAt.getTime() < 10 * 60 * 1000) {
-      return NextResponse.json({ ok: true, id: recent.id, deduped: true });
+    try {
+      const recent = await prisma.fleetReport.findFirst({
+        where: { employee, jobId: String(body.jobId || '').slice(0, 64), raw },
+        orderBy: { runAt: 'desc' },
+      });
+      if (recent && Date.now() - recent.runAt.getTime() < 10 * 60 * 1000) {
+        return NextResponse.json({ ok: true, id: recent.id, deduped: true });
+      }
+      row = await prisma.fleetReport.create({
+        data: {
+          employee,
+          jobId: String(body.jobId || '').slice(0, 64),
+          verdict: body.verdict ? String(body.verdict).slice(0, 32) : null,
+          finished: body.finished ? String(body.finished).slice(0, 2000) : null,
+          couldnt: body.couldnt ? String(body.couldnt).slice(0, 2000) : null,
+          needsYou: body.needsYou ? String(body.needsYou).slice(0, 2000) : null,
+          raw,
+          runAt: body.runAt ? new Date(body.runAt) : new Date(),
+        },
+      });
+    } catch (createErr) {
+      console.error('[fleet] fleetReport create failed (Neon quota?):', createErr instanceof Error ? createErr.message : createErr);
+      row = { id: `accepted-${Date.now()}`, degraded: true };
     }
-    row = await prisma.fleetReport.create({
-      data: {
-        employee,
-        jobId: String(body.jobId || '').slice(0, 64),
-        verdict: body.verdict ? String(body.verdict).slice(0, 32) : null,
-        finished: body.finished ? String(body.finished).slice(0, 2000) : null,
-        couldnt: body.couldnt ? String(body.couldnt).slice(0, 2000) : null,
-        needsYou: body.needsYou ? String(body.needsYou).slice(0, 2000) : null,
-        raw,
-        runAt: body.runAt ? new Date(body.runAt) : new Date(),
-      },
-    });
   } else {
     // Table unavailable (Neon quota) — accept the report but don't persist.
     // Return ok with a synthetic id so the client knows the report was received.
