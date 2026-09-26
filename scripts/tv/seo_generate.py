@@ -43,6 +43,7 @@ PRODUCT_INFO = {
     "Browser": ("browser.hostamar.com AI Browser", "ai-browser-bangla-tutorial-2026", "AI ব্রাউজার"),
     "IDE":     ("Dev IDE — Replit alternative", "free-dev-ide-bangla-tutorial-2026", "ফ্রি ডেভ IDE"),
     "Gaming":  ("Game Tournament Platform", "game-tournament-bangla-tutorial-2026", "গেম টুর্নামেন্ট"),
+    "Own":     ("Hostamar TV Original", "own-{title}-bangla-tutorial-2026", "হোস্টামার টিভি অরিজিনাল"),
 }
 
 BANGLA_RE = re.compile(r"[\u0980-\u09FF]")
@@ -258,6 +259,12 @@ PRODUCT_SEO = {
         "keywords": ["গেম টুর্নামেন্ট", "গেমিং টিউটোরিয়াল", "অনলাইন গেম বাংলাা", "গেম প্রাইজ", "Hostamar", "Daraz", "SME", "bKash"],
         "benefit": "গেম টুর্নামেন্টে অংশ নিন, প্রাইজ জিতুন, বন্ধুদের সাথে খেলুন।",
     },
+    "Own": {
+        "titleBn": "হোস্টামার টিভি অরিজিনাল — ৩০ সেকেন্ডে রেডি | Hostamar TV",
+        "metaDescription": "হোস্টামার টিভির অরিজিনাল কনটেন্ট বাংলাায়। bKash পেমেন্ট, Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।",
+        "keywords": ["হোস্টামার টিভি", "অরিজিনাল কনটেন্ট", "বাংলা ভিডিও", "AI ভিডিও", "Hostamar", "Daraz", "SME", "bKash"],
+        "benefit": "হোস্টামার টিভির নিজস্ব কনটেন্ট দে democracia করুন, বাংলা ভয়েস ও সাবটাইটেলসহ।",
+    },
 }
 
 
@@ -269,6 +276,9 @@ def template_seo(product, title_en):
     info = PRODUCT_SEO.get(product)
     name_bn = PRODUCT_INFO.get(product, (product, "", product))[2]
     slug_base = PRODUCT_INFO.get(product, (product, f"{product.lower()}-bangla-tutorial-2026", product))[1]
+    # substitute {title} placeholder for Own product
+    if "{title}" in slug_base:
+        slug_base = slug_base.replace("{title}", re.sub(r"[^a-z0-9]+", "-", title_en.lower()).strip("-"))
     if not info:
         title = f"{name_bn} টিউটোরিয়াল — ৩০ সেকেন্ডে রেডি | Hostamar TV"
         desc = (f"ছোট ব্যবসার জন্য {name_bn} শিখুন বাংলাায় — ভিডিও দেখুন, bKash পেমেন্ট, "
@@ -616,7 +626,7 @@ def main():
         where = 'id NOT IN (SELECT "videoSourceId" FROM "TvVideoSeo")'
 
     with conn.cursor() as cur:
-        cur.execute(f'''SELECT id, product, title, "titleBn", hook, "scriptBn", "viralScore", "createdAt"
+        cur.execute(f'''SELECT id, product, title, "titleBn", "localPath", "createdAt"
                         FROM "FreeVideoSource" WHERE {where} ORDER BY "createdAt"''', params)
         cols = [d[0] for d in (cur.description or [])]
         sources = [dict(zip(cols, r)) for r in cur.fetchall()]
