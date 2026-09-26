@@ -1,10 +1,11 @@
 {
   "buildCommand": "npm run build",
+  "outputDirectory": ".next",
   "framework": "nextjs",
   "functions": {
-      "app/api/**/*.ts": {
-        "runtime": "nodejs20.x"
-      },
+    "app/api/**/*.ts": {
+      "runtime": "edge"
+    },
     "app/api/tv/playlist/route.ts": {
       "runtime": "nodejs20.x"
     },
@@ -27,7 +28,7 @@
       "runtime": "nodejs20.x"
     },
     "app/api/tv/epg.xml/route.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "edge"
     },
     "app/api/v1/models/route.ts": {
       "runtime": "nodejs20.x"
@@ -42,85 +43,54 @@
       "runtime": "nodejs20.x"
     }
   },
+  "rewrites": [
+    {
+      "source": "/v1/:match*",
+      "destination": "/api/v1/:match*"
+    }
+  ],
   "crons": [
-    {
-      "path": "/api/cron/binance-price",
-      "schedule": "0 5 * * *"
-    },
-    {
-      "path": "/api/market-adjust",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/market-sync",
-      "schedule": "0 6 * * 1"
-    },
-    {
-      "path": "/api/cron/update-models",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/tv/generate-loop",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/seo-sync",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/tv-stability",
-      "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/cron/subscription-renew",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/seo-auto-post",
-      "schedule": "0 0 * * *"
-    },
     {
       "path": "/api/cron/auto-approve",
       "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/surveillance",
-      "schedule": "45 23 * * *"
-    },
-    {
-      "path": "/api/cron/heartbeat",
-      "schedule": "30 3 * * *"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/v1/:path*",
-      "destination": "/api/v1/:path*"
     }
   ],
   "headers": [
     {
-      "source": "/_next/static/(.*)",
+      "source": "/api/v1/models",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
         }
       ]
     },
     {
-      "source": "/static/(.*)",
+      "source": "/api/v1/free-models",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/api/admin/fleet",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/api/admin/ops/feed",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
         }
       ]
     }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  }
+  ]
 }
