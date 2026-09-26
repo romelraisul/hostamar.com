@@ -209,24 +209,33 @@ function vttCuesToAss(vtt, capCount, cs) {
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)) }
 
 async function run(job) {
-  const { videoId, queueId, topic, title } = job
-  console.log(`[worker] rendering videoId=${videoId} topic="${String(topic).slice(0, 60)}..."`)
-  const scenes = buildScenes(`${title || ''} ${topic || ''}`)
+  // V89: the route now returns the FULL brief (prompt = title+prompt+description,
+  // script = raw Video.script, language) — previously destructured only
+  // {videoId,queueId,topic,title} and re-baked the hardcoded Cox's Bazar travel
+  // ad regardless of what the customer asked. topic is now the FIRST content line
+  // of the full brief so scene detection matches the real subject.
+  const { videoId, queueId, title, prompt, script, description, language } = job
+  const brief = `${prompt || ''}\n${script || ''}\n${description || ''}`
+  const topic = (brief.split('\n').map((l) => l.trim()).find(Boolean)) || String(job.topic || title || '')
+  console.log(`[worker] rendering videoId=${videoId} topic="${String(topic).slice(0, 60)}..." lang=${language || 'bn'}`)
+  const scenes = buildScenes(topic)
   const clipFiles = []
   const seed = Math.floor(Math.random() * 1_000_000)
 
-  // ── FULL-RESULT disk-reuse (V31 last-mile fix, 2026-09-02) ──
-  // If a previous run already produced the FINAL post-processed file (all 5
-  // clips + concat + VO + music + captions + transpose) and only the B2
-  // upload crashed (e.g. the 2026-09-02 `require is not defined` crash), do
-  // NOT re-render or even re-concat — go straight to upload. Zero GPU spend.
+  // FULL-RESULT disk-reuse (V31 last-mile fix, 2026-09-02) — BUT V89: only reuse if
+  // the final matches THIS brief. A stale final from an earlier run that predates
+  // the prompt fix is WRONG content; re-render it instead of re-uploading.
   const finalPath = join(WORK_DIR, `${videoId}_final.mp4`)
+  const metaPath = join(WORK_DIR, `${videoId}_final.meta`)
   if (existsSync(finalPath) && statSync(finalPath).size > 10_000) {
-    console.log(`[worker] DISK-REUSE — final already on disk (${statSync(finalPath).size} bytes), skipping render+concat+post, going straight to upload`)
-    await uploadFinal(finalPath, videoId)
-    console.log(`[worker] DONE videoId=${videoId} (reused final: ${finalPath})`)
-    return true
-  }
+    const meta = existsSync(metaPath) ? readFileSync(metaPath, 'utf8') : ''
+    if (meta === brief) {
+      console.log(`[worker] DISK-REUSE (brief match, ${statSync(finalPath).size} bytes) → upload`)
+      await uploadFinal(finalPath, videoId)
+      console.log(`[worker] DONE videoId=${videoId} (reused: ${finalPath})`)
+      return true
+    }
+    console.warn('[worker] stale final on disk (brief mismatch / pre-V89) — re-rendering')
 
   for (let i = 0; i < scenes.length; i++) {
     const prefix = `hsworker_${videoId}_${i + 1}`
@@ -253,7 +262,13 @@ async function run(job) {
 
   const vo = join(WORK_DIR, `${videoId}_vo.mp3`)
   const voVtt = join(WORK_DIR, `${videoId}_vo.vtt`)
-  execFileSync(PY, ['-m', 'edge_tts', '--voice', 'bn-IN-TanishaaNeural', '--rate=-5%', '--text', job.language === 'en' ? 'Escape the routine — Bogra to Cox\'s Bazar special package! Call now to book!' : VO_DEFAULT, '--write-media', vo, '--write-subtitles', voVtt], { stdio: 'inherit' })
+  // V89: derive the VO from the customer's brief — VO: "..." lines (or plain-quoted
+  // narration lines, else first 3 non-empty lines) — instead of the hardcoded
+  // Cox's Bazar travel ad VO_DEFAULT. Language switches the fallback voice line.
+  const voLines = (brief.match(/VO[^"\n]*["“]([^"”]+)["”]/g) || []).map((l) => l.replace(/^VO[^"\n]*["“]/, '').replace(/["”]$/, ''))
+  if (voLines.length === 0) voLines.push(...brief.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 3))
+  const voText = voLines.slice(0, 3).join(' ')
+  execFileSync(PY, ['-m', 'edge_tts', '--voice', 'bn-IN-TanishaaNeural', '--rate=-5%', '--text', voText, '--write-media', vo, '--write-subtitles', voVtt], { stdio: 'inherit' })
 
   // ── V33 captions: ASS subtitles (libass+harfbuzz, BOTH verified in this
   // ffmpeg build's configure line). V32 shipped broken conjuncts (হো-টেল): the
@@ -394,6 +409,8 @@ async function run(job) {
     '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-r', '30',
     '-c:a', 'copy', '-movflags', '+faststart', final], { stdio: 'inherit' })
   console.log(`[worker] final: ${final} (${existsSync(final) ? Math.round(statSync(final).size / 1e6) : '?'}MB)`)
+  // V89: brief fingerprint so a later disk-reuse skips only if the SAME brief rendered it.
+  writeFileSync(join(WORK_DIR, `${videoId}_final.meta`), brief, 'utf8')
 
   // Upload — V33: presigned B2 direct PUT (finals are now 25-30MB, over the
   // ~4.5MB Vercel body cap). The worker asks /api/videos/upload/presign for a
