@@ -104,6 +104,14 @@ export async function GET(req: NextRequest) {
           .join('\n')
       }
     }
+    // V89: ship the full brief the worker actually needs — prompt (title+prompt+desc),
+    // raw script (customer-written script/JSON), description, language. Worker used to
+    // only receive topic+title → rendered a hardcoded template regardless of subject.
+    let script: string | undefined
+    if (candidate.videoId) {
+      const sv = await prisma.video.findUnique({ where: { id: candidate.videoId }, select: { script: true } }).catch(() => null)
+      script = (sv?.script ?? undefined) as string | undefined
+    }
 
     return NextResponse.json({
       ok: true,
@@ -114,6 +122,7 @@ export async function GET(req: NextRequest) {
       description,
       language,
       prompt,
+      script,
       engine: 'hunyuanvideo-1.5-8b-fp8-comfyui-local',
     })
   } catch (e: any) {
