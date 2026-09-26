@@ -10,3 +10,6 @@ export async function GET(req: NextRequest) {
   const code = await getOrCreateReferralCode(user.id)
   return NextResponse.json({ code, link: referralLinkFor(code) })
 }
+
+export const runtime = 'edge'
+

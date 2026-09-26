@@ -175,3 +175,6 @@ export async function GET() {
     metrics,
   });
 }
+
+export const runtime = 'edge'
+

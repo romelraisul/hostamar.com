@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateApiKey } from '@/lib/apikey'
 
+export const runtime = 'edge'
+
+
 // POST /api/ai-gateway/validate
 // Called by the local AI gateway (hostamar-ai-gateway) to validate a customer
 // API key and return the permissions/credits it should enforce. The gateway

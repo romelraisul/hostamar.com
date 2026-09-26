@@ -55,3 +55,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: e?.message || 'heartbeat failed' }, { status: 500 })
   }
 }
+
+export const runtime = 'edge'
+

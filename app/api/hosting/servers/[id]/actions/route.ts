@@ -141,3 +141,5 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return NextResponse.json({ error: e.message || 'Delete failed' }, { status: 500 });
   }
 }
+
+export const runtime = 'edge'

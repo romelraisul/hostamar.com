@@ -3,6 +3,9 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { generateInvoice } from '@/lib/invoice'
 
+export const runtime = 'edge'
+
+
 /**
  * POST /api/invoices/generate
  * Body: { orderId: string }  (orderId = Payment.transactionId)

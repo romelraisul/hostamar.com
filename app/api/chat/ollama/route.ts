@@ -14,6 +14,9 @@ const GEMINI_API_KEY = env.GEMINI_API_KEY || env.GOOGLE_API_KEY || ''
 
 const MODELS_AVAILABLE = ['qwen3.6:latest', 'hermes3:latest', 'granite4.1:8b']
 
+export const runtime = 'edge'
+
+
 // Helper: call Google Gemini API (free tier, always works on Vercel)
 async function callGemini(messages: any[]) {
   const systemMsg = messages.find(m => m.role === 'system')

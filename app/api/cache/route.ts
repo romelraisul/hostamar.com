@@ -55,4 +55,7 @@ export async function DELETE(request: NextRequest) {
 
   responseCache.clear()
   return NextResponse.json({ success: true, message: 'Cache cleared' })
-}
+}
+
+export const runtime = 'edge'
+

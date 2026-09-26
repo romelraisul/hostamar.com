@@ -4,6 +4,9 @@ export const dynamic = 'force-dynamic'
 
 const WORKER_URL = process.env.WORKER_URL || 'https://hostamar-orchestrator.romelraisul.workers.dev'
 
+export const runtime = 'edge'
+
+
 /**
  * Vercel frontend proxy to Cloudflare Worker orchestrator.
  * Lightweight — NO heavy CPU, just forwards to Worker.

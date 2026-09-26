@@ -14,3 +14,6 @@ export async function GET() {
   } catch {}
   return NextResponse.json({ nodes })
 }
+
+export const runtime = 'edge'
+

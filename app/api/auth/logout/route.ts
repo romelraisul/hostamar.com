@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 
+export const runtime = 'edge'
+
+
 // POST /api/auth/logout
 // Clears both the custom JWT cookie (auth_token) and the NextAuth session
 // cookie so the dashboard logout button actually logs the user out client-side.

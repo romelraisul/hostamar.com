@@ -2,6 +2,9 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = 'edge'
+
+
 // Quiz questions for OSSU Academy
 const quizzes = {
   "prog-fund": [

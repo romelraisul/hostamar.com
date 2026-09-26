@@ -19,3 +19,6 @@ export async function POST(req: Request) {
     preview: `/api/video-os/qwen-rgba?repo=${encodeURIComponent(found.name)} -> 1024x256 RGBA logo for Bogura TV lower third`,
   })
 }
+
+export const runtime = 'edge'
+

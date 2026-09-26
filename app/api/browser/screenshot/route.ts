@@ -68,3 +68,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request', message: error?.message }, { status: 400 });
   }
 }
+
+export const runtime = 'edge'

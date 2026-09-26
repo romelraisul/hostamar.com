@@ -1,10 +1,5 @@
 {
   "buildCommand": "npm run build",
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "edge"
-    }
-  },
   "rewrites": [
     {
       "source": "/v1/:path*",

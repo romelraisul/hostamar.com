@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { pushFleetNote } from '@/lib/support/fleet-push'
 
+export const runtime = 'edge'
+
+
 // One-time route to push Warden report from local cron
 // Call with: curl -X POST https://hostamar.com/api/admin/warden-report -H "Content-Type: application/json" -d '{"report":"..."}'
 export async function POST(req: NextRequest) {

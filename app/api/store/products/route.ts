@@ -1,3 +1,6 @@
+
+export const runtime = 'edge'
+
 // Catalog changes ~never (116-123 products, manual admin edits). Stale-by-5min
 // at the edge is irrelevant for a 2-click buyer and removes the per-request
 // cold function + bridge hop that made 2/3 prod loads take ~20s.

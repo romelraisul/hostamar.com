@@ -3,6 +3,9 @@ import { HOSTING_PLANS, WELCOME_CREDITS } from '@/lib/pricing'
 
 export const dynamic = 'force-dynamic'
 
+export const runtime = 'edge'
+
+
 /**
  * GET /api/binance-price — live USDT/BDT (Binance P2P first) + converted anchors.
  * Public: read-only market data, no secrets.

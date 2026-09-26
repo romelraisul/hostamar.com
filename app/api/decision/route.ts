@@ -33,3 +33,6 @@ export async function POST(req: Request) {
     sidecar: { ram: '300MB', ece: '1.44%', acc: '77.10%', jeff_compatible: 'TYPESAFE_BASE_URL=http://localhost:8000' },
   })
 }
+
+export const runtime = 'edge'
+

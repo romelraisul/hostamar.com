@@ -3,6 +3,9 @@ import { env } from '@/lib/env'
 
 export const dynamic = "force-dynamic";
 
+export const runtime = 'edge'
+
+
 /**
  * OAuth start — defaults to Google OAuth2.
  * SSO_* env vars override for other providers; GOOGLE_CLIENT_ID is the

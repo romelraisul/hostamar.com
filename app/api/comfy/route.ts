@@ -39,3 +39,6 @@ export async function POST(req: NextRequest){
     return new NextResponse(text, { status: r.status, headers: { 'Content-Type': r.headers.get('Content-Type') || 'application/json' } })
   }catch(e:any){ return NextResponse.json({error: e.message, comfy:false}, { status: 200 }) }
 }
+
+export const runtime = 'edge'
+

@@ -11,3 +11,6 @@ export async function POST(_req: NextRequest) {
   }
 }
 export async function GET(req: NextRequest) { return POST(req) }
+
+export const runtime = 'edge'
+

@@ -4,6 +4,9 @@ import { stopNotebook, KAGGLE_NOTEBOOKS, NotebookKey } from '@/lib/kaggle-on-dem
 
 export const dynamic = 'force-dynamic'
 
+export const runtime = 'edge'
+
+
 /**
  * POST /api/kaggle/stop — On-Demand STOP (real CancelKernelSession).
  * Frees GPU immediately — account-safe idle = COMPLETE state.

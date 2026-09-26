@@ -16,3 +16,6 @@ export async function GET(req: Request) {
     output: `~/ComfyUI/output/${repo.toLowerCase()}-rgba-1024x256.png`,
   })
 }
+
+export const runtime = 'edge'
+

@@ -3,6 +3,9 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { env } from '@/lib/env'
 
+export const runtime = 'edge'
+
+
 /**
  * POST /api/auth/reset-password  { token, password }
  * GET  /api/auth/reset-password?token=...

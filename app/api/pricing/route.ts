@@ -3,6 +3,9 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { PLANS, CURRENCY } from '@/lib/pricing'
 
+export const runtime = 'edge'
+
+
 /**
  * GET /api/pricing
  * Returns the canonical pricing plans (lib/pricing.ts — same source the

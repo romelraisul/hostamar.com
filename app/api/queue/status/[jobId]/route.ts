@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/get-auth-user';
 import { getQueue, QUEUE_NAMES } from '@/lib/queue';
 
+export const runtime = 'edge'
+
+
 /**
  * GET /api/queue/status/[jobId]
  *
