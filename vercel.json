@@ -1,8 +1,9 @@
 {
   "buildCommand": "npm run build",
+  "framework": "nextjs",
   "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "edge"
+    "app/api/auth/[...nextauth]/route.ts": {
+      "runtime": "nodejs20.x"
     },
     "app/api/tv/playlist/route.ts": {
       "runtime": "nodejs20.x"
@@ -36,23 +37,8 @@
     },
     "app/api/admin/tv/command/route.ts": {
       "runtime": "nodejs20.x"
-    },
-    "app/api/admin/ecosystem/route.ts": {
-      "runtime": "nodejs20.x"
-    },
-    "app/api/ai/android/generate/route.ts": {
-      "runtime": "nodejs20.x"
-    },
-    "app/api/auth/twitter/connect/route.ts": {
-      "runtime": "nodejs20.x"
     }
   },
-  "rewrites": [
-    {
-      "source": "/v1/:path*",
-      "destination": "/api/v1/:path*"
-    }
-  ],
   "crons": [
     {
       "path": "/api/cron/binance-price",
@@ -103,7 +89,12 @@
       "schedule": "30 3 * * *"
     }
   ],
-  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/v1/:path*",
+      "destination": "/api/v1/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/_next/static/(.*)",
@@ -120,93 +111,6 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/api/v1/models",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
-        },
-        {
-          "key": "CDN-Cache-Control",
-          "value": "public, s-maxage=3600"
-        },
-        {
-          "key": "Vercel-CDN-Cache-Control",
-          "value": "public, s-maxage=3600"
-        }
-      ]
-    },
-    {
-      "source": "/api/ai-services/catalog",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
-        }
-      ]
-    },
-    {
-      "source": "/api/docs",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
-        }
-      ]
-    },
-    {
-      "source": "/sitemap.xml",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/xml"
-        }
-      ]
-    },
-    {
-      "source": "/robots.txt",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, s-maxage=86400, stale-while-revalidate=86400"
-        },
-        {
-          "key": "Content-Type",
-          "value": "text/plain"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()"
-        }
-      ]
-    },
-    {
-      "source": "/api/video/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=60"
-        },
-        {
-          "key": "CDN-Cache-Control",
-          "value": "public, s-maxage=60"
         }
       ]
     }
