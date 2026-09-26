@@ -4,8 +4,6 @@ import { ensureSchema } from '@/lib/ensure-schema'
 
 export const maxDuration = 30
 
-export const runtime = 'edge'
-
 
 /** GET /api/tv/restream — list destinations */
 export async function GET() {

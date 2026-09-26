@@ -7,8 +7,6 @@ import { env } from '@/lib/env'
 const TWITTER_CLIENT_ID = env.TWITTER_CLIENT_ID || ''
 const REDIRECT_URI = `${env.NEXTAUTH_URL}/api/auth/twitter/callback`
 
-export const runtime = 'edge'
-
 
 // Twitter OAuth 2.0 PKCE flow — redirect user to Twitter to authorize
 export async function GET(req: NextRequest) {

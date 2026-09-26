@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 // V50: Complete status endpoint — answers "can I get all answers from chat?"
 // and "what happens when PC goes off?" and "where to see updates"

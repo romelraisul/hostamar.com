@@ -5,7 +5,6 @@ import { getBinanceRate } from '@/lib/binance'
 import { callVercelGateway } from '@/lib/ai-gateway'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 export const maxDuration = 30
 
 /**

@@ -10,7 +10,6 @@ import { getJackson } from '@/lib/sso/saml'
 import { validateQuery, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const acsQuerySchema = z.object({ tenant: z.string().regex(/^[a-z0-9-]+$/) })

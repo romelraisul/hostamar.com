@@ -25,5 +25,3 @@ export async function POST(request: NextRequest) {
     jobId: Date.now()
   })
 }
-
-export const runtime = 'edge'

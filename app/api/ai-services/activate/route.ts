@@ -4,7 +4,6 @@ import { PAYMENT_PLANS } from '@/lib/pricing'
 import { activateService } from '@/lib/pinned-chat'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 export const maxDuration = 60
 
 /**

@@ -9,7 +9,6 @@ import { prisma } from '@/lib/prisma'
 import { runAllChecks } from '@/lib/support/checks'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function requireAdmin(req: NextRequest): { id: string; role?: string } | null {

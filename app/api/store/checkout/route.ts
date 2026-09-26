@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 
 // ============================================================================
 // POST /api/store/checkout — public Medusa checkout bridge (FORGE, 2026-09-14).

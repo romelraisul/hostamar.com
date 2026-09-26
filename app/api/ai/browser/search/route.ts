@@ -135,5 +135,3 @@ async function runQuery(request: NextRequest) {
 export async function OPTIONS() {
   return new NextResponse(null, { headers: CORS_HEADERS })
 }
-
-export const runtime = 'edge'

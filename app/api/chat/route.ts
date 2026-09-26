@@ -10,7 +10,6 @@ const FALLBACK_MODEL = 'minimax/minimax-m3:free'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30 // hobby tier allows up to 60s; edge hop can take 6-8s cold
-export const runtime = 'nodejs'
 
 /**
  * POST /api/chat

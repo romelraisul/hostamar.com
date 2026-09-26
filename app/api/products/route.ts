@@ -3,8 +3,6 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { PRODUCTS } from '@/lib/products'
 
-export const runtime = 'edge'
-
 
 /**
  * 2026 feature flags per product (market-leader parity).

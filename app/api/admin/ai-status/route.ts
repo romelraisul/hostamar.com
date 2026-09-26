@@ -13,7 +13,6 @@ import { verifyToken } from '@/lib/auth'
 import { getFallbackStatus } from '@/lib/kilocode-client'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 function requireAdmin(req: NextRequest): { id: string; role?: string } | null {

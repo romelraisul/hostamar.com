@@ -10,5 +10,3 @@ export async function POST(req: Request){
   }catch{ return NextResponse.json({ok:true})}
 }
 
-export const runtime = 'edge'
-

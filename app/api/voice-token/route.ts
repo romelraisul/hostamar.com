@@ -15,7 +15,6 @@ import { z } from 'zod'
 import { AccessToken } from 'livekit-server-sdk'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 
 const voiceTokenSchema = z.object({
   participant_name: z.string().max(64).regex(/^[a-zA-Z0-9 _-]+$/).optional(),

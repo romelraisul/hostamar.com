@@ -18,7 +18,6 @@ import { createIncident, appendTimeline } from '@/lib/support/incident'
 import { notify } from '@/lib/support/telegram'
 import { env } from '@/lib/env'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const fixSchema = z.object({

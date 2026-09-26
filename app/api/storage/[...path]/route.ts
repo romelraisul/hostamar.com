@@ -3,8 +3,6 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { env } from '@/lib/env'
 
-export const runtime = 'edge'
-
 
 // Proxy storage requests to MinIO with correct bucket path
 export async function GET(

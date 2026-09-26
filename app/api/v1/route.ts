@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { callBestModel } from '@/lib/ai-fallback'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
 export const maxDuration = 55
 
 /**
