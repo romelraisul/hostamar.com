@@ -1,9 +1,11 @@
 name: Model Catalog Self-Heal
 
 on:
-  schedule:
-    - cron: '0 * * * *' # hourly
   workflow_dispatch: {}
+  # DISABLED 2026-09-27 — hourly self-heal commits burned 100 Vercel deploys/day
+  # Re-enable when quota resets: uncomment the schedule line above
+  #   schedule:
+  #     - cron: '0 * * * *' # hourly
 
 permissions:
   contents: write
