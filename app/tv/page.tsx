@@ -555,6 +555,7 @@ export default function TvPage() {
                 { f: 'receipt-cloud-agents-new-narrated.mp4', t: 'Cloud Agents Narrated — Persistent Runtime, Memory Graph, GPU Spot, Sovereign CDN' },
                 { f: 'receipt-contextgraph.mp4', t: 'Context Graph — 4 Memory Layers, $0.00' },
                 { f: 'receipt-contextgraph-narrated.mp4', t: 'Context Graph Narrated — 4 Memory Layers, $0.00' },
+                { f: 'context-graph-episode-narrated.mp4', t: 'Context Graph Episode — Agent Memory That Never Forgets (172s)' },
                 { f: 'receipt-checkout.mp4', t: 'Checkout — ৪s, bKash/Nagad/Rocket' },
                 { f: 'receipt-paste.mp4', t: 'Checkout v2 — phone-paste fix, live today' },
                 { f: 'dream-job-email.mp4', t: 'AI ব্রাউজার — স্বপ্নের চাকরির ইমেইল লেখা' },
