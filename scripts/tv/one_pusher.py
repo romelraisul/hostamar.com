@@ -10,7 +10,7 @@ import signal
 import sys
 
 TARGET = "youtube.com/live2"
-KEEP = "-f concat"  # the local publisher (writes nginx + HLS)
+KEEP = "loop.mp4"  # the local publisher loops this file
 
 me = os.getpid()
 killed, kept = [], []
