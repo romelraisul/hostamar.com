@@ -38,6 +38,9 @@
     },
     "app/api/admin/tv/command/route.ts": {
       "runtime": "nodejs@20.x"
+    },
+    "app/api/store/checkout/route.ts": {
+      "runtime": "nodejs@20.x"
     }
   },
   "rewrites": [
