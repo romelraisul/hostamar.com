@@ -6,7 +6,7 @@ import { deductCredits } from '@/lib/credits'
 import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 55
+export const maxDuration = 60
 
 
 /**
