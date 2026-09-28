@@ -5,7 +5,11 @@
 // builder prerender bug on internal error pages). Sentry runtime reporting can
 // be re-enabled here once the build is green.
 const nextConfig = {
-  output: 'standalone',
+  // Vercel: standalone output defeats Next's function bundler (every route
+  // becomes its own lambda -> 528 functions > Hobby 12-function limit,
+  // exceeded_serverless_functions_per_deployment). VERCEL=1 is set in every
+  // Vercel build env; local builds keep standalone for hostamar-next.service.
+  output: process.env.VERCEL === '1' ? undefined : 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
