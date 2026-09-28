@@ -4,7 +4,7 @@ import { sendPreferredSourceCampaign } from '@/lib/microsoft/sendPreferredSource
 import { verifyToken } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 20
+export const maxDuration = 30
 
 function requireAdmin(req: NextRequest): { id: string; role?: string } | null {
   const token = req.cookies.get('auth_token')?.value

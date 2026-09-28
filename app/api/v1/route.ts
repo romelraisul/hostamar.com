@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { callBestModel } from '@/lib/ai-fallback'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 55
+export const maxDuration = 60
 
 /**
  * GET /api/v1 — public OpenAI-compatible BASE endpoint (V36.49).

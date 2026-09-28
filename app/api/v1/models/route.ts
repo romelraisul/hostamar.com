@@ -31,7 +31,7 @@ async function getGoodModels(): Promise<GoodEntry[]> {
   try { return await modelRedis.get<GoodEntry[]>(GOOD_MODELS_KEY) ?? [] } catch { return [] }
 }
 
-export const maxDuration = 15
+export const maxDuration = 30
 
 export async function GET(_req: NextRequest) {
   // V74: KV catalog + live free-model discovery in parallel — the 120-model
