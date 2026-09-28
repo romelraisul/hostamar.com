@@ -495,7 +495,9 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { f: 'programme-eu-bd-gpu-spot-narrated.mp4', t: 'EU-BD GPU Spot Market — Narrated (221s, narrated)' },
+                { f: 'vertical-forest-episode-narrated.mp4', t: 'গাছ কীভাবে শহর ঠান্ডা করে — Vertical Forests (155s, নেরেশনসহ)' },
+                { f: 'shorts-vertical-forest.mp4', t: 'Vertical Forests Short — ৩০s Vertical' },
+                { f: 'shorts-context-graph.mp4', t: 'Context Graph Short — ৩০s Vertical' },
                 { f: 'build-log-005-narrated.mp4', t: 'Build Log 005 — Infrastructure & Growth (201s, narrated)' },
                 { f: 'programme-build-log-007-narrated.mp4', t: 'Build Log 007 — ১০৬ সার্ভিস, ১২০ মডেল, Orca ADE (১৩১s, নেরেশনসহ)' },
                 { f: 'shorts-build-log-007.mp4', t: 'Build Log 007 Short — ১০৬ সার্ভিস (৩০s Vertical)' },
