@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { browser_search_youtube_cc, PRODUCT_QUERIES } from '@/lib/tv/hunter/browserTool'
 import { ensureSchema } from '@/lib/ensure-schema'
 
-export const maxDuration = 300
+export const maxDuration = 60
 
 
 /**

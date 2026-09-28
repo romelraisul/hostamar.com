@@ -4,7 +4,7 @@ import { getAuthUser } from '@/lib/auth'
 import { enhanceVideoPrompt } from '@/lib/model-in-every-point'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 55
+export const maxDuration = 60
 
 const PLACEHOLDER_MP4 = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4'
 

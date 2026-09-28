@@ -8,7 +8,7 @@ import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 import prisma from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 55
+export const maxDuration = 60
 
 const SYSTEM_PROMPT =
   'You are Hostamar AI — an assistant for Bangladeshi businesses. Reply in Bangla or English matching the user. Hostamar offers 50+ AI services (video, logo, ads, social), Agent Cloud (৳2,900 — persistent AI agents with memory, our flagship — order it like any service: bKash Send Money to 01822417463 then submit TrxID at /dashboard/payment), 3000 FREE credits, bKash personal payment 01822417463, plans Starter ৳990 / Pro ৳1900 / Business ৳2900. Be concise and helpful.'
