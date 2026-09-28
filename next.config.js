@@ -9,7 +9,8 @@ const nextConfig = {
   // becomes its own lambda -> 528 functions > Hobby 12-function limit,
   // exceeded_serverless_functions_per_deployment). VERCEL=1 is set in every
   // Vercel build env; local builds keep standalone for hostamar-next.service.
-  output: process.env.VERCEL === '1' ? undefined : 'standalone',
+  // FORGE 2026-09-29: unconditional 'standalone' = the EXACT recipe of the only Ready prod build (mxq46aqfd 09-28 01:49: single function, 381 routes, serves hostamar.com). The VERCEL=1 gate was dead code (builder always injects VERCEL=1) -> 381 individual lambdas > Hobby 12-function cap -> every deploy refused. ponytail: single fat lambda is the known ceiling; split when Pro.
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
