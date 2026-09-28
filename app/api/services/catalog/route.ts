@@ -24,6 +24,16 @@ export async function GET() {
     services = await prisma.serviceCatalog.findMany({
       where: { isActive: true },
       orderBy: { id: 'asc' },
+      // FORGE 2026-09-28: bare findMany shipped full rows incl. `inputs` (~16MB)
+      // + promptTemplate -> ISR fallback 21.65MB > 19.07MB limit ->
+      // FALLBACK_BODY_TOO_LARGE killed EVERY production build (prod served a
+      // 2-day-old build). No public consumer reads these (CatalogService has no
+      // inputs; dashboard reads Prisma directly) — select the served shape.
+      select: {
+        id: true, name: true, nameBn: true, category: true, categoryBn: true,
+        creditCost: true, dollarRange: true, benefit: true, benefitBn: true,
+        perfectFor: true, perfectForBn: true, icon: true, isActive: true,
+      },
     })
   } catch {
     // Build-time / no-DB: return empty catalog so static export succeeds.
