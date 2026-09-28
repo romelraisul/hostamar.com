@@ -16,11 +16,15 @@ export type AuthUser = {
 export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
   // Method 1: NextAuth session (for SSR / app routes)
   const session = await getServerSession(authOptions)
-  if (session?.user?.id) {
+  // FORGE 2026-09-29: session.user is typed via next-auth module augmentation
+  // (types/next-auth.d.ts adds id) but Vercel's build tsc does not resolve it —
+  // read through an explicit any view so the file is augmentation-independent.
+  const su = (session?.user ?? {}) as { id?: string; email?: string; name?: string }
+  if (su.id) {
     return {
-      id: session.user.id as string,
-      email: session.user.email as string,
-      name: session.user.name as string,
+      id: su.id,
+      email: su.email as string,
+      name: su.name as string,
     }
   }
 
