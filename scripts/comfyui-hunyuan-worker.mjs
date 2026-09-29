@@ -286,7 +286,9 @@ async function run(job) {
   // Cox's Bazar travel ad VO_DEFAULT. Language switches the fallback voice line.
   const voLines = (brief.match(/VO[^"\n]*["“]([^"”]+)["”]/g) || []).map((l) => l.replace(/^VO[^"\n]*["“]/, '').replace(/["”]$/, ''))
   if (voLines.length === 0) voLines.push(...brief.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 3))
-  const voText = voLines.slice(0, 3).join(' ')
+  // V100: full-brief VO — 6 cue lines for a 6-clip story (was 3, which dropped
+  // the second half of multi-scene briefs).
+  const voText = voLines.slice(0, 6).join(' ')
   // V99: Bengali CosyVoice3 fine-tune (kawshikbuet17/bengali-cosyvoice3-tts) as
   // primary VO — real Bangla synthesis, sentence-split VTT so caption timings
   // stay exact. edge-tts stays as automatic fallback: a CosyVoice failure must
@@ -341,7 +343,9 @@ async function run(job) {
     const s = (sec % 60).toFixed(2).padStart(5, '0')
     return `${h}:${m}:${s}`
   }
-  const totalCapCount = Math.min(clipFiles.length, 6)
+  // V100: VO-VTT cues are sentence-grained (~6-10 for a 6-line brief), not
+  // clip-grained — capping at 6 cut the closing CTA captions.
+  const totalCapCount = 12
   // V33: caption timings come from the VO's OWN word-boundary VTT (edge-tts
   // --write-subtitles), NOT clip durations — captions can never desync from
   // the voice, and the last cue lands where the VO actually ends (~26s), with
@@ -391,9 +395,16 @@ async function run(job) {
   const final = join(WORK_DIR, `${videoId}_final.mp4`)
   const total = clipDurs.reduce((a, b) => a + b, 0)
   const music = join(WORK_DIR, `${videoId}_music.mka`)
-  execFileSync(FF, ['-y', '-f', 'lavfi', '-i',
-    `aevalsrc='0.18*sin(2*PI*196*t)+0.14*sin(2*PI*294*t)+0.10*sin(2*PI*392*t)+0.08*sin(2*PI*523*t)+0.06*sin(2*PI*659*t)':s=44100:d=${total.toFixed(2)}`,
-    '-af', 'lowpass=f=2600,highpass=f=120,tremolo=f=5.5:d=0.5,volume=0.5', music], { stdio: 'inherit' })
+  // V100: dark cinematic ambient for cinema briefs (Globalization FAILED! etc.);
+  // the bright chord stack stays for travel/promo jobs.
+  const darkAmb = /globalization|cinematic|end of an era/i.test(brief)
+  const musicSrc = darkAmb
+    ? `aevalsrc='0.20*sin(2*PI*55*t)+0.14*sin(2*PI*82.41*t)+0.10*sin(2*PI*110*t)+0.06*sin(2*PI*164.81*t)':s=44100:d=${total.toFixed(2)}`
+    : `aevalsrc='0.18*sin(2*PI*196*t)+0.14*sin(2*PI*294*t)+0.10*sin(2*PI*392*t)+0.08*sin(2*PI*523*t)+0.06*sin(2*PI*659*t)':s=44100:d=${total.toFixed(2)}`
+  const musicAf = darkAmb
+    ? 'lowpass=f=1200,highpass=f=40,tremolo=f=0.6:d=0.35,volume=0.4'
+    : 'lowpass=f=2600,highpass=f=120,tremolo=f=5.5:d=0.5,volume=0.5'
+  execFileSync(FF, ['-y', '-f', 'lavfi', '-i', musicSrc, '-af', musicAf, music], { stdio: 'inherit' })
   const mixed = join(WORK_DIR, `${videoId}_mixed.mka`)
   execFileSync(FF, ['-y', '-i', vo, '-i', music, '-filter_complex',
     '[0:a]volume=1.0[a];[1:a]volume=0.35[b];[a][b]amix=inputs=2:duration=longest[aout]',
