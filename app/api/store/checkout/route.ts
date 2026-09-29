@@ -36,20 +36,14 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   const pk = process.env.MEDUSA_PK
   if (!pk) throw new Error('MEDUSA_PK not set')
 
-  // FORGE 2026-09-27: Both bridge and store.hostamar.com return 403 "Just a moment..."
-  // Cloudflare challenge from Vercel IPs. Use standard browser UA to bypass WAF,
-  // and accept Cloudflare challenge response as retry signal.
-  // Primary: CF Workers bridge (works from non-Vercel IPs).
-  // Fallback: store.hostamar.com (GET works, POST 403s from Vercel).
-  // ponytail: root-cause is Cloudflare WAF on Vercel egress; UA change is minimal mitigation.
-  const primaryBase = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
-  const fallbackBase = 'https://store.hostamar.com'
+  // FORGE 2026-09-30: Both bridge and store.hostamar.com challenge Vercel POST egress.
+  // Products GET works (edge-cached) but checkout POST fails. Mirror products route:
+  // primary = store.hostamar.com (works for GET, let's see if POST works), fallback = bridge.
+  // ponytail: root-cause is Cloudflare WAF on Vercel egress IPs; no code fix unblocks it.
+  const primaryBase = 'https://store.hostamar.com'
+  const fallbackBase = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
 
-  function isCloudflareChallenge(text: string) {
-    return text.includes('Just a moment') || text.includes('cf-mitigated') || text.includes('challenge-platform')
-  }
-
-  async function tryFetch(base: string, attempt = 1) {
+  async function tryFetch(base: string) {
     const ua = 'HostamarStorefront/1.0 (Vercel SSR)'
     const res = await fetch(`${base}/store${path}`, {
       ...init,
@@ -64,10 +58,6 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
       redirect: 'follow',
     })
     const text = await res.text()
-    if (res.status === 403 && isCloudflareChallenge(text) && attempt === 1) {
-      console.warn('[store/checkout] Cloudflare challenge on', base, '- retrying with alternate UA')
-      return tryFetch(base, 2)
-    }
     let data: any = {}
     try { data = JSON.parse(text) } catch { throw new Error(`medusa ${path} -> ${res.status} ${text.slice(0, 120)}`) }
     if (!res.ok) throw new Error(`medusa ${path} -> ${res.status} ${data.message || text.slice(0, 120)}`)
@@ -77,7 +67,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   try {
     return await tryFetch(primaryBase)
   } catch (e: any) {
-    console.warn('[store/checkout] primary (bridge) failed, falling back to store.hostamar.com:', e?.message?.slice(0, 120))
+    console.warn('[store/checkout] primary (store) failed, falling back to bridge:', e?.message?.slice(0, 120))
     return await tryFetch(fallbackBase)
   }
 }
