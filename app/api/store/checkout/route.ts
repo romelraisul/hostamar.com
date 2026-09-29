@@ -42,8 +42,8 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   // Primary: CF Workers bridge (works from non-Vercel IPs).
   // Fallback: store.hostamar.com (GET works, POST 403s from Vercel).
   // ponytail: root-cause is Cloudflare WAF on Vercel egress; UA change is minimal mitigation.
-  const primaryBase = 'https://store.hostamar.com'
-  const fallbackBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  const primaryBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  const fallbackBase = 'https://store.hostamar.com'
 
   function isCloudflareChallenge(text: string) {
     return text.includes('Just a moment') || text.includes('cf-mitigated') || text.includes('challenge-platform')
