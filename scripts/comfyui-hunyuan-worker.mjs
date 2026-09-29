@@ -43,7 +43,7 @@ const REPO = join(__dirname, '..')
 // File values WIN over inherited process env for these keys — a stale
 // COMFYUI_WORKER_SECRET in a parent shell (e.g. a pasted placeholder from an
 // old snippet) must never shadow the real secret in .env.local.
-const FILE_ENV_KEYS = ['COMFYUI_WORKER_SECRET', 'WORKER_APP_URL', 'COMFYUI_URL', 'WORKER_POLL_MS', 'WORKER_PYTHON', 'WORKER_FFMPEG', 'WORKER_FFPROBE', 'WORKER_COMFYUI_DIR']
+const FILE_ENV_KEYS = ['COMFYUI_WORKER_SECRET', 'WORKER_APP_URL', 'COMFYUI_URL', 'WORKER_POLL_MS', 'WORKER_PYTHON', 'WORKER_COSY_PYTHON', 'WORKER_FFMPEG', 'WORKER_FFPROBE', 'WORKER_COMFYUI_DIR']
 const fileEnv = {}
 if (existsSync(join(REPO, '.env.local'))) {
   for (const line of readFileSync(join(REPO, '.env.local'), 'utf8').split(/\r?\n/)) {
@@ -60,6 +60,8 @@ const APP = process.env.WORKER_APP_URL || 'https://hostamar.com'
 const COMFY = process.env.COMFYUI_URL || 'http://127.0.0.1:8188'
 const POLL_MS = Number(process.env.WORKER_POLL_MS || 10000)
 const PY = process.env.WORKER_PYTHON || '/usr/bin/python3'
+const COSY_PY = process.env.WORKER_COSY_PYTHON || '/home/romel/CosyVoice/.venv/bin/python'
+const COSY_VO = join(REPO, 'scripts', 'cosyvoice-vo.py')
 const FF = process.env.WORKER_FFMPEG || '/usr/bin/ffmpeg'
 const COMFY_ROOT = process.env.WORKER_COMFYUI_DIR || '/home/romel/ComfyUI'
 const OUT_DIR = join(COMFY_ROOT, 'output')
@@ -238,6 +240,22 @@ async function run(job) {
     console.warn('[worker] stale final on disk (brief mismatch / pre-V89) — re-rendering')
   }
 
+  // V99b: the render window needs the RAM — ComfyUI block-swap (~20G) plus idle
+  // llama servers (qwen-local 3.4G + prism-bonsai 2.2G) OOM-killed a customer
+  // render on 2026-09-29. Stop them only when at least one clip must actually
+  // render; deliberately NOT restarted after (consecutive renders stay safe;
+  // start manually with: systemctl --user start qwen-local prism-bonsai).
+  const needRender = scenes.some((_, i) => {
+    const p = join(OUT_DIR, `hsworker_${videoId}_${i + 1}_00001.mp4`)
+    return !(existsSync(p) && statSync(p).size > 10_000)
+  })
+  if (needRender) {
+    try {
+      execFileSync('systemctl', ['--user', 'stop', 'qwen-local.service', 'prism-bonsai.service'], { stdio: 'ignore', timeout: 30_000 })
+      console.log('[worker] RAM headroom: stopped qwen-local + prism-bonsai for the render')
+    } catch { /* units absent / dbus-less — render proceeds as before */ }
+  }
+
   for (let i = 0; i < scenes.length; i++) {
     const prefix = `hsworker_${videoId}_${i + 1}`
     // Disk-reuse: a clip already rendered for this video (previous worker run,
@@ -261,7 +279,7 @@ async function run(job) {
   const combined = join(WORK_DIR, `${videoId}_combined.mp4`)
   execFileSync(FF, ['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-fflags', '+genpts', '-c', 'copy', combined], { stdio: 'inherit' })
 
-  const vo = join(WORK_DIR, `${videoId}_vo.mp3`)
+  let vo = join(WORK_DIR, `${videoId}_vo.mp3`)
   const voVtt = join(WORK_DIR, `${videoId}_vo.vtt`)
   // V89: derive the VO from the customer's brief — VO: "..." lines (or plain-quoted
   // narration lines, else first 3 non-empty lines) — instead of the hardcoded
@@ -269,7 +287,31 @@ async function run(job) {
   const voLines = (brief.match(/VO[^"\n]*["“]([^"”]+)["”]/g) || []).map((l) => l.replace(/^VO[^"\n]*["“]/, '').replace(/["”]$/, ''))
   if (voLines.length === 0) voLines.push(...brief.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 3))
   const voText = voLines.slice(0, 3).join(' ')
-  execFileSync(PY, ['-m', 'edge_tts', '--voice', 'bn-IN-TanishaaNeural', '--rate=-5%', '--text', voText, '--write-media', vo, '--write-subtitles', voVtt], { stdio: 'inherit' })
+  // V99: Bengali CosyVoice3 fine-tune (kawshikbuet17/bengali-cosyvoice3-tts) as
+  // primary VO — real Bangla synthesis, sentence-split VTT so caption timings
+  // stay exact. edge-tts stays as automatic fallback: a CosyVoice failure must
+  // never strand a render (and CosyVoice2's stock model CANNOT speak Bangla —
+  // verified 2026-09-29: EN fine, BN gibberish — only the BN fine-tune works).
+  let voDone = false
+  if (existsSync(COSY_VO)) {
+    try {
+      const voWav = join(WORK_DIR, `${videoId}_vo.wav`)
+      const r = spawnSync(COSY_PY, [COSY_VO, '--text', voText, '--out', voWav, '--vtt', voVtt],
+        { stdio: 'inherit', timeout: 900_000 })
+      if (r.status === 0 && existsSync(voWav) && statSync(voWav).size > 30_000) {
+        vo = voWav
+        voDone = true
+        console.log('[worker] VO: CosyVoice3-Bengali fine-tune OK')
+      } else {
+        console.warn(`[worker] CosyVoice VO failed (status ${r.status}) — fallback edge-tts`)
+      }
+    } catch (e) {
+      console.warn(`[worker] CosyVoice VO error (${String(e?.message || e).slice(0, 120)}) — fallback edge-tts`)
+    }
+  }
+  if (!voDone) {
+    execFileSync(PY, ['-m', 'edge_tts', '--voice', 'bn-IN-TanishaaNeural', '--rate=-5%', '--text', voText, '--write-media', vo, '--write-subtitles', voVtt], { stdio: 'inherit' })
+  }
 
   // ── V33 captions: ASS subtitles (libass+harfbuzz, BOTH verified in this
   // ffmpeg build's configure line). V32 shipped broken conjuncts (হো-টেল): the
