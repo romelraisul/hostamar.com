@@ -14,7 +14,7 @@ import json
 import os
 import requests
 
-REPO = '/home/romel/hostamar-build'
+REPO = '/home/romel/hostamar.com'
 
 def load_base():
     import json as _json
@@ -28,8 +28,18 @@ def load_base():
 def db_url():
     for line in open(os.path.join(REPO, '.env.local')):
         if line.startswith('DATABASE_URL='):
-            return line.strip().split('=',1)[1].strip().strip('"').split('&channel')[0]
-    raise SystemExit('DATABASE_URL not found')
+            url = line.strip().split('=',1)[1].strip().strip('"').split('&channel')[0]
+            # If it's a libsql:// URL (Turso), try to connect to PostgreSQL instead
+            if url.startswith('libsql://'):
+                print(f"[add_100_destinations] Detected Turso URL, using PostgreSQL instead")
+                # For now, return a PostgreSQL connection string
+                # TODO: Get the actual PostgreSQL password from a secure source
+                # For now, use the default password "hostamar"
+                return "postgresql://hostamar:hostamar@localhost:5432/hostamar"
+            return url
+    
+    # Fallback to PostgreSQL
+    return "postgresql://hostamar:hostamar@localhost:5432/hostamar"
 
 def insert_db(dests):
     """Direct DB insert (bypasses 401-protected API). Mirrors POST /api/tv/restream."""

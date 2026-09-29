@@ -32,7 +32,7 @@ COSY_MODEL_DIR = os.environ.get('COSY_MODEL_DIR', '/home/romel/ComfyUI/models/co
 COSY_PROMPT_WAV = os.environ.get('COSY_PROMPT_WAV',
                                  '/home/romel/ComfyUI/models/cosyvoice3-bengali/prompt/female_bn_6s.wav')
 SAMPLE_RATE = 24000  # CosyVoice2/3 output
-MAX_CUES = 6         # worker caps captions at 6 too — keep parity
+MAX_CUES = 12        # V100: briefs run up to ~9 sentences; worker cap is 12 too — keep parity
 
 # CosyVoice3 system prefix (the demo space prepends this for cross-lingual)
 SYS_PREFIX = 'You are a helpful assistant.<|endofprompt|>'
