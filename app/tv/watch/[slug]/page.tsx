@@ -31,7 +31,34 @@ type SeoRow = {
 async function getSeo(slug: string): Promise<SeoRow | null> {
   try {
     await ensureSchema()
-    return await (prisma as any).tvVideoSeo.findUnique({ where: { slug } })
+    const row = await (prisma as any).tvVideoSeo.findUnique({ where: { slug } })
+    if (!row) return null
+    // SQLite/Turso has no TEXT[] — keywords arrives as a Postgres array literal
+    // string ('{a,b,"c d"}') copied from the old Postgres rows. Normalize to a
+    // real array here (the one shared path for metadata + page) so .map() never
+    // throws: whole-channel heal, not per-slug.
+    if (typeof row.keywords === 'string') {
+      // ponytail: char-loop parser for Postgres array literals — boring but
+      // correct on quoted tokens with commas/spaces ("Hostamar TV") and "" escapes.
+      let s = row.keywords
+      if (s.startsWith('{') && s.endsWith('}')) s = s.slice(1, -1)
+      const out: string[] = []
+      let cur = ''
+      let inQ = false
+      for (let i = 0; i < s.length; i++) {
+        const c = s[i]
+        if (inQ) {
+          if (c === '"') {
+            if (s[i + 1] === '"') { cur += '"'; i++ } else inQ = false
+          } else cur += c
+        } else if (c === '"') inQ = true
+        else if (c === ',') { out.push(cur); cur = '' }
+        else cur += c
+      }
+      out.push(cur)
+      row.keywords = out.filter((k) => k && k !== 'NULL')
+    }
+    return row
   } catch {
     return null
   }
