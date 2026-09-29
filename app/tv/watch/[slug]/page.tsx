@@ -18,6 +18,7 @@ type SeoRow = {
   metaDescription: string
   keywords: string[]
   transcriptBn: string | null
+  schemaString: string | null
   schemaJson: unknown
   ogImage: string | null
   canonicalUrl: string
@@ -33,6 +34,16 @@ async function getSeo(slug: string): Promise<SeoRow | null> {
     await ensureSchema()
     const row = await (prisma as any).tvVideoSeo.findUnique({ where: { slug } })
     if (!row) return null
+    // Prisma column is schemaString (a JSON text); the page/metadata/player all
+    // read schemaJson — parse here, the one shared path, or every watch page
+    // silently drops its VideoObject and plays live HLS instead of the edge mp4.
+    if (typeof row.schemaJson === 'undefined' || row.schemaJson === null) {
+      try {
+        row.schemaJson = row.schemaString ? JSON.parse(row.schemaString) : null
+      } catch {
+        row.schemaJson = null
+      }
+    }
     // SQLite/Turso has no TEXT[] — keywords arrives as a Postgres array literal
     // string ('{a,b,"c d"}') copied from the old Postgres rows. Normalize to a
     // real array here (the one shared path for metadata + page) so .map() never
