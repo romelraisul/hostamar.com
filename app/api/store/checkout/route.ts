@@ -42,7 +42,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   // Primary: CF Workers bridge (works from non-Vercel IPs).
   // Fallback: store.hostamar.com (GET works, POST 403s from Vercel).
   // ponytail: root-cause is Cloudflare WAF on Vercel egress; UA change is minimal mitigation.
-  const primaryBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  const primaryBase = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
   const fallbackBase = 'https://store.hostamar.com'
 
   function isCloudflareChallenge(text: string) {
@@ -50,9 +50,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   }
 
   async function tryFetch(base: string, attempt = 1) {
-    const ua = attempt === 1
-      ? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    const ua = 'HostamarStorefront/1.0 (Vercel SSR)'
     const res = await fetch(`${base}/store${path}`, {
       ...init,
       headers: {
