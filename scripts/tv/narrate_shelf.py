@@ -106,15 +106,19 @@ def narrate_file_sync(video_path):
 
     # edge-tts (async) - use existing event loop or create new one
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            # Already in an event loop, run in a new thread
-            import concurrent.futures
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(asyncio.run, tts_edge(text, mp3))
-                ok = future.result(timeout=60)
-        else:
-            ok = loop.run_until_complete(tts_edge(text, mp3))
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # Already in an event loop, run in a new thread
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(asyncio.run, tts_edge(text, mp3))
+                    ok = future.result(timeout=60)
+            else:
+                ok = loop.run_until_complete(tts_edge(text, mp3))
+        except RuntimeError:
+            # Python 3.12+: no current event loop in this thread — create one
+            ok = asyncio.run(tts_edge(text, mp3))
     except Exception as e:
         print("    edge-tts error: " + str(e)[:80])
         ok = False
