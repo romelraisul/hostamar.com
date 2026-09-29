@@ -495,6 +495,8 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'quantum-computing-narrated.mp4', t: 'কোয়ান্টাম কম্পিউটিং — কিউবিট কী এবং কেন এটা দ্রুত (183s, নেরেশনসহ)' },
+                { f: 'shorts-quantum-computing.mp4', t: 'কোয়ান্টাম Short — ৩০s ভার্টিকেল' },
                 { f: 'vertical-forest-episode-narrated.mp4', t: 'গাছ কীভাবে শহর ঠান্ডা করে — Vertical Forests (155s, নেরেশনসহ)' },
                 { f: 'shorts-vertical-forest.mp4', t: 'Vertical Forests Short — ৩০s Vertical' },
                 { f: 'shorts-context-graph.mp4', t: 'Context Graph Short — ৩০s Vertical' },
