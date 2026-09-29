@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 export async function POST(req: Request) {
-  const pk = process.env.MEDUSA_PK || 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'
+  const pk = process.env.MEDUSA_PK
+  if (!pk) throw new Error('MEDUSA_PK not set')
   const targets: Record<string, any> = {}
   const bases: string[] = ['https://store.hostamar.com']
   if (process.env.MEDUSA_URL) bases.push(process.env.MEDUSA_URL)
