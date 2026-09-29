@@ -154,4 +154,33 @@ def main():
 
 
 if __name__ == '__main__':
+    print("[restream] service started, polling TvStreamDestination", flush=True)
+    procs = []
+    last = -1
+    while True:
+        dests = destinations()
+        if dests is None:            # DB unreachable — leave whatever runs alone
+            time.sleep(POLL_WHEN_LIVE)
+            continue
+        if len(dests) != last:
+            print(f"[restream] active destinations: {len(dests)} "
+                  f"({', '.join(p for p, _ in dests) or 'none'})", flush=True)
+            last = len(dests)
+            stop(procs, "destination set changed")
+            procs = []
+        if not dests:
+            time.sleep(POLL_WHEN_IDLE)
+            continue
+        # Restart if every encoder has died (bad key, ingest rejection).
+        if procs and all(p.poll() is not None for p in procs):
+            print("[restream] all pushers dead; relaunching", flush=True)
+            procs = []
+        if procs:
+            time.sleep(POLL_WHEN_LIVE)
+            continue
+        procs = launch(dests)
+        time.sleep(POLL_WHEN_LIVE)
+
+
+if __name__ == '__main__':
     main()
