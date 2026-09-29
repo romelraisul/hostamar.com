@@ -55,7 +55,12 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
       : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     const res = await fetch(`${base}/store${path}`, {
       ...init,
-      headers: { 'x-publishable-api-key': pk, 'user-agent': ua, 'accept': 'application/json, text/plain, */*', ...(init?.json ? { 'Content-Type': 'application/json' } : {}) },
+      headers: {
+        'x-publishable-api-key': pk,
+        'user-agent': ua,
+        'accept': 'application/json, text/plain, */*',
+        ...(init?.json ? { 'Content-Type': 'application/json' } : {}),
+      } as HeadersInit,
       body: init?.json ? JSON.stringify(init.json) : undefined,
       signal: AbortSignal.timeout(25_000),
       redirect: 'follow',
