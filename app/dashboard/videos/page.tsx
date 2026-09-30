@@ -113,6 +113,25 @@ export default function VideosPage() {
 
   // V29 — client-side WEBM export (reel pattern) + optional B2 persist
   async function exportVideoWebm(v: VideoItem) {
+    // V105: server-rendered MP4 (worker pipeline) exists → download THAT,
+    // don't re-render low-quality WEBM via canvas MediaRecorder. The black
+    // WEBM "Reel 4/4" came from this path overriding good B2 files.
+    const hasServerMp4 = !!v.url && /\.mp4(\?|$)/i.test(v.url)
+    if (hasServerMp4) {
+      setExporting(true)
+      setPreviewMsg('')
+      try {
+        const u = proxiedUrl(v)
+        const a = document.createElement('a')
+        a.href = u
+        a.download = `hostamar-${v.id.slice(0, 8)}-${Date.now()}.mp4`
+        a.click()
+        setPreviewMsg('✓ Cinematic MP4 ডাউনলোড শুরু হয়েছে')
+      } finally {
+        setExporting(false)
+      }
+      return
+    }
     const m = getManifest(v)
     if (!m || m.slides.length === 0) {
       setPreviewMsg('ম্যানিফেস্ট নেই — আগে রিট্রাই করুন (pipeline regenerate)')

@@ -165,7 +165,7 @@ def show_full_instructions():
     print()
     print("Step 4: Run Automation")
     print("  → Open new terminal (credentials loaded)")
-    print("  → cd /mnt/c/Users/romel/hostamar-local")
+    print("  → cd /home/romel/models-archive/hostamar-local-backup/hostamar-local")
     print("  → node scripts/cloudflare-setup.js")
     print()
     print("Step 5: Wait")
@@ -185,7 +185,7 @@ def run_automation(token, zone_id):
     print()
     
     # Run the Node.js script
-    script_path = Path("/mnt/c/Users/romel/hostamar-local/scripts/cloudflare-setup.js")
+    script_path = Path("/home/romel/models-archive/hostamar-local-backup/hostamar-local/scripts/cloudflare-setup.js")
     
     if not script_path.exists():
         print(f"❌ Script not found: {script_path}")
@@ -205,7 +205,7 @@ def run_automation(token, zone_id):
             capture_output=True,
             text=True,
             timeout=30,
-            cwd="/mnt/c/Users/romel/hostamar-local"
+            cwd="/home/romel/models-archive/hostamar-local-backup/hostamar-local"
         )
         
         print(result.stdout)

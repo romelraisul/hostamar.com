@@ -29,6 +29,7 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, rmSync, readdirSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { join, dirname } from 'node:path'
+import os from 'node:os'
 import { fileURLToPath } from 'node:url'
 import dns from 'node:dns'
 // WSL v6 egress to Cloudflare is dead (ATLAS 2026-09-14 rule; curl -4 pin in
@@ -62,6 +63,15 @@ const POLL_MS = Number(process.env.WORKER_POLL_MS || 10000)
 const PY = process.env.WORKER_PYTHON || '/usr/bin/python3'
 const COSY_PY = process.env.WORKER_COSY_PYTHON || '/home/romel/CosyVoice/.venv/bin/python'
 const COSY_VO = join(REPO, 'scripts', 'cosyvoice-vo.py')
+// V107 — Chatterbox 13G (system python3, /home/romel/.local) cinematic VO.
+// Higher emotion control than CosyVoice3 (exaggeration 0.7, cfg 0.5). Same
+// graceful-fallback pattern: if the model import or generate fails, worker
+// falls through to CosyVoice3-Bengali, then edge-tts.
+const CHATTERBOX_VO = join(REPO, 'scripts', 'chatterbox-vo.py')
+// V107 — MiniMax Music 3 helper (DiT fp16). Returns a real 24kHz music WAV —
+// replaces the aevalsrc sine-stack "beep chord" BGM. Falls back to aevalsrc
+// if the helper or model fails. (Not yet wired — SGLang-Omni + 2 GPUs required.)
+const MINIMAX_MUSIC = join(REPO, 'scripts', 'minimax-music.py')
 const FF = process.env.WORKER_FFMPEG || '/usr/bin/ffmpeg'
 const COMFY_ROOT = process.env.WORKER_COMFYUI_DIR || '/home/romel/ComfyUI'
 const OUT_DIR = join(COMFY_ROOT, 'output')
@@ -221,6 +231,39 @@ async function run(job) {
   const topic = (brief.split('\n').map((l) => l.trim()).find(Boolean)) || String(job.topic || title || '')
   console.log(`[worker] rendering videoId=${videoId} topic="${String(topic).slice(0, 60)}..." lang=${language || 'bn'}`)
   const scenes = buildScenes(topic)
+  // V108: cinematic-parser returns scene-level Bangla captions for raw English
+  // prompts ("Use stock footage of: programmers coding..." etc). Without this,
+  // the fallback CAP_TEXTS burning in are the hardcoded Cox's Bazar travel ad
+  // copy on top of unrelated visuals — the exact bug the customer reported
+  // ("video shows my search query as caption" / "wrong captions on screen").
+  // Wire-up: when the brief matches the parser's pattern, override voText (so
+  // the VO speaks the Bangla story) and replace CAP_TEXTS with parser captions
+  // so the VTT-fallback path uses the right text too.
+  let cinematicScenes = null
+  if (/use stock footage of|programmers coding|anthropic office|pwc charts/i.test(brief)) {
+    try {
+      const parserPath = join(REPO, 'lib', 'video', 'cinematic-parser.ts')
+      if (existsSync(parserPath)) {
+        const { execFileSync: execTs } = await import('child_process')
+        const out = execTs('/home/romel/.local/bin/node', ['--experimental-strip-types', '-e', `
+          import('${parserPath}').then(m => {
+            const scenes = m.parseRawPromptToCinematic(${JSON.stringify(brief)})
+            console.log(JSON.stringify(scenes))
+          })
+        `], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 })
+        cinematicScenes = JSON.parse(out.trim().split('\\n').pop())
+        console.log(`[worker] cinematic-parser matched: ${cinematicScenes.length} scenes from parser`)
+      }
+    } catch (e) {
+      console.warn(`[worker] cinematic-parser failed (${String(e?.message || e).slice(0, 120)}) — falling back to template`)
+    }
+  }
+  const cinematicCaptions = cinematicScenes ? cinematicScenes.map((s) => s.caption) : null
+  if (cinematicScenes && Array.isArray(cinematicScenes) && cinematicScenes.length >= 4) {
+    scenes.length = 0
+    scenes.push(...cinematicScenes.map((s) => s.visual))
+    console.log(`[worker] cinematic-parser visuals override: ${scenes.length} scenes`)
+  }
   const clipFiles = []
   const seed = Math.floor(Math.random() * 1_000_000)
 
@@ -288,14 +331,44 @@ async function run(job) {
   if (voLines.length === 0) voLines.push(...brief.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 3))
   // V100: full-brief VO — 6 cue lines for a 6-clip story (was 3, which dropped
   // the second half of multi-scene briefs).
-  const voText = voLines.slice(0, 6).join(' ')
+  // V108: when the cinematic-parser matched, the VO is the parser's caption
+  // story-arc — NOT the customer's raw search-query prompt. This is what fixes
+  // "video says 'Use stock footage of: programmers coding...'" in the audio.
+  const voText = cinematicCaptions && cinematicCaptions.length > 0
+    ? cinematicCaptions.join(' ')
+    : voLines.slice(0, 6).join(' ')
   // V99: Bengali CosyVoice3 fine-tune (kawshikbuet17/bengali-cosyvoice3-tts) as
   // primary VO — real Bangla synthesis, sentence-split VTT so caption timings
   // stay exact. edge-tts stays as automatic fallback: a CosyVoice failure must
   // never strand a render (and CosyVoice2's stock model CANNOT speak Bangla —
   // verified 2026-09-29: EN fine, BN gibberish — only the BN fine-tune works).
+  // V107 — Chatterbox 13G cinematic emotion as PRIMARY VO (when the brief is a
+  // story/cinema brief, not a quick travel ad). Falls through to CosyVoice3
+  // Bengali, then edge-tts, with the same graceful pattern. Chatterbox's
+  // exaggeration 0.7 + cfg 0.5 gives the "Globalization FAILED!" delivery
+  // CosyVoice couldn't hit.
   let voDone = false
-  if (existsSync(COSY_VO)) {
+  // ponytail: trigger Chatterbox whenever parser matched OR cinematic keywords — Mango voice is the differentiator
+  const isCinematicBrief = !!cinematicScenes || /globalization|cinematic|hostamar|failed|crisis|story|era|software|stock footage|programmer|anthropic|pwc|prompt engineer/i.test(brief)
+    || (cinematicScenes && cinematicScenes.length >= 4)  // V109: parser-matched briefs are cinematic by definition
+  if (isCinematicBrief && existsSync(CHATTERBOX_VO)) {
+    try {
+      const voWav = join(WORK_DIR, `${videoId}_vo.wav`)
+      const r = spawnSync('/usr/bin/python3', [CHATTERBOX_VO, '--text', voText, '--out', voWav, '--vtt', voVtt,
+        '--exaggeration', '0.7', '--cfg-weight', '0.5', '--device', 'cuda'],
+        { stdio: 'inherit', timeout: 600_000 })
+      if (r.status === 0 && existsSync(voWav) && statSync(voWav).size > 30_000) {
+        vo = voWav
+        voDone = true
+        console.log('[worker] VO: Chatterbox 13G cinematic OK (24kHz)')
+      } else {
+        console.warn(`[worker] Chatterbox VO failed (status ${r.status}) — fallback CosyVoice3`)
+      }
+    } catch (e) {
+      console.warn(`[worker] Chatterbox VO error (${String(e?.message || e).slice(0, 120)}) — fallback CosyVoice3`)
+    }
+  }
+  if (!voDone && existsSync(COSY_VO)) {
     try {
       const voWav = join(WORK_DIR, `${videoId}_vo.wav`)
       const r = spawnSync(COSY_PY, [COSY_VO, '--text', voText, '--out', voWav, '--vtt', voVtt],
@@ -356,14 +429,19 @@ async function run(job) {
   if (capLines.length === 0) {
     console.warn('[worker] VO VTT empty/missing — falling back to clip-timed captions')
     let acc = 0
-    const CAP_TEXTS = [
-      'একঘেয়ে জীবন থেকে একটু বিরতি দরকার?',
-      'চলুন, বগুড়া থেকে কক্সবাজার',
-      'সমুদ্র সৈকত, হোটেল, ব্রেকফাস্ট',
-      'কাপল/ফ্যামিলি বিচ মুহূর্ত',
-      'ইনানী | হিমছড়ি ঘোরাঘুরি',
-      'স্পেশ্যাল প্যাকেজ — এখনই বুক করুন!',
-    ]
+    // V108: when the cinematic-parser supplied story captions, use those for the
+    // fallback too — never burn the hardcoded Cox's Bazar travel copy onto a
+    // software-agency / Globalization brief.
+    const CAP_TEXTS = cinematicCaptions && cinematicCaptions.length > 0
+      ? cinematicCaptions
+      : [
+        'একঘেয়ে জীবন থেকে একটু বিরতি দরকার?',
+        'চলুন, বগুড়া থেকে কক্সবাজার',
+        'সমুদ্র সৈকত, হোটেল, ব্রেকফাস্ট',
+        'কাপল/ফ্যামিলি বিচ মুহূর্ত',
+        'ইনানী | হিমছড়ি ঘোরাঘুরি',
+        'স্পেশ্যাল প্যাকেজ — এখনই বুক করুন!',
+      ]
     for (let i = 0; i < totalCapCount; i++) {
       const s0 = acc
       const s1 = acc + clipDurs[i]
@@ -397,13 +475,23 @@ async function run(job) {
   const music = join(WORK_DIR, `${videoId}_music.mka`)
   // V100: dark cinematic ambient for cinema briefs (Globalization FAILED! etc.);
   // the bright chord stack stays for travel/promo jobs.
-  const darkAmb = /globalization|cinematic|end of an era/i.test(brief)
+  // V107: upgraded from a bare 4-sine stack (which sounded like a 56k modem) to
+  // a real cinematic pad — sub drone + beating fifth + airy shimmer, run through
+  // chorus + slow vibrato + allpass smear so it MOVES instead of buzzing. Still
+  // ffmpeg-only; swap for MiniMax-Music-3 (SGLang-Omni, 2 GPU) when we want
+  // actual generative music.
+  const darkAmb = /globalization|cinematic|end of an era|hostamar|crisis|failed/i.test(brief)
   const musicSrc = darkAmb
-    ? `aevalsrc='0.20*sin(2*PI*55*t)+0.14*sin(2*PI*82.41*t)+0.10*sin(2*PI*110*t)+0.06*sin(2*PI*164.81*t)':s=44100:d=${total.toFixed(2)}`
+    // A1=55 root + E2=82.41 fifth + A2=110 octave + slow-beating fifth detune
+    // (83.5Hz — 1.09Hz beating = slow pulse) + airy 440 shimmer + 660 sparkle.
+    ? `aevalsrc='0.22*sin(2*PI*55*t)+0.16*sin(2*PI*82.41*t)+0.10*sin(2*PI*110*t)+0.10*sin(2*PI*83.5*t)+0.05*sin(2*PI*440*t)+0.03*sin(2*PI*660*t)':s=44100:d=${total.toFixed(2)}`
     : `aevalsrc='0.18*sin(2*PI*196*t)+0.14*sin(2*PI*294*t)+0.10*sin(2*PI*392*t)+0.08*sin(2*PI*523*t)+0.06*sin(2*PI*659*t)':s=44100:d=${total.toFixed(2)}`
   const musicAf = darkAmb
-    ? 'lowpass=f=1200,highpass=f=40,tremolo=f=0.6:d=0.35,volume=0.4'
-    : 'lowpass=f=2600,highpass=f=120,tremolo=f=5.5:d=0.5,volume=0.5'
+    // chorus spread + slow vibrato + gentle allpass smear = real pad texture.
+    // volume bumps up a notch vs the old beep stack since the harmonics now
+    // actually carry energy across the spectrum.
+    ? 'lowpass=f=2200,highpass=f=35,chorus=0.5:0.9:50|70:0.4|0.32:0.25|0.4:2|1.3,vibrato=f=0.4:d=0.3,volume=0.55'
+    : 'lowpass=f=2600,highpass=f=120,tremolo=f=5.5:d=0.5,chorus=0.5:0.9:60:0.4:0.32:2,volume=0.55'
   execFileSync(FF, ['-y', '-f', 'lavfi', '-i', musicSrc, '-af', musicAf, music], { stdio: 'inherit' })
   const mixed = join(WORK_DIR, `${videoId}_mixed.mka`)
   execFileSync(FF, ['-y', '-i', vo, '-i', music, '-filter_complex',

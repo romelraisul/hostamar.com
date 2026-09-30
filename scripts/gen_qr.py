@@ -13,7 +13,7 @@ for key, (name, value, color) in payments.items():
     qr.add_data(value)
     qr.make(fit=True)
     img = qr.make_image(fill_color=color, back_color='white')
-    path = f'/mnt/c/Users/romel/hostamar-local/public/qr/{key}.png'
+    path = f'/home/romel/models-archive/hostamar-local-backup/hostamar-local/public/qr/{key}.png'
     img.save(path)
     print(f'Saved {path}: {name} - {value} [{img.size}]')
 
