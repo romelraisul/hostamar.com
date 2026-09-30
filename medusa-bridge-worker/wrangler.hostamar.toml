@@ -18,3 +18,6 @@ routes = [
   { pattern = "hostamar.com/api/store/checkout*", zone_name = "hostamar.com" },
   { pattern = "hostamar.com/api/store/checkout/health", zone_name = "hostamar.com" },
 ]
+
+# Add account_id to avoid authentication warnings
+account_id = "YOUR_ACCOUNT_ID"

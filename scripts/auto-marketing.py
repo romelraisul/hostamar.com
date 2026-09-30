@@ -189,7 +189,7 @@ def run_facebook_posting():
         # In real implementation, this would call Facebook API
         # For now, save to files for manual posting
         filename = f"post_{post['type']}_{datetime.now().strftime('%Y%m%d')}.txt"
-        filepath = f"/mnt/c/Users/romel/hostamar-local/auto-posts/{filename}"
+        filepath = f"/home/romel/models-archive/hostamar-local-backup/hostamar-local/auto-posts/{filename}"
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         
         with open(filepath, 'w', encoding='utf-8') as f:
@@ -203,11 +203,11 @@ def run_youtube_content():
     print("YOUTUBE CONTENT GENERATOR")
     print("=" * 60)
     
-    os.makedirs("/mnt/c/Users/romel/hostamar-local/youtube-content", exist_ok=True)
+    os.makedirs("/home/romel/models-archive/hostamar-local-backup/hostamar-local/youtube-content", exist_ok=True)
     
     for i, video in enumerate(YOUTUBE_SCRIPTS, 1):
         filename = f"youtube_{i}_{video['title'].replace(' ', '_')[:30]}.txt"
-        filepath = f"/mnt/c/Users/romel/hostamar-local/youtube-content/{filename}"
+        filepath = f"/home/romel/models-archive/hostamar-local-backup/hostamar-local/youtube-content/{filename}"
         
         content = f"""TITLE: {video['title']}
 
@@ -246,11 +246,11 @@ Check: https://hostamar.com
 
 Would you like early access?"""
     
-    os.makedirs("/mnt/c/Users/romel/hostamar-local/auto-posts", exist_ok=True)
+    os.makedirs("/home/romel/models-archive/hostamar-local-backup/hostamar-local/auto-posts", exist_ok=True)
     
     for group in WHATSAPP_GROUPS:
         filename = f"whatsapp_{group.replace(' ', '_')}.txt"
-        filepath = f"/mnt/c/Users/romel/hostamar-local/auto-posts/{filename}"
+        filepath = f"/home/romel/models-archive/hostamar-local-backup/hostamar-local/auto-posts/{filename}"
         
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(f"GROUP: {group}\n\n{message}")
@@ -263,7 +263,7 @@ def run_email_campaign():
     print("EMAIL CAMPAIGN GENERATOR")
     print("=" * 60)
     
-    os.makedirs("/mnt/c/Users/romel/hostamar-local/auto-posts", exist_ok=True)
+    os.makedirs("/home/romel/models-archive/hostamar-local-backup/hostamar-local/auto-posts", exist_ok=True)
     
     email_content = """Subject: 🚀 Hostamar is LIVE - AI Video Tool for BD Creators!
 
@@ -296,7 +296,7 @@ Hostamar - AI Video Generation for Bangladesh
 https://hostamar.com
 """
     
-    filepath = "/mnt/c/Users/romel/hostamar-local/auto-posts/email_launch.txt"
+    filepath = "/home/romel/models-archive/hostamar-local-backup/hostamar-local/auto-posts/email_launch.txt"
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(email_content)
     

@@ -11,7 +11,7 @@ Usage:
 import os, sys, json, requests
 from datetime import datetime
 
-BASE = "/mnt/c/Users/romel/hostamar-local"
+BASE = "/home/romel/models-archive/hostamar-local-backup/hostamar-local"
 LOGS_DIR = f"{BASE}/logs"
 QUEUE_DIR = f"{BASE}/marketing-output/wa-queue"
 

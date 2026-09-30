@@ -2,7 +2,7 @@
 """HOSTAMAR OUTREACH DM SYSTEM - Automated DMs to creators"""
 import os, json
 
-BASE = "/mnt/c/Users/romel/hostamar-local"
+BASE = "/home/romel/models-archive/hostamar-local-backup/hostamar-local"
 OUTPUT = f"{BASE}/marketing-output/outreach"
 os.makedirs(OUTPUT, exist_ok=True)
 

@@ -3,7 +3,7 @@
 import os, json, hashlib
 from datetime import datetime
 
-BASE = "/mnt/c/Users/romel/hostamar-local"
+BASE = "/home/romel/models-archive/hostamar-local-backup/hostamar-local"
 REFERRAL_FILE = f"{BASE}/data/referrals.json"
 os.makedirs(f"{BASE}/data", exist_ok=True)
 

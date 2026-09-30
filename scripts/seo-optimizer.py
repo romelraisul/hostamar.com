@@ -2,7 +2,7 @@
 """HOSTAMAR SEO OPTIMIZER - Meta tags, OG images, keyword optimization"""
 import os, json
 
-BASE = "/mnt/c/Users/romel/hostamar-local"
+BASE = "~/models-archive/hostamar-local-backup/hostamar-local"
 OUTPUT_DIR = f"{BASE}/marketing-output/seo"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 

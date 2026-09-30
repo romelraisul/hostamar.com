@@ -42,10 +42,18 @@ export async function POST(req: NextRequest) {
     // Own row only (IDOR-safe).
     const video = await prisma.video.findFirst({
       where: { id: videoId, customerId: authUser.id },
-      select: { id: true },
+      select: { id: true, url: true },
     })
     if (!video) {
       return NextResponse.json({ error: 'Video not found for this account', code: 404 }, { status: 404 })
+    }
+
+    // V106: never replace a server-rendered cinematic MP4 with a low-quality
+    // canvas MediaRecorder WEBM — the black "Reel 4/4" came from doing exactly
+    // that. Only accept WEBM upgrades if the existing URL is empty/non-MP4.
+    const existingIsCinematicMp4 = !!video.url && /\.mp4(\?|$)/i.test(video.url)
+    if (existingIsCinematicMp4) {
+      return NextResponse.json({ ok: true, videoUrl: video.url, videoId, skipped: 'kept-cinematic-mp4' })
     }
 
     const buf = Buffer.from(await file.arrayBuffer())
