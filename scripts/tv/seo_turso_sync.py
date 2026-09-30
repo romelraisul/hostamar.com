@@ -55,6 +55,10 @@ def turso_env():
     """(url, token) from .env.local DATABASE_URL."""
     env = open(os.path.join(REPO, ".env.local"), encoding="utf-8").read()
     raw = re.search(r"^DATABASE_URL=(.+)$", env, re.M).group(1).strip()
+    if raw.startswith('"'):
+        raw = raw[1:]  # .env.local value is quoted; the quote is not part of the URL
+    if raw.endswith('"'):
+        raw = raw[:-1]  # trailing close-quote rides along the same way — 401 at Turso
     url, _, rest = raw.partition("?")
     token = unquote(rest.split("authToken=", 1)[1]) if "authToken=" in rest else ""
     return url, token
