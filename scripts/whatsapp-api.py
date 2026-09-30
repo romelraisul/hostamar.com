@@ -3,7 +3,7 @@
 import os, json, requests
 from datetime import datetime
 
-BASE = "/mnt/c/Users/romel/hostamar-local"
+BASE = "/home/romel/models-archive/hostamar-local-backup/hostamar-local"
 
 # WhatsApp Business API Config
 WA_CONFIG = {

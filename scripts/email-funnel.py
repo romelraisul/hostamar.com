@@ -9,7 +9,7 @@ SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 EMAIL_FROM = os.environ.get("EMAIL_FROM", "")
 EMAIL_PASS = os.environ.get("EMAIL_PASSWORD", "")
-BASE = "/mnt/c/Users/romel/hostamar-local"
+BASE = "/home/romel/models-archive/hostamar-local-backup/hostamar-local"
 LEADS_FILE = f"{BASE}/data/leads.json"
 
 def load_leads():

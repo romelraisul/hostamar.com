@@ -3,7 +3,7 @@
 import os, json
 from datetime import datetime, timedelta
 
-BASE = "/mnt/c/Users/romel/hostamar-local"
+BASE = "/home/romel/models-archive/hostamar-local-backup/hostamar-local"
 ANALYTICS_DIR = f"{BASE}/marketing-output/analytics"
 os.makedirs(ANALYTICS_DIR, exist_ok=True)
 
