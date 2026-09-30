@@ -10,7 +10,20 @@
 export default {
   async fetch(req) {
     const u = new URL(req.url)
-    const target = new URL('https://store.hostamar.com' + u.pathname + u.search)
+    // FORGE 2026-09-30: Same-zone worker on hostamar.com.
+    // Strip /api/store/checkout prefix, prepend /store for Medusa API.
+    let path = u.pathname
+    const prefix = '/api/store/checkout'
+    if (path.startsWith(prefix)) {
+      path = '/store' + path.slice(prefix.length)
+    } else if (path === '/api/store/checkout/health') {
+      // Health check endpoint
+      return new Response(JSON.stringify({ ok: true, zone: 'hostamar.com', egress: 'same-zone' }), {
+        status: 200,
+        headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' },
+      })
+    }
+    const target = new URL('https://store.hostamar.com' + path + u.search)
     const headers = new Headers(req.headers)
     headers.set('host', 'store.hostamar.com')
     const res = await fetch(target.toString(), {
@@ -23,57 +36,61 @@ export default {
   },
 
   // scheduled handler — CF Workers native cron (free tier, doesn't count as
-  // a Vercel deploy, no new service). Warm the isolate + tunnel + Medusa.
-  // NOTE: do NOT hammer the zone (store.hostamar.com sits behind CF WAF that
-  // 403s challenge-able egress — 09-14 finding); one shallow GET per 15min
-  // is nothing, keep it that way.
-  async scheduled(event, env, ctx) {
-    ctx.waitUntil(
-      Promise.all([
-        fetch('https://store.hostamar.com/health', { signal: AbortSignal.timeout(10_000) })
-          .then((r) => r.status)
-          .catch(() => 0),
-        // V3: hit the REAL buyer-facing catalog URL. Its edge item lapses
-        // every s-maxage=300s; a buyer hitting an expired item eats the
-        // ~20s blocking origin-fill (08:23: 4x19.7s). A */5 cron landing
-        // inside the stale window serves STALE (0.1-0.7s) + refreshes in
-        // background, so users never race the fill. Same-zone curl probes
-        // of this URL all returned 200 — no WAF challenge risk (CF->CF).
-        fetch('https://hostamar.com/api/store/products', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
-          .then((r) => r.status)
-          .catch(() => 0),
-        // V4: same trick for the services catalog (109 rows, /store + /chat
-        // read it). Held at max-age=60/MISS ~1.5s per probe until FORGE's
-        // SWR patch ships — keep it hot either way.
-        fetch('https://hostamar.com/api/services/catalog', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
-          .then((r) => r.status)
-          .catch(() => 0),
-        // V5 (FORGE 2026-09-15 17:1x): keep the MONEY PAGE itself warm.
-        // Root-layout cookies() makes every page fully dynamic (NOVA 09-14)
-        // -> Vercel isolate goes idle -> first buyer on a marketing link eats
-        // ~20s cold /store (measured 20.2s). */5 GET keeps the fn warm:
-        // 0.6-0.9s for the price of one discarded HTML fetch. CF->CF, no WAF
-        // risk (same egress class as the two API keeps above).
-        fetch('https://hostamar.com/store', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
-          .then((r) => r.status)
-          .catch(() => 0),
-        // V6 (FORGE 2026-09-15 17:5x): warm the CHECKOUT function itself.
-        // V2/V3 keep the Medusa ORIGIN hot, V5 the store page — but the
-        // /api/store/checkout route is its own Vercel isolate: a buyer who
-        // fills the form 1min+ after the last order eats its cold start
-        // (POST-only route, nothing ever GETs it). A GET 405s but loads the
-        // exact same function → first real POST is warm. Zero side effects.
-        fetch('https://hostamar.com/api/store/checkout', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
-          .then((r) => r.status)
-          .catch(() => 0),
-        // V7 (FORGE 2026-09-15 20:0x): warm the HOMEPAGE. Same isolate class as
-        // V5's /store keep — root-layout cookies() makes / dynamic too; probes
-        // 19:1x showed 5.8s first-hit-after-idle vs 0.4-0.8s warm. This is the
-        // link every outreach/DM lands on → cold = bounced first impression.
-        fetch('https://hostamar.com/', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
-          .then((r) => r.status)
-          .catch(() => 0),
-      ])
-    )
-  },
+    // a Vercel deploy, no new service). Warm the isolate + tunnel + Medusa.
+    // NOTE: do NOT hammer the zone (store.hostamar.com sits behind CF WAF that
+    // 403s challenge-able egress — 09-14 finding); one shallow GET per 15min
+    // is nothing, keep it that way.
+    async scheduled(event, env, ctx) {
+      ctx.waitUntil(
+        Promise.all([
+          fetch('https://store.hostamar.com/health', { signal: AbortSignal.timeout(10_000) })
+            .then((r) => r.status)
+            .catch(() => 0),
+          // Warm the SAME-ZONE worker endpoints (hostamar.com zone -> no WAF challenge)
+          fetch('https://hostamar.com/api/store/checkout/health', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+            .then((r) => r.status)
+            .catch(() => 0),
+          // V3: hit the REAL buyer-facing catalog URL. Its edge item lapses
+          // every s-maxage=300s; a buyer hitting an expired item eats the
+          // ~20s blocking origin-fill (08:23: 4x19.7s). A */5 cron landing
+          // inside the stale window serves STALE (0.1-0.7s) + refreshes in
+          // background, so users never race the fill. Same-zone curl probes
+          // of this URL all returned 200 — no WAF challenge risk (CF->CF).
+          fetch('https://hostamar.com/api/store/products', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+            .then((r) => r.status)
+            .catch(() => 0),
+          // V4: same trick for the services catalog (109 rows, /store + /chat
+          // read it). Held at max-age=60/MISS ~1.5s per probe until FORGE's
+          // SWR patch ships — keep it hot either way.
+          fetch('https://hostamar.com/api/services/catalog', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+            .then((r) => r.status)
+            .catch(() => 0),
+          // V5 (FORGE 2026-09-15 17:1x): keep the MONEY PAGE itself warm.
+          // Root-layout cookies() makes every page fully dynamic (NOVA 09-14)
+          // -> Vercel isolate goes idle -> first buyer on a marketing link eats
+          // ~20s cold /store (measured 20.2s). */5 GET keeps the fn warm:
+          // 0.6-0.9s for the price of one discarded HTML fetch. CF->CF, no WAF
+          // risk (same egress class as the two API keeps above).
+          fetch('https://hostamar.com/store', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+            .then((r) => r.status)
+            .catch(() => 0),
+          // V6 (FORGE 2026-09-15 17:5x): warm the CHECKOUT function itself.
+          // V2/V3 keep the Medusa ORIGIN hot, V5 the store page — but the
+          // /api/store/checkout route is its own Vercel isolate: a buyer who
+          // fills the form 1min+ after the last order eats its cold start
+          // (POST-only route, nothing ever GETs it). A GET 405s but loads the
+          // exact same function -> first real POST is warm. Zero side effects.
+          fetch('https://hostamar.com/api/store/checkout', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+            .then((r) => r.status)
+            .catch(() => 0),
+          // V7 (FORGE 2026-09-15 20:0x): warm the HOMEPAGE. Same isolate class as
+          // V5's /store keep -- root-layout cookies() makes / dynamic too; probes
+          // 19:1x showed 5.8s first-hit-after-idle vs 0.4-0.8s warm. This is the
+          // link every outreach/DM lands on -> cold = bounced first impression.
+          fetch('https://hostamar.com/', { signal: AbortSignal.timeout(30_000), cache: 'no-store' })
+            .then((r) => r.status)
+            .catch(() => 0),
+        ])
+      )
+    },
 }
