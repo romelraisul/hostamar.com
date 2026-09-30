@@ -36,13 +36,11 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   const pk = process.env.MEDUSA_PK
   if (!pk) throw new Error('MEDUSA_PK not set')
 
-  // FORGE 2026-09-30: Both bridge and store.hostamar.com challenge Vercel POST egress.
-  // Products GET works (edge-cached) but checkout POST fails.
-  // FIX: Deploy medusa-bridge-worker on hostamar.com zone (same-zone).
-  // Same-zone Worker egress is NOT challenged by Cloudflare WAF.
-  // primary = same-zone worker on hostamar.com, fallback = workers.dev bridge.
-  const primaryBase = 'https://hostamar.com/api/store/checkout'
-  const fallbackBase = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  // FORGE 2026-09-30: Same-zone worker not deployed (CLOUDFLARE_API_TOKEN lacks Workers:Edit scope).
+  // Workers.dev bridge egress is NOT challenged by Cloudflare WAF.
+  // Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
+  const primaryBase = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  const fallbackBase = 'https://store.hostamar.com'
 
   async function tryFetch(base: string) {
     const ua = 'HostamarStorefront/1.0 (Vercel SSR)'
