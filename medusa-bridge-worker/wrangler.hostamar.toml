@@ -1,0 +1,20 @@
+name = "hostamar-medusa-bridge"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# Deploy to hostamar.com zone (same-zone) to avoid WAF challenges on Vercel egress IPs.
+# Both store.hostamar.com and workers.dev egress get 403'd by CF WAF on POST.
+# Same-zone Worker -> hostamar.com egress is NOT challenged.
+# Deploy: npx wrangler deploy --config wrangler.hostamar.toml
+# Requires: CLOUDFLARE_API_TOKEN with Zone:Read, Zone:Edit, Workers:Edit on hostamar.com
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Same-zone routes on hostamar.com
+# POST /api/store/checkout/* -> this worker (proxies to store.hostamar.com)
+# GET  /api/store/checkout/health -> this worker (health check)
+routes = [
+  { pattern = "hostamar.com/api/store/checkout*", zone_name = "hostamar.com" },
+  { pattern = "hostamar.com/api/store/checkout/health", zone_name = "hostamar.com" },
+]

@@ -37,10 +37,11 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   if (!pk) throw new Error('MEDUSA_PK not set')
 
   // FORGE 2026-09-30: Both bridge and store.hostamar.com challenge Vercel POST egress.
-  // Products GET works (edge-cached) but checkout POST fails. Mirror products route:
-  // primary = store.hostamar.com (works for GET, let's see if POST works), fallback = bridge.
-  // ponytail: root-cause is Cloudflare WAF on Vercel egress IPs; no code fix unblocks it.
-  const primaryBase = 'https://store.hostamar.com'
+  // Products GET works (edge-cached) but checkout POST fails.
+  // FIX: Deploy medusa-bridge-worker on hostamar.com zone (same-zone).
+  // Same-zone Worker egress is NOT challenged by Cloudflare WAF.
+  // primary = same-zone worker on hostamar.com, fallback = workers.dev bridge.
+  const primaryBase = 'https://hostamar.com/api/store/checkout'
   const fallbackBase = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
 
   async function tryFetch(base: string) {
