@@ -27,9 +27,25 @@ function fiverrBasicDiscount(j: FiverrJob): number {
   return Math.max(40, Math.min(95, Math.round((1 - ourBasic / fiverrBasicBDT) * 100)));
 }
 
-/** Ensure the 55 new unique Fiverr jobs exist in ServiceCatalog (idempotent). */
+/** Ensure the 55 new unique Fiverr jobs exist in ServiceCatalog (idempotent).
+ * V117 PERF FIX: in-process 24h guard + cheap existence probe.
+ * Previously: 55× findUnique (some +tier update) on EVERY catalog read +
+ * fire-and-forget on every activateService → Vercel invocation + Turso spam.
+ * Now: warm instance short-circuits in-process; cold instance does ONE count
+ * query, returns early if all 55 already seeded. Only unseeded state pays
+ * the full loop. ponytail: clock-based guard means stale tier updates can
+ * lag up to 24h on a long-lived warm instance; acceptable vs the perf cost,
+ * tier changes are rare. */
+let lastRunAt = 0
 export async function ensureFiverrCatalog(): Promise<number> {
+  const now = Date.now()
+  if (now - lastRunAt < 24 * 3600 * 1000) return 0
+  lastRunAt = now
   const jobs = FIVERR_NEW as FiverrJob[]
+  // Cheap existence probe — count jobs, skip loop entirely if all 55 present
+  const existing = await prisma.serviceCatalog.count({ where: { id: { in: jobs.map(j => j.id) } } }).catch(() => 0)
+  if (existing === jobs.length) return 0
+
   let created = 0
   for (const j of jobs) {
     // PATCH existing rows with V12 tier pricing if missing (idempotent)
@@ -73,6 +89,7 @@ export async function ensureFiverrCatalog(): Promise<number> {
       created++
     } catch { /* concurrent seed race — fine */ }
   }
+
   return created
 }
 
@@ -126,12 +143,8 @@ export async function activateService(
   inputs: Record<string, unknown>,
 ): Promise<{ ok: true; orderId: string; chatId: string; creditCost: number; creditsRemaining: number } | { ok: false; error: string; status: number; needed?: number; balance?: number }> {
   await ensurePinnedChatSchema()
-  // V17 PERF FIX: the 112-query catalog seed/self-heal does NOT belong in the
-  // hot activation path (it alone can exceed the 60s serverless budget on a
-  // slow Neon day → 504 on the money surface). Fire it in the background; the
-  // service row read below needs no result from it (seed is idempotent and the
-  // catalog route still runs it inline for its own warm path).
-  ensureFiverrCatalog().catch(() => {})
+  // V17: catalog seed removed from hot path; V117 gates it 24h elsewhere.
+  // No fire-and-forget — Vercel bills for unawaited work as CPU time.
 
   const service = await prisma.serviceCatalog.findUnique({ where: { id: serviceId } }).catch(() => null)
   if (!service) return { ok: false, error: 'SERVICE_NOT_FOUND', status: 404 }
