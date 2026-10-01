@@ -20,6 +20,10 @@
 export interface CinematicScene {
   visual: string          // Qwen 2.1 prompt — anamorphic golden hour film grain
   caption: string         // HostamarBangla caption, Bangla story NOT raw prompt
+  vo?: string             // V112: Bangla conversational VO line — CosyVoice3-BN
+                         // reading the ENGLISH captions is what garbled the last
+                         // render ("অথার, অজেন্ট"); captions are on-screen OVERLAYS,
+                         // vo is what the voice actually says.
   duration: number        // seconds
   mood: string            // music mood tag (dark ambient / tense / hopeful / epic)
   camera: string          // camera move for the prompt
@@ -40,12 +44,12 @@ export function parseRawPromptToCinematic(raw: string): CinematicScene[] {
     // burnt onto canvas in the WEBM export bug). Visuals pair anamorphic
     // golden-hour film grain with the matching subject.
     return [
-      { visual: `anamorphic golden hour Bangladesh software company office programmers coding, multiple monitors with code, ${GOLDEN_HOUR}`, caption: 'Anthropic hiring: Engineer, Marketing, Finance, Hardware, Sales', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'dolly in office coding' },
-      { visual: `Anthropic office modern interior senior team whiteboard architecture sunset window light, ${GOLDEN_HOUR}`, caption: 'PWC 2026: 1B+ jobs analyzed', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'medium office whiteboard' },
-      { visual: `close-up PWC charts on wall LinkedIn job search screen AI Skill Jobs +69% Salary +62% data visualization, ${GOLDEN_HOUR}`, caption: 'AI Skill Jobs +69% | Salary +62%', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'close-up charts' },
-      { visual: `Bangladesh IT Export growth chart, Brain Station 23 team celebrating, aerial Dhaka city golden hour drone, ${GOLDEN_HOUR}`, caption: 'Bangladesh IT Export +13.54% = $269.8M', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'drone aerial city' },
-      { visual: `worried junior developer becomes confident senior architect whiteboarding problem solving, cinematic interior, ${GOLDEN_HOUR}`, caption: '10 din er kaj = 1-2 din', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'whiteboard medium' },
-      { visual: 'dark navy end card Hostamar logo gold glow, founder silhouette against sunset window, cinematic glow depth of field', caption: 'Prompt Engineer na, Problem Solver hou', duration: 5, mood: 'lo-fi tech epic outro', camera: 'static end card' },
+      { visual: `anamorphic golden hour Bangladesh software company office programmers coding, multiple monitors with code, ${GOLDEN_HOUR}`, caption: 'Anthropic hiring: Engineer, Marketing, Finance, Hardware, Sales', vo: 'অ্যানথ্রপিক এখন হায়ারিং করছে — ইঞ্জিনিয়ার, মার্কেটিং, ফাইন্যান্স, হার্ডওয়্যার, আর সেলস সব রোলেই।', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'dolly in office coding' },
+      { visual: `PWC 2026 data visualization wall with rising global job charts, senior analysts reviewing, modern office, ${GOLDEN_HOUR}`, caption: 'PWC 2026: 1B+ jobs analyzed', vo: 'পিডাব্লিউসি-র ২০২৬ রিপোর্টে একশো কোটিরও বেশি চাকরির ডেটা অ্যানালাইজ করা হয়েছে।', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'medium office whiteboard' },
+      { visual: `PWC consulting charts rising salary statistics dashboard, analysts at workstations, modern office golden light, ${GOLDEN_HOUR}`, caption: 'AI Skill Jobs +69% | Salary +62%', vo: 'AI স্কিল থাকলে চাকরির সংখ্যা ঊনসত্তর শতাংশ বাড়ছে, আর স্যালারি বাড়ছে বাষট্টি শতাংশ।', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'close-up charts' },
+      { visual: `aerial Dhaka city skyline golden hour drone, Brain Station 23 office young professionals celebrating, ${GOLDEN_HOUR}`, caption: 'Bangladesh IT Export +13.54% = $269.8M', vo: 'বাংলাদেশের আইটি এক্সপোর্ট তেরো দশমিক পাঁচ চার শতাংশ বেড়ে দুইশো ঊনসত্তর মিলিয়ন ডলার।', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'drone aerial city' },
+      { visual: `junior developer confidently explaining solution at a bright modern office whiteboard, mentor nodding approval, warm daylight, ${GOLDEN_HOUR}`, caption: '10 din er kaj = 1-2 din', vo: 'যে কাজে আগে দশ দিন লাগত, এখন এআই দিয়ে এক থেকে দুই দিনেই হয়ে যায়।', duration: 5, mood: 'lo-fi tech optimistic but serious', camera: 'whiteboard medium' },
+      { visual: 'dark navy end card with elegant gold Hostamar logo glow, determined founder silhouette in warm rim light, cinematic depth of field', caption: 'Prompt Engineer na, Problem Solver hou — hostamar.com 1cr = 1TK = 1 COIN', vo: 'তুমি শুধু প্রম্পট ইঞ্জিনিয়ার নয় — সমস্যা সমাধানকারী হও।', duration: 5, mood: 'lo-fi tech epic outro', camera: 'static end card' },
     ]
   }
 
