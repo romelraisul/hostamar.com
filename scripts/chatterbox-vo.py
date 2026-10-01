@@ -16,6 +16,19 @@ import re
 import subprocess
 from pathlib import Path
 
+# V110/V113: ensure the invoking python finds chatterbox's site-packages. Glob the
+# versioned dir — a hardcoded path went stale (literal '****' baked in) and the
+# patch silently no-op'd (Path.exists() False).
+import glob
+_sys_path_patches = sorted(glob.glob(
+    '/home/romel/.hermes/tools/python-3.14*/lib/python3.14/site-packages'
+)) + [
+    '/home/romel/.local/lib/python3.10/site-packages',
+]
+for _p in _sys_path_patches:
+    if _p not in sys.path and Path(_p).exists():
+        sys.path.insert(0, _p)
+
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -31,6 +44,18 @@ def main() -> int:
     if not text:
         print('[chatterbox-vo] empty text', file=sys.stderr)
         return 1
+
+    # V110/V113: bootstrap sys.path before importing chatterbox (glob, not a
+    # hardcoded versioned path — that went stale and silently no-op'd).
+    import glob as _glob
+    _sys_path_patches = sorted(_glob.glob(
+        '/home/romel/.hermes/tools/python-3.14*/lib/python3.14/site-packages'
+    )) + [
+        '/home/romel/.local/lib/python3.10/site-packages',
+    ]
+    for _p in _sys_path_patches:
+        if _p not in sys.path and Path(_p).exists():
+            sys.path.insert(0, _p)
 
     try:
         from chatterbox.tts import ChatterboxTTS

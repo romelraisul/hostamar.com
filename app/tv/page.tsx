@@ -548,6 +548,7 @@ export default function TvPage() {
                 { f: 'receipt-uptime.mp4', t: 'Uptime Receipt' },
                 { f: 'receipt-teldrive.mp4', t: 'Teldrive Receipt' },
                 { f: 'receipt-monitor.mp4', t: 'Monitor Receipt' },
+                { f: 'receipt-infisical.mp4', t: 'Infisical Receipt — সেক্রেটস একসাথে, কোডে নয়' },
                 { f: 'receipt-paymentsbn.mp4', t: 'বাংলা পেমেন্ট Receipt' },
                 { f: 'receipt-mrr.mp4', t: 'First-10-Customers Receipt' },
                 { f: 'receipt-customer.mp4', t: 'First Customer Receipt' },

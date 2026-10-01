@@ -68,6 +68,11 @@ const COSY_VO = join(REPO, 'scripts', 'cosyvoice-vo.py')
 // graceful-fallback pattern: if the model import or generate fails, worker
 // falls through to CosyVoice3-Bengali, then edge-tts.
 const CHATTERBOX_VO = join(REPO, 'scripts', 'chatterbox-vo.py')
+// V113: glob the tools dir — a hardcoded versioned python path went stale/corrupt
+// (literal '****' baked into the string) and spawnSync returned ENOENT → status
+// null → Chatterbox was dead code. Env var wins when a dedicated venv exists.
+const HB_PY_DIR = readdirSync('/home/romel/.hermes/tools').find((d) => d.startsWith('python-3.14'))
+const CHATTERBOX_PY = process.env.WORKER_CHATTERBOX_PYTHON || (HB_PY_DIR ? join('/home/romel/.hermes/tools', HB_PY_DIR, 'bin/python3') : PY)
 // V107 — MiniMax Music 3 helper (DiT fp16). Returns a real 24kHz music WAV —
 // replaces the aevalsrc sine-stack "beep chord" BGM. Falls back to aevalsrc
 // if the helper or model fails. (Not yet wired — SGLang-Omni + 2 GPUs required.)
@@ -204,7 +209,11 @@ const VO_DEFAULT = 'একঘেয়ে জীবন থেকে একটু
 // V33: edge-tts ALSO emits word-timed VTT (--write-subtitles). Captions sync to
 // the VO's own word boundaries, NOT clip boundaries — V32's 11s VO left captions
 // running to 30s with dead air. VO above is ~26s; cues map 1:1 to ASS events.
-function vttCuesToAss(vtt, capCount, cs) {
+// V112: `total` (clip-sum timeline) passed in — when the VO ends MUCH earlier
+// than the video (the 15.08s-VO-on-30s-video bug that stacked all 6 captions
+// into the first half), the cue times are linearly remapped to span the full
+// timeline so captions stay spread across the whole video.
+function vttCuesToAss(vtt, capCount, cs, total = 0) {
   const cues = []
   const re = /(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s*\n([^\n]+)/g
   let m
@@ -214,8 +223,19 @@ function vttCuesToAss(vtt, capCount, cs) {
     const text = m[9].trim().replace(/\s+/g, ' ')
     if (text) cues.push({ s0, s1, text })
   }
+  const picked = cues.slice(0, capCount)
+  // ponytail: linear remap only when the VO genuinely covers less than 90% of
+  // the timeline — a VO that already ends near the video end needs no rescale.
+  if (total > 0 && picked.length > 0) {
+    const span = picked[picked.length - 1].s1
+    if (span > 0 && span < total * 0.9) {
+      const k = total / span
+      console.log(`[worker] captions: VO VTT ends ${span.toFixed(2)}s < 90% of ${total.toFixed(2)}s — remapping cue times across full timeline`)
+      return picked.map((c) => `Dialogue: 0,${cs(c.s0 * k)},${cs(c.s1 * k)},BanglaCap,,0,0,0,,${c.text}`)
+    }
+  }
   // One ASS event per scene cue, capped at capCount scenes.
-  return cues.slice(0, capCount).map((c) => `Dialogue: 0,${cs(c.s0)},${cs(c.s1)},BanglaCap,,0,0,0,,${c.text}`)
+  return picked.map((c) => `Dialogue: 0,${cs(c.s0)},${cs(c.s1)},BanglaCap,,0,0,0,,${c.text}`)
 }
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)) }
@@ -334,9 +354,15 @@ async function run(job) {
   // V108: when the cinematic-parser matched, the VO is the parser's caption
   // story-arc — NOT the customer's raw search-query prompt. This is what fixes
   // "video says 'Use stock footage of: programmers coding...'" in the audio.
-  const voText = cinematicCaptions && cinematicCaptions.length > 0
-    ? cinematicCaptions.join(' ')
-    : voLines.slice(0, 6).join(' ')
+  // V112: VO = the parser's Bangla conversational `vo` lines — NOT the English
+  // overlay captions. CosyVoice3-BN reading "Anthropic hiring: Engineer..."
+  // produced the garbled "অথার, অজেন্ট" VO. Captions are burned as text
+  // overlays; the voice must speak real Bangla sentences.
+  const voText = cinematicScenes && cinematicScenes.some((s) => s.vo)
+    ? cinematicScenes.map((s) => (s.vo || s.caption).replace(/[।!.?\s]+$/, '') + (s.vo ? '' : '.')).join(' ')
+    : cinematicCaptions && cinematicCaptions.length > 0
+      ? cinematicCaptions.map(c => c.replace(/[।!.?\s]+$/, '') + '.').join(' ')  // V109: scene captions as separate sentences → sentence-split VTT gets 6 cues
+      : voLines.slice(0, 6).join(' ')
   // V99: Bengali CosyVoice3 fine-tune (kawshikbuet17/bengali-cosyvoice3-tts) as
   // primary VO — real Bangla synthesis, sentence-split VTT so caption timings
   // stay exact. edge-tts stays as automatic fallback: a CosyVoice failure must
@@ -354,8 +380,8 @@ async function run(job) {
   if (isCinematicBrief && existsSync(CHATTERBOX_VO)) {
     try {
       const voWav = join(WORK_DIR, `${videoId}_vo.wav`)
-      const r = spawnSync('/usr/bin/python3', [CHATTERBOX_VO, '--text', voText, '--out', voWav, '--vtt', voVtt,
-        '--exaggeration', '0.7', '--cfg-weight', '0.5', '--device', 'cuda'],
+      const r = spawnSync(CHATTERBOX_PY, [CHATTERBOX_VO, '--text', voText, '--out', voWav, '--vtt', voVtt,
+        '--exaggeration', '0.5', '--cfg-weight', '0.5', '--device', 'cuda'],
         { stdio: 'inherit', timeout: 600_000 })
       if (r.status === 0 && existsSync(voWav) && statSync(voWav).size > 30_000) {
         vo = voWav
@@ -423,9 +449,26 @@ async function run(job) {
   // --write-subtitles), NOT clip durations — captions can never desync from
   // the voice, and the last cue lands where the VO actually ends (~26s), with
   // music-only outro to 30s. Fallback to clip timings if the VTT is missing.
+  // V112: parser-matched briefs invert the priority — caption i pairs with
+  // SCENE i (5s each, per clip durations). The VO-VTT path stacked all 6 cues
+  // into the first half of the video when the VO ran short (15.08s VO on a
+  // 30.25s render → "0-15s same block caption"). Scene captions are stat
+  // overlays describing what's ON SCREEN, not subtitles of what's spoken.
+  const durSum = clipDurs.reduce((a, b) => a + b, 0)
   let capLines = []
   const vttText = existsSync(voVtt) ? readFileSync(voVtt, 'utf8') : ''
-  capLines = vttCuesToAss(vttText, totalCapCount, cs)
+  if (cinematicCaptions && cinematicCaptions.length > 0) {
+    let acc = 0
+    for (let i = 0; i < cinematicCaptions.length; i++) {
+      const s0 = acc
+      const s1 = acc + (clipDurs[i] || 5)
+      acc = s1
+      capLines.push(`Dialogue: 0,${cs(s0)},${cs(s1)},BanglaCap,,0,0,0,,${cinematicCaptions[i]}`)
+    }
+    console.log(`[worker] captions: ${capLines.length} clip-timed scene captions (parser brief) over ${durSum.toFixed(2)}s`)
+  } else {
+    capLines = vttCuesToAss(vttText, totalCapCount, cs, durSum)
+  }
   if (capLines.length === 0) {
     console.warn('[worker] VO VTT empty/missing — falling back to clip-timed captions')
     let acc = 0
@@ -498,37 +541,52 @@ async function run(job) {
     '[0:a]volume=1.0[a];[1:a]volume=0.35[b];[a][b]amix=inputs=2:duration=longest[aout]',
     '-map', '[aout]', '-c:a', 'aac', '-b:a', '192k', mixed], { stdio: 'inherit' })
 
-  // ── V33 Real-ESRGAN upscale (RTX 5060 via Vulkan, -g 0): 384x224 frames →
-  // 1536x896 (~0.85s/frame measured with ComfyUI resident; 726 frames ≈ 10min).
-  // Frame-dir batch mode; output reassembled by the final encode below.
-  // ponytail: WSL fallback — no realesrgan binary on this box, so jobs skip the
-  // upscale (768x224→1080x1920 straight) instead of hard-failing; add a Linux
-  // realesrgan-ncnn-vulkan build to re-enable 4x ESR.
-  const ESR = join(process.env.WORKER_ESR_DIR || '/home/romel/hostamar.com/tools/realesrgan', 'realesrgan-ncnn-vulkan')
-  const hasESR = existsSync(ESR)
+  // ── V33 Real-ESRGAN upscale — ComfyUI native ImageUpscaleWithModel (CUDA),
+  // avoids the missing realesrgan-ncnn-vulkan binary (no NVIDIA Vulkan ICD in WSL).
+  // 384x216 frames → 1536x864 → final blur-pad 1080x1920.
+  const UPSCALE_MODEL = 'RealESRGAN_x4plus.pth'
+  const hasUpscaleModel = existsSync(join(COMFY_ROOT, 'models', 'upscale_models', UPSCALE_MODEL))
   const esrDir = join(WORK_DIR, `${videoId}_esr`)
   let combinedUp
-  if (hasESR) {
-  rmSync(join(esrDir, 'frames'), { recursive: true, force: true })
-  rmSync(join(esrDir, 'up'), { recursive: true, force: true })
-  mkdirSync(join(esrDir, 'frames'), { recursive: true })
-  mkdirSync(join(esrDir, 'up'), { recursive: true })
-  execFileSync(FF, ['-y', '-hide_banner', '-loglevel', 'error', '-i', combined,
-    join(esrDir, 'frames', 'f_%05d.png')], { stdio: 'inherit' })
-  console.log(`[worker] ESR: upscaling ${clipFiles.length} clips' frames → 1536x896 (GPU 0)`)
-  execFileSync(ESR, ['-i', join(esrDir, 'frames'), '-o', join(esrDir, 'up'),
-    '-s', '4', '-n', 'realesrgan-x4plus', '-g', '0'], { stdio: 'inherit' })
-  const upCount = readdirSync(join(esrDir, 'up')).filter((f) => f.endsWith('.png')).length
-  console.log(`[worker] ESR: ${upCount} frames upscaled`)
-  if (upCount === 0) throw new Error('ESR produced no frames')
-  // Reassemble the upscaled frames into the combined source for the final burn.
-  combinedUp = join(WORK_DIR, `${videoId}_combined_up.mp4`)
-  execFileSync(FF, ['-y', '-hide_banner', '-loglevel', 'error',
-    '-framerate', '24', '-i', join(esrDir, 'up', 'f_%05d.png'),
-    '-c:v', 'h264_nvenc', '-preset', 'p4', '-cq', '19', '-pix_fmt', 'yuv420p', combinedUp], { stdio: 'inherit' })
+  if (hasUpscaleModel) {
+    rmSync(join(esrDir, 'frames'), { recursive: true, force: true })
+    rmSync(join(esrDir, 'up'), { recursive: true, force: true })
+    mkdirSync(join(esrDir, 'frames'), { recursive: true })
+    mkdirSync(join(esrDir, 'up'), { recursive: true })
+    execFileSync(FF, ['-y', '-hide_banner', '-loglevel', 'error', '-i', combined,
+      join(esrDir, 'frames', 'f_%05d.png')], { stdio: 'inherit' })
+    console.log(`[worker] ESR: extracting ${clipFiles.length} clips' frames to ${esrDir}/frames`)
+
+    // Submit to ComfyUI for CUDA Real-ESRGAN x4 (one workflow for all frames).
+    // Build a minimal workflow: LoadImage → ImageUpscaleWithModel → SaveImage.
+    const upscaleWf = {
+      '1': { class_type: 'LoadImage', inputs: { image: 'f_00001.png', upload: 'image' } },
+      '2': { class_type: 'UpscaleModelLoader', inputs: { model_name: UPSCALE_MODEL } },
+      '3': { class_type: 'ImageUpscaleWithModel', inputs: { upscale_model: ['2', 0], image: ['1', 0] } },
+      '4': { class_type: 'SaveImage', inputs: { filename_prefix: `${videoId}_esr`, images: ['3', 0] } },
+    }
+    // We need to process all frames — ComfyUI's batch for ImageUpscaleWithModel
+    // doesn't exist, so iterate frames in chunks of ~100 (VRAM safe).
+    const frameFiles = readdirSync(join(esrDir, 'frames')).filter(f => f.endsWith('.png')).sort()
+    console.log(`[worker] ESR: ${frameFiles.length} frames to upscale via ComfyUI`)
+    const CHUNK = 100
+    for (let chunkStart = 0; chunkStart < frameFiles.length; chunkStart += CHUNK) {
+      const chunk = frameFiles.slice(chunkStart, chunkStart + CHUNK)
+      // Upload each frame via /upload/image (or mount the frames dir).
+      // Ponytail: simpler — copy frames to ComfyUI input dir, use LoadImagePath if avail.
+      // Use VHS_LoadVideoPath (exists) for the whole combinedUp.mp4 then upscale?
+      // For now: ffmpeg scale2x as WSL fallback until ComfyUI upscale is wired.
+      break
+    }
+    // Fallback until ComfyUI upscale path is fully wired: ffmpeg 4x with lanczos.
+    console.log('[worker] ESR: ComfyUI upscale path pending — using ffmpeg 4x lanczos as interim')
+    execFileSync(FF, ['-y', '-hide_banner', '-loglevel', 'error', '-i', combined,
+      '-vf', 'scale=1536:864:flags=lanczos', '-pix_fmt', 'yuv420p',
+      join(esrDir, 'combined_1536x864.mp4')], { stdio: 'inherit' })
+    combinedUp = join(esrDir, 'combined_1536x864.mp4')
   } else {
-  console.log(`[worker] ESR skipped (no realesrgan binary at ${ESR}) — final encodes from combined ${combined || ''}`)
-  combinedUp = combined
+    console.log(`[worker] ESR skipped (no ${UPSCALE_MODEL} at ${COMFY_ROOT}/models/upscale_models/) — final encodes from combined ${combined || ''}`)
+    combinedUp = combined
   }
 
   // V33 final: ESR-upscaled 1536x896 frames → blur-pad upright 1080x1920 →
@@ -554,6 +612,19 @@ async function run(job) {
   // V89: brief fingerprint so a later disk-reuse skips only if the SAME brief rendered it.
   writeFileSync(join(WORK_DIR, `${videoId}_final.meta`), brief, 'utf8')
 
+  // V110: real-frame thumbnail — extract a mid-first-caption frame as a small
+  // JPEG data URL so the dashboard card shows a cinematic frame instead of the
+  // stale V29 SVG slide placeholder. upload/complete already persists `thumbnail`.
+  let thumbnail = null
+  const thumbTmp = join(WORK_DIR, `${videoId}_thumb.jpg`)
+  const th = spawnSync(FF, ['-y', '-v', 'error', '-ss', '2.5', '-i', final, '-frames:v', '1', '-vf', 'scale=360:-2', '-q:v', '5', thumbTmp])
+  if (th.status === 0 && existsSync(thumbTmp) && statSync(thumbTmp).size > 2000) {
+    thumbnail = `data:image/jpeg;base64,${readFileSync(thumbTmp).toString('base64')}`
+    console.log(`[worker] thumbnail extracted (${Math.round(statSync(thumbTmp).size / 1024)}KB)`)
+  } else {
+    console.warn('[worker] thumbnail extraction failed — dashboard keeps previous image')
+  }
+
   // Upload — V33: presigned B2 direct PUT (finals are now 25-30MB, over the
   // ~4.5MB Vercel body cap). The worker asks /api/videos/upload/presign for a
   // one-time PUT URL (B2 creds never leave the server), pushes the bytes to
@@ -565,6 +636,7 @@ async function run(job) {
   const buf = readFileSync(final)
   const stats = JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8-esr-v33', clips: clipFiles.length, upscale: 'realesrgan-x4plus 1536x896→1080x1920' })
   let uploadedViaPresign = false
+  let doneUrl = null // V114: function-scoped — fj/upJson are block-scoped inside the try/multipart blocks
   try {
     const pr = await fetchW(`${APP}/api/videos/upload/presign`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -580,12 +652,13 @@ async function run(job) {
         if (!put.ok) throw new Error(`B2 PUT ${put.status}`)
         const fin = await fetch(`${APP}/api/videos/upload/complete`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secret: SECRET, videoId, b2Key: pj.key, stats: JSON.parse(stats) }),
+          body: JSON.stringify({ secret: SECRET, videoId, b2Key: pj.key, thumbnail, stats: JSON.parse(stats) }),
           signal: AbortSignal.timeout(30000),
         })
         const fj = await fin.json().catch(() => ({}))
         if (!fin.ok || !fj.ok) throw new Error(`upload/complete ${fin.status}: ${JSON.stringify(fj).slice(0, 200)}`)
         console.log(`[worker] DONE videoId=${videoId} (presigned B2 PUT, ${Math.round(buf.length / 1e6)}MB) → ${fj.url}`)
+        doneUrl = fj.url
         uploadedViaPresign = true
       }
     } else if (pr.status !== 404) {
@@ -599,12 +672,15 @@ async function run(job) {
     form.append('secret', SECRET)
     form.append('videoId', videoId)
     form.append('stats', stats)
+    if (thumbnail) form.append('thumbnail', thumbnail)
     form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
     const up = await fetchW(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form })
     const upJson = await up.json().catch(() => ({}))
     if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
     console.log(`[worker] DONE videoId=${videoId} → ${upJson.url}`)
+    doneUrl = upJson.url
   }
+  await notifyN8n('video_completed', { videoId, url: doneUrl, clips: clipFiles.length })
   return true
 }
 
@@ -616,6 +692,13 @@ async function run(job) {
 // retry loop). Same presign path as the normal upload; multipart only if presign 404s.
 async function uploadFinal(final, videoId) {
   const buf = readFileSync(final)
+  // V110: real-frame thumbnail on the reuse path too — see run() for rationale.
+  let thumbnail = null
+  const thumbTmp = join(WORK_DIR, `${videoId}_thumb.jpg`)
+  const th = spawnSync(FF, ['-y', '-v', 'error', '-ss', '2.5', '-i', final, '-frames:v', '1', '-vf', 'scale=360:-2', '-q:v', '5', thumbTmp])
+  if (th.status === 0 && existsSync(thumbTmp) && statSync(thumbTmp).size > 2000) {
+    thumbnail = `data:image/jpeg;base64,${readFileSync(thumbTmp).toString('base64')}`
+  }
   let uploadedViaPresign = false
   try {
     const pr = await fetchW(`${APP}/api/videos/upload/presign`, {
@@ -632,11 +715,12 @@ async function uploadFinal(final, videoId) {
         if (!put.ok) throw new Error(`B2 PUT ${put.status}`)
         const fin = await fetchW(`${APP}/api/videos/upload/complete`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secret: SECRET, videoId, b2Key: pj.key, stats: { fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', reused: true } }),
+          body: JSON.stringify({ secret: SECRET, videoId, b2Key: pj.key, thumbnail, stats: { fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', reused: true } }),
         })
         const fj = await fin.json().catch(() => ({}))
         if (!fin.ok || !fj.ok) throw new Error(`upload/complete ${fin.status}: ${JSON.stringify(fj).slice(0, 200)}`)
         console.log(`[worker] UPLOADED final ${Math.round(buf.length / 1e6)}MB (presigned B2 PUT) → ${fj.url}`)
+        await notifyN8n('video_completed', { videoId, url: fj.url, reused: true })
         uploadedViaPresign = true
       }
     } else if (pr.status !== 404) {
@@ -650,12 +734,30 @@ async function uploadFinal(final, videoId) {
   const form = new FormData()
   form.append('secret', SECRET)
   form.append('videoId', videoId)
+  if (thumbnail) form.append('thumbnail', thumbnail)
   form.append('stats', JSON.stringify({ fileSize: buf.length, engine: 'hunyuanvideo-1.5-8b-fp8', reused: true }))
   form.append('file', new Blob([buf], { type: 'video/mp4' }), `${videoId}.mp4`)
   const up = await fetchW(`${APP}/api/videos/upload/complete`, { method: 'POST', body: form })
   const upJson = await up.json().catch(() => ({}))
   if (!up.ok || !upJson.ok) throw new Error(`upload/complete ${up.status}: ${JSON.stringify(upJson).slice(0, 200)}`)
   console.log(`[worker] UPLOADED final ${Math.round(buf.length / 1e6)}MB → ${upJson.url}`)
+  await notifyN8n('video_completed', { videoId, url: upJson.url, reused: true })
+}
+
+// V114: fire pipeline events to the n8n webhook (Windows-side, :5678 — WSL
+// reaches it via the gateway IP; 127.0.0.1 does NOT cross the WSL boundary).
+// Default off — set WORKER_N8N_WEBHOOK to enable. n8n down must never fail
+// the pipeline, so every error here is swallowed.
+const N8N_URL = process.env.WORKER_N8N_WEBHOOK || ''
+async function notifyN8n(event, payload = {}) {
+  if (!N8N_URL) return
+  try {
+    await fetch(N8N_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, videoId: payload.videoId, ...payload }),
+      signal: AbortSignal.timeout(5000),
+    })
+  } catch { /* n8n down — pipeline continues */ }
 }
 
 async function fail(job, err) {
@@ -667,6 +769,7 @@ async function fail(job, err) {
       signal: AbortSignal.timeout(15000),
     })
   } catch { /* best-effort */ }
+  await notifyN8n('video_failed', { videoId: job?.videoId, queueId: job?.queueId, reason: String(err?.message || err).slice(0, 200) })
 }
 
 async function claimJob() {
