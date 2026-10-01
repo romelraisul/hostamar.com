@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import sys
 
-REPO = '/home/romel/hostamar-build'
+REPO = '/home/romel/hostamar.com'
 PURE = os.path.join(REPO, 'docker/tv-station/videos/pure')
 EDGE = os.path.join(REPO, 'public/tv')
 ATTR = os.path.join(PURE, 'attribution.json')
@@ -59,7 +59,7 @@ def publish(names):
     by_file = {a['file']: a for a in attr}
     done = []
     for n in names:
-        src = os.path.join(PURE, n + '.mp4')
+        src = os.path.join(PURE, n)
         if not os.path.exists(src):
             print(f'[publish] SKIP missing {src}')
             continue
