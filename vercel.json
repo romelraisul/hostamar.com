@@ -6,56 +6,7 @@
       "destination": "/api/v1/:path*"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/cron/binance-price",
-      "schedule": "0 5 * * *"
-    },
-    {
-      "path": "/api/market-adjust",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/market-sync",
-      "schedule": "0 6 * * 1"
-    },
-    {
-      "path": "/api/cron/update-models",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/tv/generate-loop",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/seo-sync",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/tv-stability",
-      "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/cron/subscription-renew",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/seo-auto-post",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/auto-approve",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/surveillance",
-      "schedule": "45 23 * * *"
-    },
-    {
-      "path": "/api/cron/heartbeat",
-      "schedule": "30 3 * * *"
-    }
-  ],
+  "crons": [],
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "headers": [
     {
