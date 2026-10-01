@@ -67,7 +67,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
     console.log('[store/checkout] trying primary:', primaryBase)
     return await tryFetch(primaryBase)
   } catch (e: any) {
-    console.error('[store/checkout] primary failed:', e?.message?.slice(0, 200))
+    console.error('[store/checkout] primary failed:', e?.message?.slice(0, 500))
     console.log('[store/checkout] trying fallback:', fallbackBase)
     return await tryFetch(fallbackBase)
   }
@@ -228,19 +228,19 @@ export async function POST(req: NextRequest) {
       amountBdt,
     })
   } catch (e: any) {
-      const msg = String(e?.message || '')
-      console.error('[store/checkout] FULL ERROR:', msg)
-      // FORGE 09-15 09:0x: upstream 4xx (e.g. variant unpublished while the edge-
-      // cached catalog card still shows it — proven by diag: Medusa "Variants ...
-      // do not exist or belong to a product that is not published" was reported to
-      // the buyer as a retryable 502 "Try again" -> infinite spin). Buyer-fixable
-      // failures now return 400 with an honest refresh message; 5xx/timeout keeps 502.
-      // FORGE 2026-09-25: only 400/404 are buyer-fixable (variant unpublished/validation).
-      // 401=invalid PK, 403=WAF, 429=rate-limit -> server-side, NOT buyer-fixable.
-      const buyerFixable = / -> 4(00|04)\b/.test(msg)
-      return NextResponse.json(
-        { error: buyerFixable ? 'এই প্রোডাক্টটি এখন আর অর্ডারে নেওয়া যাচ্ছে না — পেজ রিফ্রেশ করে অন্য আইটেম দেখুন।' : 'Checkout unavailable. Try again or contact us.' },
-        { status: buyerFixable ? 400 : 502 },
-      )
-    }
+    const msg = String(e?.message || '')
+    console.error('[store/checkout] FULL ERROR:', msg.slice(0, 1000))
+    // FORGE 09-15 09:0x: upstream 4xx (e.g. variant unpublished while the edge-
+    // cached catalog card still shows it — proven by diag: Medusa "Variants ...
+    // do not exist or belong to a product that is not published" was reported to
+    // the buyer as a retryable 502 "Try again" -> infinite spin). Buyer-fixable
+    // failures now return 400 with an honest refresh message; 5xx/timeout keeps 502.
+    // FORGE 2026-09-25: only 400/404 are buyer-fixable (variant unpublished/validation).
+    // 401=invalid PK, 403=WAF, 429=rate-limit -> server-side, NOT buyer-fixable.
+    const buyerFixable = / -> 4(00|04)\b/.test(msg)
+    return NextResponse.json(
+      { error: buyerFixable ? 'এই প্রোডাক্টটি এখন আর অর্ডারে নেওয়া যাচ্ছে না — পেজ রিফ্রেশ করে অন্য আইটেম দেখুন।' : 'Checkout unavailable. Try again or contact us.' },
+      { status: buyerFixable ? 400 : 502 },
+    )
+  }
 }
