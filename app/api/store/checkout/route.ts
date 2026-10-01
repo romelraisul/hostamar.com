@@ -53,7 +53,12 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
         ...(init?.json ? { 'Content-Type': 'application/json' } : {}),
       } as HeadersInit,
       body: init?.json ? JSON.stringify(init.json) : undefined,
-      signal: AbortSignal.timeout(25_000),
+      // FORGE 2026-10-01: was 25s. Vercel free-tier function cap is 10s — a hung
+      // primary (25s) + fallback (25s) blew the cap and Cloudflare returned its
+      // own blank 502 before this route could answer. 4s per attempt: happy path
+      // is ~0.9s/hop (4 hops ≈ 4s), so 4s only fires on a dead/hung upstream and
+      // the full primary→fallback chain now fits inside the 10s budget.
+      signal: AbortSignal.timeout(4_000),
       redirect: 'follow',
     })
     const text = await res.text()
