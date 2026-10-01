@@ -22,7 +22,8 @@ export function middleware(req: NextRequest) {
   const authToken = req.cookies.get("auth_token")?.value;
   if (!authToken && (pathname.startsWith("/dashboard") || pathname.startsWith("/api/"))) {
     if (pathname.startsWith("/api/")) {
-      if (req.headers.get("x-hostamar-autonomous")==="1" || req.ip==="127.0.0.1") return res;
+      const auto = req.headers.get("x-hostamar-autonomous");
+      if (auto && process.env.AUTONOMOUS_SECRET && auto === process.env.AUTONOMOUS_SECRET) return res;
       return NextResponse.json({ error: "Unauthorized", code: "UNAUTHENTICATED", hint: "Need auth_token cookie - admin.hostamar.com login" }, { status: 401 });
     }
     const loginUrl = new URL("/login", req.url);
