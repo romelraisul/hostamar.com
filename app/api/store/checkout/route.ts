@@ -39,7 +39,7 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
   // FORGE 2026-09-30: Same-zone worker not deployed (CLOUDFLARE_API_TOKEN lacks Workers:Edit scope).
   // Workers.dev bridge egress is NOT challenged by Cloudflare WAF.
   // Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
-  const primaryBase = process.env.MEDUSA_URL || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  const primaryBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
   const fallbackBase = 'https://store.hostamar.com'
 
   async function tryFetch(base: string) {
