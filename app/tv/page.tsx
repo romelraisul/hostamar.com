@@ -495,6 +495,7 @@ export default function TvPage() {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { f: 'submarine-cables-episode-narrated.mp4', t: 'সাবমেরিন কেবল — বিশ্ব কীভাবে সংযুক্ত (193s, নেরেশনসহ)' },
+                { f: 'shorts-submarine-cables.mp4', t: 'সাবমেরিন কেবল Short — ৩০s ভার্টিকেল' },
                 { f: 'globalization-cinematic.mp4', t: 'Globalization Cinematic — 30s (narrated)' },
                 { f: 'vertical-forest-episode-narrated.mp4', t: 'গাছ কীভাবে শহর ঠান্ডা করে — Vertical Forests (155s, নেরেশনসহ)' },
                 { f: 'context-graph-episode-narrated.mp4', t: 'Context Graph — Agent Memory That Never Forgets (172s, নেরেশনসহ)' },
