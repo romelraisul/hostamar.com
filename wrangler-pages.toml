@@ -9,9 +9,7 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 
 [vars]
-DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io?authToken=__TURSO_AUTH_TOKEN__"
 TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
-TURSO_AUTH_TOKEN = "__TURSO_AUTH_TOKEN__"
 B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
 
