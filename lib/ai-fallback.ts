@@ -223,7 +223,10 @@ function looksLikeCot(t: string): boolean {
   }
 
   // Capacity fallback order (reports the ACTUAL model used in the response)
-  for (const m of ['kilo-auto/free', 'meituan/longcat-2.0-free']) {
+  // ECHO 2026-10-02: meituan/longcat-2.0-free 402s upstream (kilo catalog changed,
+  // 'longcat' → meituan/longcat-2.0 paid-only) — every capacity attempt burned.
+  // kilo-auto/small:free-verified (3/3 real answers 14:4x) — live replacement.
+  for (const m of ['kilo-auto/free', 'kilo-auto/small']) {
     attempts.push({ name: `kilocode:${m}`, fn: kilocodeCall(m) });
     attempts.push({ name: `edge:${m}`, fn: edgeCall(m) });
   }
