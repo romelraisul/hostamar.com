@@ -494,6 +494,8 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'dns-episode-narrated.mp4', t: 'DNS — ইন্টারনেটের ফোনবুক (191s, নেরেশনসহ)' },
+                { f: 'shorts-dns-episode.mp4', t: 'DNS Short — ৩০s ভার্টিকেল' },
                 { f: 'permafrost-thaw-episode-narrated.mp4', t: 'পার্মাফ্রস্ট গলে যাচ্ছে — স্থায়ীভাবা মাটির হিসাব (226s, নেরেশনসহ)' },
                 { f: 'permafrost-thaw-short.mp4', t: 'Permafrost Short — ৩০s ভার্টিকেল (-26.9 dB)' },
                 { f: 'video-ads-ad-builder-narrated.mp4', t: 'AI Video Ad Builder — এক ব্রিফে পুরো ক্যাম্পেইন (227s, নেরেশনসহ)' },
