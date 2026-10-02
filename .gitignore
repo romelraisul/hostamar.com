@@ -63,7 +63,18 @@ deploy/config.local.sh
 *.gz
 
 # Build cache
-tsconfig.tsbuildinfo
+.tsconfig.tsbuildinfo
+.open-next/
+# Copied assets dir from OpenNext build (generated)
+assets/
+# OpenNext runtime dirs copied next to worker.mjs (generated)
+.build/
+cache/
+cloudflare/
+cloudflare-templates/
+dynamodb-provider/
+middleware/
+server-functions/
 
 # Camofox submodule (standalone, not part of main app)
 camofox/

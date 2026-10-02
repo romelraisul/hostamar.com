@@ -13,8 +13,15 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient(): PrismaClient {
-  const url = process.env.DATABASE_URL || ''
-  
+  // ponytail: Cloudflare Workers only set TURSO_DATABASE_URL/TURSO_AUTH_TOKEN,
+  // never DATABASE_URL. Fall back so the Worker can reach Turso without a
+  // second secret. Upgrade path: set DATABASE_URL explicitly and this is a no-op.
+  const url = process.env.DATABASE_URL
+    || (process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN
+        ? `${process.env.TURSO_DATABASE_URL}?authToken=${process.env.TURSO_AUTH_TOKEN}`
+        : '')
+    || ''
+
   if (!url) {
     throw new Error('DATABASE_URL not configured — Prisma client cannot be created')
   }
