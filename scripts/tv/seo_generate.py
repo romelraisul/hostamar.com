@@ -47,6 +47,29 @@ PRODUCT_INFO = {
 }
 
 BANGLA_RE = re.compile(r"[\u0980-\u09FF]")
+# PIL does no font fallback: NotoSansBengali has zero Latin glyphs, DejaVu has
+# zero Bangla glyphs. Drawing a mixed string with one font renders the other
+# script as tofu boxes (verified 2026-10-02 on all 143 OG images). Split the
+# string into script runs and give each run the font that covers it.
+SCRIPT_RUN_RE = re.compile(r"([\u0980-\u09FF\u200C\u200D]+)")
+
+
+def draw_mixed(draw, pos, text, bangla_font, latin_font, fill):
+    """Draw text at pos, switching fonts per script run. Returns end x."""
+    x, y = pos
+    for part in SCRIPT_RUN_RE.split(text):
+        if not part:
+            continue
+        f = bangla_font if SCRIPT_RUN_RE.fullmatch(part) else latin_font
+        draw.text((x, y), part, font=f, fill=fill)
+        x += draw.textlength(part, font=f)
+    return x
+
+
+def measure_mixed(draw, text, bangla_font, latin_font):
+    """Width of text when drawn by draw_mixed (no pixels touched)."""
+    return sum(draw.textlength(p, font=(bangla_font if SCRIPT_RUN_RE.fullmatch(p) else latin_font))
+               for p in SCRIPT_RUN_RE.split(text) if p)
 
 
 def log(*a):
@@ -464,42 +487,46 @@ def make_og_image(seo, src_id, product):
         except Exception:
             return ImageFont.truetype(LATIN_FONT, size)
 
+    def fonts(size, bold=True):
+        """(bangla, latin) pair — PIL does no fallback, so latin runs need DejaVu."""
+        return font(size, bold), ImageFont.truetype(LATIN_FONT, size)
+
     # green product tag (top-left)
     tag = PRODUCT_INFO.get(product, (product,))[0]
-    tf = font(30)
-    tw = draw.textlength(tag, font=tf)
+    tf, tfl = fonts(30)
+    tw = measure_mixed(draw, tag, tf, tfl)
     draw.rounded_rectangle([36, 36, 36 + tw + 40, 92], radius=10, fill=(14, 124, 58))
-    draw.text((56, 46), tag, font=tf, fill=(255, 255, 255))
+    draw_mixed(draw, (56, 46), tag, tf, tfl, (255, 255, 255))
 
     # watermark (top-right)
-    wf = font(28)
+    wf, wfl = fonts(28)
     wm = "HOSTAMAR.COM/TV"
-    ww = draw.textlength(wm, font=wf)
+    ww = measure_mixed(draw, wm, wf, wfl)
     draw.rounded_rectangle([1200 - ww - 60, 36, 1164, 90], radius=10, fill=(0, 0, 0))
-    draw.text((1200 - ww - 40, 46), wm, font=wf, fill=(255, 255, 255))
+    draw_mixed(draw, (1200 - ww - 40, 46), wm, wf, wfl, (255, 255, 255))
 
     # titleBn (center-left, wrapped, big)
-    title_font = font(58)
+    title_font, title_latin_font = fonts(58)
     y = 200
     for line in wrap_bangla(seo["titleBn"]):
-        draw.text((62, y), line, font=title_font, fill=(255, 255, 255))
+        draw_mixed(draw, (62, y), line, title_font, title_latin_font, (255, 255, 255))
         y += 78
 
     # yellow hook line
     hook = seo.get("ogDescription") or seo.get("metaDescription", "")
     if hook:
-        hf = font(30, bold=False)
+        hf, hfl = fonts(30, bold=False)
         hy = min(y + 20, 500)
         hook_line = hook[:70]
-        hw = draw.textlength(hook_line, font=hf)
+        hw = measure_mixed(draw, hook_line, hf, hfl)
         draw.rounded_rectangle([52, hy - 8, 72 + hw + 20, hy + 44], radius=8, fill=(0, 0, 0))
-        draw.text((62, hy), hook_line, font=hf, fill=(255, 214, 0))
+        draw_mixed(draw, (62, hy), hook_line, hf, hfl, (255, 214, 0))
 
     # bottom bar
-    bf = font(26, bold=False)
+    bf, bfl = fonts(26, bold=False)
     draw.rectangle([0, 580, 1200, 630], fill=(14, 124, 58))
-    draw.text((60, 590), "বাংলায় শিখুন • ফ্রি ট্রাই • bKash পেমেন্ট", font=bf, fill=(255, 255, 255))
-    draw.text((800, 590), "hostamar.com/tv", font=bf, fill=(255, 255, 255))
+    draw_mixed(draw, (60, 590), "বাংলায় শিখুন • ফ্রি ট্রাই • bKash পেমেন্ট", bf, bfl, (255, 255, 255))
+    draw_mixed(draw, (800, 590), "hostamar.com/tv", bf, bfl, (255, 255, 255))
 
     img.save(out, "JPEG", quality=88)
     return out
