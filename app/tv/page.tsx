@@ -494,6 +494,8 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'permafrost-thaw-episode-narrated.mp4', t: 'পার্মাফ্রস্ট গলে যাচ্ছে — স্থায়ীভাবা মাটির হিসাব (226s, নেরেশনসহ)' },
+                { f: 'permafrost-thaw-short.mp4', t: 'Permafrost Short — ৩০s ভার্টিকেল (-26.9 dB)' },
                 { f: 'video-ads-ad-builder-narrated.mp4', t: 'AI Video Ad Builder — এক ব্রিফে পুরো ক্যাম্পেইন (227s, নেরেশনসহ)' },
                 { f: 'shorts-video-ads-ad-builder.mp4', t: 'Ad Builder Short — ৩০s ভার্টিকেল' },
                 { f: 'agent-cloud-audit-log-narrated.mp4', t: 'Agent Cloud Audit Log — AI agents leak your data (227s, নেরেশনসহ)' },
