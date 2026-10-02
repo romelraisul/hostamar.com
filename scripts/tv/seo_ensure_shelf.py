@@ -21,7 +21,10 @@ gain watch pages.
 """
 import os
 import re
+import subprocess
 import sys
+
+REPO = "/home/romel/hostamar.com"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import seo_generate as G
@@ -138,6 +141,12 @@ def main():
         created += action != "exists"
         existed += action == "exists"
     conn.close()
+    # Production reads Turso, not this local postgres — push new SEO rows or the
+    # /tv/watch pages 404 on the edge (verified 2026-10-02: sitemap 123->143 only
+    # after turso sync). No-op when turso is already current.
+    if not args.dry_run and created:
+        subprocess.run(["node", os.path.join(REPO, "scripts/tv/sync-seo-turso.mjs")],
+                       check=False)
     print(f"DONE shelf={len(files)} existed={existed} created={created}")
 
 
