@@ -494,6 +494,8 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'agent-cloud-audit-log-narrated.mp4', t: 'Agent Cloud Audit Log — AI agents leak your data (227s, নেরেশনসহ)' },
+                { f: 'shorts-agent-cloud-audit-log.mp4', t: 'Audit Log Short — ৩০s ভার্টিকেল' },
                 { f: 'submarine-cables-episode-narrated.mp4', t: 'সাবমেরিন কেবল — বিশ্ব কীভাবে সংযুক্ত (193s, নেরেশনসহ)' },
                 { f: 'shorts-submarine-cables.mp4', t: 'সাবমেরিন কেবল Short — ৩০s ভার্টিকেল' },
                 { f: 'globalization-cinematic.mp4', t: 'Globalization Cinematic — 30s (narrated)' },
