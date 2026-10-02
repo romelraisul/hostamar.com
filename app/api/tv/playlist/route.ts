@@ -26,7 +26,9 @@ export async function GET(req: NextRequest) {
     if (items.length === 0) {
       try {
         const videos = await (prisma as any).video?.findMany?.({ orderBy: { createdAt: 'desc' }, take: 12 }) || []
-        items = videos.map((v: any, idx: number) => ({
+        // HARD GUARD: only serve URLs on our own origin — stale Video rows can
+        // point at expired B2 keys (401), which filled /tv with dead links.
+        items = videos.filter((v: any) => String(v.url || v.videoUrl || '').includes('hostamar.com')).map((v: any, idx: number) => ({
           id: v.id,
           channelId: channel.id,
           videoId: v.id,
