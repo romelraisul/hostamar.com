@@ -330,6 +330,19 @@ async function run(job) {
       console.log(`[worker] clip ${i + 1}/${scenes.length} reused from disk: ${reuse}`)
       continue
     }
+    // V116: the gradient end-card scene ('Elegant dark blue gradient ... no
+    // text') renders as literal BLACK in Hunyuan — V104 Reel 4/4 shipped a
+    // 5.1s black ending. Generate it with ffmpeg gradients + a gold CTA
+    // drawtext instead: deterministic, zero-GPU, cannot fail dark.
+    if (/gradient.*no text/i.test(scenes[i])) {
+      const ec = join(OUT_DIR, `${prefix}_00001.mp4`)
+      execFileSync(FF, ['-y', '-f', 'lavfi',
+        '-i', 'gradients=s=1536x864:c0=0x0a1628:c1=0x28527a:c2=0x0d1f36:c3=0x1a3a5c:x0=200:y0=200:x1=1336:y1=664:d=5:speed=0.03,drawtext=text=\'Hostamar.com\':fontcolor=0xd9a441:fontsize=88:x=(w-text_w)/2:y=(h-text_h)/2',
+        '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-r', '24', ec], { stdio: 'inherit' })
+      clipFiles.push(ec)
+      console.log(`[worker] clip ${i + 1}/${scenes.length} end card via ffmpeg gradients (V116): ${ec}`)
+      continue
+    }
     const wf = buildWorkflow(scenes[i], seed + i, prefix)
     const { file } = await submitAndWait(wf)
     clipFiles.push(file)
@@ -348,6 +361,13 @@ async function run(job) {
   // narration lines, else first 3 non-empty lines) — instead of the hardcoded
   // Cox's Bazar travel ad VO_DEFAULT. Language switches the fallback voice line.
   const voLines = (brief.match(/VO[^"\n]*["“]([^"”]+)["”]/g) || []).map((l) => l.replace(/^VO[^"\n]*["“]/, '').replace(/["”]$/, ''))
+  // V116: unquoted Script narration — `Script: VO: <Bangla>` with NO quotes
+  // (V104 Reel 4/4) fell through to the first-3-lines fallback, which burned
+  // the Title lines as VO + caption. Grab the (Script:-prefixed) VO: line first.
+  if (voLines.length === 0) {
+    const voUnquoted = brief.split('\n').map((l) => l.trim()).find((l) => /^(?:Script:\s*)?VO[:：]/.test(l))
+    if (voUnquoted) voLines.push(voUnquoted.replace(/^(?:Script:\s*)?VO[:：]\s*/, ''))
+  }
   if (voLines.length === 0) voLines.push(...brief.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 3))
   // V100: full-brief VO — 6 cue lines for a 6-clip story (was 3, which dropped
   // the second half of multi-scene briefs).
