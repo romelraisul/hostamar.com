@@ -24,7 +24,7 @@ export async function GET() {
   // store.hostamar.com is the actual Medusa storefront and works.
   // Prefer store.hostamar.com as primary; bridge only as fallback.
   const bridgeUrl = process.env.MEDUSA_URL
-  const primaryBase = 'https://store.hostamar.com'
+  const primaryBase = bridgeUrl || 'https://store.hostamar.com'
   const fallbackBase = bridgeUrl
 
   async function tryFetch(base: string) {
