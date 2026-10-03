@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 
-// FORGE 2026-09-15 11:1x — force-dynamic was the real blocker, NOT the header
-// string: Vercel's edge STRIPS s-maxage/SWR from force-dynamic route handlers
-// (proved live after 373832d deployed: origin runs my new code, CDN still
-// returns bare `max-age=60`, and /api/ai-services/catalog — route-sets
-// s-maxage=3600 — arrives as bare max-age=3600). revalidate=300 (the exact
-// pattern of /api/store/products, which keeps s-maxage=300+SWR+SIE and shows
-// STALE/HIT) is the working combo. Header kept for the browser + docs.
-export const revalidate = 300
+// Runs per-request: the catalog must reflect the live DB, and the cached
+// prerender path served a stale zero-row body under OpenNext.
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/services/catalog — public, isActive only. category/search were
@@ -21,35 +16,24 @@ export const revalidate = 300
 export async function GET() {
   let services: Array<Record<string, unknown>> = []
   try {
-    services = await prisma.serviceCatalog.findMany({
-      where: { isActive: true },
-      orderBy: { id: 'asc' },
-      // FORGE 2026-09-28: bare findMany shipped full rows incl. `inputs` (~16MB)
-      // + promptTemplate -> ISR fallback 21.65MB > 19.07MB limit ->
-      // FALLBACK_BODY_TOO_LARGE killed EVERY production build (prod served a
-      // 2-day-old build). No public consumer reads these (CatalogService has no
-      // inputs; dashboard reads Prisma directly) — select the served shape.
-      select: {
-        id: true, name: true, nameBn: true, category: true, categoryBn: true,
-        creditCost: true, dollarRange: true, benefit: true, benefitBn: true,
-        perfectFor: true, perfectForBn: true, icon: true, isActive: true,
-      },
-    })
-  } catch {
-    // Build-time / no-DB: return empty catalog so static export succeeds.
-    // Runtime DB errors still surface as 500 via Next's error handling.
+    const client = getTursoEdgeClient()
+    const result = await client.execute(
+      `SELECT id, name, nameBn, category, categoryBn, creditCost, dollarRange,
+              benefit, benefitBn, perfectFor, perfectForBn, icon, isActive
+       FROM ServiceCatalog WHERE isActive = 1 ORDER BY id ASC`
+    )
+    services = result.rows.map((r: any) => ({
+      id: r.id, name: r.name, nameBn: r.nameBn, category: r.category,
+      categoryBn: r.categoryBn, creditCost: r.creditCost, dollarRange: r.dollarRange,
+      benefit: r.benefit, benefitBn: r.benefitBn, perfectFor: r.perfectFor,
+      perfectForBn: r.perfectForBn, icon: r.icon, isActive: Number(r.isActive),
+    }))
+  } catch (e) {
+    console.error('[catalog] DB read failed:', e)
   }
 
-  // Route header overrides next.config.js headers for route handlers (measured
-  // live: config's s-maxage=3600 never reached the edge, every probe = MISS
-  // 1.5-1.9s). Same SWR/SIE string as /api/store/products — buyers never race
-  // the dynamic Prisma fill; stale is served instantly, refreshed in background.
   return NextResponse.json(
-    {
-      success: true,
-      total: services.length,
-      services,
-    },
+    { success: true, total: services.length, services },
     { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' } }
   )
 }

@@ -3,9 +3,10 @@
 import './dns-bootstrap'
 import { PrismaClient } from '@prisma/client'
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
-import { createClient } from '@libsql/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import pg from 'pg'
+// ponytail: workerd cannot load @libsql/client's node entry (node:sqlite/ws/fs
+// -> "[unenv] fs.readdir is not implemented" -> every Prisma query swallowed as
+// empty). The /web subpath is fetch-only and runs on workerd AND Vercel Node.
+import { createClient as createWebClient } from '@libsql/client/web'
 import { env } from '@/lib/env'
 
 const globalForPrisma = globalThis as unknown as {
@@ -42,7 +43,7 @@ function createPrismaClient(): PrismaClient {
     cleanUrl = url.split('?')[0]
     authToken = url.split('authToken=')[1] || ''
   }
-  const libsql = createClient({ url: cleanUrl, authToken })
+  const libsql = createWebClient({ url: cleanUrl, authToken })
   const adapter = new PrismaLibSQL(libsql)
   return new PrismaClient({
     adapter,

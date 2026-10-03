@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getFallbackStatus } from '@/lib/kilocode-client'
 import { env } from '@/lib/env'
-import prisma from '@/lib/prisma'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,10 +16,13 @@ export async function GET() {
   let dbConnected = false
   let customers = 0
   try {
-    await prisma.$queryRaw`SELECT 1`
+    const client = getTursoEdgeClient()
+    await client.execute('SELECT 1')
     dbConnected = true
-    customers = await prisma.customer.count().catch(() => 0)
-  } catch {
+    const row = await client.execute('SELECT COUNT(*) AS total FROM Customer')
+    customers = Number(row.rows[0]?.total ?? 0)
+  } catch (e) {
+    console.error('[health] db check failed:', e)
     dbConnected = false
   }
 
