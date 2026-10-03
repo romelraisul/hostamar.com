@@ -82,6 +82,29 @@ def db_url():
     return "postgresql://hostamar:hostamar@localhost:5432/hostamar"
 
 
+def turso_url_and_token():
+    """Parse Turso DATABASE_URL from .env.local for the HTTP API."""
+    envp = os.path.join(REPO, ".env.local")
+    if not os.path.exists(envp):
+        return None, None
+    for line in open(envp):
+        if line.startswith("DATABASE_URL="):
+            url = line.strip().split("=", 1)[1].strip().strip('"').strip("'")
+            if url.startswith("libsql://"):
+                # libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io?authToken=...
+                parts = url.split("?")
+                base = parts[0].replace("libsql://", "https://")
+                # Convert to HTTP API endpoint: https://<host>/v2/pipeline
+                api_base = base + "/v2/pipeline"
+                token = ""
+                for param in parts[1].split("&"):
+                    if param.startswith("authToken="):
+                        token = param.split("=", 1)[1]
+                        break
+                return api_base, token
+    return None, None
+
+
 def gateway():
     """(base_url, api_key) for the in-house LLM gateway."""
     home = os.path.expanduser("~")
@@ -283,15 +306,15 @@ PRODUCT_SEO = {
         "benefit": "গেম টুর্নামেন্টে অংশ নিন, প্রাইজ জিতুন, বন্ধুদের সাথে খেলুন।",
     },
     "Own": {
-        "titleBn": "হোস্টামার টিভি অরিজিনাল — ৩০ সেকেন্ডে রেডি | Hostamar TV",
-        "metaDescription": "হোস্টামার টিভির অরিজিনাল কনটেন্ট বাংলাায়। bKash পেমেন্ট, Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।",
-        "keywords": ["হোস্টামার টিভি", "অরিজিনাল কনটেন্ট", "বাংলা ভিডিও", "AI ভিডিও", "Hostamar", "Daraz", "SME", "bKash"],
-        "benefit": "হোস্টামার টিভির নিজস্ব কনটেন্ট দে democracia করুন, বাংলা ভয়েস ও সাবটাইটেলসহ।",
-    },
+            "titleBn": None,  # filled per-video from source titleBn
+            "metaDescription": "হোস্টামার টিভির অরিজিনাল কনটেন্ট বাংলাায়। bKash পেমেন্ট, Daraz সেলারদের জন্য ফ্রি টুল। এখনই দেখুন hostamar.com এ।",
+            "keywords": ["হোস্টামার টিভি", "অরিজিনাল কনটেন্ট", "বাংলা ভিডিও", "AI ভিডিও", "Hostamar", "Daraz", "SME", "bKash"],
+            "benefit": "হোস্টামার টিভির নিজস্ব কনটেন্ট দে democracy করুন, বাংলা ভয়েস ও সাবটাইটেলসহ।",
+        },
 }
 
 
-def template_seo(product, title_en):
+def template_seo(product, title_en, title_bn=None):
     """Rich deterministic product-specific SEO — the PRIMARY generator.
     Always valid, always contains Bangla letters, satisfies all acceptance
     criteria (title ~60 chars with product keyword + Hostamar TV, description
@@ -309,20 +332,34 @@ def template_seo(product, title_en):
         info = {"titleBn": title, "metaDescription": desc,
                 "keywords": [name_bn, f"{product} টিউটোরিয়াল", "বাংলাা টিউটোরিয়াল", "Hostamar", "Daraz", "SME", "bKash", "free"],
                 "benefit": f"{name_bn} দিয়ে আপনার ব্যবসা এগিয়ে যাবে।"}
+    title_bn_out = info["titleBn"]
+    # Own product template has titleBn=None (filled per-video). If we get here
+    # with no per-video Bangla title (either not Own, or source has no usable
+    # Bangla), synthesize a valid one so OG/Schema have a real string.
+    if not title_bn_out:
+        title_bn_out = f"{name_bn} — হোস্টামার টিভি অরিজিনাল | Hostamar TV"
+    # Own product: every video gets its OWN title from the source, not the
+    # generic "৩০ সেকেন্ডে রেডি | Hostamar TV" placeholder. YouTube Studio
+    # flags generic titles and 143 identical watch pages were unreadable to
+    # crawlers. Fall back to the template when the source has no usable Bangla.
+    if product == "Own" and title_bn and BANGLA_RE.search(title_bn):
+        candidate = f"{title_bn} | Hostamar TV"
+        if 30 <= len(candidate) <= 90:
+            title_bn_out = candidate
     return {
         "slug": slug_base,
-        "titleBn": info["titleBn"],
+        "titleBn": title_bn_out,
         "metaDescription": info["metaDescription"][:160],
         "keywords": info["keywords"],
-        "ogTitle": "🔥 " + info["titleBn"],
+        "ogTitle": "🔥 " + title_bn_out,
         "ogDescription": info["metaDescription"][:160],
         "_template": True,
     }
 
 
-def fallback_seo(product, title_en):
+def fallback_seo(product, title_en, title_bn=None):
     """Back-compat alias → template_seo."""
-    return template_seo(product, title_en)
+    return template_seo(product, title_en, title_bn=title_bn)
 
 
 def generate_seo_for_source(src, use_rafan=False):
@@ -343,7 +380,7 @@ def generate_seo_for_source(src, use_rafan=False):
     pname, slug_default, name_bn = PRODUCT_INFO.get(product, (product, f"{product.lower()}-tutorial", product))
 
     # ── PRIMARY: deterministic template (always valid) ──
-    seo = template_seo(product, src["title"])
+    seo = template_seo(product, src["title"], title_bn=src.get("titleBn"))
 
     # ── OPTIONAL: rafan enhancement (best-effort, single attempt) ──
     if use_rafan:
@@ -576,8 +613,10 @@ def build_schema(seo, src_id, created_at, local_path=None):
 
 def upsert_seo(conn, src, seo):
     """conn is ignored for the write itself: rafan calls take ~15 min and Neon
-    drops idle SSL connections, so we open a FRESH connection for the upsert."""
+    drops idle SSL connections, so we open a FRESH connection for the upsert.
+    Also writes to Turso (SQLite) for the Prisma watch pages to read."""
     import psycopg2
+    import urllib.request
     canonical = f"{SITE}/tv/watch/{seo['slug']}"
     seo["canonicalUrl"] = canonical
     created_at = src.get("createdAt") or datetime.now(timezone.utc).isoformat()
@@ -586,9 +625,10 @@ def upsert_seo(conn, src, seo):
     og_path = make_og_image(seo, src["id"], src["product"])
     og_rel = "/og/tv/" + seo["slug"] + ".jpg"
 
-    conn = psycopg2.connect(db_url())
+    # Write to PostgreSQL (for seo_generate.py and other internal tools)
+    pg_conn = psycopg2.connect(db_url())
     try:
-        with conn.cursor() as cur:
+        with pg_conn.cursor() as cur:
             # slug collision with another source → suffix
             cur.execute('SELECT id, "videoSourceId" FROM "TvVideoSeo" WHERE slug=%s', (seo["slug"],))
             row = cur.fetchone()
@@ -623,10 +663,107 @@ def upsert_seo(conn, src, seo):
                 seo.get("transcriptBn"), json.dumps(schema, ensure_ascii=False), og_rel,
                 canonical, src["product"], src.get("viralScore"),
             ))
-        conn.commit()
-        return canonical, og_rel
+        pg_conn.commit()
+        log(f"  ✓ PostgreSQL upsert: {canonical}")
     finally:
-        conn.close()
+        pg_conn.close()
+
+    # Also write to Turso (SQLite) for Prisma watch pages
+    _upsert_turso(src, seo, schema, og_rel, canonical, created_at)
+
+    return canonical, og_rel
+
+
+def _upsert_turso(src, seo, schema, og_rel, canonical, created_at):
+    """Upsert TvVideoSeo to Turso via HTTP API."""
+    api_base, token = turso_url_and_token()
+    if not api_base or not token:
+        log("  ⚠ Turso API not configured, skipping SQLite write")
+        return
+
+    # Convert Postgres types to SQLite-compatible
+    # keywords: array -> JSON string
+    # schemaString: already JSON string
+    # createdAt/updatedAt: ISO strings
+    import uuid
+    now_iso = datetime.now(timezone.utc).isoformat()
+    
+    # Generate a cuid-like id if needed
+    def cuid():
+        return uuid.uuid4().hex[:24]
+    
+    # Build the SQL
+    # SQLite doesn't have gen_random_uuid(), use the one from the upsert
+    # We need to check if the row exists first, then INSERT or UPDATE
+    check_sql = f'SELECT id FROM "TvVideoSeo" WHERE "videoSourceId" = \'{src["id"]}\''
+    
+    payload = {
+        "requests": [
+            {"type": "execute", "stmt": check_sql}
+        ]
+    }
+    
+    req = urllib.request.Request(
+        api_base,
+        data=json.dumps(payload).encode(),
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            resp = json.loads(r.read().decode())
+    except Exception as e:
+        log(f"  ⚠ Turso check failed: {e}")
+        return
+    
+    rows = resp[0].get("results", [{}])[0].get("rows", [])
+    if rows:
+        # UPDATE
+        update_sql = f'''
+            UPDATE "TvVideoSeo" SET
+              slug = \'{seo["slug"].replace("'", "''")}\',
+              "titleBn" = \'{seo["titleBn"].replace("'", "''")}\',
+              "metaDescription" = \'{seo["metaDescription"].replace("'", "''")}\',
+              keywords = \'{json.dumps(seo["keywords"]).replace("'", "''")}\',
+              "transcriptBn" = \'{seo.get("transcriptBn", "").replace("'", "''")}\',
+              "schemaString" = \'{json.dumps(schema, ensure_ascii=False).replace("'", "''")}\',
+              "ogImage" = \'{og_rel.replace("'", "''")}\',
+              "canonicalUrl" = \'{canonical.replace("'", "''")}\',
+              product = \'{src["product"].replace("'", "''")}\',
+              "viralScore" = {src.get("viralScore", 0)},
+              "updatedAt" = \'{now_iso}\'
+            WHERE "videoSourceId" = \'{src["id"]}\'
+        '''
+        payload = {"requests": [{"type": "execute", "stmt": update_sql}]}
+    else:
+        # INSERT
+        insert_sql = f'''
+            INSERT INTO "TvVideoSeo" (id, "videoSourceId", slug, "titleBn", "metaDescription", keywords,
+              "transcriptBn", "schemaString", "ogImage", "canonicalUrl", product,
+              "viralScore", views, "createdAt", "updatedAt")
+            VALUES (
+              \'{cuid()}\', \'{src["id"]}\', \'{seo["slug"].replace("'", "''")}\',
+              \'{seo["titleBn"].replace("'", "''")}\', \'{seo["metaDescription"].replace("'", "''")}\',
+              \'{json.dumps(seo["keywords"]).replace("'", "''")}\',
+              \'{seo.get("transcriptBn", "").replace("'", "''")}\',
+              \'{json.dumps(schema, ensure_ascii=False).replace("'", "''")}\',
+              \'{og_rel.replace("'", "''")}\', \'{canonical.replace("'", "''")}\',
+              \'{src["product"].replace("'", "''")}\',
+              {src.get("viralScore", 0)}, 0, \'{created_at}\', \'{now_iso}\'
+            )
+        '''
+        payload = {"requests": [{"type": "execute", "stmt": insert_sql}]}
+    
+    req = urllib.request.Request(
+        api_base,
+        data=json.dumps(payload).encode(),
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            resp = json.loads(r.read().decode())
+        log(f"  ✓ Turso upsert: {canonical}")
+    except Exception as e:
+        log(f"  ⚠ Turso upsert failed: {e}")
 
 
 def main():
