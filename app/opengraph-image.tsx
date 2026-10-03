@@ -1,6 +1,8 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
+// ponytail: was `export const runtime = 'edge'` — OpenNext (Cloudflare Workers)
+// cannot bundle edge-runtime routes and the last worker deploy died on exactly
+// this file. nodejs_compat runs ImageResponse fine; edge was pure cargo cult.
 export const alt = 'Hostamar - AI Video Maker for Bangladeshi Business'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'

@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'edge'
+// ponytail: edge runtime removed — OpenNext can't bundle edge routes (same as opengraph-image.tsx).
 export const alt = 'Hostamar — AI Video Maker for Bangladeshi Business'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
