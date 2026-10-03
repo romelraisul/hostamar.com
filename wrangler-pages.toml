@@ -1,0 +1,17 @@
+name = "hostamar-pages"
+main = "worker.mjs"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[vars]
+TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
+B2_BUCKET_NAME = "hostamar-videos"
+B2_ENDPOINT = "https://f002.backblazeb2.com"
+
+[observability.logs]
+enabled = true
