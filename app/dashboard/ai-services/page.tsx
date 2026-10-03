@@ -312,7 +312,7 @@ export default function AiServicesPage() {
 
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
             {messages.map(m => (
-              <div key={m.id} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-xs ${m.role === 'user' ? 'ml-auto bg-[#0E7C3A] text-white' : 'bg-zinc-100 text-zinc-800'}`}>
+              <div key={m.id} className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-xs ${m.role === 'user' ? 'ml-auto bg-[#0E7C3A] text-white' : 'bg-zinc-100 text-white'}`}>
                 {m.content}
                 {m.creditCost ? <p className="mt-1 text-[9px] opacity-70">-{m.creditCost}cr revision</p> : null}
               </div>
