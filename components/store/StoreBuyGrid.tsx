@@ -53,27 +53,54 @@ export default function StoreBuyGrid() {
   const ql = q.trim().toLowerCase()
   const shown = ql ? all.filter((p) => p.title.toLowerCase().includes(ql)) : all
 
+  // FORGE 2026-10-04: apex Worker (hostamar.com/*) throws CF-1102 resource blips —
+  // the checkout POST can hang with NO response (browser fetch has no default
+  // timeout → buyer stuck on "অর্ডার হচ্ছে…" forever) or 503. 20s cap + 1 auto
+  // retry (2s spacing); blips are seconds-scale so the retry lands on a healthy
+  // run. Live E2E this shift: 2×15s hangs then 200/3.1s + real order created.
+  // ponytail: retry-after-timeout can duplicate the order server-side — bounded
+  // (pending+unpaid, reconciled by phone/TrxID); a lost buyer is worse than DB noise.
+  async function postCheckout(payload: string) {
+    const res = await fetch('/api/store/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      signal: AbortSignal.timeout(20_000),
+    })
+    const d = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      const e = new Error(d.error || 'Checkout unavailable') as any
+      e.answered = true
+      e.retryable = res.status >= 500 // 400/404 buyer-fixable, 429 rate-limit → no auto retry
+      throw e
+    }
+    return d
+  }
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!open) return
     const f = new FormData(e.currentTarget)
+    const payload = JSON.stringify({
+      variant_id: open.variantId,
+      email: f.get('email'),
+      name: f.get('name'),
+      address1: f.get('address1'),
+      city: f.get('city'),
+      phone: f.get('phone'),
+    })
     setPhase('submitting')
     setErr('')
     try {
-      const res = await fetch('/api/store/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          variant_id: open.variantId,
-          email: f.get('email'),
-          name: f.get('name'),
-          address1: f.get('address1'),
-          city: f.get('city'),
-          phone: f.get('phone'),
-        }),
-      })
-      const d = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(d.error || 'Checkout unavailable')
+      let d: any
+      try {
+        d = await postCheckout(payload)
+      } catch (first: any) {
+        // retry only on no-answer (timeout/network) or server 5xx
+        if (first.answered && !first.retryable) throw first
+        await new Promise((r) => setTimeout(r, 2000))
+        d = await postCheckout(payload)
+      }
       setOrderId(d.orderId || '')
       setPhase('done')
     } catch (e: any) {
