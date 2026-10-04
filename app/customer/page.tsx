@@ -7,7 +7,7 @@ export default function CustomerPage(){
         <span className="text-sm font-bold">CREDIT 6000/6000 100%</span>
         <span className="text-xs">Video 100 • Chat 1 • Browser 5 • IDE 10 • Game 20 • Android 100</span>
       </div>
-      <div className="mt-4 h-1.5 bg-zinc-200 rounded-full overflow-hidden"><div className="h-full bg-[#0E7C3A]" style={{width:'100%'}}/></div>
+      <div className="mt-4 h-1.5 bg-zinc-200 rounded-full overflow-hidden text-white"><div className="h-full bg-[#0E7C3A] text-white" style={{width:'100%'}}/></div>
       <div className="mt-6">
         <h2 className="font-semibold">My Builds</h2>
         <p className="text-sm text-zinc-600 mt-2">No builds yet — go to <a className="text-[#0E7C3A] underline" href="/dev">/dev</a> → Build APK (credit 100) → Share on Twitter?</p>

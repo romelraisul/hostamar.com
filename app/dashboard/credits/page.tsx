@@ -169,7 +169,7 @@ export default function CreditsPage() {
             </div>
           </div>
           <div className="flex gap-4 mt-4 text-xs">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-[#0E7C3A] inline-block" /> {toBn(remaining)} অবশিষ্ট</span>
+            <span className="flex items-center gap-1 text-white"><span className="w-3 h-3 rounded-full bg-[#0E7C3A] inline-block text-white" /> {toBn(remaining)} অবশিষ্ট</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-200 inline-block" /> {toBn(consumed)} ব্যবহৃত</span>
           </div>
           <div className="w-full mt-4 grid grid-cols-2 gap-2 text-center">
@@ -247,7 +247,7 @@ export default function CreditsPage() {
                   <div className="flex items-center gap-2">
                     <span className="w-10 text-[10px] text-[#0E7C3A]">রিচার্জ</span>
                     <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-3 bg-[#0E7C3A] rounded-full" style={{ width: `${(row.recharge / maxChart) * 100}%` }} />
+                      <div className="h-3 bg-[#0E7C3A] rounded-full text-white" style={{ width: `${(row.recharge / maxChart) * 100}%` }} />
                     </div>
                     <span className="w-12 text-xs font-semibold text-[#0E7C3A]">{toBn(row.recharge)}</span>
                   </div>
@@ -262,7 +262,7 @@ export default function CreditsPage() {
               </div>
             ))}
             <div className="flex gap-4 text-[11px] text-gray-500 pt-2 border-t">
-              <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#0E7C3A] rounded" /> রিচার্জ</span>
+              <span className="flex items-center gap-1 text-white"><span className="w-3 h-3 bg-[#0E7C3A] rounded text-white" /> রিচার্জ</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 bg-red-500 rounded" /> খরচ</span>
               <span className="ml-auto">CreditTransaction থেকে</span>
             </div>

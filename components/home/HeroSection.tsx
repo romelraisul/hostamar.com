@@ -58,7 +58,7 @@ export default function HeroSection() {
             {isBengali ? 'বাংলায় ' : 'Write in Bangla — '}
             <span className="inline-block min-h-[1.5em] font-semibold text-[#18181B]">
               {text}
-              <span className="ml-0.5 inline-block w-[2px] animate-pulse bg-[#0E7C3A]">&nbsp;</span>
+              <span className="ml-0.5 inline-block w-[2px] animate-pulse bg-[#0E7C3A] text-white">&nbsp;</span>
             </span>
           </p>
           <p className="mt-2 text-base text-zinc-500">

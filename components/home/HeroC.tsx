@@ -72,7 +72,7 @@ export default function HeroC() {
                     <div className="h-2.5 w-24 bg-white/90 rounded" />
                     <div className="mt-1.5 h-2 w-32 bg-white/30 rounded" />
                     <div className="mt-2 h-1.5 w-full bg-white/15 rounded-full overflow-hidden">
-                      <div className="h-full w-[68%] bg-[#0E7C3A] rounded-full" />
+                      <div className="h-full w-[68%] bg-[#0E7C3A] rounded-full text-white" />
                     </div>
                   </div>
                   <div className="hidden sm:flex h-7 px-2.5 rounded-full bg-white text-[#0F172A] text-[11px] font-semibold items-center shrink-0">Buy Now</div>

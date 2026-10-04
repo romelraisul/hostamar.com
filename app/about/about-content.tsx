@@ -155,7 +155,7 @@ export default function AboutContent() {
         <div className="relative pl-6 border-l-2 border-zinc-200">
           {TIMELINE.map((t) => (
             <div key={t.year} className="relative mb-8 last:mb-0">
-              <div className="absolute -left-[31px] top-1.5 h-4 w-4 rounded-full bg-[#0E7C3A] border-4 border-[#FCFCF9]" />
+              <div className="absolute -left-[31px] top-1.5 h-4 w-4 rounded-full bg-[#0E7C3A] border-4 border-[#FCFCF9] text-white" />
               <div className="bangla text-[13px] font-semibold text-[#0E7C3A]">{t.year}</div>
               <div className="bangla font-semibold text-[17px] mt-0.5">{t.title}</div>
               <p className="bangla text-[14px] text-zinc-600 leading-[1.6] mt-1 max-w-[560px]">{t.body}</p>

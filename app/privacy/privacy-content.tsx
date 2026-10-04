@@ -169,7 +169,7 @@ export default function PrivacyContent() {
           <ul className="grid sm:grid-cols-2 gap-2">
             {TLD.map((t) => (
               <li key={t} className="bangla flex items-start gap-2 text-[14px] text-zinc-700">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#0E7C3A] shrink-0" /> {t}
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#0E7C3A] shrink-0 text-white" /> {t}
               </li>
             ))}
           </ul>

@@ -280,7 +280,7 @@ export default function DashboardPage() {
               <div className="text-[11px] tracking-[0.2em] text-[#64748B]">CREDITS</div>
               <div className="text-2xl font-black text-[#0F172A] tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#64748B]">/ 6,000</span></div>
               <div className="text-xs text-[#64748B] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
-              <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#0E7C3A] rounded-full" style={{ width: `${creditPct}%` }} /></div>
+              <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden text-white"><div className="h-full bg-[#0E7C3A] rounded-full text-white" style={{ width: `${creditPct}%` }} /></div>
             </div>
             <div className="rounded-2xl border bg-white p-5">
               <div className="text-[11px] tracking-[0.2em] text-[#64748B]">STORAGE</div>
