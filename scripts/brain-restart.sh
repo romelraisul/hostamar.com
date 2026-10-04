@@ -5,7 +5,26 @@
 set -uo pipefail
 BUILD="/home/romel/hostamar-build"
 cd "$BUILD"
-set -a; . ./.env.docker 2>/dev/null; . ./.env.providers 2>/dev/null; set +a
+# Load env vars LITERALLY - never source them: values may contain command
+# substitutions that hang bash indefinitely (root-caused 2026-10-04 ECHO:
+# brain-restart hung 280s x2 while sourcing .env.docker/.env.providers).
+# docker --env-file is not used because the -e VAR="${VAR:-}" defaults below
+# would clobber it; parse-and-export keeps values verbatim.
+load_env_file() {
+  local f="$1" line key val
+  [ -f "$f" ] || return 0
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in ''|\#*) continue ;; esac
+    case "$line" in *=*) ;; *) continue ;; esac
+    key="${line%%=*}"
+    val="${line#*=}"
+    val="${val%\"}"; val="${val#\"}"
+    val="${val%\'}"; val="${val#\'}"
+    export "$key=$val"
+  done < "$f"
+}
+load_env_file "$BUILD/.env.docker"
+load_env_file "$BUILD/.env.providers"
 docker rm -f litellm-play >/dev/null 2>&1
 docker run -d \
   --name litellm-play \
@@ -21,6 +40,7 @@ docker run -d \
   -e BAI_API_KEY="${BAI_API_KEY:-}" \
   -e ORCA_API_KEY="${ORCA_API_KEY:-}" \
   -e TOKENROUTER_API_KEY="${TOKENROUTER_API_KEY:-}" \
+  -e OMNIROUTE_API_KEY="${OMNIROUTE_API_KEY:-}" \
   -e TG_DB=/tmp/guard_history.db \
   -e TG_ARCHIVE_PATH=/tmp/guard_archive.jsonl \
   --add-host host.docker.internal:host-gateway \

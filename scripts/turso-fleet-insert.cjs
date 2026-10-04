@@ -11,7 +11,12 @@ const { createClient } = require('@libsql/client');
 const c = createClient({ url: process.env.TURSO_FALLBACK_URL });
 const now = new Date().toISOString().replace('Z', '+00:00');
 const id = 'direct-' + Date.now();
-const body = JSON.parse(require('fs').readFileSync('/tmp/fleet_payload.json', 'utf8'));
+const payloadPath = process.env.TURSO_FALLBACK_PAYLOAD;
+if (!payloadPath) {
+  console.log('ERROR: TURSO_FALLBACK_PAYLOAD not set — run via fleet-report-push.sh (per-run payload; shared /tmp file caused cross-lane misattribution 2026-10-04)');
+  process.exit(1);
+}
+const body = JSON.parse(require('fs').readFileSync(payloadPath, 'utf8'));
 
 c.execute({
   sql: 'INSERT INTO "FleetReport" ("id","employee","jobId","verdict","raw","runAt") VALUES (?,?,?,?,?,?)',
