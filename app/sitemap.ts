@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com'
 
@@ -94,32 +95,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch { /* blog list unavailable in build sandbox */ }
 
   // Every TV video SEOs itself: /tv/watch/{slug} entries from TvVideoSeo.
+  // Prisma's sqlite provider rejects the Turso URL and the ORM path dies under
+  // workerd — so Turso via @libsql/client is the first path now; Prisma stays
+  // as the fallback so local dev (file: DB) still gets video entries.
   let videoEntries: MetadataRoute.Sitemap = []
   try {
-    const videos = await (prisma as any).tvVideoSeo.findMany({
-      select: { slug: true, updatedAt: true },
-      orderBy: { updatedAt: 'desc' },
-    })
-    videoEntries = videos.map((v: { slug: string; updatedAt: Date }) => ({
-      url: `${SITE_URL}/tv/watch/${v.slug}`,
-      lastModified: v.updatedAt || now,
+    const c = getTursoEdgeClient()
+    const res = await c.execute('SELECT slug, updatedAt FROM "TvVideoSeo" ORDER BY updatedAt DESC LIMIT 200')
+    videoEntries = res.rows.map((r) => ({
+      url: `${SITE_URL}/tv/watch/${String(r.slug)}`,
+      lastModified: r.updatedAt ? new Date(String(r.updatedAt)) : now,
       changeFrequency: 'daily' as const,
       priority: 0.8,
     }))
   } catch (e1: any) {
-    // V25: ORM path failed (observed on prebuilt deploy) — retry with raw SQL
-    // so the sitemap never silently loses the 83 TV URLs again.
-    console.warn('[sitemap] tvVideoSeo.findMany failed:', String(e1?.message || e1).slice(0, 200))
+    console.warn('[sitemap] turso path failed:', String(e1?.message || e1).slice(0, 200))
     try {
-      const rows: any[] = await (prisma as any).$queryRawUnsafe('SELECT slug, "updatedAt" FROM "TvVideoSeo" ORDER BY "updatedAt" DESC LIMIT 200') as any[]
-      videoEntries = (rows || []).map((v: any) => ({
+      const videos = await (prisma as any).tvVideoSeo.findMany({
+        select: { slug: true, updatedAt: true },
+        orderBy: { updatedAt: 'desc' },
+      })
+      videoEntries = videos.map((v: { slug: string; updatedAt: Date }) => ({
         url: `${SITE_URL}/tv/watch/${v.slug}`,
-        lastModified: v.updatedAt ? new Date(v.updatedAt) : now,
+        lastModified: v.updatedAt || now,
         changeFrequency: 'daily' as const,
         priority: 0.8,
       }))
     } catch (e2: any) {
-      console.warn('[sitemap] raw SQL fallback failed:', String(e2?.message || e2).slice(0, 200))
+      console.warn('[sitemap] prisma fallback failed:', String(e2?.message || e2).slice(0, 200))
     }
   }
 

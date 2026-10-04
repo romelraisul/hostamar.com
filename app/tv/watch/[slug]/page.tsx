@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { prisma } from '@/lib/prisma'
-import { ensureSchema } from '@/lib/ensure-schema'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 import WatchPlayer from './player'
 
 export const revalidate = 3600 // ISR: new videos appear without a full rebuild
@@ -29,12 +28,31 @@ type SeoRow = {
   updatedAt: Date
 }
 
+// Turso row -> the page's SeoRow. Dates arrive as ISO strings over HTTP.
+type RawRow = Record<string, unknown>
+
+function toSeoRow(r: RawRow): SeoRow {
+  return {
+    ...(r as unknown as SeoRow),
+    createdAt: new Date(String(r.createdAt)),
+    updatedAt: new Date(String(r.updatedAt)),
+  }
+}
+
 async function getSeo(slug: string): Promise<SeoRow | null> {
   try {
-    await ensureSchema()
-    const row = await (prisma as any).tvVideoSeo.findUnique({ where: { slug } })
-    if (!row) return null
-    // Prisma column is schemaString (a JSON text); the page/metadata/player all
+    // Prisma cannot init under workerd AND its sqlite provider rejects the
+    // Turso URL ("must start with file:") — getSeo returned null forever and
+    // every /tv/watch page 404'd. Direct @libsql/client (fetch-only, installed)
+    // is the one shared path: whole-shelf heal, not per-slug.
+    const c = getTursoEdgeClient()
+    const res = await c.execute({
+      sql: 'SELECT * FROM "TvVideoSeo" WHERE slug = ? LIMIT 1',
+      args: [slug],
+    })
+    if (!res.rows.length) return null
+    const row = toSeoRow(res.rows[0])
+    // Turso column is schemaString (a JSON text); the page/metadata/player all
     // read schemaJson — parse here, the one shared path, or every watch page
     // silently drops its VideoObject and plays live HLS instead of the edge mp4.
     if (typeof row.schemaJson === 'undefined' || row.schemaJson === null) {
@@ -48,10 +66,11 @@ async function getSeo(slug: string): Promise<SeoRow | null> {
     // string ('{a,b,"c d"}') copied from the old Postgres rows. Normalize to a
     // real array here (the one shared path for metadata + page) so .map() never
     // throws: whole-channel heal, not per-slug.
-    if (typeof row.keywords === 'string') {
+    const kw: unknown = (row as RawRow).keywords
+    if (typeof kw === 'string') {
       // ponytail: char-loop parser for Postgres array literals — boring but
       // correct on quoted tokens with commas/spaces ("Hostamar TV") and "" escapes.
-      let s = row.keywords
+      let s = kw
       if (s.startsWith('{') && s.endsWith('}')) s = s.slice(1, -1)
       const out: string[] = []
       let cur = ''
@@ -77,18 +96,18 @@ async function getSeo(slug: string): Promise<SeoRow | null> {
 
 async function getRelated(product: string, excludeSlug: string): Promise<SeoRow[]> {
   try {
-    const same = await (prisma as any).tvVideoSeo.findMany({
-      where: { product, slug: { not: excludeSlug } },
-      take: 3,
-      orderBy: { updatedAt: 'desc' },
-    })
+    const c = getTursoEdgeClient()
+    const one = async (where: string, args: string[]): Promise<SeoRow[]> => {
+      const res = await c.execute({
+        sql: `SELECT * FROM "TvVideoSeo" WHERE ${where} AND slug <> ? ORDER BY updatedAt DESC LIMIT 3`,
+        args: [...args, excludeSlug],
+      })
+      return res.rows.map(toSeoRow)
+    }
+    const same = await one('product = ?', [product])
     if (same.length >= 3) return same
-    const rest = await (prisma as any).tvVideoSeo.findMany({
-      where: { product: { not: product }, slug: { not: excludeSlug } },
-      take: 3 - same.length,
-      orderBy: { updatedAt: 'desc' },
-    })
-    return [...same, ...rest]
+    const rest = await one('product <> ?', [product])
+    return [...same, ...rest.slice(0, 3 - same.length)]
   } catch {
     return []
   }
@@ -98,9 +117,9 @@ async function getRelated(product: string, excludeSlug: string): Promise<SeoRow[
 // the DB, so this degrades to [] and pages render on-demand (ISR) instead.
 export async function generateStaticParams() {
   try {
-    await ensureSchema()
-    const rows = await (prisma as any).tvVideoSeo.findMany({ select: { slug: true } })
-    return rows.map((r: { slug: string }) => ({ slug: r.slug }))
+    const c = getTursoEdgeClient()
+    const res = await c.execute('SELECT slug FROM "TvVideoSeo"')
+    return res.rows.map((r) => ({ slug: String(r.slug) }))
   } catch {
     return []
   }
