@@ -1,21 +1,33 @@
 /**
  * lib/surveillance.ts — V65 Layer 5: abuse & distillation guard.
  *
- * Zero-cost design: sampled request logging into the EXISTING Neon Postgres
- * (tables RequestLog / RiskUser — additive DDL, FleetReport pattern). No new
- * services, no Redis, no paid tier. Never breaks the chat path: every query
- * is try/caught and failures are silent.
+ * Zero-cost design: sampled request logging into the EXISTING Turso
+ * (tables RequestLog / RiskUser — created 2026-10-04, FleetReport pattern).
+ * No new services, no Redis, no paid tier. Never breaks the chat path: every
+ * query is try/caught and failures are silent.
  *
  * Privacy: only a salted SHA-256 hash of (ip + user-agent) is stored — raw
  * IPs never touch the database. Prompt storage is a 400-char preview for
  * cross-account clustering (the Anthropic-style distillation signature:
  * same prompt echoed across many user_ids).
  */
-import { prisma } from '@/lib/prisma'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 import crypto from 'crypto'
 
 const SALT = process.env.SURVEILLANCE_SALT || 'hostamar-l5-2026'
 const SAMPLE_RATE = Number(process.env.SURVEILLANCE_SAMPLE || '0.25')
+
+// ponytail: Workers cannot load Prisma's libssl detection (fs.readdir ->
+// "[unenv] fs.readdir is not implemented" -> prisma init dies) — direct
+// @libsql/client/web is fetch-only and runs on Workers AND Vercel Node
+// (same pattern as lib/turso-edge.ts consumers). sqlite dialect.
+function tryTurso() {
+  try {
+    return getTursoEdgeClient()
+  } catch {
+    return null // surveillance must never break chat
+  }
+}
 
 export function ipHashOf(clientIp: string, userAgent: string | null): string {
   return crypto
@@ -45,15 +57,21 @@ export async function upsertRiskUser(
   score: number,
   reason: string,
 ): Promise<void> {
+  const client = tryTurso()
+  if (!client) return
   try {
-    await prisma.$executeRaw`
-      INSERT INTO "RiskUser" ("userId","ipHash","riskScore",reason,"updatedAt")
-      VALUES (${userId}, ${ipHash}, ${score}, ${reason}, NOW())
-      ON CONFLICT ("userId") DO UPDATE
-      SET "riskScore" = GREATEST("RiskUser"."riskScore", ${score}),
-          reason = ${reason},
-          "ipHash" = COALESCE(${ipHash}, "RiskUser"."ipHash"),
-          "updatedAt" = NOW()`
+    // sqlite scalar max(a,b) == Postgres GREATEST(a,b); createdAt explicit
+    // (table DDL has no DEFAULT — INSERT omitted it and died on NOT NULL).
+    await client.execute({
+      sql: `INSERT INTO "RiskUser" ("userId","ipHash","riskScore",reason,"updatedAt","createdAt")
+            VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+            ON CONFLICT ("userId") DO UPDATE
+            SET "riskScore" = MAX("RiskUser"."riskScore", ?),
+                reason = ?,
+                "ipHash" = COALESCE(?, "RiskUser"."ipHash"),
+                "updatedAt" = datetime('now')`,
+      args: [userId, ipHash, score, reason, score, reason, ipHash],
+    })
   } catch {
     /* surveillance must never break chat */
   }
@@ -67,13 +85,17 @@ export async function recordSurveillance(opts: {
   prompt: string
   responseLen: number
 }): Promise<void> {
+  const client = tryTurso()
+  if (!client) return
   try {
     if (Math.random() > SAMPLE_RATE) return
     const ipHash = ipHashOf(opts.clientIp, opts.userAgent)
     const preview = (opts.prompt || '').slice(0, 400)
-    await prisma.$executeRaw`
-      INSERT INTO "RequestLog" ("userId","ipHash",model,"promptPreview","responseLen")
-      VALUES (${opts.userId}, ${ipHash}, ${opts.model}, ${preview}, ${opts.responseLen})`
+    await client.execute({
+      sql: `INSERT INTO "RequestLog" ("userId","ipHash",model,"promptPreview","responseLen","createdAt")
+            VALUES (?, ?, ?, ?, ?, datetime('now'))`,
+      args: [opts.userId, ipHash, opts.model, preview, opts.responseLen],
+    })
     const verdict = classifyPrompt(preview)
     if (verdict.score > 0) {
       await upsertRiskUser(
