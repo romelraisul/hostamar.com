@@ -189,13 +189,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-3">
           {/* Header credit meter */}
           <div className="hidden md:flex items-center gap-3 rounded-full border bg-white px-3 py-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#0E7C3A] animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-[#0E7C3A] animate-pulse text-white" />
             <span className="text-xs font-semibold tracking-wide text-[#0F172A]">CREDITS</span>
             <span className="text-sm font-bold text-[#0F172A]">
               {statsLoading ? '—' : `${shownCredits.toLocaleString()} / 6,000`}
             </span>
             <span className="hidden sm:inline h-1.5 w-20 overflow-hidden rounded-full bg-[#E2E8F0]">
-              <span className="block h-full rounded-full bg-[#0E7C3A] transition-all" style={{ width: `${creditPct}%` }} />
+              <span className="block h-full rounded-full bg-[#0E7C3A] transition-all text-white" style={{ width: `${creditPct}%` }} />
             </span>
             <Link
               href="/dashboard/payment"
@@ -280,7 +280,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span className="ml-auto text-[11px] font-medium text-[#0E7C3A]">{creditPct}%</span>
             </div>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#D1FAE5]">
-              <div className="h-full rounded-full bg-[#0E7C3A] transition-all" style={{ width: `${creditPct}%` }} />
+              <div className="h-full rounded-full bg-[#0E7C3A] transition-all text-white" style={{ width: `${creditPct}%` }} />
             </div>
             <p className="mt-2 text-[11px] leading-tight text-[#475569]">Video 100 • Chat 1 • Browser 5 • IDE 10 • Game 5</p>
             <div className="mt-2 flex items-center gap-2">

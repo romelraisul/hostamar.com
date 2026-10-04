@@ -63,7 +63,7 @@ export default function App() {
       <div className="w-full bg-[#0F1115] text-[#FCFCF9] text-[11px] sm:text-[12px] tracking-wide">
         <div className="mx-auto max-w-[1200px] px-4 sm:px-6 h-8 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto scrollbar-none">
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><span className="h-1.5 w-1.5 rounded-full bg-[#0E7C3A] animate-pulse" /> 500+ প্লেয়ার অনলাইন</span>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-white"><span className="h-1.5 w-1.5 rounded-full bg-[#0E7C3A] animate-pulse text-white" /> 500+ প্লেয়ার অনলাইন</span>
             <span className="opacity-60 hidden sm:inline">•</span>
             <span className="whitespace-nowrap opacity-80">Tournaments daily 7PM & 9PM</span>
             <span className="opacity-60 hidden sm:inline">•</span>
@@ -84,7 +84,7 @@ export default function App() {
           {/* Left */}
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0E7C3A]/10 border border-[#0E7C3A]/15 text-[#0E7C3A] text-[12px] font-semibold">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#0E7C3A]" /> নতুন • BD সার্ভারে লাইভ
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0E7C3A] text-white" /> নতুন • BD সার্ভারে লাইভ
             </div>
             <h1 className="bangla mt-5 text-[32px] sm:text-[48px] leading-[1.05] font-bold tracking-tight">
               ব্রাউজারে গেম, <span className="text-[#0E7C3A]">AI এর সাথে</span>,<br />
@@ -130,7 +130,7 @@ export default function App() {
               {/* browser chrome */}
               <div className="h-11 flex items-center justify-between px-4 bg-[#15181e] border-b border-white/10">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-full bg-[#E4312B]" /><span className="h-3 w-3 rounded-full bg-amber-400" /><span className="h-3 w-3 rounded-full bg-[#0E7C3A]" />
+                  <span className="h-3 w-3 rounded-full bg-[#E4312B] text-white" /><span className="h-3 w-3 rounded-full bg-amber-400 text-white" /><span className="h-3 w-3 rounded-full bg-[#0E7C3A] text-white" />
                 </div>
                 <div className="hidden sm:flex items-center gap-2 text-[11px] text-white/60">
                   <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10">Prize pool ৳5,000</span>

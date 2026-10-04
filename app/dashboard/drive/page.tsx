@@ -158,7 +158,7 @@ export default function DriveApp() {
       {uploadPct !== null && (
         <div className="rounded-md border p-3 text-sm">
           আপলোড হচ্ছে {uploadName}… {uploadPct}%
-          <div className="mt-2 h-2 rounded bg-zinc-200"><div className="h-2 rounded bg-[#0E7C3A]" style={{ width: `${uploadPct}%` }} /></div>
+          <div className="mt-2 h-2 rounded bg-zinc-200 text-white"><div className="h-2 rounded bg-[#0E7C3A] text-white" style={{ width: `${uploadPct}%` }} /></div>
         </div>
       )}
       {msg && <div className="rounded-md border bg-zinc-50 p-3 text-sm">{msg}</div>}
