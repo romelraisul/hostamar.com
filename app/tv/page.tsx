@@ -494,6 +494,10 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'gps-episode-narrated.mp4', t: 'GPS — আকাশের ২৪ ঘড়ি যে আপনার রাস্তা জানে (205s, নেরেশনসহ)' },
+                { f: 'gps-episode-narrated-shorts.mp4', t: 'GPS Short — ৩০s ভার্টিকেল' },
+                { f: 'agent-autonomous-employee-narrated.mp4', t: 'Agent Autonomous Employee — নিজে নিজে কাজ করা এজেন্ট (211s, নেরেশনসহ)' },
+                { f: 'shorts-agent-autonomous-employee.mp4', t: 'Agent Employee Short — ৩০s ভার্টিকেল' },
                 { f: 'https-tls-episode-narrated.mp4', t: 'HTTPS ও TLS — লক চিহ্ন কী রক্ষা করে (197s, নেরেশনসহ)' },
                 { f: 'shorts-https-tls.mp4', t: 'HTTPS Short — ৩০s ভার্টিকেল' },
                 { f: 'dns-episode-narrated.mp4', t: 'DNS — ইন্টারনেটের ফোনবুক (191s, নেরেশনসহ)' },
