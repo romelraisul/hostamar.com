@@ -47,8 +47,8 @@ export default function StatusPage() {
       <div className="max-w-2xl mx-auto">
         <div className="mb-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#0E7C3A] bg-[#0E7C3A]/10 px-3 py-1 rounded-full">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0E7C3A] opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0E7C3A]" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0E7C3A] opacity-60 text-white" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0E7C3A] text-white" />
           </span>
           System Status
         </div>

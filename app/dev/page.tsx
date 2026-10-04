@@ -177,7 +177,7 @@ export default function Page() {
                 <div className={`font-bn text-[13.5px] leading-[1.6] mt-2 ${i===4?"text-zinc-400":"text-zinc-600"}`}>{f.desc}</div>
               </div>
               {i===4 && <div className="mt-4 font-mono text-[11px] text-emerald-300 bg-white/5 border border-white/10 rounded-full inline-flex px-3 py-1 self-start">arafat.hostamar.dev → Live ✓</div>}
-              {i===2 && <div className="mt-4 h-1.5 rounded-full bg-zinc-100 overflow-hidden"><div className="h-full w-[82%] bg-[#0E7C3A]"/></div>}
+              {i===2 && <div className="mt-4 h-1.5 rounded-full bg-zinc-100 overflow-hidden text-white"><div className="h-full w-[82%] bg-[#0E7C3A] text-white"/></div>}
             </div>
           ))}
         </div>

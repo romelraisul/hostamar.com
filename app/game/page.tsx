@@ -126,7 +126,7 @@ export default function GamePage() {
       <section className="mx-auto max-w-[1240px] px-4 md:px-6 pb-10">
         <div className="overflow-hidden rounded-xl bg-zinc-900 text-white">
           <div className="flex items-center gap-2 px-4 py-2 border-b border-white/10 text-[12px] text-zinc-400">
-            <span className="w-2 h-2 rounded-full bg-[#0E7C3A] animate-pulse" /> Live tournaments (demo)
+            <span className="w-2 h-2 rounded-full bg-[#0E7C3A] animate-pulse text-white" /> Live tournaments (demo)
           </div>
           <div className="flex gap-6 px-4 py-2 text-[12.5px] font-mono text-zinc-300 whitespace-nowrap">
             {TICKER.map((t) => <span key={t}>{t}</span>)}
