@@ -51,7 +51,9 @@ export async function GET(req: NextRequest) {
             select: { id: true, fileName: true, fileSize: true, mimeType: true, folderId: true, createdAt: true },
           }),
           prisma.driveFile.aggregate({
-            where: { ownerId, chunkGroupId: null },
+            // ponytail: count ALL rows — every part of a chunked file carries chunkGroupId,
+            // so filtering them out under-reported usedBytes by the whole chunked payload
+            where: { ownerId },
             _sum: { fileSize: true },
           }),
         ])
