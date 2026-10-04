@@ -494,6 +494,8 @@ export default function TvPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { f: 'dubbing-bn-episode-narrated.mp4', t: 'AI ডাবিং — ভিডিও এক থাকে, ভাষা বদলে যায় (187s, নেরেশনসহ)' },
+                { f: 'dubbing-bn-episode-shorts.mp4', t: 'AI ডাবিং Short — ৩০s ভার্টিকেল' },
                 { f: 'gps-episode-narrated.mp4', t: 'GPS — আকাশের ২৪ ঘড়ি যে আপনার রাস্তা জানে (205s, নেরেশনসহ)' },
                 { f: 'gps-episode-narrated-shorts.mp4', t: 'GPS Short — ৩০s ভার্টিকেল' },
                 { f: 'agent-autonomous-employee-narrated.mp4', t: 'Agent Autonomous Employee — নিজে নিজে কাজ করা এজেন্ট (211s, নেরেশনসহ)' },
