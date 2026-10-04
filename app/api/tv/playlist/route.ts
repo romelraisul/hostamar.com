@@ -1,50 +1,71 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { ensureSchema } from '@/lib/ensure-schema'
-import { getOrCreateDefaultChannel } from '@/lib/tv/generator'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 
+// ponytail: workerd cannot load Prisma 5.22's engine init (fs.readdir -> unenv
+// throws -> every query swallowed as 500). Read Turso directly via the fetch-only
+// /web client (same pattern as /api/tv/status + tv/watch). Upgrade path: none —
+// Prisma stays on Vercel only.
 /**
  * GET /api/tv/playlist  (public)
  * Returns the ordered playlist for the channel (used by /tv player + streamer).
  */
 export async function GET(req: NextRequest) {
   try {
-    await ensureSchema()
-    const channel = await getOrCreateDefaultChannel()
-    let items = await prisma.tvPlaylistItem.findMany({
-      // `played` is the retire flag: the no-repeat watcher sets it, and the
-      // safety work retires third-party footage the same way. Without this filter
-      // retired items keep airing (the channel stayed on other people's content
-      // even after being retired), so filter here rather than at every caller.
-      where: { channelId: channel.id, played: false },
-      orderBy: { position: 'asc' },
-      take: 100,
+    const db = getTursoEdgeClient()
+    const chanRes = await db.execute(
+      'SELECT "id", "name", "isLive" FROM "TvChannel" ORDER BY "createdAt" ASC LIMIT 1'
+    )
+    if (!chanRes.rows.length) {
+      return NextResponse.json({ ok: true, error: 'NO_CHANNEL', count: 0, items: [] })
+    }
+    const channel = chanRes.rows[0] as unknown as { id: string; name: string; isLive: number | boolean }
+    const channelId = channel.id
+
+    // `played` is the retire flag: the no-repeat watcher sets it, and the
+    // safety work retires third-party footage the same way. Without this filter
+    // retired items keep airing, so filter here rather than at every caller.
+    const res = await db.execute({
+      sql: 'SELECT "id", "title", "url", "source", "position", "videoId" FROM "TvPlaylistItem" WHERE "channelId" = ? AND "played" = false ORDER BY "position" ASC LIMIT 100',
+      args: [channelId],
     })
+    let items = res.rows.map((r) => ({ ...(r as Record<string, unknown>) })) as Array<{
+      id: string
+      title: string
+      url: string
+      source: string
+      position: number
+      videoId: string | null
+    }>
+
     // Fallback: if playlist empty, serve recent videos from Video table so /tv never blank
     if (items.length === 0) {
       try {
-        const videos = await (prisma as any).video?.findMany?.({ orderBy: { createdAt: 'desc' }, take: 12 }) || []
+        const vidRes = await db.execute(
+          'SELECT "id", "title", "prompt", "url", "videoUrl", "createdAt" FROM "Video" ORDER BY "createdAt" DESC LIMIT 12'
+        )
         // HARD GUARD: only serve URLs on our own origin — stale Video rows can
         // point at expired B2 keys (401), which filled /tv with dead links.
-        items = videos.filter((v: any) => String(v.url || v.videoUrl || '').includes('hostamar.com')).map((v: any, idx: number) => ({
-          id: v.id,
-          channelId: channel.id,
-          videoId: v.id,
-          title: v.title || v.prompt?.slice(0, 60) || `Video ${idx + 1}`,
-          url: v.url || v.videoUrl || '',
-          source: 'generated',
-          position: idx,
-          createdAt: v.createdAt,
-        }))
+        items = vidRes.rows
+          .map((r) => ({ ...(r as Record<string, unknown>) }))
+          .filter((v) => String(v.url || v.videoUrl || '').includes('hostamar.com'))
+          .map((v, idx) => ({
+            id: String(v.id),
+            title: String(v.title || String(v.prompt || '').slice(0, 60) || `Video ${idx + 1}`),
+            url: String(v.url || v.videoUrl || ''),
+            source: 'generated',
+            position: idx,
+            videoId: String(v.id),
+          }))
       } catch {}
     }
+
     return NextResponse.json({
       ok: true,
-      channelId: channel.id,
+      channelId,
       channelName: channel.name,
-      isLive: channel.isLive,
+      isLive: Boolean(channel.isLive),
       count: items.length,
       items: items.map((i) => ({
         id: i.id,
