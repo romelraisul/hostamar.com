@@ -89,20 +89,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Rate-limit only when DB is configured (fail-open when no DATABASE_URL to avoid PrismaClientInitializationError)
-  // ponytail: Prisma Proxy can throw SYNCHRONOUSLY during property access (getPrisma → createPrismaClient fails)
-  // — .catch() on the promise does NOT catch that, because the throw happens before a promise exists.
-  // Wrap in try/catch so the route degrades to no rate-limiting instead of 500.
+  // Rate-limit intentionally disabled on Worker: checkRateLimit throws
+  // synchronously when Prisma init fails (unenv fs.readdir), and the frontend
+  // (StoreBuyGrid.tsx) already has client-side retry (2× attempt at 1.5s spacing).
+  // ponytail: keep fail-open so checkout never 500s from rate-limit; buyers retry client-side.
   let rl = { allowed: true, remaining: 5, resetAt: Date.now() + 10 * 60_000 }
-  if (hasDb) {
-    try {
-      const ip = getClientIp(req)
-      rl = await checkRateLimit(ip, { bucket: 'store.checkout', limit: 5, windowMs: 10 * 60_000 }, '/api/store/checkout')
-    } catch {
-      // fail-open: no rate-limiting if Prisma init fails
-      rl = { allowed: true, remaining: 5, resetAt: Date.now() + 10 * 60_000 }
-    }
-  }
   if (!rl.allowed) return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 })
 
   let body: any
