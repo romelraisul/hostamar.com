@@ -8,7 +8,7 @@
  * wall — the whole point of the manual send-money path (BINDING 2026-09-14).
  * Products come from /api/store/products (variantId + BDT, nothing else exposed them).
  */
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 const GREEN = '#0E7C3A'
 const BKASH = '01822417463'
@@ -24,16 +24,27 @@ export default function StoreBuyGrid() {
   const [phase, setPhase] = useState<Phase>('idle')
   const [orderId, setOrderId] = useState('')
   const [err, setErr] = useState('')
+  const [failed, setFailed] = useState(false)
 
-  useEffect(() => {
+  // FORGE 2026-10-04: a transient CF 1102/503 on /api/store/products (same Worker
+  // that 503'd /api/v1/models ~25-50% during the 07:0x window) made the ENTIRE
+  // buy grid vanish via `return null` — buyer saw a store page with no products
+  // and no way to recover. Retry x2 (spaced 1.5s), then a visible retry card.
+  const load = useCallback((attempt = 0) => {
     fetch('/api/store/products')
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d) => {
         const list: Prod[] = (d.products || []).filter((p: Prod) => p.amountBdt > 0)
         setAll(list.sort((a, b) => b.amountBdt - a.amountBdt))
+        setFailed(false)
       })
-      .catch(() => setAll([]))
+      .catch(() => {
+        if (attempt < 2) setTimeout(() => load(attempt + 1), 1500)
+        else setFailed(true)
+      })
   }, [])
+
+  useEffect(() => { load() }, [load])
 
   // FORGE 2026-09-20: default = ALL 123 products. The 12-product cap was the
   // last backend friction blocking 2-click checkout — 111 catalog items had no
@@ -69,6 +80,18 @@ export default function StoreBuyGrid() {
       setErr(e?.message || 'Checkout unavailable')
       setPhase('error')
     }
+  }
+
+  if (failed) {
+    return (
+      <div className="mt-12 rounded-2xl border bg-white p-6 text-center">
+        <div className="font-bold text-sm text-zinc-700">ক্যাটালগ লোড হয়নি</div>
+        <div className="text-xs text-zinc-500 mt-1">অস্থায়ী নেটওয়ার্ক সমস্যা — আবার চেষ্টা করুন।</div>
+        <button onClick={() => { setFailed(false); load() }} className="mt-3 inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-bold text-white hover:opacity-90" style={{ background: GREEN }}>
+          আবার চেষ্টা করুন
+        </button>
+      </div>
+    )
   }
 
   if (!all.length) return null
