@@ -76,6 +76,29 @@ def log(*a):
     print("[seo]", *a, flush=True)
 
 
+def _turso_arg(v):
+    if v is None:
+        return {"type": "null", "value": None}
+    if isinstance(v, bool):
+        return {"type": "integer", "value": "1" if v else "0"}
+    if isinstance(v, int):
+        return {"type": "integer", "value": str(v)}
+    if isinstance(v, float):
+        return {"type": "float", "value": str(v)}
+    return {"type": "text", "value": str(v)}
+
+def _turso_exec(api_base, token, sql, args=None):
+    import json, urllib.request
+    stmt = {"sql": sql}
+    if args is not None:
+        stmt["args"] = args
+    payload = {"requests": [{"type": "execute", "stmt": stmt}]}
+    req = urllib.request.Request(api_base, data=json.dumps(payload).encode(), headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        resp = json.loads(r.read().decode())
+    return resp.get("results", [])[0].get("response", {}).get("result", {}).get("rows", [])
+
+
 # ── config ──────────────────────────────────────────────────────────────────
 def db_url():
     # Docker postgres uses password "hostamar"
@@ -675,31 +698,46 @@ def upsert_seo(conn, src, seo):
 
 
 def _upsert_turso(src, seo, schema, og_rel, canonical, created_at):
-    """Upsert TvVideoSeo to Turso via HTTP API."""
+    """Upsert TvVideoSeo to Turso via HTTP API. Uses parameterized v2/pipeline requests."""
     api_base, token = turso_url_and_token()
     if not api_base or not token:
         log("  ⚠ Turso API not configured, skipping SQLite write")
         return
-
-    # Convert Postgres types to SQLite-compatible
-    # keywords: array -> JSON string
-    # schemaString: already JSON string
-    # createdAt/updatedAt: ISO strings
     import uuid
     now_iso = datetime.now(timezone.utc).isoformat()
-    
-    # Generate a cuid-like id if needed
-    def cuid():
-        return uuid.uuid4().hex[:24]
-    
-    # Build the SQL
-    # SQLite doesn't have gen_random_uuid(), use the one from the upsert
-    # We need to check if the row exists first, then INSERT or UPDATE
-    check_sql = f'SELECT id FROM "TvVideoSeo" WHERE "videoSourceId" = \'{src["id"]}\''
+    try:
+        rows = _turso_exec(api_base, token, 'SELECT id FROM "TvVideoSeo" WHERE "videoSourceId" = ?', [_turso_arg(src["id"])])
+    except Exception as e:
+        log(f"  ⚠ Turso check failed: {e}")
+        return
+    if rows:
+        sql = '''UPDATE "TvVideoSeo" SET slug=?, "titleBn"=?, "metaDescription"=?, keywords=?,
+              "transcriptBn"=?, "schemaString"=?, "ogImage"=?, "canonicalUrl"=?, product=?,
+              "viralScore"=?, "updatedAt"=? WHERE "videoSourceId"=?'''
+        args = [_turso_arg(seo["slug"]), _turso_arg(seo["titleBn"]), _turso_arg(seo["metaDescription"]),
+                _turso_arg(json.dumps(seo["keywords"])), _turso_arg(seo.get("transcriptBn","")),
+                _turso_arg(json.dumps(schema, ensure_ascii=False)), _turso_arg(og_rel), _turso_arg(canonical),
+                _turso_arg(src["product"]), _turso_arg(src.get("viralScore",0)),
+                _turso_arg(now_iso), _turso_arg(src["id"])]
+    else:
+        sql = '''INSERT INTO "TvVideoSeo" (id, "videoSourceId", slug, "titleBn", "metaDescription", keywords,
+              "transcriptBn", "schemaString", "ogImage", "canonicalUrl", product,
+              "viralScore", views, "createdAt", "updatedAt")
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        args = [_turso_arg(uuid.uuid4().hex[:24]), _turso_arg(src["id"]), _turso_arg(seo["slug"]),
+                _turso_arg(seo["titleBn"]), _turso_arg(seo["metaDescription"]),
+                _turso_arg(json.dumps(seo["keywords"])), _turso_arg(seo.get("transcriptBn","")),
+                _turso_arg(json.dumps(schema, ensure_ascii=False)), _turso_arg(og_rel),
+                _turso_arg(canonical), _turso_arg(src["product"]),
+                _turso_arg(src.get("viralScore",0)), _turso_arg(0), _turso_arg(created_at), _turso_arg(now_iso)]
+    try:
+        _turso_exec(api_base, token, sql, args)
+        log(f"  ✓ Turso upsert: {canonical}")
+    except Exception as e:
+        log(f"  ⚠ Turso upsert failed: {e}")
     
     payload = {
         "requests": [
-            {"type": "execute", "stmt": check_sql}
         ]
     }
     
@@ -715,7 +753,7 @@ def _upsert_turso(src, seo, schema, og_rel, canonical, created_at):
         log(f"  ⚠ Turso check failed: {e}")
         return
     
-    rows = resp[0].get("results", [{}])[0].get("rows", [])
+    rows = resp.get("results", [])[0].get("results", [{}])[0].get("rows", [])
     if rows:
         # UPDATE
         update_sql = f'''
