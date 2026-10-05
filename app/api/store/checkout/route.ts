@@ -68,14 +68,14 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
     return data
   }
 
-  try {
-    console.log('[store/checkout] trying primary:', primaryBase)
-    return await tryFetch(primaryBase)
-  } catch (e: any) {
-    console.error('[store/checkout] primary failed:', e?.message?.slice(0, 500))
-    console.log('[store/checkout] trying fallback:', fallbackBase)
-    return await tryFetch(fallbackBase)
-  }
+  // Skipped primary worker; use fallback only
+  // console.log('[store/checkout] trying primary:', primaryBase)
+  // return await tryFetch(primaryBase)
+  // console.log('[store/checkout] trying fallback:', fallbackBase)
+  // return await tryFetch(fallbackBase)
+  console.log('[store/checkout] using fallback:', fallbackBase)
+  return await tryFetch(fallbackBase)
+
 }
 
 export async function POST(req: NextRequest) {
