@@ -143,7 +143,7 @@ export default function IdeClient() {
               <span className="font-mono text-xs text-zinc-500">{activeSession.inputs?.serverId}</span>
               <span className="text-xs text-zinc-400">({activeSession.inputs?.ideType})</span>
             </div>
-            <button onClick={() => setActiveSession(null)} className="text-xs text-zinc-500 hover:text-zinc-800">← সব IDE</button>
+            <button onClick={() => setActiveSession(null)} className="text-xs text-zinc-500 hover:text-white">← সব IDE</button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-[180px_1fr_1fr]">
             {/* file explorer */}

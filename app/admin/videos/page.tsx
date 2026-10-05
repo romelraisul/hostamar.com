@@ -47,7 +47,7 @@ export default async function AdminVideos() {
   } catch {}
 
   return (
-    <div className="min-h-screen bg-[#fffdf6] p-6 text-black">
+    <div className="min-h-screen bg-[#fffdf6] p-6 text-white">
       <div className="flex justify-between items-start gap-4">
         <h1 className="text-2xl font-bold">ভিডিও Tab — Customer Video Management</h1>
         <a href="/admin/videos/reference-copy" className="text-xs underline text-blue-700">H3 ReferenceToVideo নকল — video copy local unlimited →</a>

@@ -35,7 +35,7 @@ function Row({ k, v }: { k: string; v: React.ReactNode }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-4 py-2 border-b last:border-0">
       <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide pt-1">{k}</div>
-      <div className="sm:col-span-2 text-sm text-zinc-800">{v}</div>
+      <div className="sm:col-span-2 text-sm text-white">{v}</div>
     </div>
   )
 }
@@ -92,7 +92,7 @@ export default function CoinProfilePage({ params }: { params: { slug: string } }
         <div className="rounded-2xl border bg-white p-5">
           <ul className="space-y-2">
             {coin.earning.map((e) => (
-              <li key={e} className="text-sm text-zinc-800 flex gap-2"><span style={{ color: GREEN }}>▸</span>{e}</li>
+              <li key={e} className="text-sm text-white flex gap-2"><span style={{ color: GREEN }}>▸</span>{e}</li>
             ))}
           </ul>
         </div>
