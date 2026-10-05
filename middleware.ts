@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   "/api/chat", "/api/hermes", "/api/admin/chat", "/api/admin/audit", "/api/admin/health", "/api/admin/models", "/api/video-os/models", "/api/video-os/comfyui",
   "/api/store/checkout",
   "/api/probe-store",
+  "/api/drive/file",  // share-token auth handled by route
   "/sitemap.xml", "/robots.txt", "/favicon.ico", "/_next", "/static"
 ];
 
