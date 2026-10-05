@@ -115,7 +115,11 @@ def ensure_file(conn, filename, card, dry=False):
     errs = G.validate_seo({**seo, "transcriptBn": "x"}, "Own")
     assert not errs, f"{filename}: {errs}"
     seo["transcriptBn"] = G.build_transcript(seo, {**src, "product": "Own"})
-    canonical, og_rel = G.upsert_seo(conn, src, seo)
+    try:
+        canonical, og_rel = G.upsert_seo(conn, src, seo)
+    except Exception as e:
+        print(f"  [ERROR] Turso sync failed for {filename}: {e}")
+        canonical, og_rel = None, None
     return slug, f"created -> {canonical}"
 
 
