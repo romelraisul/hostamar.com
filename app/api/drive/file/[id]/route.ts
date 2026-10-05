@@ -88,7 +88,7 @@ async function serveFromTelegram(req: NextRequest, f: Row & { shareToken: string
         const from = Math.max(abs, start)
         const to = Math.min(abs + chunk.length - 1, end)
         if (from <= to && emitted < want) { collected.push(chunk.subarray(from - abs, to - abs + 1)); emitted += to - from + 1 }
-      }, within ? { offset: within } : {})
+      }, within ? { offset: within, limit: Math.max(1, want - emitted) } : { limit: Math.max(1, want - emitted) })
       pos += partSize
       if (emitted >= want) break
     }
