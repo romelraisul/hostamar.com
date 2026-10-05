@@ -32,7 +32,7 @@ export default function AndroidBuilder(){
   }
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 p-6 max-w-[1100px] mx-auto">
+    <div className="min-h-screen bg-white text-white p-6 max-w-[1100px] mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">🤖 AI Android Builder — 0 Taka</h1>
         <span className="text-sm px-3 py-1 rounded-full bg-[#0E7C3A] text-white font-bold">{credits}/6000</span>

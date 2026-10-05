@@ -86,7 +86,7 @@ export default function AdTicker({
           </Link>
         </div>
       </div>
-      <Link href="/tv" className="text-[9px] font-black bg-white text-black px-2 h-full flex items-center shrink-0 z-50">
+      <Link href="/tv" className="text-[9px] font-black bg-white text-white px-2 h-full flex items-center shrink-0 z-50">
         HOSTAMAR.COM/TV
       </Link>
     </div>

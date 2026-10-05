@@ -79,7 +79,7 @@ export default function VideoGeneratePage() {
     <div className="min-h-screen bg-[#FBF4E4] text-[#1C1917] antialiased selection:bg-[#0E7C3A]/15 bp-theme">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <div className="mx-auto max-w-[1180px] px-4 md:px-6 py-4">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-[13px] text-zinc-500 hover:text-zinc-800">← হোম</Link>
+        <Link href="/" className="inline-flex items-center gap-1.5 text-[13px] text-zinc-500 hover:text-white">← হোম</Link>
       </div>
 
       <section className="mx-auto max-w-[1180px] px-4 md:px-6">

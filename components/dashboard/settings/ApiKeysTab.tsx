@@ -96,7 +96,7 @@ export default function ApiKeysTab() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-medium text-gray-900">API Keys</h2>
+      <h2 className="text-lg font-medium text-white">API Keys</h2>
 
       {newKey && (
         <div className="rounded-lg border border-green-300 bg-green-50 p-4">
@@ -174,7 +174,7 @@ export default function ApiKeysTab() {
             {keys.map((k) => (
               <tr key={k.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-gray-900">{k.name}</p>
+                  <p className="font-medium text-white">{k.name}</p>
                   <p className="text-[11px] text-gray-400">{new Date(k.createdAt).toLocaleDateString()}</p>
                 </td>
                 <td className="px-4 py-3 text-xs text-gray-600">

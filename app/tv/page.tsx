@@ -605,6 +605,7 @@ export default function TvPage() {
                 { f: 'shorts-gpu-spot-market.mp4', t: 'GPU Spot Market Short — 30s (-32.3 dB)' },
                 { f: 'shorts-quantum-computing.mp4', t: 'Quantum Computing Short — 30s (-27.4 dB)' },
                 { f: 'sovereign-cloud-pricing-narrated.mp4', t: 'Sovereign Pricing Narrated (-21.1 dB)' },
+                { f: 'shorts-sovereign-cloud-pricing.mp4', t: 'Sovereign Pricing Short — 30s vertical (-20.3 dB)' },
                 { f: 'sovereign-receipt-episode-narrated.mp4', t: 'Sovereign Episode Narrated (-23.9 dB)' },
                 { f: 'agent-cloud-episode.mp4', t: 'Agent Cloud Episode — 231s, narrated (-26.8 dB)' },
                 { f: 'build-log-006-shorts.mp4', t: 'Build Log 006 Short — 30s vertical (-29.4 dB)' },
