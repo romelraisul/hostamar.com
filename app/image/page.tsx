@@ -78,7 +78,7 @@ export default function ImageGeneratePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFCF9] text-zinc-900 antialiased">
+    <div className="min-h-screen bg-[#FCFCF9] text-white antialiased">
       <div className="mx-auto max-w-[760px] px-4 py-12">
         <h1 className="text-3xl font-bold">AI Image Generator</h1>
         <p className="mt-2 text-zinc-600">
