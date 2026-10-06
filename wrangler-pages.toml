@@ -23,6 +23,7 @@ TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
 B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
 NEXTAUTH_URL = "https://hostamar.com"
+NEXT_PUBLIC_SITE_URL = "https://hostamar.com"
 FLEET_REPORT_SECRET = "fleet-78a683835ccd02f7c1f794a1ff0c9439"
 
 [observability.logs]
