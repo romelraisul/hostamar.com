@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signToken } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getTursoEdgeClient } from "@/lib/turso-edge";
 import { env } from '@/lib/env'
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,11 @@ function htmlRedirect(url: string, cookie?: { name: string; value: string }) {
     });
   }
   return res;
+}
+
+// cuid-compatible id (Prisma cuid shape: c + base36 ts + random)
+function cuid(): string {
+  return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 }
 
 export async function GET(req: NextRequest) {
@@ -87,19 +92,44 @@ export async function GET(req: NextRequest) {
     }
 
     // 3) Lookup in DB — must exist, otherwise create as customer (SSO JIT provisioning)
-    let customer = await prisma.customer.findUnique({ where: { email } });
+    // ponytail: Prisma's create path probes fs.readdir on Workers (unenv throws →
+    // sso_callback_failed) — same disease as the Drive routes. Raw @libsql/client
+    // via getTursoEdgeClient is fetch-only and workerd-safe. health + drive/list
+    // already use it. Upgrade path: fs-free Prisma client engine.
+    const db = getTursoEdgeClient();
+    const found = await db.execute({
+      sql: "SELECT id, email, name, role FROM Customer WHERE email = ? LIMIT 1",
+      args: [email],
+    });
+    let customer = found.rows[0]
+      ? {
+          id: String(found.rows[0].id),
+          email: String(found.rows[0].email),
+          name: found.rows[0].name == null ? null : String(found.rows[0].name),
+          role: found.rows[0].role == null ? null : String(found.rows[0].role),
+        }
+      : null;
     if (!customer) {
       // Auto-provision new SSO users as customer (never auto-admin)
-      customer = await prisma.customer.create({
-        data: {
+      const id = cuid();
+      await db.execute({
+        sql: `INSERT INTO Customer (customerId, id, email, name, password, emailVerified, role, credits, createdAt, updatedAt)
+              VALUES (?, ?, ?, ?, ?, ?, 'customer', 6000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        args: [
+          id,
+          id,
           email,
-          name: googleUser.name || email.split("@")[0],
-          password: `sso_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-          role: "customer",
-          emailVerified: new Date(),
-          credits: 6000, // free credit pool granted at signup
-        },
+          googleUser.name || email.split("@")[0],
+          `sso_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          new Date().toISOString(),
+        ],
       });
+      customer = {
+        id,
+        email,
+        name: googleUser.name || email.split("@")[0],
+        role: "customer",
+      };
     }
 
     // 4) Issue our own JWT — use DB role truth (admin for romelraisul@gmail.com if DB says so)
