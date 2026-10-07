@@ -15,7 +15,20 @@ interface LogEntry {
   data?: Record<string, unknown>;
 }
 
+// workerd has no writable filesystem: unenv's fs shims exist but throw
+// "[unenv] fs.mkdirSync is not implemented yet!" on use (that 500'd /api/logs).
+// The file sink is Node/local-only; everywhere else logs go to the console, which
+// `wrangler tail` already captures.
+const FILE_SINK = (() => {
+  try {
+    return typeof process !== 'undefined'
+      && !!process.versions?.node
+      && !/Cloudflare-Workers/i.test(String((globalThis as any).navigator?.userAgent ?? ''))
+  } catch { return false }
+})()
+
 function ensureLogDir() {
+  if (!FILE_SINK) return;
   if (!fs.existsSync(LOG_DIR)) {
     fs.mkdirSync(LOG_DIR, { recursive: true });
   }
@@ -38,6 +51,7 @@ function rotateIfNeeded(level: LogLevel) {
 }
 
 function writeLog(entry: LogEntry) {
+  if (!FILE_SINK) return;
   ensureLogDir();
   rotateIfNeeded(entry.level);
   const filePath = getLogFilePath(entry.level);
@@ -86,11 +100,13 @@ export const logger = {
 };
 
 export function getLogFiles(): string[] {
+  if (!FILE_SINK) return [];
   ensureLogDir();
   return fs.readdirSync(LOG_DIR).filter(f => f.endsWith('.log')).sort().reverse();
 }
 
 export function readLogFile(level: LogLevel, date: string): LogEntry[] {
+  if (!FILE_SINK) return [];
   const filePath = path.join(LOG_DIR, `${level}-${date}.log`);
   if (!fs.existsSync(filePath)) return [];
   const content = fs.readFileSync(filePath, 'utf-8');
@@ -108,6 +124,7 @@ export function readLogFile(level: LogLevel, date: string): LogEntry[] {
 }
 
 export function searchLogs(query: string, level?: LogLevel, startDate?: string, endDate?: string): LogEntry[] {
+  if (!FILE_SINK) return [];
   ensureLogDir();
   const files = getLogFiles();
   const results: LogEntry[] = [];

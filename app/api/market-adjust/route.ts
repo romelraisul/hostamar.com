@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 import { getBinanceRate } from '@/lib/binance'
 
 export const dynamic = 'force-dynamic'
@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/market-adjust — daily cron: Fetch $HOSTA (Dexscreener) + Binance USDT/BDT + OpenRouter costs
  * Calculates suggested pricing: Starter 990 Taka = $7.84 at 126.24, adjust if USDT/BDT moves >2%
- * Writes to Neon market_adjustment { suggestedPrice, currentPrice, diff%, status: pending_approval }
+ * Writes to Turso market_adjustment { suggestedPrice, currentPrice, diff%, status: pending_approval }
+ * (raw @libsql/client — prisma writes probe fs.readdir on workerd; see lib/turso-edge)
  */
 export async function GET(req: NextRequest) {
   // Public read for customer /pricing + admin /admin/market; write still gated via /api/admin/market-approve.
@@ -30,14 +31,21 @@ export async function GET(req: NextRequest) {
   let status: string = 'no_change'
   if (Math.abs(diffPct) > 2) status = 'pending_approval'
 
-  // persist to Neon market_adjustment
+  // persist to Turso (SQLite dialect: no NOW()/gen_random_uuid()/::jsonb)
   try {
-    await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS "market_adjustment" (id TEXT PRIMARY KEY, "suggestedPrice" DOUBLE PRECISION, "currentPrice" DOUBLE PRECISION, "diffPct" DOUBLE PRECISION, status TEXT, "hostaPrice" DOUBLE PRECISION, "usdtBdt" DOUBLE PRECISION, "createdAt" TIMESTAMP DEFAULT NOW())`
+    const db = getTursoEdgeClient()
+    await db.execute(`CREATE TABLE IF NOT EXISTS "market_adjustment" (id TEXT PRIMARY KEY, "suggestedPrice" REAL, "currentPrice" REAL, "diffPct" REAL, status TEXT, "hostaPrice" REAL, "usdtBdt" REAL, "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`)
     const id = `adj-${Date.now()}`
-    await prisma.$executeRaw`INSERT INTO "market_adjustment" (id, "suggestedPrice", "currentPrice", "diffPct", status, "hostaPrice", "usdtBdt", "createdAt") VALUES (${id}, ${suggestedPrice}, ${currentPrice}, ${diffPct}, ${status}, ${hostaPrice}, ${binance.usdtBdt}, NOW())`
+    await db.execute({
+      sql: `INSERT INTO "market_adjustment" (id, "suggestedPrice", "currentPrice", "diffPct", status, "hostaPrice", "usdtBdt", "createdAt") VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      args: [id, suggestedPrice, currentPrice, diffPct, status, hostaPrice, binance.usdtBdt],
+    })
     // log to SeoEvent + slack stub
     try {
-      await prisma.$executeRaw`INSERT INTO "SeoEvent" (id, type, payload, "createdAt") VALUES (gen_random_uuid()::text, 'market_adjust', ${JSON.stringify({ suggestedPrice, currentPrice, diffPct, hostaPrice, usdtBdt: binance.usdtBdt })}::jsonb, NOW())`
+      await db.execute({
+        sql: `INSERT INTO "SeoEvent" (id, type, payload, "createdAt") VALUES (?, 'market_adjust', ?, CURRENT_TIMESTAMP)`,
+        args: [crypto.randomUUID(), JSON.stringify({ suggestedPrice, currentPrice, diffPct, hostaPrice, usdtBdt: binance.usdtBdt })],
+      })
     } catch {}
     if (process.env.SLACK_WEBHOOK_URL) {
       fetch(process.env.SLACK_WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: `Market adjust: ${currentPrice}→${suggestedPrice} Taka (${diffPct}%) @ ${binance.usdtBdt} BDT, $HOSTA $${hostaPrice} — ${status}` }) }).catch(()=>{})

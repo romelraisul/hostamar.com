@@ -4,7 +4,8 @@ export const maxDuration = 10
 
 export async function GET(req: NextRequest) {
   const key = process.env.OPENROUTER_API_KEY
-  if (!key) return Response.json({ error: 'NO_KEY' }, { status: 500 })
+  // not configured != broken: 501 keeps the endpoint honest without a 5xx-500 error
+  if (!key) return Response.json({ error: 'NO_KEY', detail: 'OPENROUTER_API_KEY is not set on this deployment' }, { status: 501 })
 
   const body = JSON.stringify({ model: 'openai/gpt-4o-mini', messages: [{role:'user',content:'hi'}], max_tokens: 5, stream: false })
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {

@@ -166,21 +166,29 @@ export async function runViralResearch(): Promise<ResearchResult> {
     // Dedupe by title
     const existing = await prisma.viralTrend.findFirst({ where: { title } })
     if (existing) continue
-    const row = await prisma.viralTrend.create({
-      data: {
-        source: item.source,
-        title,
-        titleBn,
-        url: item.url || null,
-        thumbnail: (item as any).thumbnail || null,
-        views: item.views || null,
-        viralScore,
-        category,
-        rawData: item as any,
-      },
-    })
+    // workerd: Prisma writes probe fs and throw. Persistence is best-effort here —
+    // the trend still reaches the pipeline (the caller only needs the list).
+    let rowId: string | null = null
+    try {
+      const row = await prisma.viralTrend.create({
+        data: {
+          source: item.source,
+          title,
+          titleBn,
+          url: item.url || null,
+          thumbnail: (item as any).thumbnail || null,
+          views: item.views || null,
+          viralScore,
+          category,
+          rawData: item as any,
+        },
+      })
+      rowId = row.id
+    } catch (e: any) {
+      console.warn('[viral/researcher] persist skipped:', String(e?.message ?? e).slice(0, 160))
+    }
     inserted++
-    trends.push({ id: row.id, title, titleBn, source: item.source, viralScore: Math.round(viralScore * 10) / 10, category })
+    trends.push({ id: rowId ?? `unpersisted-${trends.length}`, title, titleBn, source: item.source, viralScore: Math.round(viralScore * 10) / 10, category })
   }
 
   // If nothing passed SME filter (e.g. all news), insert top curated SME trend so pipeline never stalls
@@ -189,11 +197,16 @@ export async function runViralResearch(): Promise<ResearchResult> {
     const { score, category } = scoreSME(fallback.title)
     const exists = await prisma.viralTrend.findFirst({ where: { title: fallback.title } })
     if (!exists) {
-      const row = await prisma.viralTrend.create({
-        data: { source: 'curated', title: fallback.title, titleBn: 'ঈদ ফ্যাশন ভাইরাল কালেকশন - Daraz বিক্রেতাদের জন্য', viralScore: score, category, url: null },
-      })
+      let row: any = null
+      try {
+        row = await prisma.viralTrend.create({
+          data: { source: 'curated', title: fallback.title, titleBn: 'ঈদ ফ্যাশন ভাইরাল কালেকশন - Daraz বিক্রেতাদের জন্য', viralScore: score, category, url: null },
+        })
+      } catch (e: any) {
+        console.warn('[viral/researcher] curated persist skipped:', String(e?.message ?? e).slice(0, 160))
+      }
       inserted = 1
-      trends.push({ id: row.id, title: fallback.title, titleBn: row.titleBn!, source: 'curated', viralScore: score, category })
+      trends.push({ id: row?.id ?? `unpersisted-curated`, title: fallback.title, titleBn: row?.titleBn ?? 'ঈদ ফ্যাশন ভাইরাল কালেকশন - Daraz বিক্রেতাদের জন্য', source: 'curated', viralScore: score, category })
     }
   }
 

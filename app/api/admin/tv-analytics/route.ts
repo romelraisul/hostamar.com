@@ -120,9 +120,14 @@ export async function GET(req: NextRequest) {
       adClicks,
       storageB2,
     })
-  } catch (err) {
+  } catch (err: any) {
     console.error('[admin/tv-analytics] error:', err)
-    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
+    // requireAdmin() throws with cause.status (401/403): surface it, don't mask it as a 500
+    const status = Number(err?.cause?.status) || 500
+    return NextResponse.json(
+      { error: status === 401 ? 'Unauthorized' : status === 403 ? 'Forbidden' : 'INTERNAL_ERROR' },
+      { status }
+    )
   }
 }
 

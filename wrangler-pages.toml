@@ -2,6 +2,15 @@ name = "hostamar-pages"
 main = ".open-next/worker.js"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
+
+# ponytail: Prisma's workerd loader does `await import('./query_engine_bg.wasm')`
+# during a request; workerd does not count that pending module load as I/O, so the
+# first prisma request on a fresh isolate is killed as "hung" (~27% of requests).
+# Compiling wasm imports as modules makes the load resolvable/embedded.
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
 workers_dev = true
 account_id = "e00717304c1139751214b8cda5078a8d"
 
@@ -24,7 +33,5 @@ B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
 NEXTAUTH_URL = "https://hostamar.com"
 NEXT_PUBLIC_SITE_URL = "https://hostamar.com"
-FLEET_REPORT_SECRET = "fleet-78a683835ccd02f7c1f794a1ff0c9439"
-
 [observability.logs]
 enabled = true

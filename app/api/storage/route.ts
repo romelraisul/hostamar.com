@@ -33,6 +33,18 @@ import { randomUUID } from 'crypto'
 import { getAuthUser } from '@/lib/auth'
 import { extname, basename } from 'path'
 
+// workerd has no writable filesystem: unenv's fs shims throw
+// "[unenv] fs.readFile is not implemented yet!" (a 500). This backend is local/Node-only,
+// so fail honestly with 501 and point callers at the B2/Medusa path.
+const LOCAL_FS_ONLY = () => {
+  try { return /Cloudflare-Workers/i.test(String((globalThis as any).navigator?.userAgent ?? '')) } catch { return false }
+}
+const NO_FS = () => NextResponse.json(
+  { ok: false, error: 'local_fs_unavailable',
+    detail: 'File storage runs on the local/Node host (STORAGE_ROOT), not on Cloudflare Workers.' },
+  { status: 501 }
+)
+
 // Force Node.js runtime (this route uses S3 - not Edge compatible)
 export const dynamic = 'force-dynamic'
 
@@ -168,6 +180,7 @@ async function deleteFileFromB2(key: string): Promise<void> {
 
 export async function POST(request: NextRequest) {
   try {
+    if (LOCAL_FS_ONLY()) return NO_FS()
     // SECURITY (IDOR fix, defense-in-depth): verify the JWT directly via
     // getAuthUser() (cookie/Bearer). Middleware already overwrites any forged
     // x-user-id header; this second check makes the route self-sufficient.
@@ -312,6 +325,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    if (LOCAL_FS_ONLY()) return NO_FS()
     // SECURITY (IDOR fix, defense-in-depth): verify the JWT directly via
     // getAuthUser() (cookie/Bearer). Middleware already overwrites any forged
     // x-user-id header; this second check makes the route self-sufficient.
@@ -347,6 +361,7 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    if (LOCAL_FS_ONLY()) return NO_FS()
     // SECURITY (IDOR fix, defense-in-depth): verify the JWT directly via
     // getAuthUser() (cookie/Bearer). Middleware already overwrites any forged
     // x-user-id header; this second check makes the route self-sufficient.
