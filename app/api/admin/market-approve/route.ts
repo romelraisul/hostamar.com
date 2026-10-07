@@ -8,7 +8,8 @@ export async function POST(req: NextRequest){
   const suggested = Number(body.suggestedPrice)
   // In real app, update Stripe/PayPal prices + pricing page — here just log approval
   try {
-    await prisma.$executeRaw`INSERT INTO "SeoEvent" (id, type, payload, "createdAt") VALUES (gen_random_uuid()::text, 'market_approve', ${JSON.stringify({ suggestedPrice: suggested, by:'admin', at: new Date().toISOString() })}::jsonb, NOW())`
+    // SQLite dialect: crypto.randomUUID(), url carries the summary (live SeoEvent has no payload col)
+    await prisma.$executeRaw`INSERT INTO "SeoEvent" (id, type, url, "createdAt") VALUES (${crypto.randomUUID()}, 'market_approve', ${`market_approve:${suggested}:${new Date().toISOString()}`}, CURRENT_TIMESTAMP)`
   } catch {}
   return Response.json({ ok:true, message:`Approved ${suggested} Taka — /pricing will show updated Starter price (Stripe/PayPal sync TODO)` })
 }

@@ -82,11 +82,14 @@ async function rewardOne(ref: any, paymentAmountBD: number, sourceId?: string): 
   const referrerId = ref.referrerId
   try {
     // try CreditAccount path first
-    const acct: any = await prisma.$queryRaw`SELECT id, credits FROM "CreditAccount" WHERE "customerId" = ${referrerId} LIMIT 1`
+    // ponytail: CreditAccount does not exist in this DB — without this catch the
+    // whole credit block aborts and the referrer never gets credited.
+    const acct: any = await prisma.$queryRaw`SELECT id, credits FROM "CreditAccount" WHERE "customerId" = ${referrerId} LIMIT 1`.catch(() => [] as any)
     const accountId: string | null = Array.isArray(acct) && acct[0] ? acct[0].id : null
     if (accountId) {
       await prisma.$executeRaw`UPDATE "CreditAccount" SET credits = credits + ${REFERRAL_CREDITS} WHERE id = ${accountId}`
-      await prisma.$executeRaw`INSERT INTO "CreditTransaction" (id, "accountId", amount, product, "balanceAfter", description) VALUES (gen_random_uuid()::text, ${accountId}, ${REFERRAL_CREDITS}, 'referral_bonus', (SELECT credits FROM "CreditAccount" WHERE id = ${accountId}), ${'Referral bonus: 500cr for ' + ref.referredId + (sourceId ? ' payment ' + sourceId : '')})`
+      // SQLite dialect: crypto.randomUUID(), customerId column (live table has no accountId/product)
+      await prisma.$executeRaw`INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter") VALUES (${crypto.randomUUID()}, ${referrerId}, ${REFERRAL_CREDITS}, 'referral_bonus', ${'Referral bonus: 500cr for ' + ref.referredId + (sourceId ? ' payment ' + sourceId : '')}, (SELECT credits FROM "CreditAccount" WHERE id = ${accountId}))`
       // also keep Customer.credits in sync
       await prisma.customer.update({ where: { id: referrerId }, data: { credits: { increment: REFERRAL_CREDITS } } }).catch(() => {})
     } else {
