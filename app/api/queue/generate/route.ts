@@ -64,48 +64,32 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('[Queue Generate API] Error:', error?.message || error);
+    const unavailable = error?.name === 'QueueUnavailableError' || error?.status === 503;
     return NextResponse.json(
-      { error: error?.message || 'Failed to enqueue video generation job' },
-      { status: 500 }
+      {
+        error: error?.message || 'Failed to enqueue video generation job',
+        code: unavailable ? 'queue_unavailable' : undefined,
+      },
+      { status: unavailable ? 503 : 500 }
     );
   }
 }
 
 /**
- * GET /api/queue/generate
+ * GET /api/queue/generate — 405, not a hang.
  *
- * Returns the current status of the video generation queue (counts).
+ * This is a POST-only route. The old handler opened a BullMQ connection just to
+ * read counts; on workerd there is no TCP/Redis, so the import never settled and
+ * the edge cancelled the request at 25s (the audit's "000"). The Turso-backed
+ * queue list lives at GET /api/queue.
  */
-export async function GET(_req: NextRequest) {
-  try {
-    const { getVideoGenerationQueue } = await import('@/lib/queue');
-    const queue = getVideoGenerationQueue();
-
-    const [waiting, active, completed, failed, delayed] = await Promise.all([
-      queue.getWaitingCount(),
-      queue.getActiveCount(),
-      queue.getCompletedCount(),
-      queue.getFailedCount(),
-      queue.getDelayedCount(),
-    ]);
-
-    return NextResponse.json({
-      success: true,
-      queue: 'video-generation',
-      counts: {
-        waiting,
-        active,
-        completed,
-        failed,
-        delayed,
-        total: waiting + active + completed + failed + delayed,
-      },
-    });
-  } catch (error: any) {
-    console.error('[Queue Generate API] GET error:', error?.message || error);
-    return NextResponse.json(
-      { error: 'Failed to get queue status' },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  return NextResponse.json(
+    {
+      error: 'Method not allowed',
+      code: 'use_post',
+      hint: 'POST to enqueue; GET /api/queue for the Turso-backed queue list',
+    },
+    { status: 405, headers: { Allow: 'POST' } }
+  );
 }
