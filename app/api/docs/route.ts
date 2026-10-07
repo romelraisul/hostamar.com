@@ -1,5 +1,3 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -11,13 +9,8 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(req: NextRequest) {
   const lang = new URL(req.url).searchParams.get('lang') === 'bn' ? 'bn' : 'en'
-  try {
-    const p = join(process.cwd(), 'lib', 'docs', lang === 'bn' ? 'bn' : '', 'content.json')
-    const data = readFileSync(p, 'utf-8')
-    return new NextResponse(data, {
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400' },
-    })
-  } catch {
-    return NextResponse.json({ sections: [] }, { status: 200 })
-  }
+  // Content moved to a static asset (public/docs-content-*.json) — workerd has no
+  // fs, so readFileSync always threw here and the docs page got {"sections":[]}.
+  // Same URL contract kept: redirect to the asset.
+  return NextResponse.redirect(new URL(`/docs-content-${lang}.json`, req.url), 302)
 }
