@@ -214,3 +214,4 @@ public/sitemap.xml
 
 # wrangler dev scratch (bundles, dev worker, temp wasm)
 .wrangler/
+public/tv/loop.mp4
