@@ -15,9 +15,16 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const rows = await prisma.$queryRaw`
-    SELECT id, service, "oldPrice", "newPrice", "driftPct", source, status, "createdAt"
-    FROM "MarketTrend"
-    ORDER BY "createdAt" DESC LIMIT 20`
-  return Response.json({ trends: rows })
+  try {
+    const rows = await prisma.$queryRaw`
+      SELECT id, service, "oldPrice", "newPrice", "driftPct", source, status, "createdAt"
+      FROM "MarketTrend"
+      ORDER BY "createdAt" DESC LIMIT 20`
+    return Response.json({ trends: rows })
+  } catch (e: any) {
+    // ponytail: table is created by the first /api/cron/market-sync run; before
+    // that (and on a fresh DB) this is "no drift yet", not an error.
+    console.warn('[market-trends] read failed', e?.message?.slice(0, 200))
+    return Response.json({ trends: [] })
+  }
 }

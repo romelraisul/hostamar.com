@@ -51,9 +51,17 @@ export async function GET(req: NextRequest) {
       status: AUTO_ADJUST ? 'applied' : 'pending_approval',
       metadata: JSON.stringify({ anchors, avgUsd, usdtBdt, margin: 1.3 }),
     }
+    // ponytail: SQLite/Turso dialect — no gen_random_uuid()/::jsonb casts (they
+    // were Neon-isms and made this insert throw every run). DDL here too so a
+    // fresh DB self-heals instead of 500-ing the admin market tab.
     await prisma.$executeRaw`
-      INSERT INTO "MarketTrend" (id, service, "oldPrice", "newPrice", "driftPct", source, status, metadata)
-      VALUES (gen_random_uuid()::text, ${trend.service}, ${trend.oldPrice}, ${trend.newPrice}, ${trend.driftPct}, ${trend.source}, ${trend.status}, ${trend.metadata}::jsonb)
+      CREATE TABLE IF NOT EXISTS "MarketTrend" (
+        id TEXT PRIMARY KEY, service TEXT NOT NULL, "oldPrice" REAL, "newPrice" REAL,
+        "driftPct" REAL, source TEXT, status TEXT, metadata TEXT,
+        "createdAt" TEXT DEFAULT CURRENT_TIMESTAMP, "appliedAt" TEXT, "rejectedAt" TEXT)`
+    await prisma.$executeRaw`
+      INSERT INTO "MarketTrend" (id, service, "oldPrice", "newPrice", "driftPct", source, status, metadata, "createdAt")
+      VALUES (${`mt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`}, ${trend.service}, ${trend.oldPrice}, ${trend.newPrice}, ${trend.driftPct}, ${trend.source}, ${trend.status}, ${trend.metadata}, CURRENT_TIMESTAMP)
     `
     trends.push(trend)
   }

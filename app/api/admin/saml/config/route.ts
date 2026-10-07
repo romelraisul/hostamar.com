@@ -112,7 +112,11 @@ export async function POST(req: NextRequest) {
   } catch (e: any) {
     // Jackson registration failure must not leave a dangling "active" flag.
     await prisma.samlConnection.update({ where: { id: conn.id }, data: { isActive: false } }).catch(() => undefined)
-    return NextResponse.json({ error: `Jackson registration failed: ${e?.message || 'unknown'}`, org, conn }, { status: 500 })
+    const unavailable = e?.name === 'SamlUnavailableError'
+    return NextResponse.json(
+      { error: unavailable ? e.message : `Jackson registration failed: ${e?.message || 'unknown'}`, org, conn },
+      { status: unavailable ? 501 : 500 },
+    )
   }
 
   return NextResponse.json({ ok: true, org, conn })

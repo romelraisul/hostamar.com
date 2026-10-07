@@ -19,8 +19,44 @@
 // free-tier friendly, and that is intentional.
 // ============================================================================
 import { z } from 'zod'
-import DOMPurify from 'isomorphic-dompurify'
 import { NextResponse } from 'next/server'
+
+// ponytail: `isomorphic-dompurify` resolves to jsdom under the Node condition,
+// and on workerd that shim evaluates to a stub — importing it statically threw
+// "JSDOM is not a constructor" while the Worker's module graph loaded, which
+// 500'd EVERY route that imports this validator (support/fix, and any other
+// admin route mixing it in). Load it on demand, and where there is no DOM fall
+// back to escaping every string: stricter than the allowlist (nothing survives
+// as markup), so the fallback can only tighten input. The MALICIOUS_RE tripwire
+// below still rejects anything that smells like injection either way.
+let purify: { sanitize: (s: string) => string } | null = null
+let purifyRequested = false
+
+const ON_WORKERD = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers'
+
+function escapeAll(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function sanitizeOne(s: string): string {
+  if (!ON_WORKERD && !purifyRequested) {
+    purifyRequested = true
+    void import('isomorphic-dompurify')
+      .then((m) => {
+        purify = ((m as unknown as { default?: unknown }).default ?? m) as typeof purify
+      })
+      .catch(() => {
+        purify = null
+      })
+  }
+  if (purify) return purify.sanitize(s)
+  return escapeAll(s)
+}
 
 export const DEFAULT_MAX_STRING = 10_000
 
@@ -57,7 +93,7 @@ export function deepSanitize<T = unknown>(input: T, max: number = DEFAULT_MAX_ST
     if (input.length > max) {
       throw new ValidationError('STRING_TOO_LONG', `string exceeds ${max} chars`)
     }
-    const cleaned = DOMPurify.sanitize(input.trim())
+    const cleaned = sanitizeOne(input.trim())
     if (MALICIOUS_RE.test(cleaned)) {
       throw new ValidationError('MALICIOUS_STRING', 'input rejected by sanitizer')
     }
