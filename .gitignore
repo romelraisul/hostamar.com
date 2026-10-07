@@ -211,3 +211,6 @@ public/tv/cmt[0-9]*.mp4
 # app/sitemap.ts (dynamic route, Turso-backed) serves the real sitemap; a local
 # static public/sitemap.xml shadows it with 19 entries / zero tv/watch. Keep out.
 public/sitemap.xml
+
+# wrangler dev scratch (bundles, dev worker, temp wasm)
+.wrangler/

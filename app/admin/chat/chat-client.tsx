@@ -64,8 +64,6 @@ export default function ChatOsClient({ user }: { user: any }) {
     try{
       await fetch('/api/admin/agent', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages:[{role:'user', content: next ? '/set autonomous on' : '/set autonomous off'}] }) })
     }catch{}
-    // also create task
-    try{ await fetch('/api/admin/agent/cron', { method:'POST', headers:{'Content-Type':'application/json','x-cron-secret':'hostamar-cron-2026'}, body: JSON.stringify({ type:'daily-health' }) }) }catch{}
   }
 
   async function send(){
