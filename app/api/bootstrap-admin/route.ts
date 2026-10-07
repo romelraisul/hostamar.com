@@ -43,9 +43,11 @@ export async function POST(req: NextRequest) {
         const id = `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`
         customerId = id
         created = true
+        // Customer.customerId is @unique @default(cuid()) with NO SQL default — the
+        // cuid only fires through Prisma's client, so raw INSERT must supply it.
         await prisma.$executeRaw`
-          INSERT INTO "Customer" (id, email, name, password, "role", "credits", "emailVerified", "createdAt", "updatedAt")
-          VALUES (${id}, ${email}, ${name}, ${hashed}, 'admin', 6000, NOW(), NOW());
+          INSERT INTO "Customer" (id, "customerId", email, name, password, "role", "credits", "createdAt", "updatedAt")
+          VALUES (${id}, ${id}, ${email}, ${name}, ${hashed}, 'admin', 6000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `
       }
     } catch (rawError) {

@@ -40,11 +40,11 @@ export async function GET(req: NextRequest) {
       sql: `INSERT INTO "market_adjustment" (id, "suggestedPrice", "currentPrice", "diffPct", status, "hostaPrice", "usdtBdt", "createdAt") VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
       args: [id, suggestedPrice, currentPrice, diffPct, status, hostaPrice, binance.usdtBdt],
     })
-    // log to SeoEvent + slack stub
+    // log to SeoEvent + slack stub (SQLite: url carries the summary — SeoEvent has no payload col)
     try {
       await db.execute({
-        sql: `INSERT INTO "SeoEvent" (id, type, payload, "createdAt") VALUES (?, 'market_adjust', ?, CURRENT_TIMESTAMP)`,
-        args: [crypto.randomUUID(), JSON.stringify({ suggestedPrice, currentPrice, diffPct, hostaPrice, usdtBdt: binance.usdtBdt })],
+        sql: `INSERT INTO "SeoEvent" (id, type, url, "createdAt") VALUES (?, 'market_adjust', ?, CURRENT_TIMESTAMP)`,
+        args: [crypto.randomUUID(), `adjust:${currentPrice}->${suggestedPrice} (${diffPct}%) hosta $${hostaPrice} usdtBdt ${binance.usdtBdt}`],
       })
     } catch {}
     if (process.env.SLACK_WEBHOOK_URL) {

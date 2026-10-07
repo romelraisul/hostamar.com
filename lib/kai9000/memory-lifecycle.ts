@@ -11,9 +11,16 @@ let ensured = false
 export async function ensureMemorySchema(): Promise<void> {
   if (ensured) return
   try {
-    await prisma.$executeRawUnsafe(`ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "memories" JSONB DEFAULT '{}'`)
-    await prisma.$executeRawUnsafe(`ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "hitCountMap" JSONB DEFAULT '{}'`)
-    await prisma.$executeRawUnsafe(`ALTER TABLE "Conversation" ADD COLUMN IF NOT EXISTS "promotedPrompt" TEXT DEFAULT ''`)
+    // SQLite: ADD COLUMN has no IF NOT EXISTS; JSONB/default '{}' invalid (Prisma-sqlite DDL)
+    let hasCols = false
+    try {
+      const c: any[] = await prisma.$queryRaw`PRAGMA table_info("Conversation")` as any[]
+      hasCols = Array.isArray(c) && c.some((col: any) => col?.name === 'hitCountMap')
+    } catch {}
+    if (!hasCols) {
+      try { await prisma.$executeRawUnsafe(`ALTER TABLE "Conversation" ADD COLUMN "hitCountMap" TEXT DEFAULT '{}'`) } catch {}
+    }
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Conversation" ADD COLUMN "promotedPrompt" TEXT DEFAULT ''`) } catch {}
   } catch {}
   ensured = true
 }
@@ -26,11 +33,12 @@ async function latestConversationId(userId: string): Promise<string | null> {
 /** Count user messages containing a key (case-insensitive, last 200). */
 export async function countRepetitions(userId: string, key: string): Promise<number> {
   try {
+    // SQLite: COUNT(*)::int invalid -> plain COUNT(*); ILIKE -> LIKE (case-insensitive for ASCII keys)
     const rows: any[] = await prisma.$queryRaw`
-      SELECT COUNT(*)::int AS n FROM (
+      SELECT COUNT(*) AS n FROM (
         SELECT content FROM "Message" WHERE "userId" = ${userId}
         ORDER BY "createdAt" DESC LIMIT 200
-      ) m WHERE m.content ILIKE ${'%' + key + '%'}` as any[]
+      ) m WHERE m.content LIKE ${'%' + key + '%'}` as any[]
     return Array.isArray(rows) && rows[0] ? Number(rows[0].n || 0) : 0
   } catch { return 0 }
 }
@@ -45,9 +53,12 @@ export async function trackAndMaybePromote(userId: string, key: string, factText
   if (!convId) return false
   const n = await countRepetitions(userId, key)
   try {
-    await prisma.$executeRawUnsafe(
-      `UPDATE "Conversation" SET "hitCountMap" = COALESCE("hitCountMap",'{}'::jsonb) || jsonb_build_object('${key.replace(/'/g, '')}', ${n}) WHERE id = '${convId}'`
-    )
+    // SQLite: no jsonb || merge — read-modify-write in JS (ponytail: non-atomic,
+    // fine for one user's own conversation; add a transaction if concurrency matters)
+    const cur: any[] = await prisma.$queryRaw`SELECT "hitCountMap" FROM "Conversation" WHERE id = ${convId}`
+    const map = (() => { try { return JSON.parse(String(cur?.[0]?.hitCountMap || '') || '{}') } catch { return {} } })() as Record<string, number>
+    map[key.replace(/'/g, '')] = n
+    await prisma.$executeRaw`UPDATE "Conversation" SET "hitCountMap" = ${JSON.stringify(map)} WHERE id = ${convId}`
   } catch {}
   if (n < 5) return false
   try {

@@ -34,9 +34,14 @@ export async function runAutonomousLoop(){
       const valid = /^[A-Za-z0-9]{8,15}$/.test(trx)
       if(isAutonomousMode() && valid && [599,1299,2999,500,300,2000].includes(Number(t.amount||0))){
         // create notification for founder, don't auto-approve large amounts - just log
-        try{
-          await prisma.$executeRawUnsafe(`INSERT INTO "Notification" (id, "customerId", title, message, type, "createdAt") VALUES ($1,$2,$3,$4,$5,NOW())`, `n_${Date.now()}_${t.id}`, 'founder-os', `🤖 Autonomous: pending TrxID ${trx} ৳${t.amount} - needs review`, `${trx} valid format, AUTONOMOUS_MODE=true - check /admin/payments`, 'payment')
-        }catch{}
+        // SQLite dialect: ? placeholders, CURRENT_TIMESTAMP. Notification.customerId has an
+        // FK to Customer.id — 'founder-os' fails the FK, resolve the real founder id.
+        const founder = await prisma.customer.findFirst({ where: { role: 'admin' }, select: { id: true }, orderBy: { createdAt: 'asc' } }).catch(() => null)
+        if (founder) {
+          try{
+            await prisma.$executeRawUnsafe(`INSERT INTO "Notification" (id, "customerId", title, message, type, "createdAt") VALUES (?,?,?,?,?,CURRENT_TIMESTAMP)`, `n_${Date.now()}_${t.id}`, founder.id, `🤖 Autonomous: pending TrxID ${trx} ৳${t.amount} - needs review`, `${trx} valid format, AUTONOMOUS_MODE=true - check /admin/payments`, 'payment')
+          }catch(e){ console.warn('[autonomous-agent] notify', (e as any)?.message?.slice(0,120)) }
+        }
       }
     }
   }catch{}
@@ -44,7 +49,7 @@ export async function runAutonomousLoop(){
   // 4. save summary to AgentChat
   try{
     const summary = `🤖 Autonomous check ${new Date().toISOString()} health ${out.health?.ok?'ok':'fail'} db customers ${out.db?.customers||'?'} payments ${out.db?.payments||'?'} pending ${out.pending?.length||0} b2 ${out.health?.b2Count||'?'}` 
-    await prisma.$executeRawUnsafe(`INSERT INTO "AgentChat" (id, role, content, "customerId", "createdAt") VALUES ($1,$2,$3,$4,NOW())`, `a_${Date.now()}`, 'assistant', summary, 'founder-os')
+    await prisma.$executeRawUnsafe(`INSERT INTO "AgentChat" (id, role, content, "customerId", "createdAt") VALUES (?,?,?,?,CURRENT_TIMESTAMP)`, `a_${Date.now()}`, 'assistant', summary, 'founder-os')
   }catch{}
 
   return out
