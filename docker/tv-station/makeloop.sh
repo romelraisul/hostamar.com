@@ -2,28 +2,51 @@
 # makeloop.sh — build ONE continuous loop file from the playlist.
 #
 # Why: `-f concat -stream_loop -1` re-opens the playlist every pass, and after
-# one pass (~780s of content, but the stall hits at 223s when a member boundary
-# collides with re-read) ffmpeg's concat demuxer + -re freeze the input thread
-# ("Resumed reading ... after a lag of 40s") -> speed 0.81x, drops climb.
-#
+# one pass ffmpeg's concat demuxer + -re freeze the input thread ("Resumed
+# reading ... after a lag of 40s") -> speed 0.81x, drops climb.
 # Concatenating the members ONCE into a single file removes the demuxer from
 # the live path entirely; from then on the encoder reads one flat file.
-# Stream copy: no re-encode, no quality loss, ~seconds of CPU.
+#
+# Two-pass (2026-10-08): the concat demuxer cannot decode through audio param
+# switches (playlist was 96x 24kHz/mono + 6x 48kHz/stereo + 1x 22.05kHz ->
+# "channel layout rematrix" hard-exit 234 mid-concat). Members are
+# audio-normalized FIRST (video stream-copied), then concat-copied.
+# -nostdin everywhere: without it ffmpeg eats the member list from the
+# while-loop's stdin and `read` resumes mid-line -> torn paths -> dropped
+# members. Missing member = loud failure, never a silent drop.
 set -e
 cd /home/romel/hostamar-build/docker/tv-station/videos || exit 1
 OUT=/home/romel/hostamar-build/docker/tv-station/videos/loop.mp4
+NORM=/tmp/loopnorm
 [ -s "$OUT" ] && { echo "loop.mp4 already exists ($(du -h $OUT | cut -f1)) — leaving it"; exit 0; }
 
-# build a concat list with absolute paths
+rm -rf "$NORM"; mkdir -p "$NORM"
 : > /tmp/looplist.txt
+i=0
 while IFS= read -r line; do
-  f=$(echo "$line" | sed "s/file '//;s/'//")
-  case "$f" in /*) [ -f "$f" ] && echo "file '$f'" >> /tmp/looplist.txt;; esac
+  f=$(echo "$line" | sed "s/^file '//;s/'\$//")
+  case "$f" in
+    /*) [ -f "$f" ] || { echo "MISSING member: $f"; exit 1; } ;;
+  esac
+  case "$f" in
+    /*)
+      i=$((i+1))
+      n=$(printf "%s/m%03d.mp4" "$NORM" "$i")
+      ffmpeg -nostdin -v error -y -i "$f" -map 0:v -map 0:a \
+        -c:v copy -c:a aac -ar 44100 -ac 2 -b:a 96k "$n"
+      echo "file '$n'" >> /tmp/looplist.txt
+      ;;
+  esac
 done < playlist.host.txt
-echo "members: $(wc -l < /tmp/looplist.txt)"
+echo "members: $i"
 
-# normalize audio (44.1k stereo) so the concat copy is seamless, video untouched
-ffmpeg -v warning -y -f concat -safe 0 -i /tmp/looplist.txt \
-  -c:v copy -c:a aac -ar 44100 -ac 2 -b:a 96k "$OUT"
+ffmpeg -nostdin -v warning -y -f concat -safe 0 -i /tmp/looplist.txt \
+  -c:v copy -c:a copy "$OUT"
 echo "built: $(du -h "$OUT" | cut -f1)"
 ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT"
+
+# AUDIO GUARD: a loop that ships silent is dead air for every viewer
+mv=$(ffmpeg -nostdin -v info -i "$OUT" -t 120 -af volumedetect -f null - 2>&1 \
+  | grep mean_volume | grep -o -- '-[0-9.]*\|[0-9.]*' | head -1)
+echo "mean_volume: $mv dB"
+awk -v v="$mv" 'BEGIN{ if (v+0 > -50) exit 0; else { print "SILENT LOOP — refusing"; exit 1 } }'
