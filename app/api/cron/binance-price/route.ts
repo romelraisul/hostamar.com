@@ -30,8 +30,8 @@ export async function GET(req: NextRequest) {
   }
   // 1. Neon persistence (raw SQL, create table if not exists)
   try {
-    await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS "binance_price" (id TEXT PRIMARY KEY, "usdtBdt" DOUBLE PRECISION NOT NULL, source TEXT, "updatedAt" TIMESTAMP DEFAULT NOW())`
-    await prisma.$executeRaw`INSERT INTO "binance_price" (id, "usdtBdt", source, "updatedAt") VALUES ('current', ${rate.usdtBdt}, ${rate.source}, NOW()) ON CONFLICT (id) DO UPDATE SET "usdtBdt"=EXCLUDED."usdtBdt", source=EXCLUDED.source, "updatedAt"=NOW()`
+    await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS "binance_price" (id TEXT PRIMARY KEY, "usdtBdt" REAL NOT NULL, source TEXT, "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`
+    await prisma.$executeRaw`INSERT INTO "binance_price" (id, "usdtBdt", source, "updatedAt") VALUES ('current', ${rate.usdtBdt}, ${rate.source}, CURRENT_TIMESTAMP) ON CONFLICT (id) DO UPDATE SET "usdtBdt"=EXCLUDED."usdtBdt", source=EXCLUDED.source, "updatedAt"=CURRENT_TIMESTAMP`
   } catch (e) {
     console.warn('[binance-price] neon write failed', (e as any)?.message?.slice(0,200))
   }

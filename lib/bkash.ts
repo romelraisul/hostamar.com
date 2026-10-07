@@ -241,7 +241,7 @@ export async function verifyBkashTransaction(input: VerifyInput): Promise<Verify
       } catch (e: any) {
         // fallback: some schemas use payload JSON
         try {
-          await (tx as any).$executeRaw`INSERT INTO "SeoEvent" (id, type, url, "createdAt") VALUES (gen_random_uuid()::text, 'payment_success', ${`/payments/bkash/${trxId}`}, NOW())`
+          await (tx as any).$executeRaw`INSERT INTO "SeoEvent" (id, type, url, "createdAt") VALUES (${crypto.randomUUID()}, 'payment_success', ${`/payments/bkash/${trxId}`}, CURRENT_TIMESTAMP)`
         } catch {}
       }
     })
