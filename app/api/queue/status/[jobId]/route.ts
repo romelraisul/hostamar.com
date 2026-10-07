@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: 'jobId is required' }, { status: 400 });
     }
 
-    const queue = getQueue(QUEUE_NAMES.VIDEO_GENERATION);
+    const queue = await getQueue(QUEUE_NAMES.VIDEO_GENERATION);
 
     // Fetch the job from BullMQ
     const job = await queue.getJob(jobId);
@@ -76,9 +76,10 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error: any) {
     console.error('[Queue Status API] Error:', error?.message || error);
+    const unavailable = error?.name === 'QueueUnavailableError' || error?.status === 503;
     return NextResponse.json(
-      { error: 'Failed to fetch job status' },
-      { status: 500 }
+      { error: unavailable ? error.message : 'Failed to fetch job status', code: unavailable ? 'queue_unavailable' : undefined },
+      { status: unavailable ? 503 : 500 }
     );
   }
 }
@@ -101,7 +102,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'jobId is required' }, { status: 400 });
     }
 
-    const queue = getQueue(QUEUE_NAMES.VIDEO_GENERATION);
+    const queue = await getQueue(QUEUE_NAMES.VIDEO_GENERATION);
     const job = await queue.getJob(jobId);
 
     if (!job) {
@@ -131,9 +132,10 @@ export async function DELETE(
     });
   } catch (error: any) {
     console.error('[Queue Status API] DELETE error:', error?.message || error);
+    const unavailable = error?.name === 'QueueUnavailableError' || error?.status === 503;
     return NextResponse.json(
-      { error: 'Failed to remove job' },
-      { status: 500 }
+      { error: unavailable ? error.message : 'Failed to remove job', code: unavailable ? 'queue_unavailable' : undefined },
+      { status: unavailable ? 503 : 500 }
     );
   }
 }

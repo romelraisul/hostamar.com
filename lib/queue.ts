@@ -7,11 +7,32 @@
  * Failover: if REDIS_URL points at the WSL-bridge tunnel and it's unreachable,
  * the worker (lib/redis-failover.ts) selects the fallback URL. We read the
  * selected URL via getSelectedRedisUrl() below.
+ *
+ * LAZY LOADING (workerd fix): bullmq + ioredis are imported on FIRST USE, never
+ * at module load. Importing this module is therefore cheap and safe on the edge,
+ * so a route that merely imports it — e.g. a GET against a POST-only route —
+ * no longer stalls in module evaluation before its handler ever runs.
+ *
+ * The edge has no TCP and no Redis, so on workerd every queue op fails fast with
+ * QueueUnavailableError (503) instead of retrying a dead localhost Redis for 25s.
  */
-import { Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq';
-import Redis from 'ioredis';
-import { startRedisFailover, getActiveRedis, onFailoverEvent } from './redis-failover';
+import type { Queue, QueueEvents, Job, JobsOptions } from 'bullmq';
+import type Redis from 'ioredis';
 import { env } from '@/lib/env'
+
+// ponytail: same runtime probe already used in lib/api/validator.ts + lib/sso/saml.ts.
+const ON_WORKERD =
+  typeof navigator !== 'undefined' &&
+  (navigator as any).userAgent === 'Cloudflare-Workers'
+
+/** Thrown instead of hanging when the queue backend cannot exist on this runtime. */
+export class QueueUnavailableError extends Error {
+  readonly status = 503
+  constructor(detail = 'video queue runs on the local Redis worker, not the edge') {
+    super(detail)
+    this.name = 'QueueUnavailableError'
+  }
+}
 
 // --- Redis Connection ---
 
@@ -19,21 +40,24 @@ import { env } from '@/lib/env'
 // Hot-swapping is provided via onFailover callback (BullMQ retries with attempts:3).
 let selectedUrl = env.REDIS_URL || 'redis://localhost:6379';
 
-function createRedisConnection(): Redis {
-  const connection = new Redis(selectedUrl, {
+let redisConnection: Redis | null = null;
+
+async function createRedisConnection(): Promise<Redis> {
+  const { default: RedisCtor } = await import('ioredis');
+  const connection = new RedisCtor(selectedUrl, {
     maxRetriesPerRequest: null, // BullMQ manages its own retries
     enableReadyCheck: false,
-    retryStrategy(times) {
+    retryStrategy(times: number) {
       // Exponential backoff for Redis connection: 1s, 2s, 4s, 8s… up to 30s
       return Math.min(times * 1000, 30000);
     },
-    reconnectOnError(err) {
+    reconnectOnError(err: Error) {
       const targetErrors = ['READONLY', 'ETIMEDOUT', 'ECONNREFUSED', 'EPIPE'];
       return targetErrors.some((e) => err.message.includes(e));
     },
   });
 
-  connection.on('error', (err) => {
+  connection.on('error', (err: Error) => {
     console.error('[Redis] Connection error:', err.message);
   });
 
@@ -44,20 +68,19 @@ function createRedisConnection(): Redis {
   return connection;
 }
 
-let redisConnection: Redis | null = null;
-
 /**
  * Boot the failover module so selectedUrl reflects the live Redis target,
  * not the env-var-driven default. Called once at app/worker startup.
  */
 export async function initRedis(): Promise<void> {
+  if (ON_WORKERD) return; // no Redis on the edge; nothing to fail over to
   try {
+    const { startRedisFailover, onFailoverEvent } = await import('./redis-failover')
     const active = await startRedisFailover()
     selectedUrl = (active.options as any).host
-      ? `${active.options.host}:${(active.options as any).port}`
+      ? `${(active.options as any).host}:${(active.options as any).port}`
       : selectedUrl
     // If failover kicked in to a different URL, switch to that one
-    const fbUrl = env.REDIS_FALLBACK_URL || ''
     const activeOptions = active.options as any
     if (activeOptions.url && activeOptions.url !== selectedUrl) {
       selectedUrl = activeOptions.url
@@ -75,9 +98,10 @@ export async function initRedis(): Promise<void> {
   }
 }
 
-export function getRedisConnection(): Redis {
+export async function getRedisConnection(): Promise<Redis> {
+  if (ON_WORKERD) throw new QueueUnavailableError();
   if (!redisConnection) {
-    redisConnection = createRedisConnection();
+    redisConnection = await createRedisConnection();
   }
   return redisConnection;
 }
@@ -109,10 +133,11 @@ export const DEFAULT_JOB_OPTIONS: JobsOptions = {
 
 const queues = new Map<string, Queue>();
 
-export function getQueue(name: string): Queue {
+export async function getQueue(name: string): Promise<Queue> {
   if (!queues.has(name)) {
+    const { Queue } = await import('bullmq');
     const q = new Queue(name, {
-      connection: getRedisConnection(),
+      connection: await getRedisConnection(),
       defaultJobOptions: DEFAULT_JOB_OPTIONS,
     });
     queues.set(name, q);
@@ -121,7 +146,7 @@ export function getQueue(name: string): Queue {
   return queues.get(name)!;
 }
 
-export function getVideoGenerationQueue(): Queue {
+export function getVideoGenerationQueue(): Promise<Queue> {
   return getQueue(QUEUE_NAMES.VIDEO_GENERATION);
 }
 
@@ -129,10 +154,11 @@ export function getVideoGenerationQueue(): Queue {
 
 const queueEventsMap = new Map<string, QueueEvents>();
 
-export function getQueueEvents(name: string): QueueEvents {
+export async function getQueueEvents(name: string): Promise<QueueEvents> {
   if (!queueEventsMap.has(name)) {
+    const { QueueEvents } = await import('bullmq');
     const qe = new QueueEvents(name, {
-      connection: getRedisConnection(),
+      connection: await getRedisConnection(),
     });
     queueEventsMap.set(name, qe);
   }
@@ -155,7 +181,7 @@ export async function enqueueVideoGeneration(
   data: VideoGenerationJobData,
   opts?: JobsOptions
 ): Promise<Job<VideoGenerationJobData>> {
-  const queue = getVideoGenerationQueue();
+  const queue = await getVideoGenerationQueue();
   const job = await queue.add('generate-video', data, {
     ...DEFAULT_JOB_OPTIONS,
     ...opts,
@@ -193,6 +219,8 @@ export default {
   getQueueEvents,
   enqueueVideoGeneration,
   closeQueues,
+  initRedis,
+  QueueUnavailableError,
   QUEUE_NAMES,
   DEFAULT_JOB_OPTIONS,
 };
