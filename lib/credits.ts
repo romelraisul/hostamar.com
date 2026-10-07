@@ -28,7 +28,7 @@ export async function deductCredits(
       if (accountId) {
         await prisma.$executeRaw`
           INSERT INTO "CreditTransaction" (id, "accountId", amount, product, "balanceAfter", description)
-          VALUES (gen_random_uuid()::text, ${accountId}, 0, ${`free:${type}`}, 6000, ${description || 'free-tier usage (no deduction)'})
+          VALUES (${crypto.randomUUID()}, ${accountId}, 0, ${`free:${type}`}, 6000, ${description || 'free-tier usage (no deduction)'})
         `.catch(() => null)
       } else {
         await prisma.$executeRaw`
@@ -44,7 +44,9 @@ export async function deductCredits(
   if (!Number.isFinite(amount) || amount === 0) {
     return { ok: false, error: 'Invalid amount' }
   }
-  const acct: any = await prisma.$queryRaw`SELECT id, credits FROM "CreditAccount" WHERE "customerId" = ${userId} LIMIT 1`
+  // ponytail: CreditAccount does not exist in this DB (verified via sqlite_master);
+  // without this catch the metered path throws instead of using the Customer.credits fallback below.
+  const acct: any = await prisma.$queryRaw`SELECT id, credits FROM "CreditAccount" WHERE "customerId" = ${userId} LIMIT 1`.catch(() => [] as any)
   const accountId: string | null = Array.isArray(acct) && acct[0] ? acct[0].id : null
   const balance = accountId ? Number(acct[0].credits || 0) : (await prisma.customer.findUnique({ where: { id: userId }, select: { credits: true } }))?.credits ?? 0
 
@@ -59,7 +61,7 @@ export async function deductCredits(
     }
     await prisma.$executeRaw`
       INSERT INTO "CreditTransaction" (id, "accountId", amount, product, "balanceAfter", description)
-      VALUES (gen_random_uuid()::text, ${accountId}, ${amount}, ${type},
+      VALUES (${crypto.randomUUID()}, ${accountId}, ${amount}, ${type},
               (SELECT credits FROM "CreditAccount" WHERE id = ${accountId}), ${description})
     `.catch(() => null)
     const after: any = await prisma.$queryRaw`SELECT credits FROM "CreditAccount" WHERE id = ${accountId} LIMIT 1`
