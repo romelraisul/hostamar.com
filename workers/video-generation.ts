@@ -61,7 +61,11 @@ const STYLE_PRESETS: Record<string, {
 // Worker Definition
 // ---------------------------------------------------------------
 
-const worker = new Worker<VideoGenerationJobData>(
+async function startWorker(): Promise<Worker<VideoGenerationJobData>> {
+  // getRedisConnection is async now (lib/queue lazy-loads ioredis) — resolve it
+  // before handing the instance to BullMQ.
+  const connection = await getRedisConnection();
+  const worker = new Worker<VideoGenerationJobData>(
   QUEUE_NAMES.VIDEO_GENERATION,
   async (job: Job<VideoGenerationJobData>) => {
     const { script, style, voiceOver, duration, userId, previewId, videoId } = job.data;
@@ -217,13 +221,15 @@ const worker = new Worker<VideoGenerationJobData>(
     }
   },
   {
-    connection: getRedisConnection(),
+    connection,
     concurrency: 2, // process up to 2 jobs concurrently
     lockDuration: 300000, // 5 minutes lock
     stalledInterval: 60000, // check for stalled jobs every 60s
     maxStalledCount: 3,
   }
-);
+  );
+  return worker;
+}
 
 // ---------------------------------------------------------------
 // FFmpeg Video Assembly
@@ -407,41 +413,36 @@ async function updateJobStatus(
 // Start Worker
 // ---------------------------------------------------------------
 
-console.log('╔══════════════════════════════════════════════╗');
-console.log('║   Hostamar Video Generation Worker           ║');
-console.log('║   Queue: video-generation                    ║');
-console.log('║   Redis: ' + (process.env.REDIS_URL || 'redis://localhost:6379').padEnd(36) + '║');
-console.log('╚══════════════════════════════════════════════╝');
+startWorker()
+  .then((worker) => {
+    console.log('╔══════════════════════════════════════════════╗');
+    console.log('║   Hostamar Video Generation Worker           ║');
+    console.log('║   Queue: video-generation                    ║');
+    console.log('║   Redis: ' + (process.env.REDIS_URL || 'redis://localhost:6379').padEnd(36) + '║');
+    console.log('╚══════════════════════════════════════════════╝');
 
-worker.on('completed', (job: Job) => {
-  console.log(`[VideoGen Worker] Job ${job.id} completed`);
-});
+    worker.on('completed', (job: Job) => {
+      console.log(`[VideoGen Worker] Job ${job.id} completed`);
+    });
 
-worker.on('failed', (job: Job | undefined, err: Error) => {
-  console.error(`[VideoGen Worker] Job ${job?.id} failed:`, err.message);
-});
+    worker.on('failed', (job: Job | undefined, err: Error) => {
+      console.error(`[VideoGen Worker] Job ${job?.id} failed:`, err.message);
+    });
 
-worker.on('error', (err: Error) => {
-  console.error('[VideoGen Worker] Worker error:', err.message);
-});
+    worker.on('error', (err: Error) => {
+      console.error('[VideoGen Worker] Worker error:', err.message);
+    });
 
-// Keep the process alive - BullMQ worker should keep event loop running
-// But add a heartbeat to ensure it stays alive
-setInterval(() => {
-  // Heartbeat - just keeps the process alive
-}, 30000);
-
-// Handle graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('\n[VideoGen Worker] Shutting down...');
-  await worker.close();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  console.log('\n[VideoGen Worker] Shutting down...');
-  await worker.close();
-  process.exit(0);
-});
-
-export default worker;
+    // BullMQ keeps the Redis socket open, which holds the event loop alive.
+    for (const sig of ['SIGINT', 'SIGTERM'] as const) {
+      process.on(sig, async () => {
+        console.log(`\n[VideoGen Worker] ${sig} — shutting down...`);
+        await worker.close();
+        process.exit(0);
+      });
+    }
+  })
+  .catch((err) => {
+    console.error('[VideoGen Worker] Failed to start:', err?.message || err);
+    process.exit(1);
+  });
