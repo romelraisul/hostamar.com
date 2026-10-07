@@ -133,11 +133,14 @@ def narrate_file_sync(video_path):
         print("  FAILED: TTS generation")
         return False
 
-    # Mux narration under video (video copy, audio replace)
+    # Mux narration under video (video copy, audio replace).
+    # -stream_loop -1 on the narration input keeps speech playing for the whole
+    # video; a plain -i + -shortest truncates long episodes to the ~10s
+    # narration length. Root-cause fix 2026-10-08 (9 shelf episodes at risk).
     tmp = Path("/tmp") / (stem + "-narrated.mp4")
     rc, out, err = run(
         "ffmpeg -y -i " + repr(str(video_path))
-        + " -i " + repr(str(mp3))
+        + " -stream_loop -1 -i " + repr(str(mp3))
         + " -c:v copy"
         + " -c:a aac -b:a 128k -ar 48000 -ac 2"
         + " -map 0:v:0 -map 1:a:0"
