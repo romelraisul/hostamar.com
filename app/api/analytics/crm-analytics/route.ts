@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [leadSources, leadByStatus, revenueByMethod, recentPayments] = await Promise.all([
+    // allSettled, not all: one failing groupBy must not blank the whole dashboard.
+    const settled = await Promise.allSettled([
       prisma.lead.groupBy({
         by: ['source'],
         _count: true,
@@ -36,6 +37,12 @@ export async function GET(req: NextRequest) {
         },
       }),
     ]);
+    const [leadSources, leadByStatus, revenueByMethod, recentPayments] = settled.map((r) =>
+      r.status === 'fulfilled' ? r.value : []
+    );
+    const errors = settled
+      .map((r, i) => (r.status === 'rejected' ? `${['leadSources', 'leadByStatus', 'revenueByMethod', 'recentPayments'][i]}: ${String((r as PromiseRejectedResult).reason?.message ?? (r as PromiseRejectedResult).reason)}` : null))
+      .filter(Boolean);
 
     return NextResponse.json({
       success: true,
@@ -43,11 +50,17 @@ export async function GET(req: NextRequest) {
       leadByStatus,
       revenueByMethod,
       recentPayments,
+      ...(errors.length ? { errors } : {}),
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    // analytics is non-critical: report the failure in-band, never blank the tab with a 500
+    return NextResponse.json({
+      success: false,
+      leadSources: [],
+      leadByStatus: [],
+      revenueByMethod: [],
+      recentPayments: [],
+      errors: [String(error?.message ?? error)],
+    });
   }
 }
