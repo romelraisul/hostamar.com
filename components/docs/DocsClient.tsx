@@ -20,7 +20,10 @@ export default function DocsClient({ lang }: { lang: 'en' | 'bn' }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/docs?lang=${lang}`)
+    // Content is a static asset (public/docs-content-*.json): the old /api/docs
+    // route used readFileSync(process.cwd()) which has no fs on Cloudflare workerd
+    // (unenv shim threw -> silent catch -> {"sections":[]} -> docs page empty).
+    fetch(`/docs-content-${lang}.json`)
       .then(r => r.json())
       .then(d => setSections(d.sections || []))
       .catch(() => setSections([]))
