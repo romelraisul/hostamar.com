@@ -194,6 +194,23 @@ export async function POST(req: NextRequest) {
     authUser = null
   }
 
+  // PAID (v12): preflight so the SSE path can also refuse (a stream that has
+  // already sent response.created cannot return 402). Balances are metered live.
+  if (authUser) {
+    const { checkCredits } = await import('@/lib/credits')
+    const bal = await checkCredits(authUser.id, 1).catch(() => ({ hasEnough: true }))
+    if (!bal.hasEnough) {
+      return NextResponse.json(
+        {
+          error: { message: 'Insufficient credits — bKash 01822417463 to top up (1cr = 1টাকা)', code: 402 },
+          balance: (bal as any).credits ?? 0,
+          bkash: '01822417463',
+        },
+        { status: 402 },
+      )
+    }
+  }
+
   // Responses tools → chat tools; forwarded verbatim via toolsPayload (V100 chain).
   const chatTools = responsesToolsToChatTools(body.tools)
   const toolsPayload = chatTools.length
@@ -375,7 +392,17 @@ export async function POST(req: NextRequest) {
       if (spend && 'creditsRemaining' in spend) {
         credits = { charged: charge, remaining: spend.creditsRemaining }
       } else if (spend && spend.error === 'INSUFFICIENT_CREDITS') {
-        credits = { charged: 0, remaining: spend.balance ?? null }
+        // PAID (v12): never hand back a result that was not paid for.
+        // (Preflight above usually catches this first; this is the race backstop.)
+        return NextResponse.json(
+          {
+            error: { message: 'Insufficient credits — bKash 01822417463 to top up (1cr = 1টাকা)', code: 402 },
+            balance: spend.balance ?? 0,
+            required: charge,
+            bkash: '01822417463',
+          },
+          { status: 402 },
+        )
       }
     } catch {
       credits = undefined
