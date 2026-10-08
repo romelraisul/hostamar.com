@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 import { enhanceVideoPrompt } from '@/lib/model-in-every-point'
+import { deductCredits } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -30,12 +31,23 @@ export async function POST(req: NextRequest) {
   if (!service) return NextResponse.json({ error: 'SERVICE_NOT_FOUND', serviceId }, { status: 404 })
   const creditCost = service.creditCost
 
-  // FULL FREE (v11): no check, no deduction, no 402 — video generation free.
-  const customer = await prisma.customer.findUnique({
-    where: { id: user.id },
-    select: { credits: true },
-  }).catch(() => null)
-  const balanceAfter = Number(customer?.credits ?? 6000)
+  // PAID (v12): single source of truth — atomic debit + CreditTransaction audit
+  // row (written by deductCredits). Insufficient → 402 with exact balance so
+  // the client routes to bKash. No free bypass — every catalog service is metered.
+  const spend = await deductCredits(user.id, -creditCost, 'spend', `generate ${service.id}`)
+  if (!spend.ok) {
+    return NextResponse.json(
+      {
+        error: 'INSUFFICIENT_CREDITS',
+        message: 'ক্রেডিট শেষ। bKash 01822417463-এ পেমেন্ট করে ক্রেডিট কিনুন।',
+        balance: spend.balance ?? 0,
+        required: creditCost,
+        bkash: '01822417463',
+      },
+      { status: 402 },
+    )
+  }
+  const balanceAfter = spend.creditsRemaining
 
   // MODEL IN EVERY POINT: expand the customer prompt into a render brief
   // (non-blocking: empty string if chain degraded — flow never breaks).
@@ -56,12 +68,8 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Audit row — non-fatal: prod CreditTransaction is the OLD accountId shape,
-  // so a customerId-based Prisma insert may be rejected; log raw instead.
-  await prisma.$executeRaw`
-    INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter", "videoId")
-    VALUES (${'ctx_' + Date.now().toString(36)}, ${user.id}, ${-creditCost}, 'spend', ${`generate ${service.id}`}, ${Math.round(balanceAfter)}, ${video.id})
-  `.catch(() => null)
+  // Skipped: no phantom audit row — deductCredits already wrote the real one
+  // (with balanceAfter read back inside the same atomic step).
 
   // Simulated render → completed with placeholder MP4 (B2 upload hook point:
   // when GPU worker is live, replace this URL with the B2 object key).
@@ -84,7 +92,9 @@ export async function POST(req: NextRequest) {
       url: PLACEHOLDER_MP4,
       createdAt: video.createdAt,
     },
-    creditsRemaining: balanceAfter, isFree: true, charged: 0,
+    creditsRemaining: balanceAfter,
+    charged: creditCost,
+    isFree: false,
   })
 }
 

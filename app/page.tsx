@@ -1,12 +1,38 @@
 import Link from 'next/link';
+import fs from 'node:fs';
+import path from 'node:path';
 import { FAQS } from '@/lib/faqs';
+import tools from '@/lib/services-catalog-tools.json';
 import BazaarNav from '@/components/home/BazaarNav';
 import BazaarFooter from '@/components/home/BazaarFooter';
 
 // Bazaar Poster homepage (Direction C, approved 2026-09-14).
 // Server component: FAQ uses native <details>, so no client state needed.
+// revalidate: refresh the live product counts (tools/models/videos) hourly.
+export const revalidate = 3600;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
+
+// Real counts — never hardcode marketing numbers again.
+const TOOL_COUNT = (tools as unknown[]).length;
+const toBn = (n: number) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[+d]);
+// ponytail: fs readdir at build/revalidate; literal is the last-verified fallback.
+function tvVideoCount(): number {
+  try {
+    return fs.readdirSync(path.join(process.cwd(), 'public/tv')).filter((f) => f.endsWith('.mp4')).length;
+  } catch {
+    return 168; // verified 2026-10-08
+  }
+}
+async function modelCount(): Promise<number> {
+  try {
+    const r = await fetch('https://ai.hostamar.com/v1/models', { next: { revalidate: 3600 } });
+    const j = await r.json();
+    return Array.isArray(j?.data) ? j.data.length : 152;
+  } catch {
+    return 152; // verified 2026-10-08
+  }
+}
 
 const homeJsonLd = {
   '@context': 'https://schema.org',
@@ -15,11 +41,12 @@ const homeJsonLd = {
   description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং, এক সাবস্ক্রিপশনে',
   brand: { '@type': 'Brand', name: 'Hostamar' },
   offers: [
+    { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'BDT', url: 'https://hostamar.com/signup' },
     { '@type': 'Offer', name: 'Starter', price: '990', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
-    { '@type': 'Offer', name: 'Pro', price: '1900', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
     { '@type': 'Offer', name: 'Business', price: '2900', priceCurrency: 'BDT', url: 'https://hostamar.com/pricing' },
+    { '@type': 'Offer', name: 'Bangla LLM Training', price: '5000', priceCurrency: 'BDT', url: 'https://hostamar.com/bangla-llm' },
   ],
-  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '990', highPrice: '2900', priceCurrency: 'BDT' },
+  aggregateOffer: { '@type': 'AggregateOffer', lowPrice: '0', highPrice: '5000', priceCurrency: 'BDT' },
   mainEntity: FAQS.slice(0, 6).map((f) => ({
     '@type': 'Question',
     name: f.q,
@@ -31,8 +58,10 @@ const CHECK = (
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>
 );
 
-export default function HomePage() {
+export default async function HomePage() {
   const featured = FAQS.slice(0, 5);
+  const videos = tvVideoCount();
+  const models = await modelCount();
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }} />
@@ -76,19 +105,23 @@ export default function HomePage() {
           <div className="bp-wrap bp-stamp-row bp-rise bp-d3" style={{ justifyContent: 'center' }}>
             <span className="bp-stamp">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
-              ৪৬টি লাইভ রেন্ডার — /tv
+              {toBn(videos)}টি লাইভ রেন্ডার — /tv
             </span>
             <span className="bp-stamp">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6l-5 6 5 6M16 6l5 6-5 6" /></svg>
-              ১০৯ AI টুলস, এক API
+              {toBn(TOOL_COUNT)} AI টুলস, এক API
+            </span>
+            <span className="bp-stamp">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5" /></svg>
+              {toBn(models)} মডেল গেটওয়ে
             </span>
             <span className="bp-stamp">
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h4" /></svg>
-              bKash, Nagad, Rocket
+              bKash 01822417463
             </span>
             <span className="bp-stamp">
               <svg className="bp-stamp-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 8.5A2.5 2.5 0 0 0 7.1 21h9.8a2.5 2.5 0 0 0 2.1-3.5L14 9V3" /></svg>
-              BETA, নতুন ফিচার চলছে
+              1cr = ১ টাকা
             </span>
           </div>
         </section>
@@ -115,7 +148,18 @@ export default function HomePage() {
               </div>
               <div className="bp-tile bp-w-r1">
                 <div className="bp-media" style={{ aspectRatio: '16/9' }}>
-                  <img src="/showcase/cmtmt2jteyldrvv.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
+                  <video
+                    src="/tv/shorts-agent-autonomous-employee.mp4"
+                    poster="/showcase/cmtmt2jteyldrvv.jpg"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    width={640}
+                    height={360}
+                    aria-label="Hostamar দিয়ে বানানো আসল ভিডিও"
+                  />
                   <span className="bp-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" /></svg></span>
                 </div>
                 <div className="bp-cap"><span>Hostamar দিয়ে বানানো আসল ভিডিও</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>আসল আউটপুট</span></div>
@@ -285,8 +329,11 @@ export default function HomePage() {
             <div className="bp-fine">
               <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" /></svg>সুরক্ষিত পেমেন্ট</span>
               <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" /></svg>৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
-              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6" /></svg>bKash / Nagad / Rocket</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6" /></svg>bKash 01822417463 · Nagad · Rocket</span>
             </div>
+            <p className="bp-muted" style={{ marginTop: '.7rem', fontSize: '.82rem', textAlign: 'center' }}>
+              ১ ক্রেডিট = ১ টাকা = ১ ভবিষ্যৎ HOST কয়েন · সাইনআপে ৬০০০ ক্রেডিট বোনাস · Send Money করে TrxID পাঠালে ম্যানুয়ালি অ্যাকাউন্ট অ্যাকটিভ
+            </p>
 
             {/* Bangla LLM Training 5000cr — one-time, NEW */}
             <div className="bp-tile" style={{ marginTop: '1.4rem', borderWidth: 3, display: 'flex', flexWrap: 'wrap', gap: '1.2rem', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -308,27 +355,30 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* TESTIMONIALS */}
+        {/* BETA STATUS */}
         <section className="bp-sec bp-sec-alt" id="reviews">
           <div className="bp-wrap">
             <div className="bp-sec-head">
-              <h2>BETA — এখন কী পাচ্ছেন</h2>
+              <h2>BETA — এখন যা লাইভ চলছে</h2>
+              <p>{toBn(models)} মডেল, {toBn(TOOL_COUNT)} AI টুল, {toBn(videos)}টি রেন্ডার করা ভিডিও — সব আসল, লাইভ</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
-              <div className="bp-quote">
-                <blockquote>ছবি আপলোড করুন — AI স্ক্রিপ্ট, বাংলা ভয়েসওভার, সাবটাইটেল ও লোগো যোগ করে মার্কেটিং ভিডিও বানায়।</blockquote>
-                <cite><b>AI ভিডিও মেকার</b> <br />BETA ফিচার</cite>
+              <div className="bp-tile">
+                <span className="bp-tag">AI ভিডিও মেকার</span>
+                <h3>ছবি দিন, ভিডিও নিন</h3>
+                <p>পণ্যের ছবি আপলোড করুন — AI স্ক্রিপ্ট, বাংলা ভয়েসওভার, সাবটাইটেল ও লোগো যোগ করে মার্কেটিং ভিডিও বানায়।</p>
               </div>
-              <div className="bp-quote">
-                <blockquote>হোস্টিং, ভিডিও, চ্যাট, ব্রাউজার ও IDE — এক সাবস্ক্রিপশনে, এক ড্যাশবোর্ডে।</blockquote>
-                <cite><b>সব-ইন-ওয়ান</b> <br />BETA ফিচার</cite>
+              <div className="bp-tile">
+                <span className="bp-tag">সব-ইন-ওয়ান</span>
+                <h3>এক সাবস্ক্রিপশন, ৬ প্রোডাক্ট</h3>
+                <p>হোস্টিং, ভিডিও, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক ড্যাশবোর্ডে, একটাই বিল।</p>
               </div>
-              <div className="bp-quote">
-                <blockquote>bKash / Nagad / Rocket Send Money দিয়ে পেমেন্ট — ম্যানুয়ালি ভেরিফাই করে একাউন্ট একটিভ করা হয়।</blockquote>
-                <cite><b>লোকাল পেমেন্ট</b> <br />BETA ফিচার</cite>
+              <div className="bp-tile">
+                <span className="bp-tag">লোকাল পেমেন্ট</span>
+                <h3>bKash Send Money</h3>
+                <p>bKash 01822417463 / Nagad / Rocket — Send Money করে TrxID পাঠান, ম্যানুয়ালি ভেরিফাই করে অ্যাকাউন্ট অ্যাকটিভ করা হয়।</p>
               </div>
             </div>
-            <p className="bp-disclosure">BETA: রিয়েল ইউজার রিভিউ এখনো সংগ্রহাধীন — উপরের বর্ণনা পণ্যের ফিচার, কোনো কাস্টমারের উক্তি নয়।</p>
           </div>
         </section>
 
