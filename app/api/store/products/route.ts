@@ -20,12 +20,13 @@ export async function GET() {
   const pk = process.env.MEDUSA_PK
   if (!pk) return NextResponse.json({ error: 'not configured' }, { status: 500 })
 
-  // FORGE 2026-09-26: MEDUSA_URL points to broken CF Workers bridge (exit -1).
-  // store.hostamar.com is the actual Medusa storefront and works.
-  // Prefer store.hostamar.com as primary; bridge only as fallback.
-  const bridgeUrl = process.env.MEDUSA_URL
+  // FORGE 2026-10-08: prod MEDUSA_URL is set but EMPTY ("") — the old
+  // `fallbackBase = bridgeUrl` made both bases identical, so the
+  // store.hostamar.com fallback was dead code. Fallback is now always the
+  // real independent origin; empty/unset MEDUSA_URL just means no primary.
+  const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
   const primaryBase = bridgeUrl || 'https://store.hostamar.com'
-  const fallbackBase = bridgeUrl
+  const fallbackBase = 'https://store.hostamar.com'
 
   async function tryFetch(base: string) {
     const pk = process.env.MEDUSA_PK
