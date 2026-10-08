@@ -1,7 +1,22 @@
+# hostamar-pages worker (OpenNext on Cloudflare Workers).
+# TOML keys after a table header belong to that table: workers_dev/account_id/
+# routes placed after [[rules]] parse as rules[0] members, so wrangler deploy
+# fails with "Failed to automatically retrieve account IDs" and a stale worker
+# keeps serving (shipped that way in 98b986b9). Top-level keys stay at the top.
 name = "hostamar-pages"
 main = ".open-next/worker.js"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+account_id = "e00717304c1139751214b8cda5078a8d"
+
+# Apex CNAME stays pointed at Vercel as an untouched fallback; these routes
+# intercept hostamar.com traffic before the origin is reached.
+# Rollback = remove the routes and redeploy.
+routes = [
+  { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
+  { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
+]
 
 # ponytail: Prisma's workerd loader does `await import('./query_engine_bg.wasm')`
 # during a request; workerd does not count that pending module load as I/O, so the
@@ -11,16 +26,6 @@ compatibility_flags = ["nodejs_compat"]
 type = "CompiledWasm"
 globs = ["**/*.wasm"]
 fallthrough = true
-workers_dev = true
-account_id = "e00717304c1139751214b8cda5078a8d"
-
-# Ponytail: apex CNAME stays pointed at Vercel as an untouched fallback; these
-# routes intercept hostamar.com traffic before the origin is reached.
-# Rollback = remove the routes and redeploy.
-routes = [
-  { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
-  { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
-]
 
 [assets]
 directory = ".open-next/assets"
@@ -33,5 +38,6 @@ B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
 NEXTAUTH_URL = "https://hostamar.com"
 NEXT_PUBLIC_SITE_URL = "https://hostamar.com"
+
 [observability.logs]
 enabled = true
