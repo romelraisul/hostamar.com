@@ -44,6 +44,10 @@ OPENROUTER_EMBED_FALLBACK = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
 # Local-first embedding router (Ollama, 4 models, auto-routed) behind the
 # hostamar-local tunnel. Fallback above only runs when the PC is off.
 EMBEDDINGS_URL = "https://embeddings.hostamar.com/v1/embeddings"
+# Jev decision API on the home box (:8083) behind the hostamar-local tunnel.
+# /api/v1/decisions degrades to each PIN's safe default when this is unreachable.
+DECISIONS_URL = "https://decisions.hostamar.com"   # middleware client (appends /v1/decisions)
+DECISION_API_URL = "https://decisions.hostamar.com"  # /api/decision route (same box, :8083)
 
 [observability.logs]
 enabled = true

@@ -1,0 +1,22 @@
+[Unit]
+Description=hostamar JEV decision API (:8083) - 60% rule + two-judge + audit receipts
+After=network.target hostamar-jev-model.service
+Wants=hostamar-jev-model.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/romel/hostamar-build
+Environment=JEV_BACKEND=systemone
+Environment=JEV_UPSTREAM=http://127.0.0.1:8085
+Environment=JEV_MODEL=jev-style-0.8b-decision-v3
+Environment=JEV_JUDGE2=http://127.0.0.1:18932
+Environment=JEV_JUDGE2_TIMEOUT=25
+Environment=JEV_THRESHOLD=0.60
+Environment=JEV_RECEIPTS=/home/romel/.local/state/hostamar/decision-receipts.jsonl
+ExecStartPre=-/usr/bin/pkill -f 'jev-server.py --port 8083'
+ExecStart=/usr/bin/python3 /home/romel/hostamar-build/jev-server.py --port 8083
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
