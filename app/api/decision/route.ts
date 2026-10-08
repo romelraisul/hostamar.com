@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
           agree: d.agree ?? null,
           judge2: d.judge2 ?? null,
           latency_ms: d.latency_ms ?? null,
+          judge1_ms: d.judge1_ms ?? d.latency_ms ?? null,  // same value, name the contract test asserts
           receipt: d.receipt ?? null,
         })
       }
@@ -100,6 +101,16 @@ export async function GET(req: NextRequest) {
         rule: `confidence < ${CONFIDENCE_FLOOR} → escalate to the pin fallback + human review`,
         upstream: DECISION_API },
       { headers: { 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' } },
+    )
+  }
+  // The audit trail is internal: middleware.ts intends /api/* to need auth_token,
+  // but that is not enforced on Pages, so check here. POST stays open (internal callers).
+  const authed = !!req.cookies.get('auth_token')?.value
+    || (!!process.env.AUTONOMOUS_SECRET && req.headers.get('x-hostamar-autonomous') === process.env.AUTONOMOUS_SECRET)
+  if (!authed) {
+    return NextResponse.json(
+      { error: 'Unauthorized', code: 'UNAUTHENTICATED', hint: 'receipts need auth_token (admin login); GET ?pins=1 is public' },
+      { status: 401, headers: { 'Cache-Control': 'no-store' } },
     )
   }
   try {
