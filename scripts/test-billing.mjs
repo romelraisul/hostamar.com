@@ -64,11 +64,14 @@ try {
   const rowsAfter = (await db.execute({ sql: `SELECT COUNT(*) n FROM "CreditTransaction" WHERE "customerId" = ?`, args: [TEST_ID] })).rows[0].n
   step('/api/generate wrote exactly 1 audit row', Number(rowsAfter) - Number(rowsBefore) === 1, `${rowsBefore} -> ${rowsAfter}`)
 
-  // 4. embeddings — 1cr for customer keys (master key path stays free)
+  // 4. embeddings — 1cr for customer keys (master key path stays free). When the
+  // upstream cannot serve (no OPENROUTER key on the Worker → 500) the debit is
+  // REFUNDED: a failed call must never leave the customer out of pocket.
   const e = await post('/api/v1/embeddings', { model: 'text-embedding-3-small', input: 'hello' })
+  await new Promise((r) => setTimeout(r, 2500)) // refund is a second write
   const afterEmb = await credits()
-  step('POST /api/v1/embeddings (upstream may 500, debit precedes it)', e.status === 200 || e.status === 500, `HTTP ${e.status}`)
-  step('/api/v1/embeddings debited 1cr', afterEmb === afterGen - 1, `${afterGen} -> ${afterEmb}`)
+  step('POST /api/v1/embeddings answered', e.status === 200 || e.status === 500, `HTTP ${e.status}`)
+  step('embeddings: 5xx costs 0, 2xx costs 1cr', e.status === 500 ? afterEmb === afterGen : afterEmb === afterGen - 1, `${afterGen} -> ${afterEmb} (HTTP ${e.status})`)
 
   // 5. exhausted wallet → 402 + bKash, on every charged endpoint
   await db.execute({ sql: `UPDATE "Customer" SET credits = 0 WHERE id = ?`, args: [TEST_ID] })
