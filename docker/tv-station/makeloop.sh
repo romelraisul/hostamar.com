@@ -45,8 +45,11 @@ ffmpeg -nostdin -v warning -y -f concat -safe 0 -i /tmp/looplist.txt \
 echo "built: $(du -h "$OUT" | cut -f1)"
 ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT"
 
-# AUDIO GUARD: a loop that ships silent is dead air for every viewer
+# AUDIO GUARD: a loop that ships silent is dead air for every viewer.
+# grep 'mean_volume:' FIRST (line-level) — grep -o on the raw ffmpeg output
+# matches the first digit anywhere (e.g. the `0` in `volumedetect_0`) and a
+# -32.1 dB healthy loop reported as "0 dB" (verified 2026-10-08).
 mv=$(ffmpeg -nostdin -v info -i "$OUT" -t 120 -af volumedetect -f null - 2>&1 \
-  | grep mean_volume | grep -o -- '-[0-9.]*\|[0-9.]*' | head -1)
+  | grep 'mean_volume:' | grep -oE '\-?[0-9.]+ dB' | head -1 | grep -oE '\-?[0-9.]+')
 echo "mean_volume: $mv dB"
 awk -v v="$mv" 'BEGIN{ if (v+0 > -50) exit 0; else { print "SILENT LOOP — refusing"; exit 1 } }'
