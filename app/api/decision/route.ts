@@ -52,14 +52,14 @@ function legacyDecision(repo?: string, prompt?: string, warning?: string) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({} as any))
-  const { question, choices, context, who, escalate_to } = body || {}
+  const { question, choices, context, who, escalate_to, judges } = body || {}
 
   if (typeof question === 'string' && Array.isArray(choices) && choices.length >= 2) {
     try {
       const r = await fetch(`${DECISION_API}/v1/decisions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, choices, context, who, escalate_to }),
+        body: JSON.stringify({ question, choices, context, who, escalate_to, judges }),
         signal: AbortSignal.timeout(TIMEOUT_MS),
         cache: 'no-store',
       })
@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
           source: 'jev-local',
           choice: d.choice,
           confidence: d.confidence,
+          probabilities: d.probabilities ?? null,
           reasoning: d.reasoning,
           escalate: d.escalate ?? (d.confidence ?? 0) < HUMAN_THRESHOLD,
           routed_to: d.routed_to ?? null,
