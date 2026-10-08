@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 import { enhanceVideoPrompt } from '@/lib/model-in-every-point'
 import { deductCredits } from '@/lib/credits'
+import { splitSale } from '@/lib/credit-grant'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -34,7 +35,13 @@ export async function POST(req: NextRequest) {
   // PAID (v12): single source of truth — atomic debit + CreditTransaction audit
   // row (written by deductCredits). Insufficient → 402 with exact balance so
   // the client routes to bKash. No free bypass — every catalog service is metered.
-  const spend = await deductCredits(user.id, -creditCost, 'spend', `generate ${service.id}`)
+  // Marketplace listing (has an owner) → 80/20 split via splitSale; Hostamar's
+  // own services → plain debit. Either way the buyer pays exactly creditCost
+  // and gets one audit row.
+  const sellerId = (service as any).sellerId ?? null
+  const spend = sellerId
+    ? await splitSale({ buyerId: user.id, sellerId, credits: creditCost, item: service.id })
+    : await deductCredits(user.id, -creditCost, 'spend', `generate ${service.id}`)
   if (!spend.ok) {
     return NextResponse.json(
       {

@@ -168,6 +168,9 @@ export default function PricingPage() {
             AI + হোস্টিং, <span style={{ color: 'var(--bp-green)' }}>এক দামে</span>
           </h1>
           <p>ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE, সব এক সাবস্ক্রিপশনে। bKash দিয়ে ৩০ সেকেন্ডে শুরু</p>
+          <p className="bp-muted" style={{ marginTop: '.5rem', fontWeight: 700 }}>
+            ১cr = ১ টাকা = ১ HOST কয়েন — প্রতি প্ল্যানে ক্রেডিট, bKash <span style={{ fontWeight: 800 }}>01822417463</span>
+          </p>
         </div>
       </section>
 
