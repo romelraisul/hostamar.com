@@ -1,16 +1,18 @@
 import Link from 'next/link'
+import fs from 'node:fs'
+import path from 'node:path'
 import type { Metadata } from 'next'
 import tools from '@/lib/services-catalog-tools.json'
+import prisma from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic' // live model count in hero stats
+export const dynamic = 'force-dynamic' // live model count + real build rows
 
 export const metadata: Metadata = {
-  title: 'Customer Showcase — ১৬৮ ভিডিও, ৫৩ টুল, ১৫২ মডেল | Hostamar',
+  title: 'Customer Showcase — আসল কাস্টমার বিল্ড | Hostamar',
   description:
-    'কাস্টমারদের বানানো .apk/.msi/.mp4 ও বাংলা LLM বিল্ড — বাংলাদেশ হোস্টামার দিয়ে বানিয়েছে। তোমার build শেয়ার করো, /dev থেকে বানাও।',
+    'কাস্টমারদের বানানো .mp4/.apk/.msi ও বাংলা LLM বিল্ড — Hostamar দিয়ে বানানো আসল আউটপুট। তোমার build শেয়ার করো, /dev থেকে বানাও।',
 }
 
-// ponytail: seed wall is hardcoded — swap for a Turso CustomerBuild table when uploads land.
 const KINDS = ['all', 'mp4', 'apk', 'msi', 'llm'] as const
 type Kind = (typeof KINDS)[number]
 const FILTER_LABELS: Record<Kind, string> = {
@@ -23,31 +25,69 @@ const BADGE: Record<Kind, { label: string; color: string }> = {
   msi: { label: '.msi', color: '#8E24AA' },
   llm: { label: 'LLM', color: '#F59E0B' },
 }
+const THUMB: Record<Kind, string> = { all: '🎬', mp4: '🎬', apk: '📱', msi: '🖥️', llm: '🧠' }
+const KIND_NOUN: Record<Kind, string> = { all: 'বিল্ড', mp4: 'ভিডিও', apk: '.apk অ্যাপ', msi: '.msi টুল', llm: 'বাংলা LLM' }
 
-const BUILDS: Array<{
+const toBn = (n: number) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[+d])
+
+// Real data only — no seed/demo rows, ever ("make it real, permanently").
+// .mp4 comes from the real Video table; .apk/.msi/LLM have no real rows yet,
+// so they render an honest empty state instead of fake cards.
+type Build = {
+  id: string
   kind: Kind
   title: string
   author: string
   ago: string
-  credits: string
-  likes: string
+  meta: string
   href: string
   cta: string
   thumb: string
-}> = [
-  { kind: 'mp4', title: 'ঈদ ফেস্টিভ্যাল ভিডিও — রহিম স্টোর', author: '@rahim_store', ago: '২ ঘণ্টা আগে', credits: '৫০cr', likes: '❤️ ২৪', href: '/tv', cta: 'দেখুন →', thumb: '🎬' },
-  { kind: 'mp4', title: 'বগুড়ার চিনাপাহাড় ট্রাভেল রিল', author: '@tourism_bd', ago: '৫ ঘণ্টা আগে', credits: '৪০cr', likes: '❤️ ৫৭', href: '/tv', cta: 'দেখুন →', thumb: '🏞️' },
-  { kind: 'mp4', title: 'পহেলা বৈশাখ প্রোমো — ঢাকা ক্লোথিং', author: '@dhaka_wear', ago: '১ দিন আগে', credits: '৬৫cr', likes: '❤️ ১১২', href: '/tv', cta: 'দেখুন →', thumb: '🎉' },
-  { kind: 'mp4', title: 'রেস্টুরেন্ট মেনু অ্যাড — খালি ঘর', author: '@khalighor', ago: '১ দিন আগে', credits: '৫০cr', likes: '❤️ ৩৮', href: '/tv', cta: 'দেখুন →', thumb: '🍛' },
-  { kind: 'mp4', title: 'কুয়াকাটা সূর্যোদয় শর্টস', author: '@coxbazar_live', ago: '২ দিন আগে', credits: '৩০cr', likes: '❤️ ৯১', href: '/tv', cta: 'দেখুন →', thumb: '🌅' },
-  { kind: 'apk', title: 'Hostamar TV অ্যাপ — গ্রাহক বিল্ড v2', author: '@tv_dev_bd', ago: '৩ ঘণ্টা আগে', credits: '১২০cr', likes: '❤️ ১৯', href: '/dev', cta: 'ডাউনলোড .apk', thumb: '📱' },
-  { kind: 'apk', title: 'রহিম স্টোর অর্ডার অ্যাপ', author: '@rahim_store', ago: '১ দিন আগে', credits: '৯০cr', likes: '❤️ ১২', href: '/dev', cta: 'ডাউনলোড .apk', thumb: '🛒' },
-  { kind: 'apk', title: 'স্কুল রুটিন নোটিফায়ার', author: '@edutech_bd', ago: '৩ দিন আগে', credits: '৭৫cr', likes: '❤️ ২৭', href: '/dev', cta: 'ডাউনলোড .apk', thumb: '🏫' },
-  { kind: 'msi', title: 'ভিডিও স্টুডিও ডেস্কটপ — বান্ধব মিডিয়া', author: '@bondhu_media', ago: '৬ ঘণ্টা আগে', credits: '১৫০cr', likes: '❤️ ৮', href: '/dev', cta: 'ডাউনলোড .msi', thumb: '🖥️' },
-  { kind: 'msi', title: 'ইনভয়েস প্রিন্টার টুল', author: '@invoicepro', ago: '২ দিন আগে', credits: '৮০cr', likes: '❤️ ১৪', href: '/dev', cta: 'ডাউনলোড .msi', thumb: '🧾' },
-  { kind: 'llm', title: 'বগুড়া উপভাষা চ্যাটবট — QLoRA 3B', author: '@bangla_ai', ago: '১ দিন আগে', credits: '৫০০০cr', likes: '❤️ ৪৬', href: '/bangla-llm', cta: 'মডেল দেখুন →', thumb: '🧠' },
-  { kind: 'llm', title: 'কাস্টমার সাপোর্ট বাংলা LLM — রহিম স্টোর', author: '@rahim_store', ago: '৪ দিন আগে', credits: '৫০০০cr', likes: '❤️ ৩৩', href: '/bangla-llm', cta: 'মডেল দেখুন →', thumb: '💬' },
-]
+}
+
+function bnAgo(d: Date): string {
+  const h = Math.floor((Date.now() - d.getTime()) / 3_600_000)
+  if (h < 1) return 'এইমাত্র'
+  if (h < 24) return `${toBn(h)} ঘণ্টা আগে`
+  const dd = Math.floor(h / 24)
+  if (dd < 30) return `${toBn(dd)} দিন আগে`
+  return `${toBn(Math.floor(dd / 30))} মাস আগে`
+}
+
+function tvCount(): number {
+  try {
+    return fs.readdirSync(path.join(process.cwd(), 'public/tv')).filter((f) => f.endsWith('.mp4')).length
+  } catch {
+    return 168 // verified 2026-10-08
+  }
+}
+
+async function realVideos(): Promise<Build[]> {
+  try {
+    const rows = await prisma.video.findMany({
+      where: { status: 'completed', url: { not: '' } },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      select: {
+        id: true, title: true, topic: true, url: true, views: true, createdAt: true,
+        customer: { select: { name: true } },
+      },
+    })
+    return rows.map((r) => ({
+      id: r.id,
+      kind: 'mp4' as Kind,
+      title: (r.title || r.topic || 'AI ভিডিও').slice(0, 70),
+      author: r.customer?.name || 'Hostamar কাস্টমার',
+      ago: bnAgo(r.createdAt),
+      meta: r.views > 0 ? `${toBn(r.views)} ভিউ` : 'লাইভ আউটপুট',
+      href: r.url || '/tv',
+      cta: 'দেখুন →',
+      thumb: THUMB.mp4,
+    }))
+  } catch {
+    return []
+  }
+}
 
 async function modelCount(): Promise<number> {
   try {
@@ -67,22 +107,25 @@ export default async function ShowcasePage({
   const { f } = await searchParams
   const kind: Kind = KINDS.includes(f as Kind) ? (f as Kind) : 'all'
   const models = await modelCount()
-  const builds = kind === 'all' ? BUILDS : BUILDS.filter((b) => b.kind === kind)
+  const videosN = tvCount()
+  const real = await realVideos()
   const toolCount = (tools as unknown[]).length
+  // 'all' and 'mp4' both show the real video builds; apk/msi/llm have no real rows yet.
+  const builds = kind === 'all' || kind === 'mp4' ? real : []
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'Hostamar Customer Showcase',
     url: 'https://hostamar.com/showcase',
-    description: 'কাস্টমারদের .apk/.msi/.mp4 ও বাংলা LLM বিল্ড — Hostamar দিয়ে বানানো।',
+    description: 'কাস্টমারদের .mp4/.apk/.msi ও বাংলা LLM বিল্ড — Hostamar দিয়ে বানানো।',
     mainEntity: {
       '@type': 'ItemList',
-      itemListElement: BUILDS.map((b, i) => ({
+      itemListElement: builds.map((b, i) => ({
         '@type': 'ListItem',
         position: i + 1,
         name: b.title,
-        url: `https://hostamar.com${b.href}`,
+        url: b.href.startsWith('http') ? b.href : `https://hostamar.com${b.href}`,
       })),
     },
   }
@@ -100,7 +143,7 @@ export default async function ShowcasePage({
               কাস্টমার বিল্ড — বাংলাদেশ বানিয়েছে
             </span>
             <h1>
-              Customer Showcase — <span className="bp-accent">১৬৮ ভিডিও</span>, {toolCount} টুল, {models} মডেল
+              Customer Showcase — <span className="bp-accent">{toBn(videosN)} লাইভ ভিডিও</span>, {toBn(toolCount)} টুল, {toBn(models)} মডেল
             </h1>
             <p className="bp-hero-sub">
               তোমার .apk/.msi/.mp4 শেয়ার করো — <Link href="/dev" style={{ color: 'var(--bp-green)', fontWeight: 700 }}>/dev</Link> থেকে build করো।
@@ -119,9 +162,9 @@ export default async function ShowcasePage({
         <div className="bp-wrap">
           <div className="bp-bundle">
             {[
-              { n: '১৬৮', label: 'ভিডিও বিল্ড', href: '/tv' },
-              { n: `${toolCount}`, label: 'টুল (1cr=1TK)', href: '/api/v1/tools' },
-              { n: `${models}`, label: 'লাইভ মডেল', href: '/docs' },
+              { n: toBn(videosN), label: 'লাইভ ভিডিও', href: '/tv' },
+              { n: toBn(toolCount), label: 'টুল (1cr=1TK)', href: '/api/v1/tools' },
+              { n: toBn(models), label: 'লাইভ মডেল', href: '/docs' },
             ].map((s) => (
               <div key={s.label} className="bp-tile" style={{ textAlign: 'center' }}>
                 <h3 style={{ justifyContent: 'center', fontSize: '1.9rem' }}>{s.n}</h3>
@@ -137,7 +180,7 @@ export default async function ShowcasePage({
         <div className="bp-wrap">
           <div className="bp-sec-head">
             <h2>কাস্টমার ওয়াল</h2>
-            <p>ভিডিও, অ্যাপ, ডেস্কটপ টুল, নিজের বাংলা LLM — সব এক জায়গায়।</p>
+            <p>ভিডিও, অ্যাপ, ডেস্কটপ টুল, নিজের বাংলা LLM — সব আসল আউটপুট, এক জায়গায়।</p>
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginBottom: '1.6rem' }}>
@@ -158,22 +201,35 @@ export default async function ShowcasePage({
             ))}
           </div>
 
-          <div className="bp-bundle">
-            {builds.map((b) => (
-              <div key={b.title} className="bp-tile">
-                <div style={{ fontSize: '2.2rem', marginBottom: '.4rem' }}>{b.thumb}</div>
-                <span className="bp-tag" style={{ color: BADGE[b.kind].color, borderColor: 'var(--bp-ink)' }}>
-                  {BADGE[b.kind].label}
-                </span>
-                <h3>{b.title}</h3>
-                <p style={{ fontSize: '.85rem' }}>by {b.author} • {b.ago}</p>
-                <p style={{ fontSize: '.85rem', fontWeight: 700 }}>{b.credits} • {b.likes}</p>
-                <Link href={b.href} className="bp-btn bp-btn-primary" style={{ marginTop: 'auto' }}>
-                  {b.cta}
-                </Link>
+          {builds.length > 0 ? (
+            <div className="bp-bundle">
+              {builds.map((b) => (
+                <div key={b.id} className="bp-tile">
+                  <div style={{ fontSize: '2.2rem', marginBottom: '.4rem' }}>{b.thumb}</div>
+                  <span className="bp-tag" style={{ color: BADGE[b.kind].color, borderColor: 'var(--bp-ink)' }}>
+                    {BADGE[b.kind].label}
+                  </span>
+                  <h3>{b.title}</h3>
+                  <p style={{ fontSize: '.85rem' }}>by {b.author} • {b.ago}</p>
+                  <p style={{ fontSize: '.85rem', fontWeight: 700 }}>{b.meta}</p>
+                  <Link href={b.href} className="bp-btn bp-btn-primary" style={{ marginTop: 'auto' }}>
+                    {b.cta}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bp-tile" style={{ textAlign: 'center', padding: '2.4rem 1.5rem' }}>
+              <div style={{ fontSize: '2.6rem', marginBottom: '.5rem' }}>{THUMB[kind]}</div>
+              <h3 style={{ justifyContent: 'center' }}>এখনো কোনো {KIND_NOUN[kind]} পাবলিক হয়নি</h3>
+              <p style={{ maxWidth: 520, margin: '0 auto' }}>
+                আমরা ফেক বা ডেমো কিছু দেখাই না। প্রথম আসল {KIND_NOUN[kind]}টা তোমার হোক — বানাও, শেয়ার করো, এখানে দেখাও।
+              </p>
+              <div className="bp-hero-cta" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                <Link href="/dev" className="bp-btn bp-btn-primary">এখনই বানাও →</Link>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 

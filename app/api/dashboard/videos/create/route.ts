@@ -71,11 +71,23 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Deduct credits
-    await prisma.customer.update({
-      where: { id: authUser.id },
-      data: { credits: { decrement: videoCost } }
-    })
+    // PAID (v12): atomic debit + CreditTransaction audit row via the single
+    // source of truth. Hand-rolled `decrement` here was non-atomic (check-then-
+    // write race) and wrote no audit row.
+    const { deductCredits } = await import('@/lib/credits')
+    const spend = await deductCredits(authUser.id, -videoCost, 'spend', `video create: ${topic}`)
+    if (!spend.ok) {
+      return NextResponse.json(
+        {
+          error: 'INSUFFICIENT_CREDITS',
+          message: `Insufficient credits. Need ${videoCost}, have ${spend.balance ?? 0}.`,
+          balance: spend.balance ?? 0,
+          required: videoCost,
+          bkash: '01822417463',
+        },
+        { status: 402 },
+      )
+    }
 
     const video = await prisma.video.create({
       data: {

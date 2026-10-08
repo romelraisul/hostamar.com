@@ -11,6 +11,8 @@ import { validateBody, toErrorResponse } from '@/lib/api/validator'
 import { z } from 'zod'
 import { evaluateToolCall, isDestructive, TOOL_ALLOWLIST } from '@/lib/voice/toolPolicy'
 import { getAuthUser } from '@/lib/auth'
+import { deductCredits } from '@/lib/credits'
+import prisma from '@/lib/prisma'
 
 
 const toolRunSchema = z.object({
@@ -40,7 +42,7 @@ function withTimeout<T>(p: Promise<T>, ms = 2000): Promise<T> {
   })
 }
 
-async function runTool(tool: string, payload: any, traceId: string): Promise<any> {
+async function runTool(tool: string, payload: any, traceId: string, userId: string): Promise<any> {
   // Destructive tools need explicit confirmation from the client action gate.
   const meta = TOOL_ALLOWLIST[tool]
   if (!meta) throw new Error('tool not allowed')
@@ -48,10 +50,42 @@ async function runTool(tool: string, payload: any, traceId: string): Promise<any
   switch (tool) {
     case 'get_hosting_status':
       return { status: 'ok', hosting: 'live', region: 'ap-south-1' }
-    case 'create_video':
-      // Reuse existing video generation; in this repo the generator is invoked
-      // via the studio pipeline. We return a queued handle.
-      return { queued: true, job: `vid_${Date.now()}`, prompt: payload?.prompt ?? '' }
+    case 'create_video': {
+      // REAL (v12): charge credits + enqueue a real VideoQueue row for the
+      // local HunyuanVideo worker. Previously returned a fake `vid_<ts>` handle
+      // with no work and no charge.
+      const VIDEO_COST = 50
+      const prompt = String(payload?.prompt || '').slice(0, 500)
+      const spend = await deductCredits(userId, -VIDEO_COST, 'spend', 'tools/run create_video')
+      if (!spend.ok) {
+        const err: any = new Error('INSUFFICIENT_CREDITS')
+        err.status = 402
+        err.balance = spend.balance ?? 0
+        err.required = VIDEO_COST
+        throw err
+      }
+      const topic = prompt || 'AI video'
+      const video = await prisma.video.create({
+        data: {
+          customerId: userId,
+          title: topic.slice(0, 60),
+          topic,
+          prompt,
+          script: '',
+          duration: 30,
+          format: 'mp4',
+          resolution: '720p',
+          language: 'bn',
+          status: 'processing',
+          url: '',
+          fileSize: 0,
+        },
+      })
+      await prisma.videoQueue.create({
+        data: { customerId: userId, topic, priority: 5, status: 'pending', videoId: video.id },
+      }).catch(() => null)
+      return { queued: true, videoId: video.id, creditsCharged: VIDEO_COST, creditsRemaining: spend.creditsRemaining }
+    }
     case 'create_ticket':
       return { ticket: `T-${Math.floor(Math.random() * 9000 + 1000)}`, created: true }
     case 'initiate_bkash_payment':
@@ -114,16 +148,32 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await withTimeout(runTool(tool, body.args ?? {}, traceId), 2000)
+    const result = await withTimeout(runTool(tool, body.args ?? {}, traceId, authUser.id), 2000)
     failures.set(tool, { count: 0, openedAt: 0 })
     console.log('[tool_call]', { tool, ms: Date.now() - t0, traceId, ok: true })
     return NextResponse.json({ ok: true, tool, result, traceId })
   } catch (e: any) {
+    const msg = String(e?.message || e)
+    // Credits are a payment failure, not a tool outage — return 402 with the
+    // exact balance so the client can route to bKash. Never trip the breaker.
+    if (msg === 'INSUFFICIENT_CREDITS' || e?.status === 402) {
+      return NextResponse.json(
+        {
+          ok: false,
+          tool,
+          error: 'INSUFFICIENT_CREDITS',
+          message: 'ক্রেডিট শেষ। bKash 01822417463-এ পেমেন্ট করে ক্রেডিট কিনুন।',
+          balance: e?.balance ?? 0,
+          required: e?.required ?? 0,
+          bkash: '01822417463',
+        },
+        { status: 402 },
+      )
+    }
     const f = failures.get(tool) ?? { count: 0, openedAt: 0 }
     f.count += 1
     f.openedAt = Date.now()
     failures.set(tool, f)
-    const msg = String(e?.message || e)
     if (msg === 'timeout' || f.count >= BREAKER_THRESHOLD) {
       console.log('[tool_call]', { tool, ms: Date.now() - t0, traceId, ok: false, reason: msg })
       return NextResponse.json(

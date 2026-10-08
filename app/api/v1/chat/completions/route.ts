@@ -104,8 +104,17 @@ export async function POST(req: NextRequest) {
       creditsCharged = credits
       creditsRemaining = (spend as any).creditsRemaining
     } else if (spend && (spend as any).error === 'INSUFFICIENT_CREDITS') {
-      creditsCharged = 0
-      creditsRemaining = (spend as any).balance ?? null
+      // PAID (v12): never serve a result the customer cannot pay for.
+      // 402 + exact balance so the client routes to bKash (1cr = 1TK).
+      return NextResponse.json(
+        {
+          error: { message: 'Insufficient credits — bKash 01822417463 to top up (1cr = 1টাকা)', code: 402 },
+          balance: (spend as any).balance ?? 0,
+          required: credits,
+          bkash: '01822417463',
+        },
+        { status: 402 },
+      )
     }
   } else {
     const promptTokens = Math.ceil(messages.reduce((n, m) => n + (m.content?.length || 0), 0) / 4)
