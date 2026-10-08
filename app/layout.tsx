@@ -90,7 +90,7 @@ const productJsonLd = {
       name: 'Free',
       price: '0',
       priceCurrency: 'BDT',
-      description: '3 AI videos/mo, 1GB hosting',
+      description: '5 AI videos/mo, 1GB hosting',
     },
     {
       '@type': 'Offer',
@@ -107,9 +107,18 @@ const productJsonLd = {
       priceCurrency: 'BDT',
       description: 'Unlimited AI videos, 20GB NVMe, API',
     },
+    {
+      '@type': 'Offer',
+      name: 'Business',
+      price: '2900',
+      priceCurrency: 'BDT',
+      description: '300 AI videos, team of 5, priority support',
+    },
   ],
   // AggregateRating removed 2026-09-14: no verifiable review source yet
   // (fabricated 4.8/500 was flagged by the production audit).
+  // Offers synced with lib/pricing.ts PAYMENT_PLANS (990/1900/2900) 2026-10-08;
+  // 5000cr Bangla LLM Training is a one-time product, not a subscription offer.
 }
 
 const orgJsonLd = {

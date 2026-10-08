@@ -58,6 +58,7 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/coinlab/coin/polkadot', changeFrequency: 'weekly', priority: 0.7 },
   { path: '/coinlab/coin/polygon', changeFrequency: 'weekly', priority: 0.7 },
   { path: '/dev', changeFrequency: 'daily', priority: 0.8 },
+  { path: '/showcase', changeFrequency: 'daily', priority: 0.8 },
   { path: '/dev/android', changeFrequency: 'weekly', priority: 0.7 },
   // V40: the TV channel itself is indexable — 24/7 live + the edge shelf.
   { path: '/tv', changeFrequency: 'daily', priority: 0.9 },
