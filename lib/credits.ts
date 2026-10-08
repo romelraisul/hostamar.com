@@ -71,6 +71,13 @@ export async function deductCredits(
     if (Number(res) === 0) {
       return { ok: false, error: 'INSUFFICIENT_CREDITS', needed: -amount, balance }
     }
+    // Audit row for the Customer-credits path — without it metered spend is
+    // invisible in billing (CreditAccount path already logs; this one didn't).
+    await prisma.$executeRaw`
+      INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter")
+      VALUES (${crypto.randomUUID()}, ${userId}, ${amount}, ${type}, ${description},
+              (SELECT credits FROM "Customer" WHERE id = ${userId}))
+    `.catch((e) => { console.warn('[credits] audit row failed:', e?.message); return null })
     const after: any = await prisma.$queryRaw`SELECT credits FROM "Customer" WHERE id = ${userId} LIMIT 1`
     return { ok: true, creditsRemaining: Number(after?.[0]?.credits ?? 0), charged: amount, source: 'customer' }
   }

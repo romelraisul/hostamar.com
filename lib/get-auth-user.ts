@@ -30,6 +30,19 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
 
   // Method 2: Custom JWT from Authorization header
   const authHeader = req.headers.get('authorization')
+  if (authHeader?.startsWith('Bearer hk_live_')) {
+    // Customer API key (from /api/keys, sha256-hashed at rest) — resolves the
+    // Customer so every /api/v1/* route bills the key owner (1cr=1TK).
+    const { validateApiKey } = await import('./apikey')
+    const apiKey = await validateApiKey(authHeader.slice(7)).catch(() => null)
+    if (apiKey?.customer) {
+      return {
+        id: apiKey.customer.id,
+        email: apiKey.customer.email,
+        name: apiKey.customer.name,
+      }
+    }
+  }
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7)
     const payload = verifyToken(token)
