@@ -1,7 +1,7 @@
 #!/bin/bash
 # VP9/Opus HLS variant -> fmp4 .mp4 segments (Cloudflare caches .mp4, never .ts)
 # Rule 5: segments MUST keep .mp4 extension for edge caching.
-exec ffmpeg -re -stream_loop -1 -i /home/romel/hostamar-build/docker/tv-station/videos/loop-full.mp4 \
+exec ffmpeg -re -stream_loop -1 -i /home/romel/hostamar-build/docker/tv-station/videos/loop.mp4 \
   -i /home/romel/hostamar-build/public/logo.png \
   -filter_complex \
     "[0:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=25,format=yuv420p[base];\
