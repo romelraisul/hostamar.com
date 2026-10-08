@@ -35,6 +35,7 @@ export type LocalModel = {
   dim?: number; vram_gb?: number; service?: string; status?: string; note?: string
 }
 
+// sizes are GiB (binary, 2^30) measured with stat/du on this box — not decimal GB
 export const HOSTAMAR_LOCAL_CATALOG: LocalModel[] = [
   // ── video ──
   { id: 'local/minimax-h3-ref2va-fp8', name: 'MiniMax H3 ref2va (fp8 DiT)', type: 'video', size_gb: 19.5, path: 'ComfyUI/models/diffusion_models/minimax_h3_ref2va_pruned_fp8_scaled.safetensors', note: 'official fp8 DiT — V78 leg 2 PASS 1344x768x39f' },
@@ -44,9 +45,9 @@ export const HOSTAMAR_LOCAL_CATALOG: LocalModel[] = [
   { id: 'local/hunyuan-video-720-fp8', name: 'HunyuanVideo 720p fp8 (v1 line)', type: 'video', size_gb: 13.2, path: 'ComfyUI/models/diffusion_models/split_files/diffusion_models/hunyuan_video_720_fp8_e4m3fn.safetensors', note: 'HunyuanVideo v1 line — sits under split_files/, not scanned by ComfyUI flat dirs' },
   // ── audio / TTS ──
   { id: 'local/minimax-music3', name: 'MiniMax Music 3', type: 'audio', size_gb: 18.0, path: 'ComfyUI/models/minimax-music3/' },
-  { id: 'local/cosyvoice3-bengali', name: 'CosyVoice 3 — Bengali', type: 'audio', size_gb: 5.1, path: 'ComfyUI/models/cosyvoice3-bengali/' },
-  { id: 'local/cosyvoice2', name: 'CosyVoice 2', type: 'audio', size_gb: 4.6, path: 'ComfyUI/models/cosyvoice2/' },
-  { id: 'local/chatterbox-multilingual', name: 'Chatterbox Multilingual (23 lang)', type: 'audio', size_gb: 5.9, path: 'ComfyUI/models/chatterbox/' },
+  { id: 'local/cosyvoice3-bengali', name: 'CosyVoice 3 — Bengali', type: 'audio', size_gb: 4.13, path: 'ComfyUI/models/cosyvoice3-bengali/' },
+  { id: 'local/cosyvoice2', name: 'CosyVoice 2', type: 'audio', size_gb: 4.52, path: 'ComfyUI/models/cosyvoice2/' },
+  { id: 'local/chatterbox-multilingual', name: 'Chatterbox Multilingual (23 lang)', type: 'audio', size_gb: 12.91, path: 'ComfyUI/models/chatterbox/' },
   // ── image ──
   { id: 'local/qwen-image-2.1', name: 'Qwen-Image 2.1 (bf16 / int8)', type: 'image', size_gb: 13.3, path: 'ComfyUI/models/diffusion_models/qwen_image_2.1_bf16.safetensors', note: 'int8_convrot variant also on disk (6.8G) — V78 leg 1 PASS' },
   // ── vision / text encoders ──
@@ -63,8 +64,8 @@ export const HOSTAMAR_LOCAL_CATALOG: LocalModel[] = [
   // ── speech-to-text ──
   { id: 'local/bengali-whisper-medium', name: 'Bengali Whisper Medium', type: 'stt', size_gb: 2.9, path: 'models/bengali-whisper-medium/model.safetensors' },
   // ── embeddings (Ollama, :11434, auto-routed by the :8081 router) ──
-  { id: 'local/nomic-embed-text', name: 'nomic-embed-text', type: 'embedding', size_gb: 0.3, dim: 768, path: 'ollama', service: ':11434', note: 'long input (>2000 chars)' },
-  { id: 'local/bge-m3', name: 'bge-m3', type: 'embedding', size_gb: 1.2, dim: 1024, path: 'ollama', service: ':11434', note: 'বাংলা script' },
-  { id: 'local/mxbai-embed-large', name: 'mxbai-embed-large', type: 'embedding', size_gb: 0.7, dim: 1024, path: 'ollama', service: ':11434', note: 'default English' },
-  { id: 'local/all-minilm', name: 'all-minilm', type: 'embedding', size_gb: 0.05, dim: 384, path: 'ollama', service: ':11434', note: 'short input (<=100 chars)' },
+  { id: 'local/nomic-embed-text', name: 'nomic-embed-text', type: 'embedding', size_gb: 0.26, dim: 768, path: 'ollama', service: ':11434', note: 'long input (>2000 chars)' },
+  { id: 'local/bge-m3', name: 'bge-m3', type: 'embedding', size_gb: 1.08, dim: 1024, path: 'ollama', service: ':11434', note: 'বাংলা script' },
+  { id: 'local/mxbai-embed-large', name: 'mxbai-embed-large', type: 'embedding', size_gb: 0.62, dim: 1024, path: 'ollama', service: ':11434', note: 'default English' },
+  { id: 'local/all-minilm', name: 'all-minilm', type: 'embedding', size_gb: 0.04, dim: 384, path: 'ollama', service: ':11434', note: 'short input (<=100 chars)' },
 ]
