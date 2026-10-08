@@ -90,7 +90,7 @@ export default function BanglaLlmPage() {
               api.hostamar.com/v1-এ OpenAI-compatible deploy। ক্রেডিট কার্ড লাগে না।
             </p>
             <div className="bp-hero-cta">
-              <Link href="/pricing" className="bp-btn bp-btn-primary">৫০০০cr প্যাকেজ — bKash 01822417463</Link>
+              <Link href="/payment?plan=bangla_llm" className="bp-btn bp-btn-primary">৫০০০cr প্যাকেজ — bKash 01822417463</Link>
               <Link href="/docs" className="bp-btn bp-btn-ghost">ডকস দেখুন</Link>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function BanglaLlmPage() {
               <li>৭ দিনের মানিব্যাক গ্যারান্টি</li>
             </ul>
             <div className="bp-hero-cta" style={{ justifyContent: 'center', marginTop: '1.2rem' }}>
-              <a href="https://hostamar.com/dashboard/payment" className="bp-btn bp-btn-primary">bKash 01822417463 — এখনই শুরু করুন</a>
+              <a href="/payment?plan=bangla_llm" className="bp-btn bp-btn-primary">bKash 01822417463 — এখনই শুরু করুন</a>
             </div>
             <p style={{ textAlign: 'center', marginTop: '.8rem', fontSize: '.85rem', color: 'var(--bp-ink-soft)' }}>
               bKash · Nagad · Rocket — Send Money করে TrxID দিয়ে dashboard-এ activate করুন
