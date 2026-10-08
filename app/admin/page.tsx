@@ -665,6 +665,24 @@ const FLEET_META: Record<string, { lane: string; color: string }> = {
   Sage: { lane: 'Second Brain — nightly synthesis, wiki + /ask', color: '#F43F5E' },
 }
 
+function FleetStatusCard() {
+  const [st, setSt] = useState<any>(null)
+  useEffect(() => {
+    jfetch('/api/admin/fleet/status').then(setSt).catch(() => {})
+  }, [])
+  const dot = (ok: boolean) => <span className={`inline-block w-2 h-2 rounded-full ${ok ? 'bg-[#10B981]' : 'bg-red-500'}`} />
+  return (
+    <div className="rounded-xl bg-black border border-zinc-800 p-3 flex flex-wrap gap-4 items-center text-xs">
+      <div className="font-semibold text-white">Fleet Status</div>
+      <div className="flex items-center gap-1.5 text-zinc-400">{dot(!!st?.models?.ok)} <a href="https://ai.hostamar.com/v1/models" className="font-mono text-[#10B981]">{st ? `${st.models.count} models` : 'models…'}</a></div>
+      <div className="flex items-center gap-1.5 text-zinc-400">{dot(!!st?.sops?.count)} <span className="font-mono">{st ? `${st.sops.count} SOPs` : 'SOPs…'}</span></div>
+      <div className="flex items-center gap-1.5 text-zinc-400">{dot(true)} <span className="font-mono">{st ? `${st.ai_employees.roster} roster` : 'roster…'}</span></div>
+      <div className="text-zinc-500">{st?.overflow ? (st.overflow.enabled ? 'overflow ON' : 'overflow log-only') : 'overflow…'}</div>
+      <div className="text-[10px] text-zinc-600">{st?.overflow?.reason || 'GPU samples arrive via Fleet-Heartbeat reports (local loop)'}</div>
+    </div>
+  )
+}
+
 function FleetTab() {
   const [fleet, setFleet] = useState<any>(null)
   const [err, setErr] = useState('')
@@ -697,6 +715,9 @@ function FleetTab() {
         <div className="text-xs text-zinc-400">Telegram bytes: <span className="font-mono text-[#10B981]">{tb > 1 ? `${tb.toFixed(2)} TB` : (Number(storage?.telegramBytes||0)/1024**3).toFixed(1)+' GB'}</span></div>
         <div className="text-[10px] text-zinc-600">DriveFile rows in Neon · B2 10GB hot cache in front · 2GB/file Telegram cold tier</div>
       </div>
+
+      {/* Fleet status strip: GPU + models + overflow gate (from /api/admin/fleet/status) */}
+      <FleetStatusCard />
 
       {/* Employee cards */}
       <div className="grid md:grid-cols-2 gap-3">
