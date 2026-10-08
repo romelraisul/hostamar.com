@@ -13,6 +13,7 @@ export default function BazaarNav() {
         <nav className="bp-nav-links" aria-label="প্রধান মেনু">
           <a href="#how">কীভাবে কাজ করে</a>
           <a href="#bundle">পণ্যসমূহ</a>
+          <Link href="/bangla-llm">বাংলা LLM <span className="bp-badge-new">NEW</span></Link>
           <Link href="/pricing">প্রাইসিং</Link>
           <a href="#faq">সাধারণ প্রশ্ন</a>
           <Link href="/showcase">শোকেস</Link>
@@ -26,6 +27,7 @@ export default function BazaarNav() {
         <nav className="bp-nav-mobile" aria-label="মোবাইল মেনু">
           <a href="#how">কীভাবে কাজ করে</a>
           <a href="#bundle">পণ্যসমূহ</a>
+          <Link href="/bangla-llm">বাংলা LLM <span className="bp-badge-new">NEW</span></Link>
           <Link href="/pricing">প্রাইসিং</Link>
           <a href="#faq">সাধারণ প্রশ্ন</a>
           <Link href="/showcase">শোকেস</Link>

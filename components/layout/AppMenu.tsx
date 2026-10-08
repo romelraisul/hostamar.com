@@ -43,6 +43,14 @@ export default function AppMenu({ open, onClose }: { open: boolean; onClose: () 
               className="block py-2 font-medium text-zinc-800"
             >
               {isBn ? l.labelBn : l.labelEn}
+              {l.badge && (
+                <span
+                  className="ml-1 inline-flex items-center rounded-full px-1.5 py-0.5 align-middle text-[9px] font-bold text-white"
+                  style={{ background: GREEN }}
+                >
+                  NEW
+                </span>
+              )}
             </Link>
           ))}
         </div>
