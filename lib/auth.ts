@@ -132,9 +132,26 @@ export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
   }
 
   if (requestRef) {
-    let token = (requestRef.headers.get('authorization') || '').replace('Bearer ', '').trim()
+    const authHeader = (requestRef.headers.get('authorization') || '')
+    let token = authHeader.replace('Bearer ', '').trim()
     if (!token) {
       token = requestRef.cookies.get('auth_token')?.value || ''
+    }
+    // Customer API keys (from /api/keys, sha256-hashed at rest): resolve the
+    // Customer so every /api/v1/* route bills the key owner (1cr=1TK).
+    // Must run BEFORE verifyToken — a raw ApiKey is not a JWT.
+    if (authHeader.startsWith('Bearer hk_live_')) {
+      const { validateApiKey } = await import('./apikey')
+      const apiKey = await validateApiKey(authHeader.slice(7).trim()).catch(() => null)
+      if (apiKey?.customer) {
+        return {
+          id: apiKey.customer.id,
+          name: apiKey.customer.name,
+          email: apiKey.customer.email,
+          role: 'customer',
+          customer: apiKey.customer,
+        }
+      }
     }
     if (token) {
       const payload = verifyToken(token)
