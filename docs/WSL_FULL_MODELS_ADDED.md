@@ -119,6 +119,26 @@ models) then `587ec794-1540-4bcc-b99e-1d07f3d7ec5a` (corrected GiB sizes). Live 
 `curl -s https://hostamar.com/api/v1/models | jq '.data|length'` → **175**, `localAdded: 24`,
 `/`, `/store`, `/pricing`, `/bangla-llm`, `/payment`, `/api/health` all 200.
 
+## 5c. Provenance resolved: the hunyuan "mismatch" was truncation, both files are complete
+
+The two 7.76 GiB hunyuan files were in doubt because their sha256 does not equal the HF LFS oid.
+That comparison cannot decide anything for a *repack*, so the question was settled against each
+file's own header (`~/.hermes/scripts/st_probe.py`, complete = `8 + header_len +
+max(data_offsets[1]) == file_size`):
+
+- `hunyuanvideo1.5_720p_sr_distilled_fp8_scaled.safetensors` — 8,335,262,258 B, 1932 tensors,
+  `model_type=hunyuanvideo1.5_720p_sr_distilled`, **COMPLETE**
+- `hunyuanvideo1.5_720p_i2v_cfg_distilled_fp8_scaled.safetensors` — 8,330,399,746 B, 1926 tensors,
+  `model_type=hunyuanvideo1.5_720p_i2v_distilled`, **COMPLETE**
+- `split_files/.../hunyuan_video_720_fp8_e4m3fn.safetensors` — 13,185,035,336 B (12.28 GiB), COMPLETE
+
+The hash-named file (`aceeffabe…ec3`) was a **7,398,840,895 B truncated prefix** of the SR model
+(header intact, +936,421,363 B missing), which is exactly why its hash differed — not a different
+repack. It is parked in `hostamar-build/backups/stale-downloads/` next to the two truncated
+`split_files` stubs (18.8 MB / 236 KB); all three are provable strict prefixes of files we hold whole,
+so the 7.4 GiB is reclaimable whenever you want it. Nothing was deleted. No aria2 process is running,
+no re-download is needed, and the interrupted aria2 job's SIGTERM cost nothing.
+
 ## 6. Open items needing your call
 
 1. `hostamar-vps` is **enabled and active** (5-container stack auto-starts at boot). Reverse with `systemctl --user disable hostamar-vps` if the RAM is wanted back.
