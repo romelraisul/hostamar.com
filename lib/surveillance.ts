@@ -40,7 +40,7 @@ export function ipHashOf(clientIp: string, userAgent: string | null): string {
 const DISTILL_PAT =
   /ignore (all )?previous instructions|repeat (everything|all) (above|your instructions|your system)|print your (system )?(prompt|instructions)|translate (the )?(whole|entire|all) (conversation|document|messages)|summarize (all|every) (message|turn|previous)|act as (an? )?(uncensored|unfiltered|DAN)/i
 const WEAPON_PAT =
-  /((make|build|construct|synthesize)(ing)?\s+(a\s+)?)?(ied|bio ?weapon|nerve agent|pipe bomb|mass shooting)|school (attack|shooting)/i
+  /((make|build|construct|synthesize)(ing)?\s+(a\s+)?)?(\bied\b|bio ?weapon|nerve agent|pipe bomb|mass shooting)|school (attack|shooting)/i
 
 export type IntentVerdict = 'benign' | 'suspicious' | 'malicious'
 
