@@ -127,6 +127,11 @@ export default function PaymentPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-3">{t('payment.pageTitle')}</h1>
           <p className="text-gray-400 text-lg">{t('payment.subtitle')}</p>
+          <div className="mt-4 inline-flex flex-wrap items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm">
+            <span className="font-bold text-[#00C853]">১cr = ১ টাকা = ১ HOST কয়েন</span>
+            <span className="text-gray-300">• সেন্ড মানি</span>
+            <span className="font-mono font-bold text-white">bKash 01822417463</span>
+          </div>
         </div>
 
         {/* Error Display */}

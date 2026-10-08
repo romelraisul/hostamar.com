@@ -16,6 +16,7 @@ import { env } from '@/lib/env'
 import { BKASH_PERSONAL, PAYMENT_PLANS, PRICING } from '@/lib/pricing'
 import { ensureSchema } from '@/lib/ensure-schema'
 import { recordAffiliateCommission } from '@/lib/affiliate'
+import { grantPlanPurchase } from '@/lib/credit-grant'
 
 export const TRXID_REGEX = /^[A-Z0-9]{8,10}$/
 export const AMOUNT_TOLERANCE = 1 // ±1 Tk
@@ -140,23 +141,17 @@ export async function grantPaymentBenefits(verificationId: string): Promise<void
   const v = await prisma.paymentVerification.findUnique({ where: { id: verificationId } })
   if (!v || v.status === 'VERIFIED') return
 
-  // 1. Grant credits
+  // 1. Grant credits — single grant path (atomic, audit row, first-purchase
+  //    bonus, referral 10%). The previous `credits: { increment }` write left
+  //    no CreditTransaction row, so approved payments were invisible in billing.
   if (v.credits > 0) {
-    await prisma.customer.update({
-      where: { id: v.customerId },
-      data: { credits: { increment: v.credits } },
+    const grant = await grantPlanPurchase({
+      customerId: v.customerId,
+      credits: v.credits,
+      plan: v.plan || 'manual',
+      reference: `${v.method} TrxID ${v.trxId}`,
     })
-    await prisma.creditTransaction
-      .create({
-        data: {
-          customerId: v.customerId,
-          amount: v.credits,
-          type: 'payment',
-          description: `Personal payment verified (${v.method} TrxID ${v.trxId})`,
-          balanceAfter: 0,
-        },
-      })
-      .catch(() => {}) // ledger non-fatal (schema drift)
+    if (!grant.ok) throw new Error(`credit grant failed: ${grant.error}`)
   }
 
   // 2. Activate subscription if a plan was purchased

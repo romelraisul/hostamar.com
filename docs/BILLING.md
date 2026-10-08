@@ -27,6 +27,19 @@ product away.
    *before* any debit.
 8. Pricing: `1cr = 1TK = 1 future HOST coin`; signup bonus 6000cr;
    `VIDEO_COST = 50`; embeddings `1cr`.
+9. Every credit **grant** goes through `lib/credit-grant.ts` — never
+   `prisma.customer.update({ credits: { increment } })`, which writes no
+   `CreditTransaction` row (paid credits then vanish from billing history).
+   `grantCredits` = one grant, one audit row.
+10. A paid plan grants through `grantPlanPurchase(...)`, which owns all three
+    legs: plan credits (`purchase`), first-purchase bonus 6000cr (`bonus`), and
+    the referrer's 10% (`referral`, claimed atomically — the `Referral` row is
+    flipped `PENDING → paid` with a guarded UPDATE so two approval paths can
+    never pay the same referral twice).
+11. Marketplace sales go through `splitSale(...)`: buyer `-credits`, seller
+    `+80%`, platform `+20%` — three audit rows, all atomic. A listing with
+    `ServiceCatalog.sellerId = NULL` is Hostamar's own service and keeps 100%.
+    Never settle a sale by writing one balance by hand.
 
 ## Endpoints that must debit
 
@@ -41,8 +54,15 @@ the only legitimate bypass, and it is authenticated by the master key itself.
 ## Verify (against production, self-cleaning)
 
 ```bash
-node scripts/test-billing.mjs            # https://hostamar.com
+node scripts/test-billing.mjs            # every charged endpoint debits / 402s
+node scripts/test-store.mjs              # store money paths
 ```
+
+`test-store.mjs` seeds a buyer/seller/referrer + a real listing and a pending
+bKash payment, then asserts: 80/20 split on a seller listing, plan credits +
+6000cr first-purchase bonus + 600cr referral cut on approval, idempotent second
+approval, then deletes every test row (the platform commission leg is reverted
+exactly, so no residue on the real admin balance).
 
 Seeds a throwaway Customer + ApiKey in live Turso, asserts every charged
 endpoint debits, asserts 402 + bKash at zero credits with no negative balance,

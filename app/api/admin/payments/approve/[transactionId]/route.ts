@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { PAYMENT_PLANS } from '@/lib/pricing'
+import { grantPlanPurchase } from '@/lib/credit-grant'
 
 /**
  * POST /api/admin/payments/approve/[transactionId]
@@ -117,12 +118,21 @@ export async function POST(
       },
     })
 
-    // 3. Add credits
+    // 3. Add credits — single grant path (atomic + audit row + first-purchase
+    //    bonus + referral 10%). The old `credits: { increment }` write left no
+    //    CreditTransaction row, so paid credits never showed in billing history.
     const creditsToAdd = txn.creditsAdded > 0 ? txn.creditsAdded : (PAYMENT_PLANS[(pkgKey === 'growth' ? 'pro' : pkgKey) as keyof typeof PAYMENT_PLANS]?.credits ?? planInfo.videos)
-    await prisma.customer.update({
-      where: { id: txn.customer.id },
-      data: { credits: { increment: creditsToAdd } },
+    const grant = await grantPlanPurchase({
+      customerId: txn.customer.id,
+      credits: creditsToAdd,
+      plan: planLabel,
+      reference: `TrxID ${txn.gatewayTrxId || txn.id}`,
     })
+    if (!grant.ok) {
+      // Put the transaction back so the admin can retry instead of losing the payment.
+      await prisma.transaction.update({ where: { id: txn.id }, data: { status: 'pending_verification' } }).catch(() => {})
+      return NextResponse.json({ success: false, error: `credit grant failed: ${grant.error}` }, { status: 500 })
+    }
 
     // 4. Audit log
     try {
