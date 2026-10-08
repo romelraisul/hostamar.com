@@ -25,9 +25,10 @@ const STORE_LINKS = [
 // public API surfaces. 106 services · 120 models · Orca ADE guide.
 const DOCS_LINKS = [
   { href: '/docs', bn: 'ডকুমেন্টেশন', en: 'Documentation', desc: '১০৬ সার্ভিস · ১২০ মডেল · Orca ADE · ১cr=1TK=1COIN' },
+  { href: '/bangla-llm', bn: 'বাংলা LLM ট্রেনিং — 5000cr', en: 'Bangla LLM Training — 5000cr', desc: 'নিজের মডেল, QLoRA RTX 5060 8GB, api.hostamar.com/v1 এ deploy' },
   { href: '/docs/bn', bn: 'বাংলা ডকস', en: 'Bangla Docs', desc: 'সম্পূর্ণ ডকুমেন্টেশন বাংলায়' },
+  { href: '/docs/sops', bn: '৬৩ SOP স্টোর', en: '63 SOPs', desc: 'সার্চযোগ্য সার্ভিস গাইড, hk_live curl' },
   { href: '/api/v1/models', bn: 'API / মডেল তালিকা', en: 'API / Models', desc: '120 models — OpenAI compatible' },
-  { href: '/pricing', bn: 'প্রাইসিং', en: 'Pricing', desc: 'Starter ৳599 · Pro ৳1299 · Business ৳2999' },
 ]
 
 const LEGAL_LINKS = [

@@ -14,7 +14,7 @@
 // stalls. This is what turns 15 polling crons into workers for ONE goal.
 // ============================================================================
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client/wasm'
 import { ensureHarnessSchema } from '@/lib/harness/ensure-harness-schema'
 import { ollamaGenerate } from '@/lib/harness/ollama-client'
 import { measureMRR, type MrRMetrics } from './tools/measureMRR'

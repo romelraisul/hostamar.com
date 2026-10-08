@@ -5,7 +5,7 @@
 // so create lazily at runtime. Idempotent, cached per cold start, with a
 // pooled->direct fallback. One statement per $executeRawUnsafe call.
 // ============================================================================
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client/wasm'
 import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
 

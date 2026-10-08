@@ -10,9 +10,11 @@ import AppMenu from './AppMenu'
 const GREEN = '#0E7C3A'
 
 // Primary nav (same order on every page). Products is a mega-menu.
-export const NAV_LINKS: { href: string; labelBn: string; labelEn: string }[] = [
+// badge: optional NEW tag shown in pill form (green pulse, desktop only).
+export const NAV_LINKS: { href: string; labelBn: string; labelEn: string; badge?: 'NEW' }[] = [
   { href: '/tv', labelBn: '📺 লাইভ TV', labelEn: '📺 Live TV' },
   { href: '/store', labelBn: 'AI Store', labelEn: 'AI Store' },
+  { href: '/bangla-llm', labelBn: 'বাংলা LLM', labelEn: 'Bangla LLM', badge: 'NEW' },
   { href: '/docs', labelBn: 'ডকস', labelEn: 'Docs' },
   { href: '/pricing', labelBn: 'প্রাইসিং', labelEn: 'Pricing' },
   { href: '/features', labelBn: 'ফিচার', labelEn: 'Features' },
@@ -103,6 +105,14 @@ export default function AppHeader() {
                 }`}
               >
                 {isBn ? l.labelBn : l.labelEn}
+                {l.badge && (
+                  <span
+                    className="ml-1 inline-flex animate-pulse items-center rounded-full px-1.5 py-0.5 align-middle text-[9px] font-bold text-white"
+                    style={{ background: GREEN }}
+                  >
+                    NEW
+                  </span>
+                )}
               </Link>
             ))}
           </nav>

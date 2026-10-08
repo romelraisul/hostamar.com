@@ -1,0 +1,14 @@
+# Bangla LLM QLoRA — fits RTX 5060 8GB (checkpoints to WSL disk, never C:)
+checkpoint_dir: out/lora/bangla
+model:
+  name: tiiuae/falcon-3-3b-instruct  # swap: mistralai/Mistral-7B-v0.2 (12GB+)
+data:
+  class_path: litgpt.data.JSON
+  init_args:
+    json_path: data/bangla_train.jsonl
+    val_split_fraction: 0.05
+    prompt_template: mol
+training:
+  micro_batch_size: 1
+  max_seq_length: 512
+epochs: 3
