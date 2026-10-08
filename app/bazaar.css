@@ -324,3 +324,7 @@ body.bp-theme h1,body.bp-theme h2,body.bp-theme h3{letter-spacing:0}
 .bp-form-input{width:100%;font-family:var(--font-body);font-size:.9rem;color:var(--bp-ink);background:var(--bp-paper-2);border:2px solid var(--bp-ink);border-radius:10px;padding:.55rem .8rem;color:var(--bp-ink)}
 .bp-form-input:focus{outline:none;box-shadow:3px 3px 0 var(--bp-ink)}
 
+/* NEW badge (bangla-llm tab) — green pulse, matches bp-green accent */
+.bp-badge-new{display:inline-flex;align-items:center;margin-left:.3rem;padding:.1rem .45rem;border-radius:999px;background:var(--bp-green);color:#FFFDF6;font-size:.62rem;font-weight:700;line-height:1;vertical-align:middle;animation:bp-pulse 1.6s infinite}
+@keyframes bp-pulse{0%,100%{box-shadow:0 0 0 0 rgba(30,158,62,.55)}50%{box-shadow:0 0 0 5px rgba(30,158,62,0)}}
+

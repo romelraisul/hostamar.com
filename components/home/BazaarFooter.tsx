@@ -31,6 +31,15 @@ export default function BazaarFooter() {
             </ul>
           </div>
           <div>
+            <h4>AI মডেল</h4>
+            <ul>
+              <li><Link href="/bangla-llm">বাংলা LLM ট্রেনিং — 5000cr</Link></li>
+              <li><Link href="/docs/sops">৬৩ SOP গাইড</Link></li>
+              <li><Link href="/api/v1/models">১২০ মডেল API</Link></li>
+              <li><Link href="/docs">সার্ভিস ডকস</Link></li>
+            </ul>
+          </div>
+          <div>
             <h4>সাপোর্ট</h4>
             <ul>
               <li><Link href="/support">সাপোর্ট</Link></li>

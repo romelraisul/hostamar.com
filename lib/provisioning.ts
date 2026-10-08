@@ -3,7 +3,7 @@
 // All access goes through Prisma (the repo's existing client).
 // ============================================================================
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client/wasm'
 
 export type PlanKey = 'free' | 'starter' | 'business'
 export type LedgerStatus = 'pending' | 'paid' | 'provisioned' | 'failed'

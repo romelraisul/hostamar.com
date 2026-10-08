@@ -11,7 +11,7 @@
 // 42601 "cannot insert multiple commands into a prepared statement". So every
 // DDL statement is executed separately.
 // ============================================================================
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client/wasm'
 import { env } from '@/lib/env'
 
 // One statement per entry — never concatenate.
