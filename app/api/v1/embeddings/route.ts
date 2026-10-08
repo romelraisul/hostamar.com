@@ -41,11 +41,21 @@ export async function POST(req: NextRequest) {
     if (chargedTo) await deductCredits(chargedTo, 1, 'refund', 'embeddings unconfigured').catch(() => null)
     return Response.json({ error: { message: 'No OPENROUTER key' } }, { status: 500 })
   }
-  const res = await fetch(`${base}/embeddings`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify(body),
-  })
+  const callEmbed = (payload: any) =>
+    fetch(`${base}/embeddings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify(payload),
+    })
+  let res = await callEmbed(body)
+  // $0 budget: this OpenRouter account has never purchased credits, so a paid
+  // embedding model answers 402. Retry once on the free model instead of
+  // failing the customer — the vector is real either way, and the debit stands
+  // only for the 2xx we are about to return.
+  const fallbackModel = process.env.OPENROUTER_EMBED_FALLBACK || 'nvidia/llama-nemotron-embed-vl-1b-v2:free'
+  if (res.status === 402 && body?.model !== fallbackModel) {
+    res = await callEmbed({ ...body, model: fallbackModel })
+  }
   const text = await res.text()
   // Refund on upstream failure — never bill a customer for a 5xx.
   if (!res.ok && chargedTo) await deductCredits(chargedTo, 1, 'refund', 'embeddings upstream failed').catch(() => null)

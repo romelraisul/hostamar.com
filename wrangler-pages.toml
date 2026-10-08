@@ -38,6 +38,9 @@ B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
 NEXTAUTH_URL = "https://hostamar.com"
 NEXT_PUBLIC_SITE_URL = "https://hostamar.com"
+# Paid embedding models 402 on this $0 OpenRouter account; the route retries
+# once on this free model instead of failing the caller.
+OPENROUTER_EMBED_FALLBACK = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
 
 [observability.logs]
 enabled = true

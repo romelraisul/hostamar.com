@@ -51,6 +51,18 @@ product away.
 The internal gateway path (`LITELLM_MASTER_KEY`) stays free by design — that is
 the only legitimate bypass, and it is authenticated by the master key itself.
 
+## Embeddings upstream — `$0` OpenRouter account
+
+`OPENROUTER_API_KEY` is live on the Worker (21 secrets). The account is
+free-tier and has **never purchased credits**, so every paid embedding model
+answers `402 Insufficient credits`. `/api/v1/embeddings` therefore retries
+**once** on the free model in `OPENROUTER_EMBED_FALLBACK`
+(`nvidia/llama-nemotron-embed-vl-1b-v2:free`, 2048-dim — the only embedding
+model that answers 200 on this account) and only hands the credit back if that
+also fails. A customer call is thus `200` + `1cr`; a genuinely failed call is
+still `5xx` + refund. Add real credits and delete the fallback env to go back
+to `text-embedding-3-small`.
+
 ## Verify (against production, self-cleaning)
 
 ```bash
