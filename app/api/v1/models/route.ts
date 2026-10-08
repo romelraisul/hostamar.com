@@ -16,8 +16,28 @@ const EDGE_MODELS_URL = process.env.EDGE_GATEWAY_URL
   : 'https://hostamar-ai-gateway.romelraisul.workers.dev/v1/models'
 
 import { MODELS_95 } from '@/lib/gateway/95-models'
+import { HOSTAMAR_LOCAL_CATALOG } from '@/lib/hostamar-models'
 import { fetchAllFreeModels } from '@/lib/free-model-router'
 import { getHealth } from '@/lib/model-health'
+
+// Local RTX 5060 box models (video/audio/image/embedding/llm) — listed alongside
+// the cloud catalog so one call shows everything the platform can run. Ids are
+// prefixed `local/` and are NOT chat-routable.
+const localEntries = HOSTAMAR_LOCAL_CATALOG.map(m => ({
+  id: m.id,
+  object: 'model',
+  owned_by: 'local',
+  display_name: m.name,
+  type: m.type,
+  size_gb: m.size_gb,
+  ...(m.dim ? { dim: m.dim, context: 0, context_length: 0 } : {}),
+  free: true,
+  local: true,
+  location: m.path,
+  ...(m.service ? { service: m.service } : {}),
+  ...(m.status ? { status: m.status } : {}),
+  ...(m.note ? { note: m.note } : {}),
+}))
 
 // V47: also pull the hourly self-healed "good models" list (live 200-OK verified)
 import { Redis } from '@upstash/redis'
@@ -84,9 +104,9 @@ export async function GET(_req: NextRequest) {
         free: true,
         verified_ms: g.ms,
       }))
-    const merged = [...data, ...goodExtras]
+    const merged = [...data, ...goodExtras, ...localEntries]
     return NextResponse.json(
-      { object: 'list', data: merged, source: edgeP.source || 'kv', freeAdded: extras.length, healthFiltered: down.size, brand: 'hostamar.com', goodAdded: goodExtras.length },
+      { object: 'list', data: merged, source: edgeP.source || 'kv', freeAdded: extras.length, healthFiltered: down.size, brand: 'hostamar.com', goodAdded: goodExtras.length, localAdded: localEntries.length },
       { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
     )
   }
@@ -101,7 +121,7 @@ export async function GET(_req: NextRequest) {
     free: !!m.free,
   }))
   return NextResponse.json(
-    { object: 'list', data, source: 'local-catalog' },
+    { object: 'list', data: [...data, ...localEntries], source: 'local-catalog', localAdded: localEntries.length },
     { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400', 'Access-Control-Allow-Origin': '*' } }
   )
 }
