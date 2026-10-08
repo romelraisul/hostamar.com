@@ -28,7 +28,7 @@ export const HOSTAMAR_ALL = [...HOSTAMAR_FREE_MODELS, ...HOSTAMAR_LOCAL_MODELS]
  * Local-inventory catalog — the models that physically exist on the RTX 5060 box.
  * Every size/path below was verified against disk (docs/WSL_CLEAN_INVENTORY.md,
  * docs/WSL_INVENTORY.md); nothing here is aspirational. Sizes in GB (GiB-rounded).
- * type: llm | video | image | audio | vision | embedding | stt
+ * type: llm | video | image | audio | vision | embedding | stt | decision
  */
 export type LocalModel = {
   id: string; name: string; type: string; size_gb: number; path: string
@@ -61,6 +61,8 @@ export const HOSTAMAR_LOCAL_CATALOG: LocalModel[] = [
   { id: 'local/llava-llama-3-8b-v1.1', name: 'LLaVA Llama-3 8B v1.1 (transformers)', type: 'vision', size_gb: 15.7, path: 'ComfyUI/models/LLM/llava-llama-3-8b-v1_1-transformers/' },
   { id: 'local/llava-llama-3-8b-text-encoder', name: 'LLaVA Llama-3 8B text-encoder-tokenizer', type: 'llm', size_gb: 15.0, path: 'ComfyUI/models/LLM/llava-llama-3-8b-text-encoder-tokenizer/' },
   { id: 'local/openjev-verdict-2.0', name: 'OpenJEV Verdict 2.0 (Bengali verdict scorer)', type: 'llm', size_gb: 1.41, path: 'ComfyUI/models/openjev-verdict-2.0/', note: '605529340/303785047 77.10% acc, ECE 1.44%' },
+  // ── decision (typed decisions + calibrated confidence — the 6 PIN audit layer) ──
+  { id: 'local/jev-decision-0.8b', name: 'JEV Decision 0.8B (Jev-Style v3, Q4_K_M)', type: 'decision', size_gb: 0.49, path: 'models/jev/Jev-Style-0.8B-Decision-v3-Q4_K_M.gguf', service: 'hostamar-jev.service :8083 /v1/decisions (public https://decisions.hostamar.com) + hostamar-jev-model.service :8085 official jev-style scorer', note: '386M params, single forward pass + linear probe, calibrated temperature 0.88, confidence=(k*pmax-1)/(k-1); 20-50ms warm / 0.2-0.9s cold; conf<0.60 escalates to balanced + human review; two-judge (judge2 = prism-bonsai :18932) agree -> auto-tag; serves the 6 decision points PIN1-6; upstream repo chaoliangUNSW/Jev-Style-0.8B-Decision-v3-GGUF' },
   // ── speech-to-text ──
   { id: 'local/bengali-whisper-medium', name: 'Bengali Whisper Medium', type: 'stt', size_gb: 2.9, path: 'models/bengali-whisper-medium/model.safetensors' },
   // ── embeddings (Ollama, :11434, auto-routed by the :8081 router) ──

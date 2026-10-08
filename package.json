@@ -16,6 +16,7 @@
     "browser:api": "echo \"Camofox API docs at http://localhost:9377\"",
     "cleanup": "rm -rf .next/ out/ dist/ && echo \"Cleaned\"",
     "typecheck": "npx tsc --noEmit --skipLibCheck",
+    "test:decision": "node scripts/test-decision-api.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "make": "make",
