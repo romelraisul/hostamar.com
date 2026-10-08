@@ -60,6 +60,27 @@ Verify against production with `node scripts/test-billing.mjs` (must be all PASS
 hostamar.com is served by the **`hostamar-pages` Cloudflare Worker** (OpenNext) —
 `git push` alone ships nothing; use the 4-step ship in that doc.
 
+## Embeddings - local, free, no OpenRouter needed
+
+`/api/v1/embeddings` calls our own router first: `EMBEDDINGS_URL` ->
+`https://embeddings.hostamar.com/v1/embeddings` (tunnel `5affa5bd` ->
+`localhost:8081` -> Ollama `:11434`). Four local models, auto-routed, all `$0`:
+
+    Bangla script -> bge-m3            1024d  (90% Bengali)
+    <=100 chars   -> all-minilm         384d  (fast)
+    >2000 chars   -> nomic-embed-text   768d  (8192 ctx)
+    else          -> mxbai-embed-large 1024d  (best English)
+
+Response carries `_router: {chosen_model, detected_language, reason, dim}`.
+`1cr` debited only on a `200`; refunded on failure. PC-off fallback:
+`OPENROUTER_API_KEY` + `OPENROUTER_EMBED_FALLBACK` (free 2048d model) so the
+route never 500s while the PC sleeps.
+
+Persistent via user units `hostamar-ollama.service` +
+`hostamar-embedding-router.service` (`~/.config/systemd/user/`, linger on =>
+they start at WSL boot). `OLLAMA_KEEP_ALIVE=5m` frees the 8GB card for ComfyUI.
+Details: `docs/BILLING.md`.
+
 ## VERCEL DEPLOY RULE - FREE TIER 100/DAY (always apply)
 
 - NEVER `git push + vercel --prod --yes` double deploy (1 push = 1 deploy). Use ONLY `git push`.

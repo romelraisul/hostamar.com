@@ -33,7 +33,26 @@ export async function POST(req: NextRequest) {
   }
   let body: any
   try { body = await req.json() } catch { return Response.json({ error: { message: 'Invalid JSON' } }, { status: 400 }) }
-  // proxy to openrouter for embeddings
+  // Local-first: our own Ollama embedding router (4 models, auto-routed by
+  // language/length, all free). The tunnel exposes it at embeddings.hostamar.com.
+  // When the PC is off the fetch fails and we fall through to OpenRouter below.
+  const localUrl = process.env.EMBEDDINGS_URL || 'https://embeddings.hostamar.com/v1/embeddings'
+  let res: Response | null = null
+  try {
+    const local = await fetch(localUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(45_000),
+    })
+    if (local.ok) res = local
+  } catch {
+    res = null
+  }
+  if (res) {
+    return new Response(await res.text(), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  }
+  // Local router unreachable (PC off / tunnel down) -> OpenRouter.
   // Config check AFTER the credit gate: insufficient credits must always be 402,
   // and an unconfigured upstream must never charge anyone.
   if (!key) {
@@ -47,7 +66,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify(payload),
     })
-  let res = await callEmbed(body)
+  res = await callEmbed(body)
   // $0 budget: this OpenRouter account has never purchased credits, so a paid
   // embedding model answers 402. Retry once on the free model instead of
   // failing the customer — the vector is real either way, and the debit stands

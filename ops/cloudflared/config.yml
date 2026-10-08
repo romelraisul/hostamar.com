@@ -1,33 +1,55 @@
-# cloudflared config for hostamar
-# Place this file at /etc/cloudflared/config.yml when deploying the tunnel container/service.
-
-tunnel: 19c220ee-37ae-4fad-9c99-495f0e154b12
-credentials-file: /etc/cloudflared/credentials.json
+tunnel: 5affa5bd-da95-48a4-a999-4d164e1215ee
+credentials-file: /home/romel/.cloudflared/5affa5bd-da95-48a4-a999-4d164e1215ee.json
+origincert: /home/romel/.cloudflared/cert.pem
 
 ingress:
+  - hostname: openwebui.hostamar.com
+    service: http://localhost:3003
+  - hostname: ide.hostamar.com
+    service: http://localhost:8443
+  - hostname: uptime.hostamar.com
+    service: http://localhost:3002
+  - hostname: camofox.hostamar.com
+    service: http://localhost:9377
+  - hostname: comfy.hostamar.com
+    service: http://localhost:8188
+  - hostname: omni.hostamar.com
+    service: http://localhost:20128
+  - hostname: s3.hostamar.com
+    service: http://localhost:9000
+  - hostname: storage.hostamar.com
+    service: http://localhost:9000
+  - hostname: ssh.ai.hostamar.com
+    service: ssh://localhost:22
   - hostname: hostamar.com
-    service: http://hostamar-app:3000
-  - hostname: www.hostamar.com
-    service: http://hostamar-app:3000
-  - hostname: ai.hostamar.com
-    service: http://hostamar-app:3000
-  - hostname: admin.hostamar.com
-    service: http://hostamar-app:3000
-  - hostname: staging.hostamar.com
-    service: http://hostamar-app:3000
-  - hostname: staging-www.hostamar.com
-    service: http://hostamar-app:3000
+    path: /v1/*
+    service: http://localhost:4000
+  - hostname: hostamar.com
+    service: http://localhost:3000
   - hostname: api.hostamar.com
-    service: http://hostamar-app:3000
-  - hostname: ssh.hostamar.com
-    service: http://oauth2-proxy:4180
+    service: https://hostamar-build.vercel.app
+    originRequest:
+      httpHostHeader: hostamar-build.vercel.app
+  - hostname: hostamar.com
+    service: http://localhost:3011
+  - hostname: admin.hostamar.com
+    service: http://localhost:3011
+  - hostname: staging.hostamar.com
+    service: http://localhost:3011
+  - hostname: browser.hostamar.com
+    service: http://localhost:3011
+  - hostname: cmt98a29.hostamar.com
+    service: http://localhost:24455
+  - hostname: cmt98anp.hostamar.com
+    service: http://localhost:27076
+  - hostname: cmt98ir8.hostamar.com
+    service: http://localhost:31805
+  - hostname: cmt98we0.hostamar.com
+    service: http://localhost:36524
+  - hostname: cmt9959k.hostamar.com
+    service: http://localhost:31838
+  - hostname: test-mta95hlc.hostamar.com
+    service: http://localhost:27280
+  - hostname: embeddings.hostamar.com
+    service: http://localhost:8081
   - service: http_status:404
-
-originRequest:
-  connectTimeout: 30s
-  noTLSVerify: false
-
-# Notes:
-# - Ensure the credentials-file path matches the mounted file inside the container.
-# - The service target must match the service name in your compose/network (hostamar-app:3000).
-# - Do not commit real credentials to git.
