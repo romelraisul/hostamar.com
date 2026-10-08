@@ -51,17 +51,36 @@ product away.
 The internal gateway path (`LITELLM_MASTER_KEY`) stays free by design — that is
 the only legitimate bypass, and it is authenticated by the master key itself.
 
-## Embeddings upstream — `$0` OpenRouter account
+## Embeddings upstream — local-first, `$0`, no OpenRouter needed
 
-`OPENROUTER_API_KEY` is live on the Worker (21 secrets). The account is
-free-tier and has **never purchased credits**, so every paid embedding model
-answers `402 Insufficient credits`. `/api/v1/embeddings` therefore retries
-**once** on the free model in `OPENROUTER_EMBED_FALLBACK`
-(`nvidia/llama-nemotron-embed-vl-1b-v2:free`, 2048-dim — the only embedding
-model that answers 200 on this account) and only hands the credit back if that
-also fails. A customer call is thus `200` + `1cr`; a genuinely failed call is
-still `5xx` + refund. Add real credits and delete the fallback env to go back
-to `text-embedding-3-small`.
+`/api/v1/embeddings` calls **our own** embedding router first:
+`EMBEDDINGS_URL` = `https://embeddings.hostamar.com/v1/embeddings` (Cloudflare
+tunnel `5affa5bd` → `localhost:8081` → Ollama on `:11434`). Four local models,
+auto-routed by script/length, all free:
+
+| input | model | dim |
+|---|---|---|
+| Bangla script | `bge-m3` | 1024 |
+| ≤ 100 chars | `all-minilm` | 384 |
+| > 2000 chars | `nomic-embed-text` | 768 |
+| anything else | `mxbai-embed-large` | 1024 |
+
+The Worker passes the request through and returns the router body verbatim
+(so `_router.model` / `_router.dim` / `_router.reason` are visible to the
+caller). **1cr** is debited only on a `200`; the credit is refunded on any
+failure.
+
+The PC is not always on, so `OPENROUTER_API_KEY` (21st Worker secret) stays as
+a **dormant fallback**: if the tunnel is down the fetch fails and the request
+goes to OpenRouter, which retries **once** on the free model in
+`OPENROUTER_EMBED_FALLBACK` (`nvidia/llama-nemotron-embed-vl-1b-v2:free`,
+2048-dim — the only embedding model that answers 200 on that $0 account).
+No key, no credits, no config needed for the local path.
+
+Durability: user-level systemd units `hostamar-ollama.service` +
+`hostamar-embedding-router.service` (`~/.config/systemd/user/`, `Restart=always`,
+linger enabled → start at WSL boot). `OLLAMA_KEEP_ALIVE=5m` unloads the model
+between calls so the 8GB card stays free for ComfyUI.
 
 ## Verify (against production, self-cleaning)
 

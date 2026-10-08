@@ -41,6 +41,9 @@ NEXT_PUBLIC_SITE_URL = "https://hostamar.com"
 # Paid embedding models 402 on this $0 OpenRouter account; the route retries
 # once on this free model instead of failing the caller.
 OPENROUTER_EMBED_FALLBACK = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
+# Local-first embedding router (Ollama, 4 models, auto-routed) behind the
+# hostamar-local tunnel. Fallback above only runs when the PC is off.
+EMBEDDINGS_URL = "https://embeddings.hostamar.com/v1/embeddings"
 
 [observability.logs]
 enabled = true

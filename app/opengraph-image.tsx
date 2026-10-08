@@ -16,14 +16,19 @@ export const contentType = 'image/png'
  * green accent) replacing the old dark purple gradient.
  */
 export default async function Image() {
-  let interBold: ArrayBuffer
-  try {
-    const r = await fetch('https://hostamar.com/fonts/Inter-Bold.ttf')
-    if (!r.ok) throw new Error(String(r.status))
-    interBold = await r.arrayBuffer()
-  } catch {
-    const r = await fetch('https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Bold.woff2')
-    interBold = await r.arrayBuffer()
+  // ponytail: the old fallback was a .woff2 from GitHub, which @vercel/og
+  // cannot parse ("Unsupported OpenType signature wOF2") — so one transient
+  // fetch failure during prerender broke the whole `next build`. Both fonts
+  // below are plain TTFs served by this same site.
+  let interBold: ArrayBuffer | null = null
+  for (const url of [
+    'https://hostamar.com/fonts/Inter-Bold.ttf',
+    'https://hostamar.com/fonts/NotoSansBengali-Bold.ttf',
+  ]) {
+    try {
+      const r = await fetch(url)
+      if (r.ok) { interBold = await r.arrayBuffer(); break }
+    } catch {}
   }
 
   return new ImageResponse(
@@ -55,6 +60,6 @@ export default async function Image() {
         <div style={{ display: 'flex', fontSize: 18, color: '#8a8075', marginTop: 12 }}>hostamar.com  6000 FREE credits  50+ AI Services  TV 3700 channels</div>
       </div>
     ),
-    { ...size, fonts: [{ name: 'Inter', data: interBold, weight: 700 }] }
+    { ...size, fonts: interBold ? [{ name: 'Inter', data: interBold, weight: 700 }] : [] }
   )
 }
