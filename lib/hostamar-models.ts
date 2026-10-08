@@ -41,8 +41,8 @@ export const HOSTAMAR_LOCAL_CATALOG: LocalModel[] = [
   { id: 'local/minimax-h3-ref2va-fp8', name: 'MiniMax H3 ref2va (fp8 DiT)', type: 'video', size_gb: 19.5, path: 'ComfyUI/models/diffusion_models/minimax_h3_ref2va_pruned_fp8_scaled.safetensors', note: 'official fp8 DiT — V78 leg 2 PASS 1344x768x39f' },
   { id: 'local/minimax-h3-fl2va-nf4', name: 'MiniMax H3 fl2va (NF4)', type: 'video', size_gb: 16.0, path: 'ComfyUI/models/diffusion_models/minimax-h3-fl2va-nf4.safetensors', note: 'community NF4 — packed kernels broken on ComfyUI 0.37.0' },
   { id: 'local/hunyuanvideo1.5-720p-i2v', name: 'HunyuanVideo 1.5 720p i2v cfg-distilled fp8', type: 'video', size_gb: 7.8, path: 'ComfyUI/models/diffusion_models/hunyuanvideo1.5_720p_i2v_cfg_distilled_fp8_scaled.safetensors', status: 'ready', note: 'metadata model_type=hunyuanvideo1.5_720p_i2v_distilled, 1926 tensors' },
-  { id: 'local/hunyuanvideo1.5-720p-sr', name: 'HunyuanVideo 1.5 720p SR-distilled fp8', type: 'video', size_gb: 8.3, path: 'ComfyUI/models/diffusion_models/hunyuanvideo1.5_720p_sr_distilled_fp8_scaled.safetensors', note: 'Kijai-style fp8_scaled repack — metadata model_type=hunyuanvideo1.5_720p_sr_distilled, 1932 tensors, structurally complete' },
-  { id: 'local/hunyuan-video-720-fp8', name: 'HunyuanVideo 720p fp8 (v1 line)', type: 'video', size_gb: 13.2, path: 'ComfyUI/models/diffusion_models/split_files/diffusion_models/hunyuan_video_720_fp8_e4m3fn.safetensors', note: 'HunyuanVideo v1 line — sits under split_files/, not scanned by ComfyUI flat dirs' },
+  { id: 'local/hunyuanvideo1.5-720p-sr', name: 'HunyuanVideo 1.5 720p SR-distilled fp8', type: 'video', size_gb: 7.76, path: 'ComfyUI/models/diffusion_models/hunyuanvideo1.5_720p_sr_distilled_fp8_scaled.safetensors', note: 'Kijai-style fp8_scaled repack — metadata model_type=hunyuanvideo1.5_720p_sr_distilled, 1932 tensors, structurally complete' },
+  { id: 'local/hunyuan-video-720-fp8', name: 'HunyuanVideo 720p fp8 (v1 line)', type: 'video', size_gb: 12.28, path: 'ComfyUI/models/diffusion_models/split_files/diffusion_models/hunyuan_video_720_fp8_e4m3fn.safetensors', note: 'HunyuanVideo v1 line — sits under split_files/, not scanned by ComfyUI flat dirs' },
   // ── audio / TTS ──
   { id: 'local/minimax-music3', name: 'MiniMax Music 3', type: 'audio', size_gb: 18.0, path: 'ComfyUI/models/minimax-music3/' },
   { id: 'local/cosyvoice3-bengali', name: 'CosyVoice 3 — Bengali', type: 'audio', size_gb: 4.13, path: 'ComfyUI/models/cosyvoice3-bengali/' },
@@ -60,7 +60,7 @@ export const HOSTAMAR_LOCAL_CATALOG: LocalModel[] = [
   { id: 'local/sdxl-turbo-1.0-fp16', name: 'SDXL-Turbo 1.0 fp16', type: 'image', size_gb: 6.5, path: 'ComfyUI/models/checkpoints/sd_xl_turbo_1.0_fp16.safetensors', service: 'litserve_gateway :11445' },
   { id: 'local/llava-llama-3-8b-v1.1', name: 'LLaVA Llama-3 8B v1.1 (transformers)', type: 'vision', size_gb: 15.7, path: 'ComfyUI/models/LLM/llava-llama-3-8b-v1_1-transformers/' },
   { id: 'local/llava-llama-3-8b-text-encoder', name: 'LLaVA Llama-3 8B text-encoder-tokenizer', type: 'llm', size_gb: 15.0, path: 'ComfyUI/models/LLM/llava-llama-3-8b-text-encoder-tokenizer/' },
-  { id: 'local/openjev-verdict-2.0', name: 'OpenJEV Verdict 2.0 (Bengali verdict scorer)', type: 'llm', size_gb: 1.5, path: 'ComfyUI/models/openjev-verdict-2.0/', note: '605529340/303785047 77.10% acc, ECE 1.44%' },
+  { id: 'local/openjev-verdict-2.0', name: 'OpenJEV Verdict 2.0 (Bengali verdict scorer)', type: 'llm', size_gb: 1.41, path: 'ComfyUI/models/openjev-verdict-2.0/', note: '605529340/303785047 77.10% acc, ECE 1.44%' },
   // ── speech-to-text ──
   { id: 'local/bengali-whisper-medium', name: 'Bengali Whisper Medium', type: 'stt', size_gb: 2.9, path: 'models/bengali-whisper-medium/model.safetensors' },
   // ── embeddings (Ollama, :11434, auto-routed by the :8081 router) ──
