@@ -252,6 +252,31 @@ export default function PricingPage() {
         </p>
       </section>
 
+      {/* Bangla LLM Training 5000cr — one-time product, full-width tile */}
+      <section className="bp-wrap" style={{ paddingBottom: '1.5rem' }}>
+        <div className="bp-tile" style={{ borderWidth: 3, display: 'flex', flexWrap: 'wrap', gap: '1.4rem', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ flex: '1 1 320px', minWidth: 0 }}>
+            <span className="bp-rosette" style={{ background: 'var(--bp-green)', color: '#fff' }}>NEW</span>
+            <span className="bp-plan-name">বাংলা LLM ট্রেনিং</span>
+            <p style={{ fontSize: '.82rem', margin: '.15rem 0 0' }}>নিজের মডেল — QLoRA RTX 5060 8GB, LitGPT</p>
+            <div className="bp-price">৳5,000 <small>/ একবার · 5000cr</small></div>
+            <ul className="bp-check" style={{ margin: '.8rem 0 0' }}>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>Llama-3 / Mistral QLoRA fine-tuning</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>JSONL dataset builder + selfcheck</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>১০০০ inference call ফ্রি — api.hostamar.com/v1</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4L19 7" /></svg>১৫৩ মডেল gateway-এ deploy</li>
+            </ul>
+          </div>
+          <div style={{ flex: '0 1 260px', display: 'grid', gap: '.55rem' }}>
+            <Link href="/bangla-llm" className="bp-btn bp-btn-primary">5000cr দিয়ে শুরু করুন</Link>
+            <a href="https://hostamar.com/bangla-llm#pricing" className="bp-btn bp-btn-ghost" style={{ background: BKASH, color: '#fff' }}>bKash 01822417463</a>
+            <p className="bp-muted" style={{ fontSize: '.75rem', textAlign: 'center', margin: 0 }}>
+              ৫০০০ টাকা = ৫০০০ HOST coin · ৭ দিন মানিব্যাক
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Bottom CTA */}
       <section className="bp-wrap" style={{ paddingTop: '2rem', paddingBottom: '5.5rem' }}>
         <div className="bp-cta-wrap">

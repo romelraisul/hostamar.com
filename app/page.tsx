@@ -287,6 +287,24 @@ export default function HomePage() {
               <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" /></svg>৭ দিনের মানি-ব্যাক গ্যারান্টি</span>
               <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6" /></svg>bKash / Nagad / Rocket</span>
             </div>
+
+            {/* Bangla LLM Training 5000cr — one-time, NEW */}
+            <div className="bp-tile" style={{ marginTop: '1.4rem', borderWidth: 3, display: 'flex', flexWrap: 'wrap', gap: '1.2rem', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+                <span className="bp-rosette" style={{ background: 'var(--bp-green)', color: '#fff' }}>NEW</span>
+                <span className="bp-plan-name">বাংলা LLM ট্রেনিং</span>
+                <div className="bp-price">৳5,000 <small>/ একবার · 5000cr</small></div>
+                <ul className="bp-check" style={{ marginTop: '.6rem' }}>
+                  <li>{CHECK}নিজের বাংলা মডেল — QLoRA RTX 5060 8GB</li>
+                  <li>{CHECK}১০০০ inference call ফ্রি — api.hostamar.com/v1</li>
+                  <li>{CHECK}১৫৩ মডেল gateway-এ deploy</li>
+                </ul>
+              </div>
+              <div style={{ flex: '0 1 240px', display: 'grid', gap: '.55rem' }}>
+                <Link href="/bangla-llm" className="bp-btn bp-btn-primary">5000cr দিয়ে শুরু করুন</Link>
+                <span className="bp-muted" style={{ fontSize: '.75rem', textAlign: 'center' }}>bKash 01822417463 · ৭ দিন মানিব্যাক</span>
+              </div>
+            </div>
           </div>
         </section>
 
