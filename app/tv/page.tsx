@@ -508,6 +508,7 @@ export default function TvPage() {
                 { f: 'permafrost-thaw-short.mp4', t: 'Permafrost Short — ৩০s ভার্টিকেল (-26.9 dB)' },
                 { f: 'video-ads-ad-builder-narrated.mp4', t: 'AI Video Ad Builder — এক ব্রিফে পুরো ক্যাম্পেইন (227s, নেরেশনসহ)' },
                 { f: 'shorts-video-ads-ad-builder.mp4', t: 'Ad Builder Short — ৩০s ভার্টিকেল' },
+                { f: 'shorts-video-ads-ad-builder2.mp4', t: 'Ad Builder Short 2 — এজেন্সি ছাড়াই ভিডিও অ্যাড (৩০s ভার্টিকেল)' },
                 { f: 'agent-cloud-audit-log-narrated.mp4', t: 'Agent Cloud Audit Log — AI agents leak your data (227s, নেরেশনসহ)' },
                 { f: 'shorts-agent-cloud-audit-log.mp4', t: 'Audit Log Short — ৩০s ভার্টিকেল' },
                 { f: 'submarine-cables-episode-narrated.mp4', t: 'সাবমেরিন কেবল — বিশ্ব কীভাবে সংযুক্ত (193s, নেরেশনসহ)' },
