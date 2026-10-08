@@ -1489,12 +1489,16 @@ model ServiceCatalog {
   inputs         String?     @default("{}")
   icon           String
   isActive       Boolean  @default(true)
+  /// Marketplace: customer who owns this listing. null = Hostamar's own
+  /// service (all catalog rows today) → 100% stays with the platform.
+  sellerId       String?
   createdAt      DateTime @default(now())
 
   orders ServiceOrder[]
 
   @@index([category])
   @@index([isActive])
+  @@index([sellerId])
 }
 
 model ServiceOrder {

@@ -21,6 +21,8 @@ interface DashboardStats {
 }
 interface RecentVideo { id: string; title: string; status: string; createdAt: string }
 interface ApiData { totalVideos?: number; creditsRemaining?: number; creditsBalance?: number; stats: DashboardStats; recentVideos: RecentVideo[] }
+interface CreditRow { id: string; amount: number; type: string; description: string; balanceAfter: number; createdAt: string }
+interface CreditPanel { credits: number; spent: number; earned: number; percent: number; history: CreditRow[] }
 
 const PRODUCT_ICON: Record<string, typeof Video> = {
   'ai-video': Video, 'cloud-hosting': Server, 'ai-chat': MessageCircle,
@@ -36,25 +38,25 @@ const BADGE: Record<string, string> = {
   'ai-browser': 'Tools', 'dev-ide': 'Tools · 93', game: 'Lab',
 }
 
-function CreditMeter({ credits, loading }: { credits: number; loading: boolean }) {
-  const pct = Math.max(4, Math.min(100, Math.round((credits / 6000) * 100)))
-  const used = 6000 - credits
+function CreditMeter({ credits, spent, pct: pctIn, loading }: { credits: number; spent: number; pct: number; loading: boolean }) {
+  const pct = Math.max(4, Math.min(100, pctIn || 0))
+  const used = spent
   return (
     <div className="rounded-2xl bg-gradient-to-br from-[#0E7C3A] to-[#065F46] p-5 text-white relative overflow-hidden">
       <div className="absolute inset-0 bg-white/10 rounded-2xl" style={{ background: 'radial-gradient(600px at 80% -20%, rgba(255,255,255,0.12), transparent)' }} />
       <div className="relative">
         <div className="flex items-center justify-between">
           <span className="text-[11px] tracking-[0.2em] text-white/70">CREDIT</span>
-          <span className="flex items-center gap-1 text-xs bg-white/20 px-2.5 py-1 rounded-full"><Coins className="w-3 h-3" /> 6000 cap</span>
+          <span className="flex items-center gap-1 text-xs bg-white/20 px-2.5 py-1 rounded-full"><Coins className="w-3 h-3" /> 1cr = ১ টাকা</span>
         </div>
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-3xl font-black tabular-nums">{loading ? '—' : credits.toLocaleString()}</span>
-          <span className="text-white/70 text-sm">/ 6,000</span>
+          <span className="text-white/70 text-sm">cr</span>
           <span className="ml-auto text-xs bg-white text-[#0E7C3A] px-2.5 py-1 rounded-full font-bold">{pct}%</span>
         </div>
         <div className="mt-3 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full bg-white rounded-full transition-all" style={{ width: `${pct}%` }} /></div>
         <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-          <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">Used {used.toLocaleString()}</span>
+          <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">খরচ {used.toLocaleString()}cr</span>
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">Video 100</span>
           <span className="bg-white/15 rounded-lg px-2 py-1.5 text-center">IDE 10</span>
         </div>
@@ -167,6 +169,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [cmdOpen, setCmdOpen] = useState(false)
   const [activeProduct, setActiveProduct] = useState<string>('ai-video')
+  const [credit, setCredit] = useState<CreditPanel | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -189,6 +192,13 @@ export default function DashboardPage() {
         }
       } catch { /* optional nicety — never blocks */ }
     })()
+    // Real credit ledger (balance, lifetime spend, last 20 transactions)
+    ;(async () => {
+      try {
+        const r = await fetch('/api/dashboard/credits', { credentials: 'include' })
+        if (r.ok) { const j = (await r.json()) as CreditPanel; if (alive) setCredit(j) }
+      } catch { /* history is optional — balance still shows */ }
+    })()
     return () => { alive = false }
   }, [])
 
@@ -202,15 +212,17 @@ export default function DashboardPage() {
   const creditsBalance = data?.creditsBalance
   const plan = stats?.subscription?.plan ?? 'Free'
   const shownCredits = (() => {
-    // Real credit balance from Customer.credits (6000 free pool at signup)
-    if (creditsBalance != null) return Math.max(0, Math.min(creditsBalance, 6000))
-    return 6000
+    // Real balance: credit ledger first, then the stats payload. NOT clamped to
+    // 6000 — a ৳990 top-up (6000cr) on top of a bonus must show the true total.
+    if (credit?.credits != null) return Math.max(0, credit.credits)
+    if (creditsBalance != null) return Math.max(0, creditsBalance)
+    return 0
   })()
-  const used = 6000 - shownCredits
+  const used = credit?.spent ?? 0
   const storageUsed = stats?.storage?.used ?? 0
   const storageTotal = stats?.storage?.total ?? 5
   const storagePct = Math.min(100, Math.round((storageUsed / Math.max(1, storageTotal)) * 100))
-  const creditPct = Math.max(4, Math.min(100, Math.round((shownCredits / 6000) * 100)))
+  const creditPct = credit?.percent != null ? Math.min(100, Math.max(0, credit.percent)) : 0
 
   if (loading) {
     return (
@@ -264,7 +276,7 @@ export default function DashboardPage() {
 
       {/* Mobile credit bar */}
       <div className="sm:hidden rounded-full bg-[#F1F5F9] p-1 flex items-center gap-2 text-xs">
-        <span className="px-3 py-1.5 rounded-full bg-[#0E7C3A] text-white font-bold">{shownCredits.toLocaleString()} / 6000</span>
+        <span className="px-3 py-1.5 rounded-full bg-[#0E7C3A] text-white font-bold">{shownCredits.toLocaleString()} cr</span>
         <span className="text-[#64748B]">{creditPct}% • {plan}</span>
         <Link href="/dashboard/payment" className="ml-auto px-3 py-1 rounded-full bg-white border text-[#0E7C3A] font-semibold">bKash</Link>
       </div>
@@ -278,8 +290,8 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-2xl border bg-white p-5">
               <div className="text-[11px] tracking-[0.2em] text-[#64748B]">CREDITS</div>
-              <div className="text-2xl font-black text-[#0F172A] tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#64748B]">/ 6,000</span></div>
-              <div className="text-xs text-[#64748B] mt-1">{creditPct}% • {plan} • used {used.toLocaleString()}</div>
+              <div className="text-2xl font-black text-[#0F172A] tabular-nums mt-1">{shownCredits.toLocaleString()} <span className="text-sm font-normal text-[#64748B]">cr</span></div>
+              <div className="text-xs text-[#64748B] mt-1">{plan} • ১cr = ১ টাকা = ১ HOST কয়েন • খরচ {used.toLocaleString()}cr</div>
               <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden text-white"><div className="h-full bg-[#0E7C3A] rounded-full text-white" style={{ width: `${creditPct}%` }} /></div>
             </div>
             <div className="rounded-2xl border bg-white p-5">
@@ -287,6 +299,37 @@ export default function DashboardPage() {
               <div className="text-2xl font-black text-[#0F172A] mt-1">{storageUsed} <span className="text-sm font-normal text-[#64748B]">/ {storageTotal} GB</span></div>
               <div className="text-xs text-[#64748B] mt-1">{storagePct}% used • Videos {stats?.videos.total ?? 0}</div>
               <div className="h-2 rounded-full bg-[#F1F5F9] mt-3 overflow-hidden"><div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${storagePct}%` }} /></div>
+            </div>
+          </div>
+
+          {/* Credit ledger — real rows from CreditTransaction, empty state if none */}
+          <div className="rounded-2xl border bg-white p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-semibold text-[#0F172A] flex items-center gap-2"><Coins className="w-4 h-4 text-[#0E7C3A]" /> ক্রেডিট হিস্টোরি</h2>
+              <span className="text-[11px] text-[#64748B]">১cr = ১ টাকা = ১ HOST কয়েন • bKash 01822417463</span>
+            </div>
+            {shownCredits === 0 && (
+              <Link href="/payment" className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[#0E7C3A] px-4 py-3 text-white hover:bg-[#0c6a32] transition">
+                <span className="text-sm font-bold">ব্যালেন্স ০ — বিকাশ করো 01822417463</span>
+                <span className="text-xs bg-white/20 px-2.5 py-1 rounded-full">ক্রেডিট কিনো →</span>
+              </Link>
+            )}
+            <div className="mt-4 divide-y divide-[#F1F5F9]">
+              {(credit?.history ?? []).map(r => (
+                <div key={r.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <div className="min-w-0">
+                    <p className="text-[#0F172A] truncate">{r.description || r.type}</p>
+                    <p className="text-[11px] text-[#64748B]">{r.type} • {new Date(r.createdAt).toLocaleString('bn-BD')}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={`font-bold tabular-nums ${r.amount < 0 ? 'text-[#DC2626]' : 'text-[#0E7C3A]'}`}>{r.amount > 0 ? '+' : ''}{r.amount.toLocaleString()}cr</p>
+                    <p className="text-[11px] text-[#64748B] tabular-nums">ব্যালেন্স {r.balanceAfter.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
+              {!(credit?.history ?? []).length && (
+                <p className="py-6 text-center text-sm text-[#64748B]">এখনো ব্যবহার করোনি — সাইনআপ বোনাস ৬০০০cr দিয়ে শুরু করো।</p>
+              )}
             </div>
           </div>
 
@@ -421,7 +464,7 @@ export default function DashboardPage() {
 
         {/* Right column 4 */}
         <div className="lg:col-span-4 space-y-6">
-          <CreditMeter credits={shownCredits} loading={loading} />
+          <CreditMeter credits={shownCredits} spent={used} pct={creditPct} loading={loading} />
           <div className="rounded-2xl border bg-white p-5">
             <h3 className="font-semibold text-[#0F172A] flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#0E7C3A]" /> Credit Usage</h3>
             <div className="mt-3 space-y-2 text-sm">

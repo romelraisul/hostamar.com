@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { awardReferral } from '@/lib/credit-grant'
 
 export const REFERRAL_CREDITS = 500
 export const REFERRAL_TAKA_STARTER = 60 // 10% of 600? spec: 10% Taka commission (60 for starter)
@@ -45,82 +46,21 @@ export function takaCommissionFor(amountBDT: number): number {
   return Math.round(amountBDT * 0.10)
 }
 
-/** Reward referrer on first successful payment of referred user.
- *  Idempotent: only rewards if Referral.status is PENDING, then sets to PAID.
- *  Credits 500cr via CreditTransaction + Taka commission via Referral.bonusAmount update.
+/** Reward the referrer on the referred user's first successful payment.
+ *  Delegates to lib/credit-grant.awardReferral — one atomic claim of the
+ *  PENDING Referral row (so overlapping approval paths can't double-pay) and
+ *  one credit grant with a real audit row (the old Customer.credits increment
+ *  wrote no CreditTransaction, so referral payouts were untraceable).
+ *  Cut = 10% of the purchased credits (1cr = 1TK).
  */
-export async function rewardReferrerOnPayment(referredCustomerId: string, paymentAmountBD: number, sourceId?: string): Promise<{ rewarded: boolean; referrerId?: string }> {
-  // find pending referral for this referred user
-  const ref = await prisma.referral.findFirst({
-    where: { referredId: referredCustomerId, status: 'PENDING' },
-    orderBy: { createdAt: 'asc' },
-  })
-  if (!ref) {
-    // also check lowercase pending (task spec uses "pending")
-    const ref2 = await prisma.referral.findFirst({
-      where: { referredId: referredCustomerId, status: 'pending' },
-      orderBy: { createdAt: 'asc' },
-    })
-    if (!ref2) return { rewarded: false }
-    return rewardOne(ref2, paymentAmountBD, sourceId)
-  }
-  return rewardOne(ref, paymentAmountBD, sourceId)
-}
-
-async function rewardOne(ref: any, paymentAmountBD: number, sourceId?: string): Promise<{ rewarded: boolean; referrerId?: string }> {
-  const commission = takaCommissionFor(paymentAmountBD) || REFERRAL_TAKA_STARTER
-  // update referral to paid + update bonusAmount to commission
-  await prisma.referral.update({
-    where: { id: ref.id },
-    data: { status: 'paid', bonusAmount: commission },
-  }).catch(async () => {
-    // fallback for uppercase PENDING case: status PAID
-    await prisma.referral.update({ where: { id: ref.id }, data: { status: 'PAID', bonusAmount: commission } })
-  })
-
-  // credit 500cr to referrer
-  const referrerId = ref.referrerId
-  try {
-    // try CreditAccount path first
-    // ponytail: CreditAccount does not exist in this DB — without this catch the
-    // whole credit block aborts and the referrer never gets credited.
-    const acct: any = await prisma.$queryRaw`SELECT id, credits FROM "CreditAccount" WHERE "customerId" = ${referrerId} LIMIT 1`.catch(() => [] as any)
-    const accountId: string | null = Array.isArray(acct) && acct[0] ? acct[0].id : null
-    if (accountId) {
-      await prisma.$executeRaw`UPDATE "CreditAccount" SET credits = credits + ${REFERRAL_CREDITS} WHERE id = ${accountId}`
-      // SQLite dialect: crypto.randomUUID(), customerId column (live table has no accountId/product)
-      await prisma.$executeRaw`INSERT INTO "CreditTransaction" (id, "customerId", amount, type, description, "balanceAfter") VALUES (${crypto.randomUUID()}, ${referrerId}, ${REFERRAL_CREDITS}, 'referral_bonus', ${'Referral bonus: 500cr for ' + ref.referredId + (sourceId ? ' payment ' + sourceId : '')}, (SELECT credits FROM "CreditAccount" WHERE id = ${accountId}))`
-      // also keep Customer.credits in sync
-      await prisma.customer.update({ where: { id: referrerId }, data: { credits: { increment: REFERRAL_CREDITS } } }).catch(() => {})
-    } else {
-      // legacy Customer.credits path + try typed create
-      await prisma.customer.update({ where: { id: referrerId }, data: { credits: { increment: REFERRAL_CREDITS } } })
-      const after = await prisma.customer.findUnique({ where: { id: referrerId }, select: { credits: true } })
-      await prisma.creditTransaction.create({
-        data: {
-          customerId: referrerId,
-          amount: REFERRAL_CREDITS,
-          type: 'referral_bonus',
-          description: `Referral bonus 500cr for referred ${ref.referredId}`,
-          balanceAfter: Math.round(after?.credits || 0),
-        },
-      }).catch(() => {})
-    }
-    // also increase referrer's balance (Taka commission) if we track it — increment Customer.balance
-    if (commission > 0) {
-      await prisma.customer.update({ where: { id: referrerId }, data: { balance: { increment: commission } } }).catch(() => {})
-    }
-  } catch (e) {
-    console.warn('[referral] credit failed', e)
-  }
-
-  // also create affiliate commission record for consistency (20% engine exists, but our spec uses 10%) — keep both
-  try {
-    const { recordAffiliateCommission } = await import('@/lib/affiliate')
-    await recordAffiliateCommission({ fromCustomerId: ref.referredId, amount: paymentAmountBD, sourceType: 'PAYMENT', sourceId: sourceId || ref.id }).catch(() => {})
-  } catch {}
-
-  return { rewarded: true, referrerId }
+export async function rewardReferrerOnPayment(
+  referredCustomerId: string,
+  paymentAmountBD: number,
+  sourceId?: string,
+): Promise<{ rewarded: boolean; referrerId?: string }> {
+  const credits = Math.round(paymentAmountBD) || REFERRAL_CREDITS
+  const r = await awardReferral(referredCustomerId, credits, sourceId ? `payment ${sourceId}` : undefined)
+  return { rewarded: r.rewarded, referrerId: r.referrerId }
 }
 
 /** Aggregate for dashboard */
