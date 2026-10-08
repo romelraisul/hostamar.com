@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 import { getTursoEdgeClient } from '@/lib/turso-edge'
+import content from '@/lib/docs/content.json'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com'
 
@@ -60,6 +61,8 @@ const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['ch
   { path: '/dev/android', changeFrequency: 'weekly', priority: 0.7 },
   // V40: the TV channel itself is indexable — 24/7 live + the edge shelf.
   { path: '/tv', changeFrequency: 'daily', priority: 0.9 },
+  // Bangla LLM Training 5000cr — one-time product (2026-10-08)
+  { path: '/bangla-llm', changeFrequency: 'weekly', priority: 0.8 },
 ]
 
 // V27 STRUCTURAL FIX for the prebuilt-deploy sitemap transient: the local
@@ -126,5 +129,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  return [...base, ...blogEntries, ...videoEntries]
+  // 63 SOP guide pages (/docs/sops/[service]) — bundled content.json (static import;
+  // dynamic import() fails under workerd), no DB needed
+  const sopEntries: MetadataRoute.Sitemap = ((content as any).sections || [])
+    .filter((s: any) => s?.id && s?.title)
+    .map((s: any) => ({
+      url: `${SITE_URL}/docs/sops/${s.id}`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }))
+
+  return [...base, ...blogEntries, ...sopEntries, ...videoEntries]
 }

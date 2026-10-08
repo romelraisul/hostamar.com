@@ -77,7 +77,7 @@ export const CURRENCY = 'BDT'
 // no route may hardcode its own price/credit table.
 // ============================================================================
 
-export type PaymentPlanId = 'starter' | 'pro' | 'business'
+export type PaymentPlanId = 'starter' | 'pro' | 'business' | 'bangla_llm'
 
 export const PAYMENT_PLANS: Record<PaymentPlanId, {
   id: PaymentPlanId
@@ -91,6 +91,8 @@ export const PAYMENT_PLANS: Record<PaymentPlanId, {
   starter:  { id: 'starter',  price: 990,  credits: 6000,  name: 'Starter',  nameBn: 'স্টার্টার', usd: 8.2,  popular: false },
   pro:      { id: 'pro',      price: 1900, credits: 13000, name: 'Pro',      nameBn: 'প্রো',     usd: 15.7, popular: true },
   business: { id: 'business', price: 2900, credits: 30000, name: 'Business', nameBn: 'বিজনেস',  usd: 24,   popular: false },
+  // one-time product (not a monthly plan): 5000cr = ৳5000, includes 1000 inference calls
+  bangla_llm: { id: 'bangla_llm', price: 5000, credits: 5000, name: 'Bangla LLM Training', nameBn: 'বাংলা LLM ট্রেনিং', usd: 42, popular: false },
 }
 
 /** Display table used by pricing UIs: [{id, tk, cr, usd}] */

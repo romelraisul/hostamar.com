@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   AlertCircle,
   Clock,
@@ -17,9 +18,17 @@ import PhoneInput from '@/components/payment/phone-input';
 import PaymentInstructions from '@/components/payment/payment-instructions';
 import CompletedView from '@/components/payment/completed-view';
 
+// ?plan=bangla_llm (etc.) pre-selects the plan — pricing/landing cards deep-link here.
+function useSearchParamPlan(): Plan | null {
+  const sp = useSearchParams();
+  const p = sp.get('plan');
+  return p && p in PLANS ? (p as Plan) : null;
+}
+
 export default function PaymentPage() {
   const { t } = useLocale();
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const initialPlan = useSearchParamPlan();
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(initialPlan);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [phone, setPhone] = useState('');
   const [state, setState] = useState<PaymentState>({ status: 'idle' });

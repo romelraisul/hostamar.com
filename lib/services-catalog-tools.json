@@ -1,0 +1,373 @@
+[
+ {
+  "id": "s01",
+  "name": "Instagram Carousel Templates",
+  "nameBn": "\u0987\u09a8\u09b8\u09cd\u099f\u09be\u0997\u09cd\u09b0\u09be\u09ae \u0995\u09cd\u09af\u09be\u09b0\u09cb\u09b8\u09c7\u09b2 \u099f\u09c7\u09ae\u09aa\u09cd\u09b2\u09c7\u099f",
+  "category": "Social Media",
+  "creditCost": 25
+ },
+ {
+  "id": "s02",
+  "name": "Viral Reel Hooks Generator",
+  "nameBn": "\u09ad\u09be\u0987\u09b0\u09be\u09b2 \u09b0\u09bf\u09b2 \u09b9\u09c1\u0995 \u099c\u09c7\u09a8\u09be\u09b0\u09c7\u099f\u09b0",
+  "category": "Social Media",
+  "creditCost": 15
+ },
+ {
+  "id": "s03",
+  "name": "Facebook Page Bio & Cover Kit",
+  "nameBn": "\u09ab\u09c7\u09b8\u09ac\u09c1\u0995 \u09aa\u09c7\u099c \u09ac\u09be\u09af\u09bc\u09cb \u0993 \u0995\u09ad\u09be\u09b0 \u0995\u09bf\u099f",
+  "category": "Social Media",
+  "creditCost": 15
+ },
+ {
+  "id": "s04",
+  "name": "LinkedIn Thought Leader Posts",
+  "nameBn": "\u09b2\u09bf\u0982\u0995\u09a1\u0987\u09a8 \u09a5\u099f \u09b2\u09bf\u09a1\u09be\u09b0 \u09aa\u09cb\u09b8\u09cd\u099f",
+  "category": "Social Media",
+  "creditCost": 40
+ },
+ {
+  "id": "s05",
+  "name": "YouTube Thumbnail Studio",
+  "nameBn": "\u0987\u0989\u099f\u09bf\u0989\u09ac \u09a5\u09be\u09ae\u09cd\u09ac\u09a8\u09c7\u0987\u09b2 \u09b8\u09cd\u099f\u09c1\u09a1\u09bf\u0993",
+  "category": "Social Media",
+  "creditCost": 40
+ },
+ {
+  "id": "s06",
+  "name": "Social Caption Bank",
+  "nameBn": "\u09b8\u09cb\u09b6\u09cd\u09af\u09be\u09b2 \u0995\u09cd\u09af\u09be\u09aa\u09b6\u09a8 \u09ac\u09cd\u09af\u09be\u0982\u0995",
+  "category": "Social Media",
+  "creditCost": 25
+ },
+ {
+  "id": "s07",
+  "name": "Hashtag & Trend Research",
+  "nameBn": "\u09b9\u09cd\u09af\u09be\u09b6\u099f\u09cd\u09af\u09be\u0997 \u0993 \u099f\u09cd\u09b0\u09c7\u09a8\u09cd\u09a1 \u09b0\u09bf\u09b8\u09be\u09b0\u09cd\u099a",
+  "category": "Social Media",
+  "creditCost": 15
+ },
+ {
+  "id": "s08",
+  "name": "Business Proposal Builder",
+  "nameBn": "\u09ac\u09bf\u099c\u09a8\u09c7\u09b8 \u09aa\u09cd\u09b0\u09aa\u09cb\u099c\u09be\u09b2 \u09ac\u09bf\u09b2\u09cd\u09a1\u09be\u09b0",
+  "category": "Business",
+  "creditCost": 75
+ },
+ {
+  "id": "s09",
+  "name": "Pitch Deck Designer",
+  "nameBn": "\u09aa\u09bf\u099a \u09a1\u09c7\u0995 \u09a1\u09bf\u099c\u09be\u0987\u09a8\u09be\u09b0",
+  "category": "Business",
+  "creditCost": 100
+ },
+ {
+  "id": "s10",
+  "name": "Brand Identity Starter",
+  "nameBn": "\u09ac\u09cd\u09b0\u09cd\u09af\u09be\u09a8\u09cd\u09a1 \u0986\u0987\u09a1\u09c7\u09a8\u09cd\u099f\u09bf\u099f\u09bf \u09b8\u09cd\u099f\u09be\u09b0\u09cd\u099f\u09be\u09b0",
+  "category": "Business",
+  "creditCost": 75
+ },
+ {
+  "id": "s11",
+  "name": "Invoice & Quote Generator",
+  "nameBn": "\u0987\u09a8\u09ad\u09af\u09bc\u09c7\u09b8 \u0993 \u0995\u09cb\u099f \u099c\u09c7\u09a8\u09be\u09b0\u09c7\u099f\u09b0",
+  "category": "Business",
+  "creditCost": 15
+ },
+ {
+  "id": "s12",
+  "name": "Business Plan Writer",
+  "nameBn": "\u09ac\u09bf\u099c\u09a8\u09c7\u09b8 \u09aa\u09cd\u09b2\u09cd\u09af\u09be\u09a8 \u09b0\u09be\u0987\u099f\u09be\u09b0",
+  "category": "Business",
+  "creditCost": 100
+ },
+ {
+  "id": "s13",
+  "name": "SOP Document Creator",
+  "nameBn": "\u098f\u09b8\u0993\u09aa\u09bf \u09a1\u0995\u09c1\u09ae\u09c7\u09a8\u09cd\u099f \u0995\u09cd\u09b0\u09bf\u09af\u09bc\u09c7\u099f\u09b0",
+  "category": "Business",
+  "creditCost": 40
+ },
+ {
+  "id": "s14",
+  "name": "Client Contract Kit",
+  "nameBn": "\u0995\u09cd\u09b2\u09be\u09af\u09bc\u09c7\u09a8\u09cd\u099f \u0995\u09a8\u09cd\u099f\u09cd\u09b0\u09be\u0995\u09cd\u099f \u0995\u09bf\u099f",
+  "category": "Business",
+  "creditCost": 25
+ },
+ {
+  "id": "s15",
+  "name": "YouTube Script Writer",
+  "nameBn": "\u0987\u0989\u099f\u09bf\u0989\u09ac \u09b8\u09cd\u0995\u09cd\u09b0\u09bf\u09aa\u09cd\u099f \u09b0\u09be\u0987\u099f\u09be\u09b0",
+  "category": "Content Creator",
+  "creditCost": 40
+ },
+ {
+  "id": "s16",
+  "name": "Podcast Show Notes Maker",
+  "nameBn": "\u09aa\u09a1\u0995\u09be\u09b8\u09cd\u099f \u09b6\u09cb \u09a8\u09cb\u099f\u09b8 \u09ae\u09c7\u0995\u09be\u09b0",
+  "category": "Content Creator",
+  "creditCost": 25
+ },
+ {
+  "id": "s17",
+  "name": "Newsletter Engine",
+  "nameBn": "\u09a8\u09bf\u0989\u099c\u09b2\u09c7\u099f\u09be\u09b0 \u0987\u099e\u09cd\u099c\u09bf\u09a8",
+  "category": "Content Creator",
+  "creditCost": 25
+ },
+ {
+  "id": "s18",
+  "name": "Blog Post Expander",
+  "nameBn": "\u09ac\u09cd\u09b2\u0997 \u09aa\u09cb\u09b8\u09cd\u099f \u098f\u0995\u09cd\u09b8\u09aa\u09cd\u09af\u09be\u09a8\u09cd\u09a1\u09be\u09b0",
+  "category": "Content Creator",
+  "creditCost": 40
+ },
+ {
+  "id": "s19",
+  "name": "Short-form Script Pack",
+  "nameBn": "\u09b6\u09b0\u09cd\u099f-\u09ab\u09b0\u09cd\u09ae \u09b8\u09cd\u0995\u09cd\u09b0\u09bf\u09aa\u09cd\u099f \u09aa\u09cd\u09af\u09be\u0995",
+  "category": "Content Creator",
+  "creditCost": 25
+ },
+ {
+  "id": "s20",
+  "name": "Thumbnail A/B Tester",
+  "nameBn": "\u09a5\u09be\u09ae\u09cd\u09ac\u09a8\u09c7\u0987\u09b2 \u098f/\u09ac\u09bf \u099f\u09c7\u09b8\u09cd\u099f\u09be\u09b0",
+  "category": "Content Creator",
+  "creditCost": 15
+ },
+ {
+  "id": "s21",
+  "name": "Creator Media Kit",
+  "nameBn": "\u0995\u09cd\u09b0\u09bf\u09af\u09bc\u09c7\u099f\u09b0 \u09ae\u09bf\u09a1\u09bf\u09af\u09bc\u09be \u0995\u09bf\u099f",
+  "category": "Content Creator",
+  "creditCost": 40
+ },
+ {
+  "id": "s22",
+  "name": "Content Calendar Planner",
+  "nameBn": "\u0995\u09a8\u09cd\u099f\u09c7\u09a8\u09cd\u099f \u0995\u09cd\u09af\u09be\u09b2\u09c7\u09a8\u09cd\u09a1\u09be\u09b0 \u09aa\u09cd\u09b2\u09cd\u09af\u09be\u09a8\u09be\u09b0",
+  "category": "Content Creator",
+  "creditCost": 40
+ },
+ {
+  "id": "s23",
+  "name": "Wedding Invitation Suite",
+  "nameBn": "\u09ac\u09bf\u09af\u09bc\u09c7\u09b0 \u09a6\u09be\u0993\u09af\u09bc\u09be\u09a4 \u0995\u09be\u09b0\u09cd\u09a1 \u09b8\u09cd\u09af\u09c1\u099f",
+  "category": "Event",
+  "creditCost": 75
+ },
+ {
+  "id": "s24",
+  "name": "Birthday Poster Pack",
+  "nameBn": "\u099c\u09a8\u09cd\u09ae\u09a6\u09bf\u09a8 \u09aa\u09cb\u09b8\u09cd\u099f\u09be\u09b0 \u09aa\u09cd\u09af\u09be\u0995",
+  "category": "Event",
+  "creditCost": 15
+ },
+ {
+  "id": "s25",
+  "name": "Corporate Event Branding",
+  "nameBn": "\u0995\u09b0\u09cd\u09aa\u09cb\u09b0\u09c7\u099f \u0987\u09ad\u09c7\u09a8\u09cd\u099f \u09ac\u09cd\u09b0\u09cd\u09af\u09be\u09a8\u09cd\u09a1\u09bf\u0982",
+  "category": "Event",
+  "creditCost": 100
+ },
+ {
+  "id": "s26",
+  "name": "Conference Badge Designer",
+  "nameBn": "\u0995\u09a8\u09ab\u09be\u09b0\u09c7\u09a8\u09cd\u09b8 \u09ac\u09cd\u09af\u09be\u099c \u09a1\u09bf\u099c\u09be\u0987\u09a8\u09be\u09b0",
+  "category": "Event",
+  "creditCost": 25
+ },
+ {
+  "id": "s27",
+  "name": "Event Social Kit",
+  "nameBn": "\u0987\u09ad\u09c7\u09a8\u09cd\u099f \u09b8\u09cb\u09b6\u09cd\u09af\u09be\u09b2 \u0995\u09bf\u099f",
+  "category": "Event",
+  "creditCost": 40
+ },
+ {
+  "id": "s28",
+  "name": "Certificate Generator",
+  "nameBn": "\u09b8\u09be\u09b0\u09cd\u099f\u09bf\u09ab\u09bf\u0995\u09c7\u099f \u099c\u09c7\u09a8\u09be\u09b0\u09c7\u099f\u09b0",
+  "category": "Event",
+  "creditCost": 25
+ },
+ {
+  "id": "s29",
+  "name": "Menu Card Creator",
+  "nameBn": "\u09ae\u09c7\u09a8\u09c1 \u0995\u09be\u09b0\u09cd\u09a1 \u0995\u09cd\u09b0\u09bf\u09af\u09bc\u09c7\u099f\u09b0",
+  "category": "Event",
+  "creditCost": 40
+ },
+ {
+  "id": "s30",
+  "name": "Event Proposal Pack",
+  "nameBn": "\u0987\u09ad\u09c7\u09a8\u09cd\u099f \u09aa\u09cd\u09b0\u09aa\u09cb\u099c\u09be\u09b2 \u09aa\u09cd\u09af\u09be\u0995",
+  "category": "Event",
+  "creditCost": 75
+ },
+ {
+  "id": "s31",
+  "name": "NGO Annual Report",
+  "nameBn": "\u098f\u09a8\u099c\u09bf\u0993 \u09ac\u09be\u09b0\u09cd\u09b7\u09bf\u0995 \u09b0\u09bf\u09aa\u09cb\u09b0\u09cd\u099f",
+  "category": "Organization",
+  "creditCost": 100
+ },
+ {
+  "id": "s32",
+  "name": "School Admission Kit",
+  "nameBn": "\u09b8\u09cd\u0995\u09c1\u09b2 \u09ad\u09b0\u09cd\u09a4\u09bf \u0995\u09bf\u099f",
+  "category": "Organization",
+  "creditCost": 75
+ },
+ {
+  "id": "s33",
+  "name": "Club Membership Cards",
+  "nameBn": "\u0995\u09cd\u09b2\u09be\u09ac \u09ae\u09c7\u09ae\u09cd\u09ac\u09be\u09b0\u09b6\u09bf\u09aa \u0995\u09be\u09b0\u09cd\u09a1",
+  "category": "Organization",
+  "creditCost": 25
+ },
+ {
+  "id": "s34",
+  "name": "Charity Campaign Kit",
+  "nameBn": "\u099a\u09cd\u09af\u09be\u09b0\u09bf\u099f\u09bf \u0995\u09cd\u09af\u09be\u09ae\u09cd\u09aa\u09c7\u0987\u09a8 \u0995\u09bf\u099f",
+  "category": "Organization",
+  "creditCost": 75
+ },
+ {
+  "id": "s35",
+  "name": "Association Letterhead Set",
+  "nameBn": "\u0985\u09cd\u09af\u09be\u09b8\u09cb\u09b8\u09bf\u09af\u09bc\u09c7\u09b6\u09a8 \u09b2\u09c7\u099f\u09be\u09b0\u09b9\u09c7\u09a1 \u09b8\u09c7\u099f",
+  "category": "Organization",
+  "creditCost": 15
+ },
+ {
+  "id": "s36",
+  "name": "Organization Profile Deck",
+  "nameBn": "\u0985\u09b0\u09cd\u0997\u09be\u09a8\u09be\u0987\u099c\u09c7\u09b6\u09a8 \u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2 \u09a1\u09c7\u0995",
+  "category": "Organization",
+  "creditCost": 75
+ },
+ {
+  "id": "s37",
+  "name": "Resume Revamp AI",
+  "nameBn": "\u09b8\u09bf\u09ad\u09bf \u09b0\u09bf\u09ad\u09cd\u09af\u09be\u09ae\u09cd\u09aa \u098f\u0986\u0987",
+  "category": "Professional",
+  "creditCost": 40
+ },
+ {
+  "id": "s38",
+  "name": "Portfolio Website Copy",
+  "nameBn": "\u09aa\u09cb\u09b0\u09cd\u099f\u09ab\u09cb\u09b2\u09bf\u0993 \u0993\u09af\u09bc\u09c7\u09ac\u09b8\u09be\u0987\u099f \u0995\u09aa\u09bf",
+  "category": "Professional",
+  "creditCost": 40
+ },
+ {
+  "id": "s39",
+  "name": "Cover Letter Studio",
+  "nameBn": "\u0995\u09ad\u09be\u09b0 \u09b2\u09c7\u099f\u09be\u09b0 \u09b8\u09cd\u099f\u09c1\u09a1\u09bf\u0993",
+  "category": "Professional",
+  "creditCost": 15
+ },
+ {
+  "id": "s40",
+  "name": "LinkedIn Banner & Bio",
+  "nameBn": "\u09b2\u09bf\u0982\u0995\u09a1\u0987\u09a8 \u09ac\u09cd\u09af\u09be\u09a8\u09be\u09b0 \u0993 \u09ac\u09be\u09af\u09bc\u09cb",
+  "category": "Professional",
+  "creditCost": 25
+ },
+ {
+  "id": "s41",
+  "name": "Product Description Writer",
+  "nameBn": "\u09aa\u09cd\u09b0\u09cb\u09a1\u09be\u0995\u09cd\u099f \u09a1\u09c7\u09b8\u0995\u09cd\u09b0\u09bf\u09aa\u09b6\u09a8 \u09b0\u09be\u0987\u099f\u09be\u09b0",
+  "category": "E-commerce",
+  "creditCost": 15
+ },
+ {
+  "id": "s42",
+  "name": "Amazon Listing Optimizer",
+  "nameBn": "\u0985\u09cd\u09af\u09be\u09ae\u09be\u099c\u09a8 \u09b2\u09bf\u09b8\u09cd\u099f\u09bf\u0982 \u0985\u09aa\u099f\u09bf\u09ae\u09be\u0987\u099c\u09be\u09b0",
+  "category": "E-commerce",
+  "creditCost": 40
+ },
+ {
+  "id": "s43",
+  "name": "Shopify Banner Set",
+  "nameBn": "\u09b6\u09aa\u09bf\u09ab\u09be\u0987 \u09ac\u09cd\u09af\u09be\u09a8\u09be\u09b0 \u09b8\u09c7\u099f",
+  "category": "E-commerce",
+  "creditCost": 25
+ },
+ {
+  "id": "s44",
+  "name": "Product Photo Background Kit",
+  "nameBn": "\u09aa\u09cd\u09b0\u09cb\u09a1\u09be\u0995\u09cd\u099f \u09ab\u099f\u09cb \u09ac\u09cd\u09af\u09be\u0995\u0997\u09cd\u09b0\u09be\u0989\u09a8\u09cd\u09a1 \u0995\u09bf\u099f",
+  "category": "E-commerce",
+  "creditCost": 40
+ },
+ {
+  "id": "s45",
+  "name": "Ecom Ad Creative Pack",
+  "nameBn": "\u0987-\u0995\u09ae \u0985\u09cd\u09af\u09be\u09a1 \u0995\u09cd\u09b0\u09bf\u09af\u09bc\u09c7\u099f\u09bf\u09ad \u09aa\u09cd\u09af\u09be\u0995",
+  "category": "E-commerce",
+  "creditCost": 75
+ },
+ {
+  "id": "s46",
+  "name": "Price Tag & Label Designer",
+  "nameBn": "\u09aa\u09cd\u09b0\u09be\u0987\u09b8 \u099f\u09cd\u09af\u09be\u0997 \u0993 \u09b2\u09c7\u09ac\u09c7\u09b2 \u09a1\u09bf\u099c\u09be\u0987\u09a8\u09be\u09b0",
+  "category": "E-commerce",
+  "creditCost": 15
+ },
+ {
+  "id": "s47",
+  "name": "TikTok Shop Video Kit",
+  "nameBn": "\u099f\u09bf\u0995\u099f\u0995 \u09b6\u09aa \u09ad\u09bf\u09a1\u09bf\u0993 \u0995\u09bf\u099f",
+  "category": "E-commerce",
+  "creditCost": 75
+ },
+ {
+  "id": "s48",
+  "name": "Job Application Tracker",
+  "nameBn": "\u099c\u09ac \u0985\u09cd\u09af\u09be\u09aa\u09cd\u09b2\u09bf\u0995\u09c7\u09b6\u09a8 \u099f\u09cd\u09b0\u09cd\u09af\u09be\u0995\u09be\u09b0",
+  "category": "Professional",
+  "creditCost": 25
+ },
+ {
+  "id": "s49",
+  "name": "Birthday Video Invitation",
+  "nameBn": "\u09ad\u09bf\u09a1\u09bf\u0993 \u099c\u09a8\u09cd\u09ae\u09a6\u09bf\u09a8 \u09a6\u09be\u0993\u09af\u09bc\u09be\u09a4",
+  "category": "Event",
+  "creditCost": 40
+ },
+ {
+  "id": "s50",
+  "name": "AI Business Card Designer",
+  "nameBn": "\u098f\u0986\u0987 \u09ac\u09bf\u099c\u09a8\u09c7\u09b8 \u0995\u09be\u09b0\u09cd\u09a1 \u09a1\u09bf\u099c\u09be\u0987\u09a8\u09be\u09b0",
+  "category": "Business",
+  "creditCost": 15
+ },
+ {
+  "id": "s108",
+  "name": "M3E Canvas Vibe-Coding",
+  "nameBn": "\u098f\u09ae\u09e9\u0987 \u0995\u09cd\u09af\u09be\u09a8\u09ad\u09be\u09b8 \u09ad\u09be\u0987\u09ac-\u0995\u09cb\u09a1\u09bf\u0982",
+  "category": "Professional",
+  "creditCost": 40
+ },
+ {
+  "id": "s109",
+  "name": "Understand Anything",
+  "nameBn": "\u09af\u09c7\u0995\u09cb\u09a8\u09cb \u0995\u09bf\u099b\u09c1 \u09ac\u09c1\u099d\u09cb",
+  "category": "Content Creator",
+  "creditCost": 10
+ },
+ {
+  "id": "s110",
+  "name": "OpenSEO Audit",
+  "nameBn": "\u0993\u09aa\u09c7\u09a8\u098f\u09b8\u0987\u0993 \u0985\u09a1\u09bf\u099f",
+  "category": "Business",
+  "creditCost": 30
+ }
+]

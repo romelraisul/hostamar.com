@@ -268,8 +268,8 @@ export default function PricingPage() {
             </ul>
           </div>
           <div style={{ flex: '0 1 260px', display: 'grid', gap: '.55rem' }}>
-            <Link href="/bangla-llm" className="bp-btn bp-btn-primary">5000cr দিয়ে শুরু করুন</Link>
-            <a href="https://hostamar.com/bangla-llm#pricing" className="bp-btn bp-btn-ghost" style={{ background: BKASH, color: '#fff' }}>bKash 01822417463</a>
+          <Link href="/payment?plan=bangla_llm" className="bp-btn bp-btn-primary">5000cr দিয়ে শুরু করুন</Link>
+          <a href="https://hostamar.com/bangla-llm#pricing" className="bp-btn bp-btn-ghost" style={{ background: BKASH, color: '#fff' }}>bKash 01822417463</a>
             <p className="bp-muted" style={{ fontSize: '.75rem', textAlign: 'center', margin: 0 }}>
               ৫০০০ টাকা = ৫০০০ HOST coin · ৭ দিন মানিব্যাক
             </p>

@@ -1,5 +1,5 @@
 import { PAYMENT_PLANS } from '@/lib/pricing';
-export type Plan = 'starter' | 'pro' | 'business';
+export type Plan = 'starter' | 'pro' | 'business' | 'bangla_llm';
 export type PaymentMethod = 'bkash' | 'nagad';
 
 export type PaymentState = {
@@ -35,6 +35,7 @@ export const PLANS: Record<Plan, PlanInfo> = {
   starter: { amount: PAYMENT_PLANS.starter.price, name: 'Starter', features: ['৬০০০ ক্রেডিট / মাস', '১০GB NVMe হোস্টিং + ফ্রি SSL', 'bKash / Nagad সাপোর্ট', 'Email Support'] },
   pro: { amount: PAYMENT_PLANS.pro.price, name: 'Pro', features: ['১৩০০০ ক্রেডিট / মাস', '৫০GB হোস্টিং', 'API এক্সেস + টিম ৫ জন', 'Priority Support'] },
   business: { amount: PAYMENT_PLANS.business.price, name: 'Business', features: ['৩০০০০ ক্রেডিট / মাস', 'আনলিমিটেড হোস্টিং', 'কাস্টম ডোমেইন', 'ডেডিকেটেড সাপোর্ট'] },
+  bangla_llm: { amount: PAYMENT_PLANS.bangla_llm.price, name: 'Bangla LLM ট্রেনিং', features: ['৫০০০ ক্রেডিট একবার (5000cr = ৳5000)', 'QLoRA fine-tuning RTX 5060 8GB কনফিগ + JSONL builder', '১০০০ inference call ফ্রি — api.hostamar.com/v1', '১৫৩ মডেল gateway-এ deploy'] },
 };
 
 export const PAYMENT_METHODS: Record<PaymentMethod, PaymentMethodInfo> = {
