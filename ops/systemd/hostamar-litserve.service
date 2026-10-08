@@ -1,0 +1,27 @@
+[Unit]
+Description=Hostamar AI gateway — LitServe :11442 in front of ComfyUI (SDXL-Turbo)
+Documentation=file:///home/romel/hostamar.com/litserve_gateway/comfy_api.py
+After=network-online.target comfyui.service
+Wants=comfyui.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=%h/hostamar.com/litserve_gateway
+Environment=PORT=11445
+Environment=COMFY_URL=http://127.0.0.1:8188
+Environment=COMFY_PUBLIC_URL=http://127.0.0.1:8188
+Environment=COMFY_CKPT=sd_xl_turbo_1.0_fp16.safetensors
+Environment=COMFY_BATCH=4
+Environment=COMFY_JOB_TIMEOUT=150
+ExecStart=%h/.venvs/litserve/bin/python %h/hostamar.com/litserve_gateway/comfy_api.py
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=60
+KillMode=mixed
+KillSignal=SIGTERM
+StandardOutput=append:%h/.hermes/logs/litserve.log
+StandardError=append:%h/.hermes/logs/litserve.log
+
+[Install]
+WantedBy=default.target

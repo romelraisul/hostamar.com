@@ -1,0 +1,16 @@
+[Unit]
+Description=Hostamar local VPS (podman-compose)
+After=network-online.target podman.socket
+Requires=podman.socket
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/romel/hostamar.com
+ExecStart=/home/romel/.local/bin/podman-compose -f podman-compose.yml up -d
+ExecStop=/home/romel/.local/bin/podman-compose -f podman-compose.yml down
+ExecReload=/home/romel/.local/bin/podman-compose -f podman-compose.yml restart
+
+[Install]
+WantedBy=default.target
