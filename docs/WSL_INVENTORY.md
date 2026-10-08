@@ -162,7 +162,7 @@ Filesystem: 1007G total, 576G used, 381G free.
 | 0.9G | model.safetensors | `models/cosyvoice2/CosyVoice-BlankEN/` vs `models/cosyvoice3-bengali/CosyVoice-BlankEN/` |
 | 0.6G | qwen_image_2.1_vae_bf16.safetensors | `models/vae/` and `models/vae/vae/` |
 | 0.1G | next-swc.linux-x64-musl.node | `models-archive/hostamar-local-backup/hostamar-local{,/flociops-assistant}/node_modules` |
-**Reclaimable: ~32.5 GB** — three of them come from `X/X/` nested self-copies (a symlink or a delete fixes all three at once; ComfyUI follows symlinks). Two are the same chatterbox weights kept in both the live store and the archive (archive copy is the disposable one if the live copy is verified complete).
+**Reclaimable: ~32.5 GB** — executed 2026-10-09: 5 pairs symlinked after full-file md5, **29.4G freed** (disk 381G→411G free); see `docs/WSL_CLEAN_INVENTORY.md` — three of them come from `X/X/` nested self-copies (a symlink or a delete fixes all three at once; ComfyUI follows symlinks). Two are the same chatterbox weights kept in both the live store and the archive (archive copy is the disposable one if the live copy is verified complete).
 
 ## 8. Recommendations
 1. **Nothing was installed, removed, or restarted** — this run was read-only.
