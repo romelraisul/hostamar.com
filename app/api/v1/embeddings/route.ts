@@ -7,6 +7,9 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
   const auth = req.headers.get('authorization') || ''
   const master = process.env.LITELLM_MASTER_KEY || ''
+  const base = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
+  const key = process.env.OPENROUTER_API_KEY
+  let chargedTo: string | null = null
   // Two callers: the internal gateway (LITELLM_MASTER_KEY, free) and paying
   // customers (hk_live_ key → 1cr/call, 402 on insufficient — v12).
   const isMaster = master && auth === `Bearer ${master}`
@@ -26,19 +29,26 @@ export async function POST(req: NextRequest) {
         { status: 402 },
       )
     }
+    chargedTo = authUser.id
   }
   let body: any
   try { body = await req.json() } catch { return Response.json({ error: { message: 'Invalid JSON' } }, { status: 400 }) }
   // proxy to openrouter for embeddings
-  const base = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
-  const key = process.env.OPENROUTER_API_KEY
-  if (!key) return Response.json({ error: { message: 'No OPENROUTER key' } }, { status: 500 })
+  // Config check AFTER the credit gate: insufficient credits must always be 402,
+  // and an unconfigured upstream must never charge anyone.
+  if (!key) {
+    // Unconfigured upstream: hand the credit back, then 500 (never bill for a 5xx).
+    if (chargedTo) await deductCredits(chargedTo, 1, 'refund', 'embeddings unconfigured').catch(() => null)
+    return Response.json({ error: { message: 'No OPENROUTER key' } }, { status: 500 })
+  }
   const res = await fetch(`${base}/embeddings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify(body),
   })
   const text = await res.text()
+  // Refund on upstream failure — never bill a customer for a 5xx.
+  if (!res.ok && chargedTo) await deductCredits(chargedTo, 1, 'refund', 'embeddings upstream failed').catch(() => null)
   return new Response(text, { status: res.status, headers: { 'Content-Type': 'application/json' } })
 }
 

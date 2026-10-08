@@ -51,6 +51,15 @@ The DEPLOYED repo is THIS directory: `/home/romel/hostamar-build` (branch `main`
   this repo (`hostamar-build`) is the deploy target.
 
 
+# Billing — metered credits (PERMANENT invariants)
+
+Never touch an AI/billing endpoint without reading **[docs/BILLING.md](docs/BILLING.md)**:
+free tier is OFF, every cost-bearing route debits via `deductCredits()` (atomic +
+audit row), insufficient → 402 + bKash `01822417463`, a failed upstream is refunded.
+Verify against production with `node scripts/test-billing.mjs` (must be all PASS).
+hostamar.com is served by the **`hostamar-pages` Cloudflare Worker** (OpenNext) —
+`git push` alone ships nothing; use the 4-step ship in that doc.
+
 ## VERCEL DEPLOY RULE - FREE TIER 100/DAY (always apply)
 
 - NEVER `git push + vercel --prod --yes` double deploy (1 push = 1 deploy). Use ONLY `git push`.
