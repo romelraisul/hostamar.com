@@ -29,7 +29,7 @@ export function generateSeoMetadata({
 }: SeoOptions): Metadata {
   const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`
   const url = `${SITE_URL}${path}`
-  const defaultImage = `${SITE_URL}/opengraph-image`
+  const defaultImage = `${SITE_URL}/opengraph-image.png`
   const ogImage = image || defaultImage
 
   const metadata: Metadata = {
@@ -125,7 +125,7 @@ export const defaultSeo: Metadata = {
       'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment.',
     images: [
       {
-        url: `${SITE_URL}/opengraph-image`,
+        url: `${SITE_URL}/opengraph-image.png`,
         width: 1200,
         height: 630,
         alt: 'Hostamar — All-in-One Platform',
@@ -138,7 +138,7 @@ export const defaultSeo: Metadata = {
     title: `Hostamar - Cloud Hosting, AI Marketing, Gaming, AI Browser & Dev IDE`,
     description:
       'Your all-in-one platform: Cloud hosting, AI marketing videos, LuckyStar gaming, AI-powered browser, free AI chat, and cloud development environment.',
-    images: [`${SITE_URL}/opengraph-image`],
+    images: [`${SITE_URL}/opengraph-image.png`],
   },
   robots: {
     index: true,

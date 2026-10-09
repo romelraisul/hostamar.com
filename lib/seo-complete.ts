@@ -25,7 +25,7 @@ import { env } from '@/lib/env'
 
 const SITE_URL = env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com'
 const SITE_NAME = 'Hostamar'
-const DEFAULT_OG_IMAGE = `${SITE_URL}/opengraph-image`
+const DEFAULT_OG_IMAGE = `${SITE_URL}/opengraph-image.png`
 const TWITTER_HANDLE = '@hostamar'
 
 // ---------------------------------------------------------------------------

@@ -6,7 +6,7 @@ import GitHubProvider from 'next-auth/providers/github'
 import AzureADProvider from 'next-auth/providers/azure-ad'
 import TwitterProvider from 'next-auth/providers/twitter'
 import LinkedInProvider from 'next-auth/providers/linkedin'
-import bcrypt from 'bcryptjs'
+// bcryptjs loaded lazily at its two use sites (cold-init fix: out of this module's init path)
 import { prisma } from './prisma'
 
 // Note: PrismaAdapter not installed — using custom JWT auth instead
@@ -81,6 +81,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
+        const bcrypt = (await import('bcryptjs')).default
         const isValid = await bcrypt.compare(credentials.password as string, user.password)
 
         if (!isValid) {
@@ -172,7 +173,7 @@ export const authOptions: NextAuthOptions = {
             data: {
               email: user.email,
               name: user.name || user.email.split('@')[0],
-              password: bcrypt.hashSync(Math.random().toString(36), 10),
+              password: (await import('bcryptjs')).default.hashSync(Math.random().toString(36), 10),
               role: 'customer',
               source: account.provider,
               stage: 'lead',
