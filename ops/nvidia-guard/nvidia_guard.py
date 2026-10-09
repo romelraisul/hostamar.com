@@ -52,6 +52,14 @@ PROBE_TTL = float(os.environ.get("NVG_PROBE_TTL", "180"))
 # short-lived hint so a healthy model recovers quickly and never false-fails.
 DEAD_TTL = float(os.environ.get("NVG_DEAD_TTL", "600"))
 UNRESPONSIVE_TTL = float(os.environ.get("NVG_UNRESPONSIVE_TTL", "240"))
+# Reasoning models emit hidden reasoning tokens before any content; a small
+# client max_tokens yields finish_reason=length with content:null. Floor the
+# ceiling on the substituted body only (we never rewrite a body we forward as-is).
+REASONING_MODELS = {m.strip() for m in os.environ.get(
+    "NVG_REASONING_MODELS",
+    "z-ai/glm-5.3-flash,z-ai/glm-5.3,moonshotai/kimi-k3,deepseek-ai/deepseek-v4.1-flash",
+).split(",") if m.strip()}
+REASONING_MIN_TOKENS = int(os.environ.get("NVG_REASONING_MIN_TOKENS", "800"))
 PROBE_MAXTOKENS = int(os.environ.get("NVG_PROBE_MAXTOKENS", "8"))
 PROBE_PROMPT = os.environ.get("NVG_PROBE_PROMPT", "ping")
 UPSTREAM_TIMEOUT = float(os.environ.get("NVG_UPSTREAM_TIMEOUT", "120"))
@@ -352,6 +360,11 @@ def _rebuild_body(raw: bytes, model: str) -> bytes:
     try:
         b = json.loads(raw or b"{}")
         b["model"] = model
+        if model in REASONING_MODELS:
+            mt = b.get("max_tokens", b.get("max_completion_tokens"))
+            if isinstance(mt, int) and 0 < mt < REASONING_MIN_TOKENS:
+                key = "max_tokens" if "max_tokens" in b else "max_completion_tokens"
+                b[key] = REASONING_MIN_TOKENS
         return json.dumps(b).encode()
     except Exception:  # noqa: BLE001
         return raw

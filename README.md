@@ -135,4 +135,16 @@ Who actually calls the guard: Hermes itself (`OpenAI/Python 2.24.0`), litellm `:
 (`python-httpx`, Ollama-style discovery probes — now answered locally), the Hostamar
 gateway (`HostamarGateway/1.0`, `GET /v1/models` only) and curl for manual checks.
 
+litellm `:4000` also has its own `model_list` of **57** models. That catalogue is unrelated to
+the guard's allow-list of **4** — a litellm route to anything outside the four gets a local 404
+from the guard. The two counts differing is expected, not drift (both recounted 2026-10-10:
+57 litellm / 4 guard).
+
+Shedding under load is deliberate. When the free tier pushes back, the guard answers `429` with
+`Retry-After: 5` instead of stampeding the account; Hermes retries it (`api_max_retries: 5`) and
+the cron lanes ride it out. **A `429` from the guard is therefore correct behaviour, not a
+fault.** For a body it rebuilds (substitution only), the guard floors `max_tokens` to **800**:
+reasoning models emit hidden thinking tokens before any content, so a small client ceiling comes
+back as `finish_reason=length` with `content:null`. A body forwarded unchanged is never rewritten.
+
 

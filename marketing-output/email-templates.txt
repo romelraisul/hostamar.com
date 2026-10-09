@@ -2,7 +2,7 @@
   HOSTAMAR.COM — B2B EMAIL TEMPLATES
   AI Video Generation SaaS for Bangladeshi Creators
   Founder: Romel Raisul
-  Pricing: Starter  ৳990/mo | Business  ৳1900/mo | Enterprise  ৳2900/mo
+  Pricing: Starter ৳990/mo | Pro ৳1900/mo | Business ৳2900/mo
   Targets: Digital Marketing Agencies, YouTube Production Houses, E-commerce Sellers
 ================================================================================
 
@@ -30,11 +30,11 @@ Here's the reality: most agencies in Bangladesh are outsourcing video production
 • Bengali + English voice models included
 
 Pricing that makes sense for agencies:
-  Starter  — ৳990/mo (up to 30 videos)
-  Business — ৳1900/mo (up to 100 videos, team seats)
-  Enterprise — ৳2900/mo (unlimited, white-label option)
+  Starter  — ৳990/mo (6,000 credits/mo)
+  Pro      — ৳1900/mo (13,000 credits/mo, team seats)
+  Business — ৳2900/mo (30,000 credits/mo, white-label option)
 
-এজেন্সি ডিসকাউন্ট: প্রথম ২ মাসে ২৫% ছাড়।
+এজেন্সি সুবিধা: Business প্ল্যানে white-label (আপনার ব্র্যান্ড) অন্তর্ভুক্ত।
 
 CTA:
 Reply to this email saying "Demo" and our founder Romel will walk you through a 15-minute demo tailored for your agency workflow. Or visit: https://hostamar.com/agency
@@ -110,9 +110,9 @@ Here's what Hostamar does for your e-commerce business:
 • Bulk create videos for your entire catalog in one session
 
 Pricing built for sellers:
-  Starter  — ৳990/mo (up to 30 product videos)
-  Business — ৳1900/mo (up to 100 videos + priority support)
-  Enterprise — ৳2900/mo (unlimited, custom branding)
+  Starter  — ৳990/mo (6,000 credits)
+  Pro      — ৳1900/mo (13,000 credits + priority support)
+  Business — ৳2900/mo (30,000 credits, custom branding)
 
 Special offer for first 50 merchants: 1-month free trial, no credit card needed.
 
@@ -151,7 +151,7 @@ Case Study Snapshot:
     • Team of 3 video editors redeployed to high-value creative work
     • Client satisfaction score increased by 35%
 
-They started with a 14-day trial, saw results in week 1, and upgraded to Enterprise by month 2.
+They started with a 14-day trial, saw results in week 1, and upgraded to Business by month 2.
 
 Why this matters for your agency now:
 • Your competitors are adopting AI production — early movers win the pricing war
@@ -159,11 +159,11 @@ Why this matters for your agency now:
 • Hostamar integrates with your existing workflow — no learning curve
 
 Pricing reminder:
-  Starter  ৳990/mo  — 30 videos, basic templates
-  Business  ৳1900/mo — 100 videos, team accounts, priority support
-  Enterprise ৳2900/mo — unlimited, white-label, API access
+  Starter  ৳990/mo  — 6,000 credits, basic templates
+  Pro  ৳1900/mo — 13,000 credits, team accounts, priority support
+  Business ৳2900/mo — 30,000 credits, white-label, API access
 
-Special agency offer: Get white-label (your brand on the platform) with any Enterprise subscription — first 3 months at ৳4,500/mo instead of ৳2900/mo.
+White-label (your brand on the platform) is included with the Business plan — ৳2900/mo.
 
 CTA:
 Reply "Case Study" and I'll send you the full breakdown with screenshots and numbers. Or book a 15-min call with me directly: https://hostamar.com/agency-demo
