@@ -14,7 +14,7 @@ export const metadata: Metadata = {
       'Bogura থেকে শুরু, Dhaka BDIX এ হোস্টেড। বাংলা First • bKash First • Simple First — ৫০০+ SME এর অল-ইন-ওয়ান OS।',
     url: 'https://hostamar.com/about',
     siteName: 'Hostamar',
-    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630, alt: 'About Hostamar' }],
+    images: [{ url: 'https://hostamar.com/opengraph-image.png', width: 1200, height: 630, alt: 'About Hostamar' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'About Hostamar — বাংলাদেশের জন্য তৈরি | Hostamar',
     description: 'Bogura থেকে শুরু, Dhaka BDIX এ হোস্টেড — বাংলাদেশের জন্য অল-ইন-ওয়ান OS।',
-    images: ['https://hostamar.com/opengraph-image'],
+    images: ['https://hostamar.com/opengraph-image.png'],
   },
   keywords: ['about hostamar', 'hostamar story', 'bangladesh startup', 'bogura', 'bdix hosting', 'bangla ai platform'],
 }

@@ -83,3 +83,26 @@ token round-trip test.
 
 A 500 ms ceiling is not reachable while cold init is 400–700 ms; what is verified here is no
 persistent 1102 and DB-backed routes 2–5× cheaper.
+
+### Round 3 — the cold-init lever was applied and measured: it is not enough (worker `b692b295`)
+
+`jsonwebtoken` + `bcryptjs` are **out of `lib/auth-utils.ts`'s module scope** (HS256 over
+`node:crypto`, sync, same wire format; `bcryptjs` lazy inside `comparePassword`). Proof it shipped
+and is safe: `jsonwebtoken`/`bcryptjs` now in **0/842** built route chunks (was: every authenticated
+chunk), the marker `jwt-secret-absent-at-build-time` in 203 built files, `tests/auth-token-interop.mjs`
+passing both directions, `tests/edge-hmac` 10/10 on real workerd including `comparePassword`.
+
+**It did not close the residual, and that is now measured rather than assumed.** Same tail method on
+`b692b295`: 190 invocations, **ok 190 / exceededCpu 0**, 0 exceptions; client 89 cache-busted requests
+→ 77×200, 12×401, **0×503**. cpuTime p50 42 ms, p90 323 ms, `>400 ms` 13 (**6.8%**), max 801 ms.
+Against `cbad910e` (125 invocations, `>400 ms` 11 = **8.8%**, p90 336, max 670): z = 0.64, **p = 0.52**
+— no significant change. **0 kills in 190 events proves nothing**: under an unchanged 0.8% rate that
+window happens **21.7%** of the time; 95% confidence needs **373** events. Max 670 → 801 ms is sample
+size, not regression.
+
+Reason: cold init is the **40.4 MB `handler.mjs`** (the jsonwebtoken tree is 0.1 MB). Largest in-graph
+trees: `@libsql/client` 19 MB (317/842 chunks), `jsdom` 14 MB (16 chunks, all via
+`lib/api/validator` → `isomorphic-dompurify`), `@prisma/client` 8.2 MB (307 chunks), `next-auth`
+2.4 MB (198 chunks). Next levers, ranked: (1) instrument per-isolate `init_ms` before any further
+bundle surgery, (2) lazy-load the jsdom sanitize path, (3) keep shrinking the libsql/prisma graph.
+Full evidence: `docs/COLD_INIT_ROUND3.md`.

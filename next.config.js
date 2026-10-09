@@ -51,13 +51,13 @@ const nextConfig = {
         ],
       },
       {
-        source: '/opengraph-image',
+        source: '/opengraph-image.png',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400' },
         ],
       },
       {
-        source: '/twitter-image',
+        source: '/twitter-image.png',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400' },
         ],

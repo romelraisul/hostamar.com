@@ -79,6 +79,11 @@ Six open items from the reports, closed or stated honestly:
    125 invocations: **ok 124 / exceededCpu 1**, 0 error logs; `/store` ~1.1 s → **455 ms**.
    30/30 route sweep all 200; 150 further reps → 148 in class. Detail + the residual cold-bootstrap
    kill in `docs/1102_WORKER_LIMITS.md`.
+   **Round 3 (worker `b692b295`) applied the cold-init lever** — `jsonwebtoken`/`bcryptjs` out of
+   `lib/auth-utils.ts`'s module scope, now in **0/842** built route chunks. Live: 190/190 ok,
+   0 exceededCpu, 0×503 / 89 client requests. **But the residual stays open**: the `>400 ms` cold
+   class went 8.8% → 6.8% (z = 0.64, p = 0.52), so this is bundle-init bound, not lib bound. Evidence
+   and the ranked next levers: `docs/COLD_INIT_ROUND3.md`.
 2. **`hostamar-build` remote** — exists, local history pushed:
    `git ls-remote` → `df5d810b9c4d18b8d26001b77eeb0f5b1c5b4631 refs/heads/master`. Default branch is
    **`master`**; the old `origin/main` probe returned nothing because that branch never existed.

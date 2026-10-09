@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description: 'আপনার টাকা নিরাপদ — ৭ দিন ফ্রি, ৩০ দিন মানি-ব্যাক, bKash ২৪ঘ ফেরত।',
     url: 'https://hostamar.com/refund',
     siteName: 'Hostamar',
-    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630, alt: 'Refund Policy' }],
+    images: [{ url: 'https://hostamar.com/opengraph-image.png', width: 1200, height: 630, alt: 'Refund Policy' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Refund Policy | Hostamar',
     description: 'আপনার টাকা নিরাপদ — ৭ দিন ফ্রি, ৩০ দিন মানি-ব্যাক, bKash ২৪ঘ ফেরত।',
-    images: ['https://hostamar.com/opengraph-image'],
+    images: ['https://hostamar.com/opengraph-image.png'],
   },
   keywords: ['hostamar refund', 'refund policy bangladesh', 'bkash refund', 'money back guarantee bangladesh', 'hostamar তাকা ফেরত'],
 }

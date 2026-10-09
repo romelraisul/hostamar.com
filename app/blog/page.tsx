@@ -12,7 +12,7 @@ export const metadata: Metadata = {
       'AI video creation guides, hosting best practices, and platform news for Bangladeshi creators.',
     url: 'https://hostamar.com/blog',
     siteName: 'Hostamar',
-    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630 }],
+    images: [{ url: 'https://hostamar.com/opengraph-image.png', width: 1200, height: 630 }],
     locale: 'en_US',
     type: 'website',
   },
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Blog — Hostamar Tips, Guides & Platform Updates',
     description: 'AI video creation guides, hosting best practices, and platform news.',
-    images: ['https://hostamar.com/opengraph-image'],
+    images: ['https://hostamar.com/opengraph-image.png'],
   },
   keywords: ['hostamar blog', 'ai video tutorial', 'bangladesh tech blog', 'video creation tips', 'hostamar updates'],
 }

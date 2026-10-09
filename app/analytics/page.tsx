@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       'Detailed video analytics: view counts, downloads, shares, monthly revenue trends, engagement rates, and top-performing videos.',
     url: 'https://hostamar.com/analytics',
     siteName: 'Hostamar',
-    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630 }],
+    images: [{ url: 'https://hostamar.com/opengraph-image.png', width: 1200, height: 630 }],
     locale: 'en_US',
     type: 'website',
   },
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: 'Analytics Dashboard | Hostamar',
     description:
       'Detailed video analytics: view counts, downloads, shares, monthly revenue trends, and engagement rates.',
-    images: ['https://hostamar.com/opengraph-image'],
+    images: ['https://hostamar.com/opengraph-image.png'],
   },
   robots: { index: false, follow: false },
   keywords: ['video analytics dashboard', 'content performance', 'video metrics bangladesh', 'ai video analytics', 'hostamar'],

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description: 'আপনার ডাটা আপনারই — ভিডিও বিক্রি নয়, bKash পিন আমরা দেখি না, ডাটা ডিলিট যেকোনো সময়।',
     url: 'https://hostamar.com/privacy',
     siteName: 'Hostamar',
-    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630, alt: 'Privacy Policy' }],
+    images: [{ url: 'https://hostamar.com/opengraph-image.png', width: 1200, height: 630, alt: 'Privacy Policy' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Privacy Policy | Hostamar',
     description: 'আপনার ডাটা আপনারই — ভিডিও বিক্রি নয়, bKash পিন আমরা দেখি না।',
-    images: ['https://hostamar.com/opengraph-image'],
+    images: ['https://hostamar.com/opengraph-image.png'],
   },
   keywords: ['hostamar privacy', 'privacy policy bangladesh', 'bkash privacy', 'data protection bangladesh', 'hostamar data'],
 }

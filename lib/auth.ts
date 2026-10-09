@@ -1,22 +1,12 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth-config'
 import prisma from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import type { NextRequest } from 'next/server'
+// Single implementation lives in lib/auth-utils (node:crypto HS256, no
+// module-scope jsonwebtoken/bcryptjs) — see the cold-init note there.
+import { signToken, comparePassword, verifyToken as verifyTokenBase } from '@/lib/auth-utils'
 
-const JWT_SECRET=(process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || (process.env.NEXT_PHASE || process.env.CI ? 'jwt-secret-absent-at-build-time' : (process.env.NODE_ENV==='production' ? (()=>{throw new Error('JWT_SECRET/NEXTAUTH_SECRET missing')})() : 'hostamar-jwt-secret-change-in-production'))) as string
-
-export async function comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-  return bcrypt.compare(plainPassword, hashedPassword)
-}
-
-export function signToken(
-  payload: { id: string; email: string; name: string; role?: string },
-  extra?: Record<string, unknown>
-): string {
-  return jwt.sign({ ...payload, ...(extra || {}) }, JWT_SECRET, { expiresIn: '7d' })
-}
+export { signToken, comparePassword }
 
 // verifyToken carries an optional orgId claim (tenant cache from PR d).
 export interface VerifyPayload {
@@ -28,11 +18,7 @@ export interface VerifyPayload {
 }
 
 export function verifyToken(token: string): VerifyPayload | null {
-  try {
-    return jwt.verify(token, JWT_SECRET) as VerifyPayload
-  } catch {
-    return null
-  }
+  return verifyTokenBase(token) as VerifyPayload | null
 }
 
 // Re-sign a verified payload with a resolved orgId (call once per session, cache in JWT).

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
       'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার। ৩০ সেকেন্ডে ভিডিও, ৫০+ বাংলা টেমপ্লেট, bKash দিয়ে পেমেন্ট।',
     url: 'https://hostamar.com',
     siteName: 'Hostamar',
-    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630, alt: 'Hostamar' }],
+    images: [{ url: 'https://hostamar.com/opengraph-image.png', width: 1200, height: 630, alt: 'Hostamar' }],
     locale: 'bn_BD',
     type: 'website',
   },
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Hostamar - বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও মেকার',
     description: '৩০ সেকেন্ডে AI ভিডিও, ৫০+ বাংলা টেমপ্লেট, bKash পেমেন্ট। শুরু ৳0।',
-    images: ['https://hostamar.com/opengraph-image'],
+    images: ['https://hostamar.com/opengraph-image.png'],
   },
   keywords: [
     'ai marketing video bangladesh',
