@@ -2,10 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import jwt from 'jsonwebtoken'
-import { env } from '@/lib/env'
-
-const JWT_SECRET = env.NEXTAUTH_SECRET || 'hostamar-jwt-secret-change-in-production'
+import { verifyToken } from '@/lib/auth-utils'
 
 async function getCurrentUser(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -13,11 +10,10 @@ async function getCurrentUser(req: NextRequest) {
   if (authHeader?.startsWith('Bearer ')) token = authHeader.slice(7)
   if (!token) token = req.cookies.get('auth_token')?.value || ''
   if (!token) return null
-  try {
-    return jwt.verify(token, JWT_SECRET) as { id: string; role: string }
-  } catch {
-    return null
-  }
+  // Was jwt.verify(token, env.NEXTAUTH_SECRET || 'change-in-production') — a
+  // different secret precedence than the signer (JWT_SECRET first), so this
+  // route rejected tokens the app itself had minted whenever JWT_SECRET was set.
+  return (verifyToken(token) as { id: string; role: string } | null)
 }
 
 /**
