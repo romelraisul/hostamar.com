@@ -1,0 +1,12 @@
+[Unit]
+Description=Hostamar radar - one pass over every layer that can break (catch + auto-fix)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/romel/hostamar.com
+Environment=PATH=/home/romel/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/lib/wsl/lib
+ExecStart=/home/romel/hostamar.com/ops/monitoring/radar.sh --fix
+Nice=5
+TimeoutStartSec=600

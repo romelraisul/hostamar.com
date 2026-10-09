@@ -2,7 +2,7 @@
   HOSTAMAR.COM — B2B EMAIL TEMPLATES
   AI Video Generation SaaS for Bangladeshi Creators
   Founder: Romel Raisul
-  Pricing: Starter  ৳2,000/mo | Business  ৳3,500/mo | Enterprise  ৳6,000/mo
+  Pricing: Starter  ৳990/mo | Business  ৳1900/mo | Enterprise  ৳2900/mo
   Targets: Digital Marketing Agencies, YouTube Production Houses, E-commerce Sellers
 ================================================================================
 
@@ -30,9 +30,9 @@ Here's the reality: most agencies in Bangladesh are outsourcing video production
 • Bengali + English voice models included
 
 Pricing that makes sense for agencies:
-  Starter  — ৳2,000/mo (up to 30 videos)
-  Business — ৳3,500/mo (up to 100 videos, team seats)
-  Enterprise — ৳6,000/mo (unlimited, white-label option)
+  Starter  — ৳990/mo (up to 30 videos)
+  Business — ৳1900/mo (up to 100 videos, team seats)
+  Enterprise — ৳2900/mo (unlimited, white-label option)
 
 এজেন্সি ডিসকাউন্ট: প্রথম ২ মাসে ২৫% ছাড়।
 
@@ -74,7 +74,7 @@ Use cases you can immediately apply:
 
 Cost comparison:
   Traditional: ৳8,000–৳12,000 per video, 3–5 day turnaround
-  With Hostamar Business (৳3,500/mo): ~৳35 per video, 5-minute turnaround
+  With Hostamar Business (৳1900/mo): ~৳35 per video, 5-minute turnaround
 
 CTA:
 আমাদের সাথে একটি জুম কল করুন। We'll show you how [similar production house] cut their production cost by 60%. Just reply "YouTube" and our team will reach out.
@@ -110,9 +110,9 @@ Here's what Hostamar does for your e-commerce business:
 • Bulk create videos for your entire catalog in one session
 
 Pricing built for sellers:
-  Starter  — ৳2,000/mo (up to 30 product videos)
-  Business — ৳3,500/mo (up to 100 videos + priority support)
-  Enterprise — ৳6,000/mo (unlimited, custom branding)
+  Starter  — ৳990/mo (up to 30 product videos)
+  Business — ৳1900/mo (up to 100 videos + priority support)
+  Enterprise — ৳2900/mo (unlimited, custom branding)
 
 Special offer for first 50 merchants: 1-month free trial, no credit card needed.
 
@@ -159,11 +159,11 @@ Why this matters for your agency now:
 • Hostamar integrates with your existing workflow — no learning curve
 
 Pricing reminder:
-  Starter  ৳2,000/mo  — 30 videos, basic templates
-  Business  ৳3,500/mo — 100 videos, team accounts, priority support
-  Enterprise ৳6,000/mo — unlimited, white-label, API access
+  Starter  ৳990/mo  — 30 videos, basic templates
+  Business  ৳1900/mo — 100 videos, team accounts, priority support
+  Enterprise ৳2900/mo — unlimited, white-label, API access
 
-Special agency offer: Get white-label (your brand on the platform) with any Enterprise subscription — first 3 months at ৳4,500/mo instead of ৳6,000/mo.
+Special agency offer: Get white-label (your brand on the platform) with any Enterprise subscription — first 3 months at ৳4,500/mo instead of ৳2900/mo.
 
 CTA:
 Reply "Case Study" and I'll send you the full breakdown with screenshots and numbers. Or book a 15-min call with me directly: https://hostamar.com/agency-demo
@@ -176,10 +176,10 @@ Founder, Hostamar.com
 
 ────────────────────────────────────────────────────────────────────────────────
 TEMPLATE 5 — YouTube Creators / Production Houses (Price & ROI Focus)
-Title:  YouTube Creator Outreach — ৳3,500/mo for Unlimited Videos?
+Title:  YouTube Creator Outreach — ৳1900/mo for Unlimited Videos?
 ────────────────────────────────────────────────────────────────────────────────
 
-Subject:  মাসে ৩,৫০০ টাকায় আনলিমিটেড ইউটিউব ভিডিও? 😲
+Subject:  মাসে ১,৯০০ টাকায় আনলিমিটেড ইউটিউব ভিডিও? 😲
 
 Body:
 
@@ -194,7 +194,7 @@ Without Hostamar:
   • Time per video: 4–8 hours (if in-house)
   • Monthly limit: 8–15 videos (realistically)
 
-With Hostamar Business (৳3,500/mo):
+With Hostamar Business (৳1900/mo):
   • Per video cost: ~৳35
   • Time per video: 5 minutes
   • Monthly capacity: 100+ videos

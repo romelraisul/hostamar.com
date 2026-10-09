@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily deep Hostamar radar (billing + store suites)
+
+[Timer]
+Unit=radar-deep.service
+OnCalendar=*-*-* 03:30
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

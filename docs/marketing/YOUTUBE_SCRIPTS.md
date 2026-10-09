@@ -47,8 +47,8 @@
 ```
 আপনার জন্য কি অপশন:
 🆓 Free: ৫ videos (try first)
-💼 Starter: ৳২,০০০/month
-🚀 Business: ৳৩,৫০০/month
+💼 Starter: ৳৯৯০/month
+🚀 Business: ৳১,৯০০/month
 
 Link description এ ক্লিক করুন
 Comment এ জানাবেন কী ভিডিও বানাবেন!
@@ -116,7 +116,7 @@ Comment এ জানাবেন কী ভিডিও বানাবেন!
 | Feature | Traditional (Premiere) | Hostamar |
 |---------|------------------------|----------|
 | Learning Time | ২-৩ মাস | ১০ মিনিট |
-| Cost | ৳২০,০০০+ লাইসেন্স | ৳২,০০০/মাস |
+| Cost | ৳২০,০০০+ লাইসেন্স | ৳৯৯০/মাস |
 | Time per video | ৩-৪ ঘন্টা | ৩০-৬০ মিনিট |
 | Bangla support | Plugin | Built-in |
 | Mobile friendly | No | Yes |
@@ -157,9 +157,9 @@ Comment এ জানাবেন কী ভিডিও বানাবেন!
 
 💰 Pricing:
 Free: ৫ videos/month
-Starter: ৳২,০০০ (১০ videos)
-Business: ৳৩,৫০০ (৩০ videos)
-Enterprise: ৳৬,০০০ (Unlimited)
+Starter: ৳৯৯০ (১০ videos)
+Business: ৳১,৯০০ (৩০ videos)
+Enterprise: ৳২,৯০০ (Unlimited)
 
 👉 https://hostamar.com
 

@@ -14,9 +14,9 @@
 🎁 Beta Users: ৫০% OFF (First 100 customers)
 
 ✅ Free: ৫ videos/month
-✅ Starter: ৳২,০০০/month (১০ videos)
-✅ Business: ৳৩,৫০০/month (৩০ videos)
-✅ Enterprise: ৳৬,০০০/month (Unlimited)
+✅ Starter: ৳৯৯০/month (১০ videos)
+✅ Business: ৳১,৯০০/month (৩০ videos)
+✅ Enterprise: ৳২,৯০০/month (Unlimited)
 
 Payment: bKash, Nagad, Crypto (USDT)
 
@@ -54,8 +54,8 @@ Hostamar ব্যবহার করে আমরা:
 
 আপনার জন্য কি অপশন:
 🆓 Free: ৫ videos (Lifetime)
-💼 Starter: ৳২,০০০ (১০ videos)
-🚀 Business: ৳৩,৫০০ (৩০ videos)
+💼 Starter: ৳৯৯০ (১০ videos)
+🚀 Business: ৳১,৯০০ (৩০ videos)
 
 "সত্যি বলছি, এটা আমার জন্য গেম চেঞ্জার!" - @happy_user
 
@@ -92,7 +92,7 @@ Try Now: https://hostamar.com
 
 Get Starter Plan:
 ❌ Without Hostamar: ৳৪,০০০
-✅ With Hostamar: ৳২,০০০ (অথবা Free trial!)
+✅ With Hostamar: ৳৯৯০ (অথবা Free trial!)
 
 যা পাবেন:
 ✅ ১০ HD Videos/মাস

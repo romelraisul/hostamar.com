@@ -311,7 +311,7 @@ Send to: 20 warm contacts (friends, former colleagues)
 
 ### Customers: 10-20 paid
 - Convert 10-20% of signups
-- Average: ৳2,000/customer
+- Average: ৳990/customer
 - Revenue: ৳20,000-40,000
 
 ### Engagement:

@@ -1,0 +1,12 @@
+[Unit]
+Description=Hostamar radar (deep) - adds the billing + store suites
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/romel/hostamar.com
+Environment=PATH=/home/romel/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/lib/wsl/lib
+ExecStart=/home/romel/hostamar.com/ops/monitoring/radar.sh --deep
+Nice=10
+TimeoutStartSec=900
