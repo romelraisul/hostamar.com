@@ -10,11 +10,19 @@ Next.js 14 (App Router) + Tailwind + Prisma + next-auth.
 
 ## Repo layout (single source of truth)
 
-The DEPLOYED repo is THIS directory: `/home/romel/hostamar-build` (branch `main`).
-- Vercel projectId: prj_WwYkMz8Kk75NN573skKxxWcuMVYi (projectName `hostamar-build`)
-- There is a SECOND checkout of the SAME GitHub repo at `/mnt/c/Users/User/hostamar.com`
-  (branch `sso-providers`). It contains newer work-in-progress but is NOT the Vercel deploy.
-  Edit THIS repo (`hostamar-build`) for production; keep the other for experiments.
+Several checkouts of these repos exist on this machine. Verify before editing —
+`git -C <dir> remote -v && git -C <dir> rev-parse --abbrev-ref HEAD` (checked 2026-10-10):
+
+- `/home/romel/hostamar.com` — github `romelraisul/hostamar.com` (public), branch `main`.
+  Holds `wrangler-pages.toml` (`name = "hostamar-pages"`) and `open-next.config.ts`: this is
+  WHERE HOSTAMAR.COM's CLOUDFLARE WORKER IS BUILT AND SHIPPED FROM. No local `.vercel/` link.
+- `/home/romel/hostamar-build` — github `romelraisul/hostamar-build` (private), branch `master`.
+  Vercel-linked: projectId prj_WwYkMz8Kk75NN573skKxxWcuMVYi (projectName `hostamar-build`).
+- `/mnt/c/Users/User/hostamar` — github `romelraisul/hostamar.com`, branch `fix/store-page-design`
+  (an `sso-providers` branch exists but is NOT checked out; `/mnt/c/Users/User/hostamar.com`
+  does not exist). WIP with 500+ uncommitted files — NOT the deploy, do not edit for production.
+- `/mnt/c/Users/User/hostamar-build` — remote is `romelraisul/hostamar.com` despite the
+  directory name, branch `master`.
 
 ## Build / test commands
 
