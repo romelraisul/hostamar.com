@@ -1,11 +1,15 @@
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 
-/** Live count from ServiceCatalog — the page never prints a guessed number. */
+/** Live count from ServiceCatalog — the page never prints a guessed number.
+ *  ponytail: turso-edge (Hrana over fetch), not Prisma. The page needs one COUNT,
+ *  and importing @prisma/client/wasm into this route's isolate pays the whole wasm
+ *  compiler init as request CPU on Workers — /store measured 290-1128ms cpuTime
+ *  (2nd highest route after the 1102 kills). Same DB, same number, no wasm. */
 async function liveCatalogCount(): Promise<number> {
   try {
-    const rows: any = await prisma.$queryRaw`SELECT COUNT(*) n FROM "ServiceCatalog" WHERE isActive = 1`
-    return Number(Array.isArray(rows) ? rows[0]?.n ?? 0 : 0)
+    const rs = await getTursoEdgeClient().execute('SELECT COUNT(*) AS n FROM "ServiceCatalog" WHERE isActive = 1')
+    return Number(rs.rows[0]?.n ?? 0)
   } catch {
     return 0
   }
