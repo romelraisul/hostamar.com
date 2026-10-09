@@ -8,6 +8,7 @@ export const metadata = {
   openGraph: {
     title: 'Hostamar Labs — AI Desk & Token Safety',
     description: '৮ AI এজেন্ট — Search, Risk, Rug, Whale, Shill, Sniper, Safety, Exit। Paper Trading Only, no Private Key.',
+    images: ['/opengraph-image.png'],
   },
 }
 

@@ -9,6 +9,7 @@ export const metadata = {
   openGraph: {
     title: 'CoinLab BD — বাংলা ক্রিপ্টো রিসার্চ হাব',
     description: '৪ পিলার: Research Hub • Earn Lab • Build Lab • Community — Top 100 কয়েন, ৭ সেকশন টেমপ্লেট।',
+    images: ['/opengraph-image.png'],
   },
 }
 
