@@ -10,14 +10,29 @@
  * Update Neon: status='running', port, podName, created_at
  * MinIO backup + Uptime Kuma auto-add + tunnel ingress
  */
-import { PrismaClient } from '@prisma/client'
+// ponytail: @prisma/client@5 ships as CJS, so a NAMED esm import throws
+// "Named export 'PrismaClient' not found" -> that SyntaxError is what killed this worker
+// (10218 restarts). Namespace-import instead. Second half of the breakage: the schema is
+// sqlite on Turso, and Prisma's sqlite connector refuses a libsql:// URL outright
+// ("URL must start with file:") — so talk through the libsql driver adapter this repo
+// already uses in lib/prisma.ts. No prisma generate step needed at runtime.
+import prismaPkg from '@prisma/client'
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
+import { createClient } from '@libsql/client/web'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 
+const { PrismaClient } = prismaPkg
 const run = promisify(execFile)
-const prisma = new PrismaClient()
+const DB_URL = process.env.DATABASE_URL || ''
+const prisma = new PrismaClient({
+  adapter: new PrismaLibSQL(createClient({
+    url: DB_URL.split('?')[0],
+    authToken: DB_URL.split('authToken=')[1] || process.env.TURSO_AUTH_TOKEN || '',
+  })),
+})
 const INTERVAL = parseInt(process.env.POLL_INTERVAL || '10', 10) * 1000
 const CLOUDFLARED_CONFIG = process.env.CLOUDFLARED_CONFIG || '/home/romel/.cloudflared/config.yml'
 const UPTIME_URL = process.env.UPTIME_KUMA_URL || 'http://localhost:3002'

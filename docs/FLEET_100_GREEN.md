@@ -26,13 +26,28 @@ Note: `prisma validate` fails on this repo for a **pre-existing** reason — `DA
 automated); exit 2 = API unreachable, fails closed. `--selftest` = offline mapping checks +
 one live plan: `SELFTEST_PASS`.
 `.github/workflows/terraform.yml` is `workflow_dispatch` only — there is no Terraform in this
-repo and none anywhere under `~/`, so a `pull_request` trigger would have been dead CI. The
-gate step is to be copied beside OPA + Infracost in the real infra repo.
+repo, so a `pull_request` trigger would have been dead CI. The real one now exists:
+**`github.com/romelraisul/hostamar-infra`** (private, `0e8ff7a`, pushed) carries terraform
+(vpc/r2), `policy/terraform.rego` (conftest), Infracost and this gate in
+`.github/workflows/terraform.yml`, triggered on `pull_request` for `terraform/**`. See
+`docs/INFRA_REPO_PLAN.md`.
 
 ## PIN6 receipts
-`DecisionReceipt` table created but **0 rows** — live receipts still go to
-`~/.local/state/hostamar/decision-receipts.jsonl` (86+ lines, appended per call). Nothing
-writes the table yet; that is real remaining work, not a verified feature.
+`DecisionReceipt` is **populated and live**. The service writes the JSONL log (`logged`) and then
+mirrors the same receipt into Turso (`turso`) — `INSERT OR IGNORE`, idempotent on `id` — and the
+audit endpoint reads the **table** first, with the file as fallback:
+
+```
+POST https://hostamar.com/api/decision   -> jsonl 112 -> 113 and Turso 112 -> 113 on one call
+GET  /v1/decisions/receipts              -> {"source":"turso", ...}
+python3 jev-server.py --mirror-check     -> jsonl=113 turso=113 MATCH
+python3 jev-server.py --selftest         -> selftest ok
+```
+
+The writer lives in the **live** service `~/hostamar-build/jev-server.py` (that is what
+`hostamar-jev.service` runs), not in the `ops/` copy — which is now synced byte-identical to it.
+An earlier guess at the columns (`created_at`, …) was wrong: the real table has 18 columns with
+`id` (epoch ms) and `ts`; `prisma/migrations/20261009_decision_receipts_real_shape/` is the DDL.
 
 ## Live checks
 ```
@@ -44,9 +59,12 @@ test-store.mjs                                 -> 13/13 PASS
 /api/decision?pins=1                           200
 /store /pricing /payment /api/health           200
 /bangla-llm                                    200  (first probe returned 503 — transient cold start; 3/3 retries 200)
-fleet                                          15 hostamar services running, 0 failed
-hostamar-provisioner                           exited, restarts frozen 10218, policy=no
-disk                                          550G used / 407G avail (58%)
-gpu (RTX 5060)                                 7735 MiB used of 8151, 4% util
+fleet                                          16 hostamar services running, 0 failed
+hostamar-provisioner (container)               exited, restarts frozen 10218, policy=no (by design)
+hostamar-provisioner-native                    active, NRestarts=0 — the one live provisioner
+/api/v1/models                                 176 rows (70 nvidia, 36 openrouter, 25 local, 23 kilo, 16 opencode, 4 hostamar)
+prism-bonsai :18932                            POST /v1/chat/completions 200
+disk                                           551G used / 406G avail (58%)
+gpu (RTX 5060)                                 7745 MiB used of 8151, 3% util
 sockets                                        59 listening
 ```

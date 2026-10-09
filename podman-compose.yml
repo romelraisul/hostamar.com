@@ -58,9 +58,13 @@ services:
     command: sh -c "npm i --omit=dev @prisma/client && node worker.mjs"
     networks:
       - hostamar-net
-    # 2026-10-09: worker.mjs dies on import (Prisma ESM/CJS) -> 10218 restarts.
-    # Disabled; re-enable after fixing the import:
-    #   restart: unless-stopped
+    # 2026-10-09: worker.mjs died on import (Prisma names a CJS export; a NAMED esm import
+    # throws "Named export 'PrismaClient' not found") -> 10218 restarts. The import is fixed in
+    # apps/provisioner/worker.mjs (default import + @prisma/adapter-libsql), and hostamar-
+    # provisioner-native.service now runs that same file as the ONE provisioner.
+    # Do NOT re-enable this container while the native unit is up: two pollers on the same
+    # queue provision the same request twice. If you ever move back, the command above must
+    # also install @prisma/adapter-libsql and @libsql/client, not just @prisma/client.
     restart: "no"
 
   uptime-kuma:
