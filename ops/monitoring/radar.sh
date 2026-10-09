@@ -165,7 +165,7 @@ while True:
 if not tot:
     print(f"SKIP|{os.path.getsize(path)}B captured, no parseable records yet")
 else:
-    msg=f"{tot} events ok={okc} exceededCpu={exceed} max_cpu={mx}ms mean_cpu={cpu//tot}ms cold>400ms={cold} ({100*cold//tot}%)"
+    msg=f"{tot} events ok={okc} exceededCpu={exceed} max_cpu={mx}ms mean_cpu={cpu//tot}ms cold>400ms={cold} ({100*cold//tot}%) 0-kill 95% bound={300//tot if tot else 0}.{int(30000/tot)%100 if tot else 0}% (needs 373 events for <=0.8)"
     if exceed==0: print("OK|"+msg)
     elif exceed*1000 >= 5*tot: print("FAIL|"+msg)          # >0.5% kills = real limit
     else: print("WARN|"+msg)
