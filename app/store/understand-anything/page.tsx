@@ -8,6 +8,7 @@ export const metadata = {
   openGraph: {
     title: 'Understand Anything — Hostamar সার্ভিস #109',
     description: 'যেকোনো বিষয় সহজ বাংলায় — এক ক্লিকে।',
+    images: ['/opengraph-image.png'],
   },
 }
 
