@@ -8,6 +8,7 @@ export const metadata = {
   openGraph: {
     title: 'Download Hostamar Node — 0 Taka Datacenter',
     description: 'Windows / macOS / Linux ইনস্টলার — v0.1.18, GitHub Releases থেকে সরাসরি।',
+    images: ['/opengraph-image.png'],
   },
 }
 
