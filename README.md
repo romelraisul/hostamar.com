@@ -97,3 +97,16 @@ cloudflared tunnel run hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354
 python C:\hostamar\gateway.py
 ```
 Auto-start: Task Scheduler → hostamar-prod-new (ID 7a08ec13-21c1-41be-8664-0a89e371354b) + gateway.py on boot.
+
+
+## NVIDIA guard (egress to integrate.api.nvidia.com)
+
+Loopback shim (`127.0.0.1:12436`) that Hermes, ZCode, MiniMax and litellm point at
+so a single NVIDIA free-tier account cannot be stampeded, and so a hung model never
+reads as "not live".
+
+- Source: `ops/nvidia-guard/` (byte-identical to the deployed copy — check with `md5sum`).
+- Root cause + evidence: `docs/NVIDIA_GUARD_PERMANENT_FIX.md`.
+- Restart: `systemctl --user restart nvidia-guard.service` (env is read at start only).
+- Proof: `NVG_TEST_N=30 /usr/bin/python3 ~/.hermes/nvidia-guard/test_burst.py` — pass = 0 transport errors, 0 503s.
+

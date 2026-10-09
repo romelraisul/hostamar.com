@@ -1,0 +1,22 @@
+[Unit]
+Description=NVIDIA-only liveness guard + key rotator (Hermes nvidia-direct egress)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/home/romel/.hermes/nvidia-guard/guard.env
+ExecStart=/usr/bin/python3 /home/romel/.hermes/nvidia-guard/nvidia_guard.py
+WorkingDirectory=/home/romel/.hermes/nvidia-guard
+Restart=always
+RestartSec=5
+StandardError=append:/home/romel/.hermes/nvidia-guard/guard.log
+StandardOutput=append:/home/romel/.hermes/nvidia-guard/guard.log
+# An in-flight upstream call must never block a restart: the last stop-sigterm
+# waited ~90s before systemd SIGKILLed. Cap the graceful window.
+TimeoutStopSec=8
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+
+[Install]
+WantedBy=default.target
