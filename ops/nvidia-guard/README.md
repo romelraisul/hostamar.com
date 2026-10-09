@@ -25,6 +25,8 @@ a dead model from being reported as if it were healthy.
 | Transport/quota failure never marks a model unavailable | Account pressure != model health |
 | `kimi-k3` unresponsive -> substitute a live sibling, return 200 with `x-nvg-substituted-from` | Client gets an answer, not a 120s hang/`000` |
 | Probes run **sequentially** | 4 concurrent probes against a 2-3-concurrent upstream is itself the burst |
+| A prepared stream is irrevocable: client write-failure ends the stream cleanly, no retry, no shed | The client already has `200` + headers; retrying/shedding wrote a second response onto a live stream (the bogus `429 <partial-bytes>` lines). A client's own timeout is not an upstream fault |
+| `/props`, `/v1/props`, `/api/tags`, `/api/v1/models`, `/api/ps`, `/api/show`, `/version`, `/api/version` -> local 404 in ~1.3ms | Ollama-style discovery probes are never served upstream; forwarding them burned ~2 account slots/min |
 | Log transport failures with `type(exc).__name__` + `repr` | `str()` of an asyncio timeout is empty - the log used to show a cause-less line |
 
 ## Operate

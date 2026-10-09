@@ -20,6 +20,7 @@ Nothing here writes secrets anywhere. No IP is ever hardcoded.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 import os
@@ -252,16 +253,30 @@ async def _forward_bytes(body_raw: bytes, key: str, want_stream: bool, request: 
         resp.headers["Content-Type"] = r.headers.get("Content-Type", "text/event-stream")
         resp.headers["Cache-Control"] = "no-cache"
         await resp.prepare(request)
-
-        async def _pump():
-            try:
-                async for chunk in r.content.iter_any():
-                    if chunk:
-                        await resp.write(chunk)
-            finally:
+        # A prepared stream is irrevocable: the client already has 200 + headers, so
+        # we can neither retry nor switch candidate. End the stream cleanly instead
+        # of bubbling up as an "upstream transport" failure - that used to set
+        # account_fail and make the shed path write a SECOND response onto a live
+        # stream, which is where the misleading "429 <partial-generation-bytes>" and
+        # "Cannot write to closing transport" access-log lines came from (a client
+        # that gave up on a long generation is not an upstream fault, and it must
+        # never push other callers into a shed).
+        try:
+            async for chunk in r.content.iter_any():
+                if not chunk:
+                    continue
+                try:
+                    await resp.write(chunk)
+                except (ConnectionResetError, ConnectionAbortedError, RuntimeError):
+                    log.info("stream: client went away, ending stream cleanly")
+                    break
+        except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+            log.info("stream: upstream ended early (%s), closing", type(exc).__name__)
+        finally:
+            with contextlib.suppress(Exception):
                 await resp.write_eof()
+            with contextlib.suppress(Exception):
                 await cm.__aexit__(None, None, None)
-        await _pump()
         return "streamed", None, resp
     data = await r.read()
     ctype = r.headers.get("Content-Type", "application/json").split(";")[0]
@@ -483,6 +498,14 @@ async def handle_chat(request: web.Request) -> web.StreamResponse:
 
 async def handle_generic(request: web.Request) -> web.StreamResponse:
     raw = await request.read()
+    # Ollama / llama.cpp / litellm discovery probes. The upstream never serves
+    # these, so forwarding them buys nothing but burns a slot on an account that
+    # only tolerates ~2 concurrent calls (litellm health probing was ~2/min).
+    if request.path in ("/props", "/v1/props", "/api/tags", "/api/v1/models",
+                        "/api/ps", "/api/show", "/version", "/api/version"):
+        return web.json_response(
+            {"error": {"message": f"{request.path} is not served by this guard",
+                       "type": "not_found"}}, status=404)
     keys = current_keys()
     if not keys:
         return web.json_response({"error": {"message": "no NVIDIA key available", "type": "no_key"}}, status=503)

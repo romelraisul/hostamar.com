@@ -71,6 +71,46 @@ Code (`nvidia_guard.py`):
 7. **Unreadable logs fixed** - `str(exc)` is empty for an asyncio timeout, so
    transport lines now log `type(exc).__name__` and `repr(exc)`.
 8. `TimeoutStopSec=8` in the unit (a restart used to wait ~90s for an in-flight call).
+9. **Discovery probes answered locally** - `/props`, `/v1/props`, `/api/tags`,
+   `/api/v1/models`, `/api/ps`, `/api/show`, `/version`, `/api/version` return a
+   local 404 in ~1.3ms instead of being forwarded to an upstream that never serves
+   them (litellm health-probing was ~2 wasted upstream calls/min).
+
+## Who is actually calling (identified from the access log)
+
+| Source | UA | Behaviour |
+|---|---|---|
+| Hermes itself (`nvidia-direct`) | `OpenAI/Python 2.24.0` | the real traffic - chat, streaming, long generations |
+| litellm `:4000` ("Local Brain") | `python-httpx/0.28.1` | Ollama-style discovery probes (`/props`, `/version`, `/api/tags`, ...), ~2/min |
+| Hostamar gateway | `HostamarGateway/1.0` | `GET /v1/models` only |
+| manual checks | `curl/8.x` | - |
+
+No `Python-urllib/3.13` storm in the current log: the catalog-scanning
+`free_model_router.py` fix holds (6349 requests all-time, ~1-2/min, all `200`).
+
+## Second defect, found by auditing those numbers (also fixed)
+
+The alarming access-log lines `429 171446` / `429 272693` were **not** 170 KB error
+bodies. Sequence: a long *streaming* generation -> the client's own 120s timeout
+fires -> the client goes away mid-stream -> `resp.write()` inside
+`_forward_bytes`' pump raised -> the shared forward helper reported it as an
+*upstream transport* failure -> that set `account_fail` and the shed path tried to
+write a **second** response onto an already-prepared stream. Result: a bogus
+`transport ... Cannot write to closing transport` warning, a bogus `429` status
+logged with the partial-generation byte count, and a shed caused by nothing but a
+client's timeout.
+
+Fix - a prepared stream is irrevocable (client already has `200` + headers, so no
+retry and no candidate switch is possible):
+
+- write failure to the client -> `stream: client went away, ending stream cleanly`
+- upstream ends early -> `stream: upstream ended early (...), closing` + `write_eof`
+- neither path retries, marks a model, or sheds
+
+Both `handle_chat` and `handle_generic` stream through this one helper, so the fix
+covers every streaming path (and `curl --max-time 6` on a long generation now logs
+exactly the clean line above plus `200 0`, with no `429`).
+
 
 Unchanged, deliberately: `/v1/models` = the 4 allow-listed models; non-allow-listed
 model = ~1ms local `404` with no upstream call; `kimi-k3` unresponsive ->
@@ -88,6 +128,10 @@ model-side failure can mark a model `unresponsive`.
 | `moonshotai/kimi-k3` (used to hang to `000`) | `200` in **1.6s** via substitution (`x-nvg-substituted-from: moonshotai/kimi-k3`) |
 | Liveness cache | 3 live, kimi-k3 `unresponsive` (short TTL) - **no model marked "not live"** |
 | Idle window after the burst | 0 transport warnings, 0 `503`; no `404` storm |
+| **Re-verified later same day, while the account was genuinely busy** | 30 concurrent -> `{'200': 29, '429': 1}`, **0 transport errors, 0 503**, p50 38.5s / p95 97.7s / max 103.0s; serial 5/5 `200` |
+| Discovery probes (`/props`, `/version`, `/api/tags`, `/api/v1/models`, `/v1/props`) | local `404` in **1.1-1.4ms**, no upstream call |
+| Client gives up mid-stream (`curl --max-time 6` on a long generation) | `stream: client went away, ending stream cleanly` + access line `200 0` - **no** bogus `429`, no `Cannot write to closing transport` |
+| Streaming / non-stream end to end | `200` with 13 SSE chunks / `200` JSON |
 | Guard restart | **11s** (was 90s + SIGKILL) |
 | "not live" cron failures today | none |
 | Repo vs deployed `nvidia_guard.py` | `md5sum` identical |
