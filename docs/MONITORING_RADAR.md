@@ -63,7 +63,9 @@ cause an outage fixing one.
 2. **The radar runs on the box**, so it cannot report "the site is down" if the
    box itself is off. Point a free external monitor (UptimeRobot / BetterStack,
    5-min) at `https://hostamar.com/api/health` -> `{"status":"healthy"}` for that
-   case. Setting that up needs a signup, so it is not automated here.
+   case. Setting that up needs a signup, so it is not automated here: click-by-click
+   steps, the exact monitor config, free-tier limits and the WAF 403 gotcha are in
+   `ops/external-probe-setup.md`. Status: manual backlog (tracked, not forgotten).
 3. `radar.sh --deep` calls the live DB and the model gateway (billing/store
    suites). Keep it to the nightly timer on a day you want the proof.
 4. Cold-start percentage is a small sample (124 events, 4 over 400ms here) - read

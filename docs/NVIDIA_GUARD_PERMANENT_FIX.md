@@ -156,3 +156,29 @@ NVG_TEST_N=30 /usr/bin/python3 ~/.hermes/nvidia-guard/test_burst.py   # pass = 0
 
 Upon `guard.env` change: restart the unit. `test_burst.py` needs `/usr/bin/python3`
 (the Hermes-bundled 3.14.7 lacks `aiohttp`/`attr`).
+
+## A 429 from the guard is correct behaviour, not a fault
+
+When the free tier pushes back, the guard sheds with `429` + `Retry-After: 5` instead of
+stampeding the account (the tier tolerates ~2-3 concurrent). Those 429s show up in Hermes cron
+logs as `nvidia guard saturated quota/transport retry shortly` — expected under a burst, and
+correct: Hermes retries (`api_max_retries: 5`), and the shed is what keeps the *other* callers
+alive. Do not "fix" a shed by raising concurrency; that is the storm this guard exists to stop.
+Distinguish the two cases before acting:
+
+    guard 429 + Retry-After   -> shed, correct, client backs off            (no action)
+    genuine 503 / transport RST -> guard could not serve even alone         (investigate)
+
+Since the fix the 503/RST side has been flat: 0 models dead, 0 503 in the 2 h window after
+03:00 (pre-fix counts were 447 + 237 + 183 in 00:00-02:00), and re-verified bursts give
+29x200 + 1x429, 0 transport, 0 503.
+
+## Substitutions floor max_tokens at 800
+
+Reasoning models emit hidden thinking tokens before any content, so a small client ceiling
+returns `finish_reason=length` with `content:null` — that is a client-side artefact, not a dead
+model. `_rebuild_body()` sets `max_tokens` (or `max_completion_tokens`, whichever the caller
+used) to `NVG_REASONING_MIN_TOKENS` (default **800**) when it rebuilds a body for a substitution
+and the client asked for less. A body forwarded unchanged is never rewritten. Verified:
+`kimi-k3` (unresponsive) substituted by `glm-5.3-flash` returns 200 with `max_tokens=300`.
+
