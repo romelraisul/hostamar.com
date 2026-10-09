@@ -605,6 +605,7 @@ export default function TvPage() {
                 { f: 'receipt-paste-narrated.mp4', t: 'Checkout v2 Narrated (-16.8 dB)' },
                 { f: 'receipt-uptime-sla-narrated.mp4', t: 'Uptime SLA Narrated (-22.7 dB)' },
                 { f: 'shorts-agent-cloud-episode-2.mp4', t: 'Agent Cloud Ep2 Short — 30s vertical (-27.2 dB)' },
+                { f: 'shorts-agent-cloud-episode-narrated2.mp4', t: 'Agent Cloud Ep1 Short 2 — ৩০s ভার্টিকেল (-24.8 dB)' },
                 { f: 'shorts-eu-bd-gpu-spot-programme.mp4', t: 'EU-BD GPU Spot Prog Short — 30s (-31.6 dB)' },
                 { f: 'shorts-gpu-spot-market.mp4', t: 'GPU Spot Market Short — 30s (-28.3 dB)' },
                 { f: 'shorts-quantum-computing.mp4', t: 'Quantum Computing Short — 30s (-27.4 dB)' },
