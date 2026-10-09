@@ -25,6 +25,7 @@ export const metadata = {
   openGraph: {
     title: 'Hostamar Store — AI সার্ভিস, 1cr=1TK',
     description: 'সব সার্ভিস পাবলিক — দেখুন, তুলনা করুন, সাইনআপ করে অর্ডার করুন।',
+    images: ['/opengraph-image.png'],
   },
 }
 

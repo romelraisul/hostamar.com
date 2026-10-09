@@ -8,6 +8,7 @@ export const metadata = {
   openGraph: {
     title: 'M3E Canvas Vibe-Coding — Hostamar সার্ভিস #108',
     description: 'Canvas-এ ডিজাইন → কপি প্রম্পট → লোকাল AI-তে কোড। ১০x দ্রুত।',
+    images: ['/opengraph-image.png'],
   },
 }
 

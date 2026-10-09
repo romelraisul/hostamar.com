@@ -8,6 +8,7 @@ export const metadata = {
   openGraph: {
     title: 'OpenSEO Audit — Hostamar সার্ভিস #110',
     description: 'তোমার সাইটের SEO চেকআপ — পাস/ফেল চেকলিস্টে।',
+    images: ['/opengraph-image.png'],
   },
 }
 
