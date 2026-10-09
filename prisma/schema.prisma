@@ -1778,23 +1778,25 @@ model FleetLaneStatus {
 
 // --- PIN6 — Jev decision receipts (mirrors ~/.local/state/hostamar/decision-receipts.jsonl) ---
 model DecisionReceipt {
-  id            String   @id @default(cuid())
-  question      String
-  choices       String?
+  id            String   @id                 // int(epoch ms) as written by jev-server
+  ts            String?
+  question      String?
+  choices       String?                      // JSON array
   chosen        String?
   confidence    Float?
-  judge1        String?
-  judge2        String?
-  agree         Boolean?
-  whoProposed   String?
-  modelUsed     String?
+  reasoning     String?
+  probabilities String?                      // JSON object
+  whoProposed   String?  @map("who_proposed")
+  model         String?
   backend       String?
+  judge2        String?                      // JSON object
+  agree         Boolean?
   escalate      Boolean?
-  judge1Ms      Int?
-  probabilities String?
-  pin           String?
-  createdAt     DateTime @default(now())
+  routedTo      String?  @map("routed_to")
+  judge1Ms      Int?     @map("judge1_ms")
+  latencyMs     Int?     @map("latency_ms")
+  humanOverride String?  @map("human_override")
 
-  @@index([pin])
-  @@index([createdAt(sort: Desc)])
+  @@index([chosen])
+  @@index([ts])
 }

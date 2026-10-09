@@ -17,8 +17,9 @@ Jev is a *scorer*, not a generator: a single forward pass reads hidden-state slo
 release's direction vector. Confidence is (k*p_max - 1) / (k - 1) — 1.0 = max(p) is 1.0.
 The chat backend exists only for the second judge (an independent model × family).
 
-ponytail: receipts are an append-only JSONL file, not a DB table — enough for the audit tab and
-SOC2-style "who proposed what"; move to Postgres/Turso when more than one process writes them.
+Receipts are written to an append-only JSONL file (the write-through log) and mirrored into the
+"DecisionReceipt" table on Turso via the libsql HTTP pipeline; the dashboard reads the table.
+`--backfill` pushes the JSONL into Turso, `--mirror-check` asserts both agree.
 """
 import argparse, json, os, re, sys, time, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -128,6 +129,135 @@ def read_receipts(path, limit=50):
     return out
 
 
+# ------------------------------------------------- Turso/libsql audit mirror
+# ponytail: stdlib HTTP pipeline v2 — no new dependency, no venv surgery. The JSONL stays the
+# write-through log; this mirror is best-effort, a Turso outage must never fail a decision.
+_TURSO = None
+RECEIPT_COLS = ("id", "ts", "question", "choices", "chosen", "confidence", "reasoning",
+                "probabilities", "who_proposed", "model", "backend", "judge2", "agree",
+                "escalate", "routed_to", "judge1_ms", "latency_ms", "human_override")
+_JSON_COLS = ("choices", "probabilities", "judge2")
+
+
+def turso_cfg():
+    """(pipeline_endpoint, token) from env, else borrowed from the app's .env. Cached."""
+    global _TURSO
+    if _TURSO is not None:
+        return _TURSO
+    url = os.environ.get("DECISION_DB_URL", "") or os.environ.get("DATABASE_URL", "")
+    if not url:
+        for p in (os.path.expanduser("~/hostamar.com/.env"), "/home/romel/hostamar.com/.env"):
+            try:
+                m = re.search(r'^\s*DATABASE_URL=(.*)$', open(p, errors="ignore").read(), re.M)
+            except OSError:
+                m = None
+            if m:
+                url = m.group(1).strip().strip('"').strip("'")
+                break
+    m = re.search(r"[?&]authToken=([^&\s\"']+)", url)
+    token = m.group(1) if m else ""
+    host = url.split("?")[0].replace("libsql://", "https://").rstrip("/")
+    _TURSO = (host + "/v2/pipeline", token) if (token and host.startswith("https://")) else (None, None)
+    return _TURSO
+
+
+def turso_exec(statements, timeout=15):
+    """Run statements through the libsql HTTP pipeline. Raises on transport error."""
+    ep, token = turso_cfg()
+    if not ep:
+        raise RuntimeError("no Turso credentials (DECISION_DB_URL / DATABASE_URL)")
+    body = json.dumps({"requests": [{"type": "execute", "stmt": s} for s in statements]
+                       + [{"type": "close"}]}).encode()
+    req = urllib.request.Request(ep, data=body, headers={
+        "Authorization": "Bearer " + token, "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read())
+
+
+def receipt_stmt(receipt):
+    """One idempotent INSERT for a receipt dict -> libsql statement (pure, unit-tested)."""
+    args = []
+    for c in RECEIPT_COLS:
+        v = receipt.get(c)
+        if v is None:
+            args.append({"type": "null"})
+        elif c in _JSON_COLS:
+            args.append({"type": "text", "value": json.dumps(v, ensure_ascii=False)})
+        elif isinstance(v, bool):                                            # bool before int: bool is an int
+            args.append({"type": "integer", "value": "1" if v else "0"})
+        elif isinstance(v, int):
+            args.append({"type": "integer", "value": str(v)})               # pipeline v2: integer as a STRING
+        elif isinstance(v, float):
+            args.append({"type": "float", "value": v})                      # ...but float as a NUMBER (verified)
+        else:
+            args.append({"type": "text", "value": str(v)})
+    return {"sql": 'INSERT OR IGNORE INTO "DecisionReceipt" (%s) VALUES (%s)'
+                   % (",".join('"%s"' % c for c in RECEIPT_COLS), ",".join("?" * len(RECEIPT_COLS))),
+            "args": args}
+
+
+def mirror_receipt(receipt):
+    """Best-effort audit mirror. Returns True/False, never raises into the decision path."""
+    try:
+        out = turso_exec([receipt_stmt(receipt)])
+        return out.get("results", [{}])[0].get("type") == "ok"
+    except Exception as e:
+        print(f"turso mirror failed: {type(e).__name__}: {str(e)[:160]}", file=sys.stderr, flush=True)
+        return False
+
+
+def mirror_rows():
+    out = turso_exec([{"sql": 'select count(*) from "DecisionReceipt"', "args": []}])
+    return int(out["results"][0]["response"]["result"]["rows"][0][0]["value"])
+
+
+def read_receipts_db(limit=50):
+    """Same shape as read_receipts(), sourced from Turso so the audit trail survives a lost
+    jsonl / a fresh box. Raises on transport error (caller falls back to the file)."""
+    out = turso_exec([{"sql": 'SELECT %s FROM "DecisionReceipt" ORDER BY ts DESC LIMIT ?'
+                              % ",".join('"%s"' % c for c in RECEIPT_COLS),
+                       "args": [{"type": "integer", "value": str(int(limit))}]}])
+    res = out["results"][0]["response"]["result"]
+    names = [c["name"] for c in res["cols"]]
+    rows = []
+    for raw in res["rows"]:
+        r = {}
+        for name, cell in zip(names, raw):
+            if cell.get("type") == "null":
+                continue
+            v = cell.get("value")
+            if name in _JSON_COLS:
+                try:
+                    v = json.loads(v)
+                except (TypeError, json.JSONDecodeError):
+                    pass
+            elif name in ("confidence",):
+                v = float(v)
+            elif name in ("judge1_ms", "latency_ms"):
+                v = int(v)
+            elif name in ("agree", "escalate"):
+                v = v in ("1", 1, True, "true")
+            r[name] = v
+        rows.append(r)
+    return rows
+
+
+def backfill(path):
+    """Push every JSONL receipt into Turso. Idempotent (INSERT OR IGNORE on id)."""
+    rows = read_receipts(path, 10 ** 9)
+    sent = 0
+    for r in rows:
+        if not r.get("id"):
+            continue
+        try:
+            if turso_exec([receipt_stmt(r)]).get("results", [{}])[0].get("type") == "ok":
+                sent += 1
+        except Exception as e:
+            print(f"  skip id={r.get('id')}: {str(e)[:120]}", file=sys.stderr)
+    print(f"jsonl_lines={len(rows)} sent={sent} turso_rows={mirror_rows()}")
+    return 0
+
+
 class Handler(BaseHTTPRequestHandler):
     cfg: dict = {}
 
@@ -155,8 +285,13 @@ class Handler(BaseHTTPRequestHandler):
             m = re.search(r"limit=(\d+)", self.path)
             if m:
                 limit = min(int(m.group(1)), 500)
-            rows = read_receipts(self.cfg["receipts"], limit)
-            return self._send(200, {"count": len(rows), "receipts": rows})
+            try:  # the table is the durable copy; the jsonl is the local write-through log
+                rows = read_receipts_db(limit)
+                return self._send(200, {"count": len(rows), "receipts": rows, "source": "turso"})
+            except Exception as e:
+                rows = read_receipts(self.cfg["receipts"], limit)
+                return self._send(200, {"count": len(rows), "receipts": rows, "source": "jsonl",
+                                        "note": f"turso unreachable ({str(e)[:80]}); file fallback"})
         return self._send(404, {"error": "not found"})
 
     def do_POST(self):
@@ -216,6 +351,7 @@ class Handler(BaseHTTPRequestHandler):
                    "judge1_ms": judge1_ms, "latency_ms": int((time.time() - t0) * 1000),
                    "human_override": None}
         receipt["logged"] = log_receipt(self.cfg["receipts"], receipt)
+        receipt["turso"] = mirror_receipt(receipt)   # audit mirror, best-effort
         return self._send(200, {"choice": choice, "confidence": round(conf, 3),
                                 "probabilities": receipt["probabilities"],
                                 "reasoning": reason, "escalate": escalate,
@@ -282,6 +418,17 @@ def selftest():
         pass
     log_receipt(rc, {"id": "1", "chosen": "pro"})
     assert read_receipts(rc)[0]["chosen"] == "pro"
+    # the Turso mirror mapping, pure (index order == RECEIPT_COLS)
+    st = receipt_stmt({"id": "42", "chosen": "pro", "confidence": 0.91, "choices": ["fast", "pro"],
+                       "agree": True, "escalate": False, "latency_ms": 12, "judge1_ms": 3})
+    assert st["sql"].startswith('INSERT OR IGNORE INTO "DecisionReceipt"')
+    assert st["args"][0] == {"type": "text", "value": "42"}
+    assert st["args"][3] == {"type": "text", "value": '["fast", "pro"]'}   # JSON-encoded array
+    assert st["args"][5] == {"type": "float", "value": 0.91}   # float travels as a JSON number
+    assert st["args"][7] == {"type": "null"}                               # absent -> null
+    assert st["args"][12] == {"type": "integer", "value": "1"}             # bool -> 1
+    assert st["args"][13] == {"type": "integer", "value": "0"}             # bool -> 0
+    assert st["args"][15] == {"type": "integer", "value": "3"}
     print("selftest ok")
     return 0
 
@@ -304,9 +451,22 @@ def main():
                                               os.path.expanduser("~/.local/state/hostamar/decision-receipts.jsonl")))
     ap.add_argument("--token", default=os.environ.get("JEV_TOKEN", ""))
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--db-url", default=os.environ.get("DECISION_DB_URL", ""),
+                    help="Turso libsql:// URL incl. ?authToken= (default: borrowed from the app .env)")
+    ap.add_argument("--backfill", nargs="?", const="", metavar="JSONL",
+                    help="mirror the receipt log into Turso, then exit")
+    ap.add_argument("--mirror-check", action="store_true", help="assert jsonl lines == Turso rows")
     a = ap.parse_args()
+    if a.db_url:
+        os.environ["DECISION_DB_URL"] = a.db_url
     if a.selftest:
         sys.exit(selftest())
+    if a.backfill is not None:
+        sys.exit(backfill(a.backfill or a.receipts))
+    if a.mirror_check:
+        n, m = len(read_receipts(a.receipts, 10 ** 9)), mirror_rows()
+        print(f"jsonl={n} turso={m} {'MATCH' if n == m else 'MISMATCH'}")
+        sys.exit(0 if n == m else 1)
     serve({**{k: getattr(a, k) for k in ("host", "port", "backend", "upstream", "judge2",
                                          "threshold", "timeout", "receipts", "token")},
            "judge2_timeout": a.judge2_timeout, "judge1": a.model})
