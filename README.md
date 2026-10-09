@@ -110,3 +110,29 @@ reads as "not live".
 - Restart: `systemctl --user restart nvidia-guard.service` (env is read at start only).
 - Proof: `NVG_TEST_N=30 /usr/bin/python3 ~/.hermes/nvidia-guard/test_burst.py` — pass = 0 transport errors, 0 503s.
 
+### Why it used to fail again and again (root cause, both fixed)
+
+1. **Catalog-scan storm (upstream).** `free_model_router.py` (the litellm "Local
+   Brain") enumerated the whole ~424-model NVIDIA catalog through the guard and
+   live-verified the top 20 — including models outside the allowed four — with POSTs
+   every 5 minutes, and ~18 Hermes cron lane jobs added load on top. The free tier
+   tolerates only ~2-3 concurrent calls, so it answered with 429/RST, which surfaced
+   as `Cannot write to closing transport` on nearly every forward; the guard failed
+   over per model, so the whole pool looked dead and clients got 503s. Fix: the guard
+   advertises and probes only its 4 models (anything else 404s locally in ~1ms), caps
+   global concurrency, tries each key once, sheds with `Retry-After` instead of
+   stampeding, and a transport/quota failure **never** marks a model unavailable.
+2. **A client giving up was read as an upstream fault (guard).** When a long
+   streaming generation hit the client's own timeout, `resp.write()` raised inside
+   the shared forward helper, which reported an *upstream* transport failure — the
+   shed path then tried to write a second response onto an already-prepared stream.
+   That produced the bogus `Cannot write to closing transport` warnings and `429`
+   lines carrying the partial-generation byte count, and could shed other callers
+   because one client timed out. Fix: a prepared stream is irrevocable — the guard
+   ends it cleanly (`stream: client went away`), never retries and never sheds.
+
+Who actually calls the guard: Hermes itself (`OpenAI/Python 2.24.0`), litellm `:4000`
+(`python-httpx`, Ollama-style discovery probes — now answered locally), the Hostamar
+gateway (`HostamarGateway/1.0`, `GET /v1/models` only) and curl for manual checks.
+
+
