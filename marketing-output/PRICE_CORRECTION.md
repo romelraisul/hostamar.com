@@ -58,3 +58,29 @@ A price swap cannot fix these; each one is a claim decision, not a find/replace:
 
 Once those five are decided, the asset set and `/pricing` agree line for line, which
 is also what an AppSumo reviewer cross-checks (see `marketing-output/APPSUMO_LISTING.md`).
+
+## Copy-claims pass — DECISIONS APPLIED (2026-10-10)
+
+`scripts/fix-marketing-copy-claims.py` — **69 replacements across 32 files**, CRLF- and
+encoding-preserving, per-rule hit counts plus a ZERO-claim acceptance check
+(`--apply` ends with `RESULT: PASS`). Idempotent: a re-run reports `0 replacements`.
+
+| # | item | decision |
+|---|---|---|
+| 1 | "50% OFF / beta, first 100 customers" | **Removed.** Replaced with the real offer: নতুন অ্যাকাউন্টে ৬,০০০ ক্রেডিট ফ্রি, কার্ড লাগবে না। A discount that does not exist is the one claim an AppSumo reviewer will check. |
+| 2 | video-quota claims | **Changed to credits** ("১০ videos/mo" → "6,000 credits/mo"). Live plans meter credits; a video count nothing enforces is a refund argument waiting to happen. |
+| 3 | "Enterprise" plan name | **Renamed to Business** (৳2900). Live set is Starter/Pro/Business; Pro is listed separately (৳1900, 13,000 credits). |
+| 4 | ৳5,000 Bangla-LLM + ৳0 free tier advertised nowhere | **Now advertised.** The free tier headlines the rewritten posts; the Bangla-LLM one-time offer was added to the launch-pack post. No `/pricing` entry for it yet — backlog. |
+| 5 | "৯৯০ টাকা/মাস → অফার মূল্যে মাত্র ১,০০০ টাকা" (offer above list) | **Removed with item 1.** Copy states ৳990/mo plainly, no offer framing. |
+
+Left deliberately (decided, not overlooked):
+
+- `fb_launch_400k_campaign.txt` "referral link → free credits" — true only while a referral
+  program is live; verify before publishing.
+- `app/api/marketing/first10/route.ts` advertises "good-models 9 live hourly", but
+  `UPSTASH_REDIS_*` is unset on the Worker so that cache is empty. Set Upstash, or soften the copy.
+
+Acceptance check = a ZERO-claim regex over the whole asset tree: 50% OFF family, Enterprise,
+per-plan video quotas, fake urgency/beta, stale `hostamar.vercel.app`, stale prices,
+unlimited-plan claim. **All seven report 0.** `/pricing` and the asset set now agree line for line.
+

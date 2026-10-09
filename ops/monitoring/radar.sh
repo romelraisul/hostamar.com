@@ -113,6 +113,10 @@ else fail "L4 containers" "down: ${missing[*]} (run radar.sh --fix)"; fi
 for u in "${USER_UNITS[@]}"; do systemctl --user is-active --quiet "$u" 2>/dev/null || warn "L4 unit $u" "not active"; done
 [ "$(systemctl --user is-active hostamar-provisioner-native 2>/dev/null)" = active ] && ok "L4 provisioner" "native active (container Exited = deliberate)" || warn "L4 provisioner" "not active"
 du=$(df --output=pcent / | tail -1 | tr -dc 0-9); [ "$du" -ge 90 ] && fail "L4 disk" "${du}% used" || { [ "$du" -ge 80 ] && warn "L4 disk" "${du}% used" || ok "L4 disk" "${du}% used"; }
+# free -m col 7 = available. ComfyUI --lowvram parks models in host RAM (docs/COMPUTER_RADAR_FINAL.md),
+# so the real cliff here is swap: warn when available RAM is thin OR swap is essentially exhausted.
+ma=$(free -m | awk '/^Mem:/{print $7}'); sw=$(free -m | awk '/^Swap:/{print $3}')
+[ "${ma:-99999}" -lt 1500 ] && warn "L4 mem" "${ma} MiB avail, swap ${sw} MiB used - ComfyUI capacity cliff, restart when idle" || { [ "${sw:-0}" -ge 15000 ] && warn "L4 mem" "${ma} MiB avail, swap ${sw} MiB used - swap exhausted, restart ComfyUI when idle" || ok "L4 mem" "${ma} MiB avail, swap ${sw} MiB used"; }
 g=$(timeout 15 "$(nvsmi)" --query-gpu=memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | head -1)
 if [ -n "$g" ]; then u=$(echo "$g" | cut -d, -f1); t=$(echo "$g" | cut -d, -f2); p=$((u*100/t))
   [ "$p" -ge 95 ] && warn "L4 gpu" "${u}/${t} MiB (${p}%)" || ok "L4 gpu" "${u}/${t} MiB (${p}%)"
@@ -165,7 +169,11 @@ while True:
 if not tot:
     print(f"SKIP|{os.path.getsize(path)}B captured, no parseable records yet")
 else:
-    msg=f"{tot} events ok={okc} exceededCpu={exceed} max_cpu={mx}ms mean_cpu={cpu//tot}ms cold>400ms={cold} ({100*cold//tot}%) 0-kill 95% bound={300//tot if tot else 0}.{int(30000/tot)%100 if tot else 0}% (needs 373 events for <=0.8)"
+    # Clopper-Pearson 95% upper bound with 0 kills: 1 - 0.05**(1/tot). Printed with a real
+    # float: the old `300//tot` / `int(30000/tot)%100` integer slicing silently printed
+    # 0.9% once tot > 3000 (i.e. 10x the true 0.09%) -- more events made the bound look worse.
+    b=100*(1-0.05**(1/tot))
+    msg=f"{tot} events ok={okc} exceededCpu={exceed} max_cpu={mx}ms mean_cpu={cpu//tot}ms cold>400ms={cold} ({100*cold//tot}%) 0-kill 95% bound={b:.2f}% (needs 373 events for <=0.8)"
     if exceed==0: print("OK|"+msg)
     elif exceed*1000 >= 5*tot: print("FAIL|"+msg)          # >0.5% kills = real limit
     else: print("WARN|"+msg)
