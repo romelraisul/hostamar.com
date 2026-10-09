@@ -58,7 +58,10 @@ services:
     command: sh -c "npm i --omit=dev @prisma/client && node worker.mjs"
     networks:
       - hostamar-net
-    restart: unless-stopped
+    # 2026-10-09: worker.mjs dies on import (Prisma ESM/CJS) -> 10218 restarts.
+    # Disabled; re-enable after fixing the import:
+    #   restart: unless-stopped
+    restart: "no"
 
   uptime-kuma:
     image: docker.io/louislam/uptime-kuma:1

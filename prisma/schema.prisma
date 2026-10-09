@@ -592,6 +592,11 @@ model RateLimitEvent {
   ip        String
   path      String
   method    String   @default("GET")
+
+  // PIN5 — Abuse check
+  decisionAbusive    Boolean? @map("decision_abusive")
+  decisionAbuseScore Float?   @map("decision_abuse_score")
+  decisionConfidence Float?   @map("decision_confidence")
   createdAt DateTime @default(now())
 
   @@index([bucket, createdAt])
@@ -628,6 +633,12 @@ model Incident {
   title           String
   timeline        String? // append-only: { at, actor, action, result }
   onCallCustomerId String?
+
+  // PIN4 — System Health priority scorer
+  decisionPriority      String? @map("decision_priority")
+  decisionConfidence    Float?  @map("decision_confidence")
+  decisionDowntime      Int?    @map("decision_downtime")
+  decisionRebootHistory Int?    @map("decision_reboot_history")
   createdAt       DateTime @default(now())
   resolvedAt      DateTime?
 
@@ -795,6 +806,12 @@ model ApprovalQueue {
   status    String    @default("pending") // pending | approved | denied
   createdAt DateTime  @default(now())
   decidedAt DateTime?
+
+  // PIN3 — Terraform PR gate (module/vpc or 0.0.0.0/0 -> approval required)
+  decisionApprovalRequired Boolean? @map("decision_approval_required")
+  decisionConfidence       Float?   @map("decision_confidence")
+  decisionTfDiff           String?  @map("decision_tf_diff")
+  decisionCostDelta        Float?   @map("decision_cost_delta")
 
   @@index([status])
   @@index([createdAt])
@@ -1467,6 +1484,15 @@ model HostingRequest {
 
   creditsCharged Int @default(0)
 
+  // PIN2 — Inbox Lead Router (prisma/migrations/20261009_decision_pins)
+  decisionQueue      String?  @map("decision_queue")
+  decisionConfidence Float?   @map("decision_confidence")
+  needsReview        Boolean  @default(false) @map("needs_review")
+  decisionJudge1     String?  @map("decision_judge1")
+  decisionJudge2     String?  @map("decision_judge2")
+  decisionAgree      Boolean? @map("decision_agree")
+  decisionReceiptId  String?  @map("decision_receipt_id")
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -1748,4 +1774,27 @@ model FleetLaneStatus {
   streak      Int       @default(0)
   lastSnippet String?
   updatedAt   DateTime  @updatedAt
+}
+
+// --- PIN6 — Jev decision receipts (mirrors ~/.local/state/hostamar/decision-receipts.jsonl) ---
+model DecisionReceipt {
+  id            String   @id @default(cuid())
+  question      String
+  choices       String?
+  chosen        String?
+  confidence    Float?
+  judge1        String?
+  judge2        String?
+  agree         Boolean?
+  whoProposed   String?
+  modelUsed     String?
+  backend       String?
+  escalate      Boolean?
+  judge1Ms      Int?
+  probabilities String?
+  pin           String?
+  createdAt     DateTime @default(now())
+
+  @@index([pin])
+  @@index([createdAt(sort: Desc)])
 }
