@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 async function checkHttp(url: string): Promise<number> {
   try {
     const ctl = new AbortController()
-    const t = setTimeout(() => ctl.abort(), 8000)
+    const t = setTimeout(() => ctl.abort(), 3000) // 8s held the isolate open on every admin poll
     const res = await fetch(url, { signal: ctl.signal, cache: 'no-store', headers: { 'User-Agent': 'hostamar-status-check/1.0' } })
     clearTimeout(t)
     return res.status
@@ -61,5 +61,10 @@ export async function GET() {
   const ok = components.filter(c => c.status === '✅').length
   const completion = `${ok}/${components.length} ${Math.round(ok / components.length * 100)}%`
 
-  return NextResponse.json({ completion, components, deployedAt: new Date().toISOString() })
+  // ponytail: private + max-age, NOT s-maxage. This route is cookie-gated by
+  // middleware.ts (not in PUBLIC_PATHS) and prints DB internals + which creds are
+  // configured, so there is no public edge cache to give it. Browser cache only.
+  return NextResponse.json({ completion, components, deployedAt: new Date().toISOString() }, {
+    headers: { 'Cache-Control': 'private, max-age=60' },
+  })
 }
