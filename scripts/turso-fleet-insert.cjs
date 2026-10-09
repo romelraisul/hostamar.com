@@ -18,9 +18,17 @@ if (!payloadPath) {
 }
 const body = JSON.parse(require('fs').readFileSync(payloadPath, 'utf8'));
 
+// V81: field names aligned with the route (camelCase jobId/raw/finished/couldnt/
+// needsYou); snake job_id/details only ever filled skeleton columns. Old keys
+// kept as fallbacks. BAZAAR 10-09.
+const finished = body.finished || body.details || null;
+const couldnt = body.couldnt || null;
+const needsYou = body.needsYou || null;
+const raw = body.raw || finished;
+
 c.execute({
-  sql: 'INSERT INTO "FleetReport" ("id","employee","jobId","verdict","raw","runAt") VALUES (?,?,?,?,?,?)',
-  args: [id, body.employee, body.job_id || '', body.verdict || null, body.details || null, now],
+  sql: 'INSERT INTO "FleetReport" ("id","employee","jobId","verdict","finished","couldnt","needsYou","raw","runAt") VALUES (?,?,?,?,?,?,?,?,?)',
+  args: [id, body.employee, body.jobId || body.job_id || '', body.verdict || null, finished, couldnt, needsYou, raw, now],
 })
   .then(() => console.log('SUCCESS: Turso direct-insert ' + id))
   .catch(e => { console.log('ERROR: Turso insert failed: ' + e.message); process.exit(1); });

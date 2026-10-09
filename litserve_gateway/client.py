@@ -3,5 +3,5 @@
 
 import requests
 
-response = requests.post("http://127.0.0.1:11442/predict", json={"input": 4.0})
+response = requests.post("http://127.0.0.1:11445/predict", json={"input": 4.0})
 print(f"Status: {response.status_code}\nResponse:\n {response.text}")
