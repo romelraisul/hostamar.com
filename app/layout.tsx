@@ -3,7 +3,6 @@ import './bazaar.css'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
-import ThemeToggle from '@/components/ThemeToggle'
 import SupportWidget from '@/components/SupportWidget'
 import SupportChatWidget from '@/components/support-chat-widget'
 import ChromeGuard from '@/components/layout/ChromeGuard'
@@ -37,20 +36,20 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Hostamar — AI Video Maker for Bangladeshi Business',
     description: 'AI ভিডিও জেনারেটর — ৫০+ টেমপ্লেট, বাংলা ভয়েসওভার, bKash পেমেন্ট',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Hostamar — AI Video Maker for Bangladeshi Business' }],
+    url: SITE_URL,
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Hostamar — AI Video Maker for Bangladeshi Business' }],
     locale: 'bn_BD',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    images: [{ url: '/twitter-image', width: 1200, height: 630, alt: 'Hostamar' }],
+    images: [{ url: '/twitter-image.png', width: 1200, height: 630, alt: 'Hostamar' }],
   },
   alternates: {
     canonical: 'https://hostamar.com',
-    languages: { 'bn-BD': '/bn', 'en-US': '/en' },
   },
   other: {
-    'color-scheme': 'light dark',
+    'color-scheme': 'light',
   },
 }
 
@@ -58,8 +57,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#3b82f6' },
-    { media: '(prefers-color-scheme: dark)', color: '#1e293b' },
+    { media: '(prefers-color-scheme: light)', color: '#0E7C3A' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A5E2C' },
   ],
 }
 
@@ -172,9 +171,8 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Hind+Siliguri:wght@400;700&display=swap"
           rel="stylesheet"
         />
-        <link rel="preload" as="image" href="/og-poster.webp" fetchPriority="high" />
         <link rel="preconnect" href="https://images.pluto.tv" />
-        <meta name="theme-color" content="#3b82f6" />
+        <meta name="theme-color" content="#0E7C3A" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Hostamar" />
@@ -200,7 +198,6 @@ export default async function RootLayout({
         <Providers>
           <LocaleProvider locale={locale}>
           <ChromeGuard>{children}</ChromeGuard>
-          <ThemeToggle />
           <SupportWidget />
           <SupportChatWidget />
           </LocaleProvider>
@@ -210,11 +207,6 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-                  e.preventDefault();
-                  var btn = document.querySelector('[aria-label="Toggle dark mode"]');
-                  if (btn) btn.click();
-                }
                 if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                   e.preventDefault();
                   navigator.clipboard.writeText(window.location.href).then(function() {

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description: 'Next.js, ComfyUI, Bangla NLP — বাংলাদেশের জন্য global product। ১০০% রিমোট, bKash salary।',
     url: 'https://hostamar.com/careers',
     siteName: 'Hostamar',
-    images: [{ url: 'https://hostamar.com/opengraph-image', width: 1200, height: 630, alt: 'Careers at Hostamar' }],
+    images: [{ url: 'https://hostamar.com/opengraph-image.png', width: 1200, height: 630, alt: 'Careers at Hostamar' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Careers at Hostamar — বাংলাদেশের জন্য বানান | Hostamar',
     description: 'বাংলাদেশের জন্য global product বানান — ১০০% রিমোট, bKash salary।',
-    images: ['https://hostamar.com/opengraph-image'],
+    images: ['https://hostamar.com/opengraph-image.png'],
   },
   keywords: ['hostamar careers', 'next.js jobs bangladesh', 'remote jobs bangladesh', 'bogura jobs', 'bangla nlp engineer'],
 }

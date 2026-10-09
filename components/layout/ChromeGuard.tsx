@@ -18,13 +18,41 @@ const APP_SHELL_PREFIXES = [
   '/ossu',
 ]
 
+// Routes that render their OWN full chrome (BazaarNav + BazaarFooter, or the
+// Docs shell). Without this exemption the root layout ALSO wrapped them in
+// AppHeader/AppFooter, so each shipped TWO headers + TWO footers.
+// IMPORTANT: these are EXACT matches only. Nested routes under them (e.g.
+// /blog/[slug], /products/ai-video) do NOT self-chrome and must keep the app
+// shell — so /blog and /products must never be treated as prefixes. Likewise
+// "/" as a prefix would startsWith("/") and strip the shell site-wide.
+// NOVA 2026-10-09.
+const SELF_CHROMED_ROUTES = new Set([
+  '/',
+  '/about',
+  '/blog',
+  '/contact',
+  '/faq',
+  '/features',
+  '/hosting',
+  '/products',
+  '/docs',
+  '/docs/bn',
+])
+
+function norm(p: string) {
+  if (!p) return '/'
+  return p.length > 1 ? p.replace(/\/+$/, '') : p
+}
+
 export default function ChromeGuard({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname() || '/'
+  const pathname = norm(usePathname() || '/')
+
   const isAppShell = APP_SHELL_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + '/'),
   )
+  const isSelfChromed = SELF_CHROMED_ROUTES.has(pathname)
 
-  if (isAppShell) {
+  if (isAppShell || isSelfChromed) {
     return <>{children}</>
   }
 
