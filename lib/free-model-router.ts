@@ -1,4 +1,5 @@
 import { isFree } from './gateway/filter'
+import { catalogKv } from './catalog-kv'
 
 /**
  * free-model-router.ts — V74 free-model discovery + quality ranking.
@@ -12,10 +13,12 @@ import { isFree } from './gateway/filter'
  * nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free) — kept as a static map
  * because its /models requires a key we do not ship to Vercel.
  *
- * The hourly refresh is the CDN TTL on the routes that consume this
- * (max-age=3600) — Vercel Hobby cannot run hourly crons, so cache expiry
- * IS the hourly check. A local WSL cron (model-router.sh) snapshots
- * ~/memories/models/ for the FleetReport log.
+ * Refresh cadence: the WSL hourly cron (scripts/model-router.sh →
+ * scripts/kv-seed-free-models.ts) writes HOSTAMAR_CATALOG.FREE_MODELS, and the
+ * Worker reads that. The merge is ~1.25MB of upstream JSON = 26-363ms CPU, which
+ * exceeded the Worker's CPU budget on a cache miss and 1102'd the whole site
+ * (Ray a47d58db1eb8db4f) — so it must not run per request. KV read is <1ms;
+ * a cold/empty KV still computes and persists, so the routes never hard-fail.
  */
 
 export type FreeModel = {
@@ -61,8 +64,12 @@ const TOKENROUTER_STATIC: FreeModel[] = [
   { id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', provider: 'tokenrouter', quality_score: 60, free: true, context: 128000, price: 0 },
 ]
 
-/** Fetch every free source, merge, dedupe, score, sort. One call = one hourly snapshot. */
-export async function fetchAllFreeModels(): Promise<FreeModel[]> {
+/**
+ * Fetch every free source, merge, dedupe, score, sort.
+ * This is the expensive part (26-363ms CPU) — call it from WSL/cron, not per
+ * request. Routes go through fetchAllFreeModels() (KV-first).
+ */
+export async function computeFreeModels(): Promise<FreeModel[]> {
   const out = new Map<string, FreeModel>()
 
   const [kilo, or, zen] = await Promise.all([
@@ -89,6 +96,29 @@ export async function fetchAllFreeModels(): Promise<FreeModel[]> {
   for (const m of TOKENROUTER_STATIC) out.set(`tokenrouter/${m.id}`, { ...m, id: `tokenrouter/${m.id}` })
 
   return Array.from(out.values()).sort((a, b) => b.quality_score - a.quality_score || b.context - a.context)
+}
+
+const FREE_KEY = 'FREE_MODELS'
+
+/**
+ * KV-first free list: <1ms edge read instead of a 26-363ms upstream merge.
+ * No TTL on purpose — a stale shortlist beats a 1102'd site; the hourly WSL
+ * seeder overwrites it. A cold KV computes once and persists (waitUntil), so
+ * freshness converges without ever failing the request.
+ */
+export async function fetchAllFreeModels(): Promise<FreeModel[]> {
+  const ctx = await catalogKv()
+  if (ctx) {
+    try {
+      const hit = await ctx.kv.get(FREE_KEY, 'json')
+      if (Array.isArray(hit) && hit.length) return hit as FreeModel[]
+    } catch {
+      /* unbound or unreadable KV -> compute below, never fail the route */
+    }
+  }
+  const fresh = await computeFreeModels()
+  if (ctx && fresh.length) ctx.waitUntil(ctx.kv.put(FREE_KEY, JSON.stringify(fresh)))
+  return fresh
 }
 
 /** Top-N free models — the "free top quality" shortlist the fleet routes to. */

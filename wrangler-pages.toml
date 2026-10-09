@@ -18,6 +18,15 @@ routes = [
   { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
 ]
 
+# KV: read-mostly catalogs. Same account namespace the ai-gateway worker already
+# populates (MODEL_CATALOG, binance_rate). FREE_MODELS is written hourly from WSL
+# (scripts/kv-seed-free-models.ts) so /api/v1/free-models + /api/v1/models do a
+# <1ms KV read instead of re-running a 26-363ms upstream merge per cache miss,
+# which exceeded the CPU budget and 1102'd the whole site (Ray a47d58db1eb8db4f).
+[[kv_namespaces]]
+binding = "HOSTAMAR_CATALOG"
+id = "7ce14c69f70d48449dd50edd4be3dca3"
+
 # ponytail: Prisma's workerd loader does `await import('./query_engine_bg.wasm')`
 # during a request; workerd does not count that pending module load as I/O, so the
 # first prisma request on a fresh isolate is killed as "hung" (~27% of requests).
