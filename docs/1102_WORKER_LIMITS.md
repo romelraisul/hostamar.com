@@ -17,6 +17,20 @@ Ray `a47d58db1eb8db4f` (2026-10-09 12:21:47 UTC). Fixed in worker version
    (`HOSTAMAR_CATALOG.FREE_MODELS`, bound in `wrangler-pages.toml`), compute only
    as the cold-KV fallback, published with `waitUntil`.
 
+## Evidence on record
+
+`wrangler tail` live captures, same day:
+
+* version `61d0ddf7` (pre-fix), 45 invocations → **5 × `outcome=exceededCpu`,
+  "Worker exceeded CPU time limit."** at cpuTime 10–11 ms, every one on a DB-backed route:
+  `/api/tv/agent/commands` (12:47:51, 12:48:01) and `/api/tv/playlist` (13:07:02/04/07).
+* version `6de74793` (this fix), 123 invocations → **0 non-ok, 0 exceptions**;
+  those same routes complete: `/api/tv/agent/commands` 58/58 ok (max 474 ms),
+  `/api/tv/playlist` 8/8 ok (max 430 ms).
+
+A route finishing at 474 ms cpuTime while the kills report 10 ms = the exhausted budget was the
+`libsql://` WebSocket socket holding the request context, not compute. That is fix #1.
+
 ## Keep it this way
 
 * Refresh is the hourly Hermes cron `free-model-router-hourly` →
