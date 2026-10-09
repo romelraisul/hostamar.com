@@ -70,8 +70,8 @@ python3 scripts/execute-dns.py
 | প্ল্যান | মূল্য | ভিডিও/মাস |
 |--------|-------|-----------|
 | Free | ৳০ | ৫টি |
-| Starter | ৳২,০০০ | ১০টি |
-| Business | ৳৩,৫০০ | ৩০টি |
+| Starter | ৳৯৯০ | ১০টি |
+| Business | ৳১,৯০০ | ৩০টি |
 
 পেমেন্ট: bKash | Nagad | USDT BEP20
 
