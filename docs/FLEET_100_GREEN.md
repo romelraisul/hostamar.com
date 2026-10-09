@@ -68,3 +68,41 @@ disk                                           551G used / 406G avail (58%)
 gpu (RTX 5060)                                 7745 MiB used of 8151, 3% util
 sockets                                        59 listening
 ```
+
+## Remaining-task closure (round 2, worker `cbad910e-35dc-4873-bab7-a93e89e53c61`)
+
+Six open items from the reports, closed or stated honestly:
+
+1. **High-cpuTime routes** — `/store` `@prisma/client/wasm` → `lib/turso-edge.ts` (one `COUNT(*)`);
+   `/api/admin/status` probe timeout 8 s → 3 s + `private, max-age=60` (**not** `s-maxage`: the
+   route is cookie-gated and prints DB internals, no safe public cache). Live tail, 300 s,
+   125 invocations: **ok 124 / exceededCpu 1**, 0 error logs; `/store` ~1.1 s → **455 ms**.
+   30/30 route sweep all 200; 150 further reps → 148 in class. Detail + the residual cold-bootstrap
+   kill in `docs/1102_WORKER_LIMITS.md`.
+2. **`hostamar-build` remote** — exists, local history pushed:
+   `git ls-remote` → `df5d810b9c4d18b8d26001b77eeb0f5b1c5b4631 refs/heads/master`. Default branch is
+   **`master`**; the old `origin/main` probe returned nothing because that branch never existed.
+3. **Terraform gate** — judge context fixed, threshold untouched (60% rule intact). Live:
+   benign r2 bucket → `no conf 0.61` → `GATE_RC=0`; vpc + `0.0.0.0/0` → `yes conf 0.786` →
+   `GATE_RC=1 Prod Approval Required`. Both were 0.17–0.25 (escalate → block everything) before.
+   The benign pass is thin (0.61 vs 0.60) — watch for flapping.
+4. **KV catalog** — `free-model-router-hourly` enabled, last_status **ok 21:01**; remote KV read
+   returns the 48-row `FREE_MODELS`; snapshots continuous 19/20/21:01, newest 48 rows.
+5. **Dual-write receipts** — `jev-server.py --mirror-check` → `jsonl=124 turso=124 MATCH`; writer
+   lives in `~/hostamar-build/jev-server.py`, byte-identical to the `ops/` copy, both now on the
+   pushed remote.
+6. **One-poller rule** — `hostamar-provisioner` container Exited (1) with `restart: "no"` and the
+   rule in-file at `podman-compose.yml:61-68`; `hostamar-provisioner-native` active 7h,
+   `NRestarts=0`. **Divergence:** `~/hostamar-deploy-reel/podman-compose.yml:61` still says
+   `restart: unless-stopped` for the same container name — that is the VPS bundle where the
+   container *is* the poller, left alone on purpose. Rule is per-host: never run both on one host.
+
+Fleet, by source (not a single number): **5** running hostamar podman containers
+(code-server, minio, openwebui, tv-rtmp, uptime) + **12** active `systemd --user` hostamar units
+(camofox, camofox-tunnel, cloudflared, comfy-worker, embedding-router, interop-bridge, jev,
+jev-model, litserve, next, ollama, provisioner-native); 6/6 PINs green through Cloudflare.
+
+**Not green, for the record:** 6 fleet cron jobs have `last_status=error` on the model side —
+`nvidia model deepseek-ai/deepseek-v4.1-flash is not live (probe timeout >12.0s)` / "every provider
+in the fallback chain kept failing over" (atlas, bazaar, forge, vertex, scout, harbor,
+fleet-heartbeat, channel). That is the nvidia-guard/failback chain, not these six items.
