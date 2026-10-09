@@ -52,9 +52,9 @@ Copy EMAIL_TEMPLATE.html → Send to first 50 contacts
 | Plan | Price | Videos | Action |
 |------|-------|--------|--------|
 | **Free** | FREE | 5/month | Test unlimited |
-| **Starter** | ৳2,000 | 70/month | Perfect for beginners |
-| **Business** | ৳3,500 | 96/month | Most popular |
-| **Enterprise** | ৳6,000 | Unlimited | Agencies |
+| **Starter** | ৳990 | 70/month | Perfect for beginners |
+| **Business** | ৳1900 | 96/month | Most popular |
+| **Enterprise** | ৳2900 | Unlimited | Agencies |
 
 **Payment**: bKash/Nagad (1.95% fee) or USDT (0.5% fee)
 
@@ -94,7 +94,7 @@ hostamar-local/
 **Value Proposition:**
 - "৫ মিনিটে ভিডিও!" (5 minutes to video!)
 - Bangla text built-in
-- ৳২,০০০/month vs ৳২০,০০০+ for editors
+- ৳৯৯০/month vs ৳২০,০০০+ for editors
 - Pay in bKash/Nagad
 
 ---
@@ -110,8 +110,8 @@ hostamar-local/
 | Month 6 | 400 customers |
 
 **Revenue Projection:**
-- 50 customers × ৳3,500 = ৳1,75,000/month
-- 100 customers × ৳3,500 = ৳3,50,000/month
+- 50 customers × ৳1900 = ৳1,75,000/month
+- 100 customers × ৳1900 = ৳3,50,000/month
 
 ---
 

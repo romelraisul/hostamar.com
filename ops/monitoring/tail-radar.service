@@ -1,0 +1,18 @@
+[Unit]
+Description=Persistent wrangler tail for hostamar-pages -> cpuTime/outcome ledger
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/romel/hostamar.com
+Environment=PATH=/home/romel/.local/bin:/usr/local/bin:/usr/bin:/bin
+# rotates to the last 20k lines on every (re)start, then tails for 6h; Restart=always reconnects.
+# NOTE: the CLOUDFLARE_API_TOKEN env var shadows wrangler's OAuth login and only has Zone:Read,
+# which is why `env -u CLOUDFLARE_API_TOKEN` is required for tail to authenticate.
+ExecStart=/bin/bash -c 'f=/home/romel/logs/tail_radar.json; if [ -f "$f" ]; then tail -n 20000 "$f" > "$f.tmp" && mv "$f.tmp" "$f"; fi; exec env -u CLOUDFLARE_API_TOKEN timeout 6h ./node_modules/.bin/wrangler tail hostamar-pages --format=json >> "$f"'
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=default.target
