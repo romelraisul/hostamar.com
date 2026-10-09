@@ -16,9 +16,14 @@ mkdir -p "$MEMDIR"
 BRAIN=$(curl -sk --max-time 10 http://localhost:4000/v1/models 2>/dev/null | /usr/bin/python3 -c "import sys,json;print(len(json.load(sys.stdin).get('data',[])))" 2>/dev/null || echo 0)
 BRAIN_TR=$(curl -sk --max-time 10 http://localhost:4000/v1/models 2>/dev/null | /usr/bin/python3 -c "import sys,json;print(sum(1 for m in json.load(sys.stdin).get('data',[]) if m['id'].startswith('tokenrouter/')))" 2>/dev/null || echo 0)
 
-# 2. Fresh free-model snapshot from the deployed route (merges kilo/openrouter/
-#    opencode zen live + tokenrouter static; cache-bust forces upstream fetch)
-SNAP=$(curl -s --max-time 45 "https://hostamar.com/api/v1/free-models?cb=$(date +%s)")
+# 2. Fresh free-model snapshot. Since the 1102 fix the 1.25MB upstream merge runs
+#    HERE (no Worker CPU limit) and seeds HOSTAMAR_CATALOG.FREE_MODELS — prod then
+#    only does a <1ms KV read. Fall back to the cache-busted route if seeding
+#    fails (e.g. wrangler OAuth expired), so the trend log never goes blank.
+if ! (cd /home/romel/hostamar.com && ./node_modules/.bin/tsx scripts/kv-seed-free-models.ts) >> "$MEMDIR/kv-seed.log" 2>&1; then
+  echo "$(date '+%F %T') kv-seed failed — falling back to cache-busted route fetch" >> "$MEMDIR/kv-seed.log"
+fi
+SNAP=$(curl -s --max-time 45 "https://hostamar.com/api/v1/free-models")
 echo "$SNAP" > "$OUT"
 COUNT=$(echo "$SNAP" | /usr/bin/python3 -c "import sys,json;print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo 0)
 TOP=$(echo "$SNAP" | /usr/bin/python3 -c "
