@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       siteName: 'Hostamar',
       type: 'article',
       locale: 'bn_BD',
+      images: ['/opengraph-image.png'],
     },
   }
 }
