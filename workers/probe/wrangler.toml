@@ -1,0 +1,41 @@
+# hostamar-probe — off-box watchdog (Cloudflare Worker Cron Trigger).
+#
+# Why a Worker and not only the GitHub Actions workflow: this repo's `schedule` events are
+# not delivered in practice (measured 2026-10-10 — see ops/external-probe-setup.md), while a
+# Cron Trigger fires on Cloudflare's scheduler on time. Both implement the same verdict;
+# this one is the reliable trigger, the workflow stays as the manual/second view.
+#
+# NOTE ON TOML SHAPE: every top-level key stays ABOVE the first table header. Keys written
+# after [[kv_namespaces]] or [triggers] belong to that table and silently change nothing
+# (that exact mistake shipped a stale Worker once — see wrangler-pages.toml's header note).
+name = "hostamar-probe"
+main = "index.js"
+compatibility_date = "2024-11-01"
+workers_dev = true
+account_id = "e00717304c1139751214b8cda5078a8d"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Same KV namespace the catalog/hostamar-pages worker uses; this worker only touches
+# "probe:*" keys, so nothing else is disturbed.
+[[kv_namespaces]]
+binding = "PROBE_STATE"
+id = "7ce14c69f70d48449dd50edd4be3dca3"
+
+[vars]
+# Public path first: that is what users hit, and a challenge there is handled by falling
+# back to the Worker hostname, which is not behind the zone's bot rules.
+PUBLIC_URL = "https://hostamar.com/api/health"
+WORKER_URL = "https://hostamar-pages.romelraisul.workers.dev/api/health"
+# Box-only service behind the tunnel: the fast "is the box/tunnel up" signal (502/530 when dead).
+TUNNEL_URL = "https://decisions.hostamar.com/health"
+# Deploy with --var FORCE_DOWN:1 to prove the alert path end-to-end, then redeploy without it.
+FORCE_DOWN = "0"
+# Telegram push target for @hostamarbot (the chat the box already reports to).
+TELEGRAM_CHAT_ID = "7481317591"
+
+# Secrets (never in this file):
+#   npx wrangler secret put SLACK_WEBHOOK_URL -c workers/probe/wrangler.toml
+#   npx wrangler secret put TELEGRAM_BOT_TOKEN -c workers/probe/wrangler.toml
+#   TELEGRAM_CHAT_ID lives in [vars] below (a chat id, not a credential)
