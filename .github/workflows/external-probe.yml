@@ -6,27 +6,29 @@ name: External Probe — hostamar.com health (off-box)
 # off, the tunnel being down, or WSL failing to come back after a Windows restart:
 # every green radar pass is evidence about this box only. GitHub's infrastructure is
 # outside that blast radius, so this workflow is the check that still fires when the
-# box is asleep. It probes the *dynamic* /api/health route (the landing page is
-# edge-cached and keeps serving 200 from cache while the origin is dead).
+# box is asleep.
 #
-# Two things this workflow learned the hard way (2026-10-10, run 38009649121):
-#   1. From a datacenter IP the public hostname answers with Cloudflare's managed
-#      challenge ("Just a moment...", HTTP 403), not with health JSON, so a naive
-#      probe reports a false DOWN. The probe detects the challenge and falls back to
-#      the Worker's own hostname (hostamar-pages.<sub>.workers.dev), which is not
-#      behind the zone's bot rules. UP:edge_challenged therefore means "site is up,
-#      this runner's IP is being challenged"; only a real outage (fallback dead too)
-#      is reported as DOWN.
-#   2. Issues are disabled in this repo, so alerts are: this run going red (GitHub
-#      mails whoever last modified this file on scheduled failures) plus the
-#      SLACK_WEBHOOK_URL secret when set (verified live: slack_http=200).
+# What it asserts, and why (all learned the hard way, 2026-10-10):
+#   1. The public hostname challenges datacenter IPs. From a runner, EVERY path on
+#      hostamar.com answers 403 "Just a moment..." (measured matrix: /, /api/health,
+#      /api/tv/heartbeat, /api/v1/models), so a naive probe reports a false DOWN. The
+#      probe detects the challenge and asks the Worker's own hostname instead
+#      (hostamar-pages.<sub>.workers.dev), which is not behind the zone's bot rules.
+#   2. `pc` liveness, not just "the Worker answered". The Worker and Turso are both
+#      off-box, so /api/health alone stays green while the home box is dead — the exact
+#      outage this probe exists for. The route now reports `pc.alive` by reaching a
+#      box-only service through the tunnel; DEGRADED:pc_off means the site serves but
+#      the box (tunnel, local models, video pipeline) is unreachable.
+#   3. Alerts are: this run going red (GitHub mails whoever last modified this file on
+#      scheduled failures) plus the SLACK_WEBHOOK_URL secret (verified: slack_http=200).
+#      Issues are disabled in this repo, so there is no issue path.
 #
 # Known limits, stated so nobody rediscovers them:
 #   - GitHub's cron floor is 5 min and scheduled runs are queued, not exact
 #     (expect 10-30 min drift under load).
 #   - Scheduled workflows stop after 60 days with no repo activity.
-#   - A dedicated monitor (UptimeRobot/BetterStack) pointed at the public URL will hit
-#     the same challenge; it needs a zone-side exception for /api/health first.
+#   - A dedicated monitor (UptimeRobot/BetterStack) pointed at the public URL hits the
+#     same challenge; it needs a zone-side exception for /api/health first.
 
 on:
   schedule:
@@ -59,30 +61,34 @@ jobs:
       URL: https://hostamar.com/api/health
       FALLBACK_URL: https://hostamar-pages.romelraisul.workers.dev/api/health
     steps:
-      - name: Probe (public URL, then workers.dev fallback when challenged)
+      - name: Probe (public URL, workers.dev fallback when challenged, pc liveness)
         id: probe
         run: |
           set -uo pipefail
           UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36'
 
-          fetch() { # fetch <url> [ua]; writes /tmp/body, echoes "<code> <challenge?>"
+          fetch() { # fetch <url>; writes /tmp/body, echoes "<code> <challenge?>"
             local code chal="no"
-            code=$(curl -sS -o /tmp/body -w '%{http_code}' -m 20 -A "$2" \
+            code=$(curl -sS -o /tmp/body -w '%{http_code}' -m 20 -A "$UA" \
                    -H 'Accept: application/json, text/plain, */*' "$1" 2>/dev/null || echo 000)
             grep -qiE 'just a moment|cf-mitigated|challenge-platform|_cf_chl' /tmp/body 2>/dev/null && chal="yes"
             echo "$code $chal"
           }
 
-          healthy() { # reads /tmp/body, echoes "<yes|no> <db_down|->"
-            grep -q '"healthy"' /tmp/body 2>/dev/null || { echo "no -"; return; }
-            grep -q '"connected":false' /tmp/body 2>/dev/null && echo "yes db_down" || echo "yes -"
+          # /tmp/body is a 200 health payload: classify it. "alive" and "connected" appear
+          # only inside the pc / database objects, so a grep is unambiguous here.
+          judge() {
+            if ! grep -q '"status":"healthy"' /tmp/body 2>/dev/null; then echo "DOWN:http_200_bad_payload"; return; fi
+            if grep -q '"connected":false'  /tmp/body 2>/dev/null; then echo "DOWN:db_disconnected"; return; fi
+            if grep -q '"alive":false'      /tmp/body 2>/dev/null; then echo "DEGRADED:pc_off"; return; fi
+            echo "UP"
           }
 
           if [ -n "${{ inputs.debug_paths }}" ]; then
             echo "--- diagnostics matrix (no alert) ---"
             for p in $(echo "${{ inputs.debug_paths }}" | tr ',' ' '); do
               for host in https://hostamar.com https://hostamar-pages.romelraisul.workers.dev; do
-                read -r c ch <<<"$(fetch "$host$p" "$UA")"
+                read -r c ch <<<"$(fetch "$host$p")"
                 printf '%-58s %s challenge=%s\n' "$host$p" "$c" "$ch"
               done
             done
@@ -92,30 +98,21 @@ jobs:
 
           verdict=""; edge="direct"
           for attempt in 1 2 3; do
-            read -r code chal <<<"$(fetch "$URL" "$UA")"
-            echo "public attempt $attempt -> HTTP $code challenge=$chal :: $(head -c 200 /tmp/body | tr -d '\n')"
+            read -r code chal <<<"$(fetch "$URL")"
+            echo "public attempt $attempt -> HTTP $code challenge=$chal :: $(head -c 160 /tmp/body | tr -d '\n')"
             if [ "$code" = "200" ]; then
-              read -r ok dbdown <<<"$(healthy)"
-              if [ "$ok" = "yes" ]; then
-                if [ "$dbdown" = "db_down" ]; then verdict="DOWN:db_disconnected"; else verdict="UP"; fi
-              else
-                verdict="DOWN:http_200_bad_payload"
-              fi
+              verdict="$(judge)"
               break
             fi
             if [ "$chal" = "yes" ]; then
-              # Cloudflare is challenging this runner's IP -> the edge is up; ask the
-              # Worker directly (not behind the zone's bot rules) for the real health.
+              # Cloudflare is challenging this runner's IP -> the edge is up; ask the Worker
+              # directly (not behind the zone's bot rules) for the real health payload.
               edge="challenged"
-              read -r fc fchal <<<"$(fetch "$FALLBACK_URL" "$UA")"
-              echo "fallback (workers.dev) -> HTTP $fc challenge=$fchal :: $(head -c 200 /tmp/body | tr -d '\n')"
+              read -r fc fchal <<<"$(fetch "$FALLBACK_URL")"
+              echo "fallback (workers.dev) -> HTTP $fc challenge=$fchal :: $(head -c 160 /tmp/body | tr -d '\n')"
               if [ "$fc" = "200" ]; then
-                read -r ok dbdown <<<"$(healthy)"
-                if [ "$ok" = "yes" ]; then
-                  if [ "$dbdown" = "db_down" ]; then verdict="DOWN:db_disconnected"; else verdict="UP:edge_challenged"; fi
-                else
-                  verdict="DOWN:fallback_bad_payload"
-                fi
+                verdict="$(judge)"
+                [ "$verdict" = "UP" ] && verdict="UP:edge_challenged"
               else
                 verdict="DOWN:edge_challenged_and_fallback_http_$fc"
               fi
@@ -131,6 +128,7 @@ jobs:
           [ -n "$verdict" ] || verdict="DOWN:unreachable"
           if [ "${{ inputs.test_alert }}" = "true" ]; then verdict="DOWN:forced_test"; fi
 
+          echo "pc block: $(grep -o '"pc":{[^}]*}' /tmp/body 2>/dev/null | head -c 300)"
           echo "verdict=$verdict edge=$edge"
           {
             echo "verdict=$verdict"
@@ -156,16 +154,19 @@ jobs:
             exit 0
           fi
           V="${{ steps.probe.outputs.verdict }}"
-          PREFIX=""
-          [ "$V" = "DOWN:forced_test" ] && PREFIX="[TEST] "
+          case "$V" in
+            DOWN:forced_test) TEXT="[TEST] :red_circle: hostamar.com alert path check ($V)" ;;
+            DEGRADED:pc_off)  TEXT=":large_yellow_circle: hostamar.com DEGRADED — home box/tunnel unreachable, site itself serving ($V)" ;;
+            *)                TEXT=":red_circle: hostamar.com DOWN ($V)" ;;
+          esac
           curl -sS -o /tmp/slack.out -w 'slack_http=%{http_code}\n' -X POST \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"${PREFIX}\ud83d\udd34 hostamar.com DOWN (${V}) — off-box probe (edge=${{ steps.probe.outputs.edge }}) on ${URL} at $(date -u +%FT%TZ)\"}" \
+            --data "{\"text\":\"${TEXT} — off-box probe (edge=${{ steps.probe.outputs.edge }}) on ${URL} at $(date -u +%FT%TZ)\"}" \
             "$SLACK_WEBHOOK_URL" || true
           cat /tmp/slack.out 2>/dev/null || true
 
-      - name: Fail the run when DOWN
+      - name: Fail the run when DOWN (or DEGRADED)
         if: steps.probe.outputs.verdict != 'UP' && steps.probe.outputs.verdict != 'UP:edge_challenged' && steps.probe.outputs.verdict != 'UP:diagnostics'
         run: |
-          echo "verdict=${{ steps.probe.outputs.verdict }} (edge=${{ steps.probe.outputs.edge }}) — failing the run so the Actions tab and the repo-owner notification both show it"
+          echo "verdict=${{ steps.probe.outputs.verdict }} (edge=${{ steps.probe.outputs.edge }}) — failing the run so the Actions tab and the owner notification both show it"
           exit 1
