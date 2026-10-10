@@ -124,3 +124,29 @@ and after the box returned (01:40:14Z):
 systemd `running`, 0 failed units, every boot-enabled unit active, ssh on :2222, guard on
 :12436 with NRestarts=0, podman stack up, product 200 end to end, radar green. The only
 human-in-the-loop step left in the old plan was this shutdown — it is now measured, not assumed.
+
+## Cold boot for real — Windows host crashed 2026-10-10 08:51 local (02:51Z)
+
+While the off-box probe was being brought up, the Windows host went down **unexpectedly**
+(Event 41 + 6008: "The previous system shutdown at 8:51:07 AM … was unexpected"; the same pair
+fired on 2026-10-07/08 too, so this is a recurring host-stability issue rather than a one-off —
+the `.wslconfig` note about commit pressure is the likely story).
+
+The box came back **without a human** once Windows finished booting at 09:13:26 local (03:13Z):
+
+    uptime 24 min at 09:38 local  -> the distro started with the host, not when a command touched it
+    systemctl is-system-running = running | 0 failed (system + user)
+    radar.timer radar-deep.timer nvidia-guard hostamar-next hostamar-ollama
+      hostamar-embedding-router cloudflared comfyui   -> active (tail-radar still activating)
+    ssh.socket active, :2222 listening | 11 sockets | podman 6/6 | guard NRestarts=0
+    local :8081=200, :12436=200 | public https://hostamar.com/api/health=200
+
+Why it comes back: not magic — Windows startup items already do it. Scheduled tasks
+`Startup` (`wsl.exe -u root …/hostamar-autostart/wsl-start-hostamar.sh`), `HostamarBrowserStack`,
+`HostamarRafanWatchdog`, `HostamarRAMWatchdog`, plus `start-relays.cmd` and
+`start-hostamar-*.bat` in the Startup folder. That dependency is worth remembering: if a cold boot
+ever does come back dead, check those Windows-side entries first.
+
+The off-box probe caught the outage: heartbeat gap 02:52 → 03:17, `DEGRADED:pc_off` alert at
+03:10:32, recovery at 03:15:31 (Slack + Telegram). Latency was ~19 min then; the probe now also
+probes the tunnel each tick, which shortens detection to roughly one tick (~5-10 min).
