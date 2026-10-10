@@ -515,6 +515,7 @@ export default function TvPage() {
                 { f: 'shorts-submarine-cables.mp4', t: 'সাবমেরিন কেবল Short — ৩০s ভার্টিকল' },
                 { f: 'bangla-llm-episode-narrated.mp4', t: 'বাংলা LLM — নিজের ভাষায় নিজের AI (171s, নেরেশনসহ)' },
                 { f: 'shorts-bangla-llm.mp4', t: 'বাংলা LLM Short — ৩০s ভার্টিকল' },
+                { f: 'cdn-edge-episode-narrated.mp4', t: 'CDN ও Edge — কনটেন্ট কীভাবে কাছে আসে (196s, নেরেশনসহ)' },
                 { f: 'globalization-cinematic.mp4', t: 'Globalization Cinematic — 30s (narrated)' },
                 { f: 'vertical-forest-episode-narrated.mp4', t: 'গাছ কীভাবে শহর ঠান্ডা করে — Vertical Forests (155s, নেরেশনসহ)' },
                 { f: 'context-graph-episode-narrated.mp4', t: 'Context Graph — Agent Memory That Never Forgets (172s, নেরেশনসহ)' },
