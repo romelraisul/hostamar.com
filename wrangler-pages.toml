@@ -42,9 +42,9 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 
 [vars]
-# Targets /api/health probes for box liveness (the  field): services that only exist
-# on the home box behind the tunnel, so the off-box probe can tell "box off" from "site down".
-HOSTAMAR_PC_PROBE_URLS = "https://embeddings.hostamar.com/health,https://decisions.hostamar.com/health"
+# Box liveness for /api/health ( field): the box reports to Turso every few minutes
+# (fleet/loop.mjs -> FleetReport); pc.alive = newest report younger than this many seconds.
+HOSTAMAR_PC_MAX_AGE_S = "1200"
 TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
 B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
