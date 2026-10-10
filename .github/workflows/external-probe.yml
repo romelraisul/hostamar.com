@@ -1,0 +1,132 @@
+name: External Probe — hostamar.com health (off-box)
+
+# Runs on GitHub's runners, deliberately NOT on the home box.
+#
+# ops/monitoring/radar.sh executes inside WSL, so it cannot report the box being
+# off, the tunnel being down, or WSL failing to come back after a Windows restart:
+# every green radar pass is evidence about this box only. GitHub's infrastructure is
+# outside that blast radius, so this workflow is the one check that still fires when
+# the box is asleep. It probes the *dynamic* /api/health route (the landing page is
+# edge-cached and keeps serving 200 from cache while the origin is dead).
+#
+# Known limits, stated so nobody rediscovers them:
+#   - GitHub's cron floor is 5 min and scheduled runs are queued, not exact
+#     (expect 10-30 min drift under load).
+#   - Scheduled workflows are disabled after 60 days with no repo activity.
+#   - Alerts: repo-owner failure email (GitHub's own notification), the
+#     SLACK_WEBHOOK_URL secret when set, and a deduped `probe-down` issue.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      test_alert:
+        description: 'Force a DOWN verdict to prove the alert path end-to-end'
+        type: boolean
+        default: false
+
+concurrency:
+  group: external-probe
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Probe https://hostamar.com/api/health
+        id: probe
+        run: |
+          set -uo pipefail
+          URL="https://hostamar.com/api/health"
+          verdict=""
+          for attempt in 1 2 3; do
+            code=$(curl -s -o /tmp/body -w '%{http_code}' -m 20 "$URL" || echo 000)
+            body=$(cat /tmp/body 2>/dev/null || true)
+            echo "attempt $attempt -> HTTP $code :: ${body:0:300}"
+            if [ "$code" = "200" ] && printf '%s' "$body" | grep -q '"healthy"'; then
+              if printf '%s' "$body" | grep -q '"connected":false'; then
+                verdict="DOWN:db_disconnected"
+              else
+                verdict="UP"
+              fi
+              break
+            fi
+            # 000 (no route / tunnel dead) and 5xx are the two shapes worth retrying:
+            # a transient edge hiccup should not page anyone.
+            if [ "$code" = "000" ] || [ "$code" -ge 500 ] 2>/dev/null; then
+              sleep 15
+              continue
+            fi
+            verdict="DOWN:http_$code"
+            break
+          done
+          [ -n "$verdict" ] || verdict="DOWN:unreachable"
+          if [ "${{ inputs.test_alert }}" = "true" ]; then verdict="DOWN:forced_test"; fi
+          echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Off-box probe — hostamar.com"
+            echo ""
+            echo "- verdict: \`$verdict\`"
+            echo "- endpoint: $URL"
+            echo "- at: $(date -u +%FT%TZ) (UTC)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Alert — Slack
+        if: steps.probe.outputs.verdict != 'UP'
+        continue-on-error: true
+        run: |
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo "no SLACK_WEBHOOK_URL secret set — skipping Slack alert"
+            exit 0
+          fi
+          curl -sS -o /tmp/slack.out -w 'slack_http=%{http_code}\n' -X POST \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"\ud83d\udd34 hostamar.com DOWN (${{ steps.probe.outputs.verdict }}) — off-box probe on https://hostamar.com/api/health at $(date -u +%FT%TZ)\"}" \
+            "$SLACK_WEBHOOK_URL" || true
+          cat /tmp/slack.out 2>/dev/null || true
+
+      - name: Alert — GitHub issue (deduped)
+        if: steps.probe.outputs.verdict != 'UP'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const verdict = '${{ steps.probe.outputs.verdict }}';
+            const label = 'probe-down';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `Off-box probe (GitHub-hosted runner) reports **hostamar.com down**.`,
+              ``,
+              `- verdict: \`${verdict}\``,
+              `- endpoint: https://hostamar.com/api/health`,
+              `- run: ${runUrl}`,
+              `- at: ${new Date().toISOString()}`,
+              ``,
+              `The home box, its WSL distro and \`radar.sh\` all live behind this endpoint; a failure here means the site, the tunnel, or the box itself is not answering.`,
+            ].join('\n');
+            const common = { owner: context.repo.owner, repo: context.repo.repo };
+            const open = await github.rest.issues.listForRepo({ ...common, state: 'open', labels: label });
+            if (open.data.length > 0) {
+              await github.rest.issues.createComment({ ...common, issue_number: open.data[0].number, body });
+              core.notice(`commented on existing issue #${open.data[0].number}`);
+            } else {
+              const title = verdict === 'DOWN:forced_test'
+                ? '[TEST] probe alert path — delete me'
+                : `\ud83d\udd34 hostamar.com down — off-box probe (${verdict})`;
+              const created = await github.rest.issues.create({ ...common, title, body, labels: [label] });
+              core.notice(`opened issue #${created.data.number}`);
+            }
+
+      - name: Fail the run when DOWN
+        if: steps.probe.outputs.verdict != 'UP'
+        run: |
+          echo "verdict=${{ steps.probe.outputs.verdict }} — failing the run so the Actions tab and the repo-owner notification both show it"
+          exit 1
