@@ -172,6 +172,126 @@ RULES = [
     (["fb_launch_400k_campaign.txt"], r"👉 https://hostamar\.(?:vercel\.app|com)/referral(?!\r\n\r\n📚)",
      "👉 https://hostamar.com/referral\r\n\r\n📚 Bangla LLM ট্রেনিং: ৳5,000 (one-time) — বাংলাদেশের নিজস্ব মডেল।",
      1, "bangla-llm line"),
+
+    # ---- 6. fabricated social proof: the product has essentially no users yet, so invented
+    #      counts/ratings and @user placeholder testimonials are false claims too ----
+    (["fb_P004_social.txt"], r"^FACEBOOK POST \| স্বাগতম প্রথম ১০০টি কাস্টমার![^\r\n]*",
+     "FACEBOOK POST | নতুন অ্যাকাউন্টে ৬,০০০ ক্রেডিট ফ্রি!", 1, "P004 social title"),
+    (["fb_P004_social.txt"], r"^👥 ১০০\+ Creators \| 🎬 ১,০০০\+ Videos \| ⭐[^\r\n]*",
+     "🆓 ৬,০০০ ক্রেডিট ফ্রি | 💰 Starter ৳৯৯০/মাস | ⚡ AI ভিডিও মিনিটেই", 1, "P004 social metrics"),
+    (["fb_P004_social_proof.txt"], r"^🎉 আমাদের স্বাগতম প্রথম ১০০টি কাস্টমার![^\r\n]*",
+     "🎉 নতুন অ্যাকাউন্টে ৬,০০০ ক্রেডিট ফ্রি — কার্ড লাগবে না!", 1, "P004 proof title"),
+    (["fb_P004_social_proof.txt"], r"^শুধু এই মাসের মধ্যে:[^\r\n]*",
+     "Hostamar-এ এখন যা পাচ্ছেন:", 1, "P004 proof lead"),
+    (["fb_P004_social_proof.txt"],
+     r"^👥 ১০০\+ Creators[^\r\n]*\r\n🎬 ১,০০০\+ Videos[^\r\n]*\r\n⭐ ৪\.৯/৫ রেটিং[^\r\n]*\r\n📱 ৫\+ দেশ থেকে ব্যবহারকারী[^\r\n]*",
+     "🆓 নতুন অ্যাকাউন্টে ৬,০০০ ক্রেডিট ফ্রি — কার্ড লাগবে না\r\n"
+     "💰 Starter ৳৯৯০ · Pro ৳১৯০০ · Business ৳২৯০০ (প্রতি মাস)\r\n"
+     "🎬 বাংলা ভাষার AI ভিডিও, মিনিটেই তৈরি\r\n"
+     "🇧🇩 বাংলাদেশের জন্য তৈরি, বাংলা সাপোর্ট", 1, "P004 proof metrics"),
+    (["wa-queue/*_msg2.txt"],
+     r"Real results from our beta users:\r\n✅ @creator1[^\r\n]*\r\n✅ @creator2[^\r\n]*\r\n✅ @creator3[^\r\n]*",
+     "What you get with Hostamar:\r\n✅ 6,000 free credits — no card needed\r\n"
+     "✅ Bangla-language AI video, ready in minutes\r\n✅ Starter from ৳990/mo", 7, "placeholder proof (creator)"),
+    (["whatsapp_ready_3.txt", "wa_*_2.txt"],
+     r"Real results from beta users:\r\n- @user1[^\r\n]*\r\n- @user2[^\r\n]*\r\n- @user3[^\r\n]*",
+     "What you get with Hostamar:\r\n- 6,000 free credits — no card needed\r\n"
+     "- Bangla-language AI video, ready in minutes\r\n- Starter from ৳990/mo", 4, "placeholder proof (user)"),
+    (["whatsapp-templates.txt"], r"Here's what one of our beta users said:\r\n\"[^\r\n]*\"",
+     "What Hostamar does: Bangla-language AI video, ready in minutes — Starter ৳990/mo.",
+     1, "wa-tpl fake quote"),
+    # the quote line carried its invented attribution after the closing quote - strip it
+    (["whatsapp-templates.txt"],
+     r"What Hostamar does: Bangla-language AI video, ready in minutes — Starter ৳990/mo\. — [^\r\n]*",
+     "What Hostamar does: Bangla-language AI video, ready in minutes — Starter ৳990/mo.",
+     1, "wa-tpl leftover attribution"),
+    # a whole invented-testimonial block (named quotes) in the social-proof post
+    (["fb_P004_social_proof.txt"],
+     r'^কয়েকজন ক্রিয়েটরের কথা:[^\r\n]*\r\n\r\n"[^\r\n]*\r\n\r\n"[^\r\n]*\r\n\r\n"[^\r\n]*',
+     "👉 শুরু করুন ফ্রি — কার্ড লাগবে না: https://hostamar.com/signup\r\n\r\n"
+     "🎬 স্ক্রিপ্ট থেকে ফাইনাল ভিডিও, মিনিটেই তৈরি, বাংলায়",
+     1, "P004 proof fake testimonials"),
+    (["fb_P004_social_proof.txt"], r"#SuccessStory #BangladeshSuccess #VideoCreator",
+     "#AIVideoBD #VideoCreator #Bangladesh", 1, "P004 proof hashtags"),
+    (["fb_P004_social.txt"], r"#SuccessStory #VideoCreator",
+     "#AIVideoBD #VideoCreator #Bangladesh", 1, "P004 social hashtags"),
+
+    # ---- 7. invented "we got these results" posts, a coupon code that does not exist,
+    #      dollar/annual plan prices, and a case study about a customer that does not exist ----
+    (["fb_P003_benefits.txt"],
+     r"^🔥 ৩ মাসের কাজ ৩ ঘন্টায় সম্পন্ন![^\r\n]*\r\n\r\nHostamar ব্যবহার করে আমরা:[^\r\n]*\r\n\r\n"
+     r"📊 ফলাফল:\r\n💰 ৬০% সময় বাঁচালাম[^\r\n]*\r\n🎯 ৪০% বেশি এনগেজমেন্ট পেলাম[^\r\n]*\r\n📈 ২০০% রিচ বাড়িয়েছি[^\r\n]*",
+     "🎬 একটা ভিডিও এডিট করতে আগে লাগত ৩-৪ ঘন্টা — Hostamar-এ এখন মিনিটেই।\r\n\r\n"
+     "🛠️ Hostamar যা করে:\r\n💰 এডিটিং খরচ বাঁচে — সিম্পল ভিডিওতে আউটসোর্স লাগে না\r\n"
+     "🎯 স্ক্রিপ্ট থেকে ফাইনাল ভিডিও, বাংলায়\r\n📈 ক্রেডিট থেকে যত ভিডিও চান, নিজের গতিতে",
+     1, "P003 fake results"),
+    (["facebook-content-pack.txt"], r"^আমরা Hostamar লঞ্চ করছি[^\r\n]*",
+     "Hostamar এখন লাইভ — নতুন অ্যাকাউন্টে যা পাচ্ছেন:", 1, "pack promo intro"),
+    (["facebook-content-pack.txt"], r"^✅ লাইফটাইম ২০% ডিসকাউন্ট \(প্রথম ৫০ জনের জন্য\)[^\r\n]*",
+     "✅ Starter ৳৯৯০/মাস থেকে শুরু — কার্ড লাগবে না", 1, "pack lifetime discount"),
+    (["facebook-content-pack.txt"], r"^3️⃣ কোড ব্যবহার করুন: LAUNCH50[^\r\n]*",
+     "3️⃣ অ্যাকাউন্ট খুললেই ৬,০০০ ক্রেডিট ফ্রি", 1, "pack fake coupon"),
+    (["facebook-content-pack.txt"], r"^⏰ অফার বৈধ: শুধু আজকের জন্য![^\r\n]*",
+     "⏰ ৬০ সেকেন্ডে সাইনআপ — কার্ড লাগবে না", 1, "pack fake deadline"),
+    (["facebook-content-pack.txt"], r"#Offer #Discount #VideoCreation #Hostamar #BangladeshiStartup",
+     "#VideoCreation #Hostamar #BangladeshiStartup #AIVideoBD", 1, "pack hashtags"),
+    (["facebook-content-pack.txt"], r"Day 5:  Offer / Discount Post",
+     "Day 5:  Pricing Post", 1, "pack calendar label"),
+    (["youtube-script-1.txt"],
+     r'"BASIC PLAN — Prothom paid tier\. Somvaboto \$12/month or \$99/year \(discount',
+     '"STARTER PLAN — Prothom paid tier. ৳990/month. Start korar jonno', 1, "yt basic price (l1)"),
+    (["youtube-script-1.txt"], r"^paben\)\. 1080p, watermark removed, sob templates unlocked\. Amar mone hoy",
+     "6,000 credit free. 1080p, watermark removed, sob templates unlocked. Amar mone hoy",
+     1, "yt basic price (l2)"),
+    (["youtube-script-1.txt"], r'"PRO PLAN — \$24/month or \$199/year\. Extra features:',
+     '"PRO PLAN — ৳1900/month. Extra features:', 1, "yt pro price"),
+    (["youtube-script-1.txt"], r'"ENTERPRISE — Custom pricing\. Agency der jonno team collaboration feature',
+     '"BUSINESS — ৳2900/month. Agency der jonno team collaboration feature', 1, "yt enterprise->business"),
+    (["youtube-script-1.txt"], r"Paid plans gula fully loaded\. Dollar e price, kintu Bangladeshi users der",
+     "Paid plans gula fully loaded. Taka e price (Starter ৳990 — roughly $8), kintu Bangladeshi users der",
+     1, "yt dollar-price claim"),
+    (["email-templates.txt"],
+     r"^Case Study Snapshot:[^\r\n]*\r\n  Agency: Creative Millennials BD[^\r\n]*\r\n"
+     r"  Challenge:[^\r\n]*\r\n  Solution:[^\r\n]*\r\n  Result:\r\n"
+     r"    • [^\r\n]*\r\n    • [^\r\n]*\r\n    • [^\r\n]*\r\n    • [^\r\n]*",
+     "Illustrative example — not a customer; your numbers will differ:\r\n"
+     "  Setup: a Dhaka digital agency handling 40+ client videos/month\r\n"
+     "  Today: outsourcing the simple edits costs ~৳4.5L+/month\r\n"
+     "  With Hostamar: simple videos generated from Business (৳2900/mo + credits)\r\n"
+     "  Illustrative effect:\r\n"
+     "    • Simple videos come from credits instead of a freelancer invoice\r\n"
+     "    • Turnaround drops from days to minutes for simple videos\r\n"
+     "    • Editors spend their time on high-value creative work\r\n"
+     "    • No new tooling to learn — same workflow, faster output",
+     1, "email fabricated case study"),
+    (["email-templates.txt"], r"আমি আগের ইমেইলে Hostamar\.com এর কথা বলেছিলাম। আজ শেয়ার করতে চাই একটি বাস্তব উদাহরণ।",
+     "আমি আগের ইমেইলে Hostamar.com এর কথা বলেছিলাম। আজ দেখতে চাই এজেন্সির জন্য হিসাবটা কেমন দাঁড়ায়।",
+     1, "email 'real example' lead"),
+    (["email-templates.txt"],
+     r"^They started with a 14-day trial, saw results in week 1, and upgraded to Business by month 2\.[^\r\n]*",
+     "The usual path: start on the free tier (6,000 credits, no card) or the 7-day trial, then move to Business when the volume justifies it.",
+     1, "email case-study 14-day trial"),
+    (["email-templates.txt"],
+     r'Reply "Case Study" and I\'ll send you the full breakdown with screenshots and numbers\.',
+     'Reply "PRICING" and I\'ll send you the plan breakdown.', 1, "email fake screenshots promise"),
+    (["whatsapp-templates.txt"], r"^TEMPLATE 3 — PROMOTIONAL OFFER \(Limited-Time Discount\)[^\r\n]*",
+     "TEMPLATE 3 — PROMOTIONAL OFFER (Current Pricing)", 1, "wa-tpl template3 header"),
+
+    # ---- 8. "unlimited" that the metered plans do not provide (+ a plan/price mix-up) ----
+    (["email_welcome*.txt"], r"for unlimited template access!",
+     "for access to all templates!", 2, "welcome unlimited templates"),
+    (["email-queue/welcome_ready.txt"], r"for unlimited access\.",
+     "for access to all templates.", 1, "welcome-queue unlimited access"),
+    (["email-templates.txt"], r"— ৳1900/mo for Unlimited Videos\?",
+     "— more videos from ৳1900/mo?", 1, "email unlimited title"),
+    (["email-templates.txt"], r"মাসে ১,৯০০ টাকায় আনলিমিটেড ইউটিউব ভিডিও\?",
+     "মাসে ১,৯০০ টাকায় বেশি ইউটিউব ভিডিও — কীভাবে?", 1, "email unlimited subject"),
+    (["email-templates.txt"], r"^With Hostamar Business \(৳1900/mo\):",
+     "With Hostamar Pro (৳1900/mo):", 1, "email plan/price mix"),
+    (["email-templates.txt"], r"^  • Monthly capacity: 100\+ videos",
+     "  • Monthly capacity: 50+ videos (13,000 credits)", 1, "email capacity claim"),
+    (["APPSUMO_LISTING.md"], r"\| 30,000 \| unlimited hosting, free SSL, unlimited AI video, API, unlimited team",
+     "| 30,000 credits/mo | unlimited hosting, free SSL, team seats, API access", 1, "appsumo business row"),
 ]
 
 # Claims that must not survive anywhere in marketing-output.
@@ -182,9 +302,14 @@ ZERO = [
     # "client videos/month" is the agency's own volume, not a Hostamar plan quota
     ("per-plan video quota", r"(?<!client )videos/month|videos \(Lifetime\)|HD Videos/মাস|মাসে ৫ টি ভিডিও"),
     ("fake urgency/beta", r"Beta Offer|Beta Users|Price increases Monday|LimitedOffer|LAST CHANCE: "),
+    ("fabricated social proof", r"প্রথম ১০০|১০০\+ Creators|১,০০০\+|৪\.৯/৫|৫\+ দেশ|beta users|@creator[0-9]|@user[0-9]"),
+    ("fabricated testimonials", r"ক্রিয়েটরের কথা|Freelance Video Editor, Dhaka|#SuccessStory|@success_story|@pro_editor"),
+    ("fabricated results/case study", r"লাইফটাইম ২০%|প্রথম ৫০ জনের জন্য|Creative Millennials|৩ মাসের কাজ ৩ ঘন্টায়|৬০% সময় বাঁচালাম|২০০% রিচ|14-day trial|#Offer #Discount|LAUNCH50"),
+    ("non-taka plan pricing", r"\$12/month|\$24/month|\$99/year|\$199/year|ENTERPRISE — Custom pricing"),
     ("stale vercel domain", r"hostamar\.vercel\.app"),
     ("stale prices", r"৳2,000|৳3,500|৳6,000|৳4,000/মাস|instead of ৳2900|৳4,500/mo"),
     ("unlimited plan claim", r"৳2900/mo - Unlimited|\(Unlimited\)"),
+    ("unlimited claims", r"unlimited template access|unlimited access\.|Unlimited Videos|আনলিমিটেড ইউটিউব|unlimited AI video|unlimited team"),
 ]
 
 

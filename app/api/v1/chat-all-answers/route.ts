@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   return NextResponse.json({
     canGetAllAnswerFromChat: true,
-    how: 'Chat fallback chain: kilo-auto/free → edge (free) → omni.hostamar.com (your PC :20128 OmniRoute 604 models 200 OK 1.6s) → knowledge-base. When PC off: Upstash cached good-models 9 live + FleetEvent 129 events + Turso backup TG_MSG_ID 1563 909KB 88 tables + Drive 1499/313.7GB + consensus.md final goal.',
+    how: 'Chat fallback chain: kilo-auto/free → edge (free) → omni.hostamar.com (your PC :20128 OmniRoute 604 models 200 OK 1.6s) → knowledge-base. When PC off: Upstash cached good-models live + FleetEvent 129 events + Turso backup TG_MSG_ID 1563 909KB 88 tables + Drive 1499/313.7GB + consensus.md final goal.',
     whatHappensWhenPCOff: {
       tunnel: 'omni.hostamar.com dies — fallback to Upstash cache + knowledge-base',
       fleet: '19 employees stop ticking, jobs show red until PC back',
@@ -43,7 +43,7 @@ export async function GET() {
       '/admin?tab=fleet FleetReport LaneStatus',
       '/admin?tab=employees ops/feed 129 events talk channel',
       '/api/v1/models 166 brand=hostamar.com goodAdded=9',
-      '/api/v1/good-models 9 live hourly',
+      '/api/v1/good-models live list (cached hourly)',
       '~/hostamar-migrate/omnirouter/self-heal.log hourly',
       '~/.hermes/cron/jobs.json status',
       'export PATH=$HOME/.turso/bin:$PATH; turso db shell hostamar-db "SELECT * FROM FleetEvent ORDER BY createdAt DESC LIMIT 10"',

@@ -87,3 +87,16 @@ restart is acceptable:
 Expected: all `active`, and `ssh.socket` listening on 2222. Paste the output into
 `docs/WSL_COLD_BOOT_VERIFIED.md` to convert the "enabled" evidence above into a measured
 cold-boot result.
+
+## Status (2026-10-10 05:59) — everything verified except the shutdown itself
+
+Pre-shutdown state re-measured, so the only open step is the Windows-side reboot:
+
+    systemctl --user is-active radar.timer tail-radar.service nvidia-guard.service hostamar-next.service
+    -> active / active / active / active
+    systemctl is-active ssh.socket                      -> active, and ss -tln shows :2222
+    systemctl --user show nvidia-guard -p NRestarts     -> 0
+
+The agent cannot run `wsl --shutdown`: this session *is* a process inside the distro being shut
+down, so the command would kill its own terminal before it could read the result. That is why
+this one step stays manual — it needs a human at Windows PowerShell, then the output pasted here.

@@ -139,19 +139,19 @@ Body:
 
 হ্যালো [Agency Name] টিম,
 
-আমি আগের ইমেইলে Hostamar.com এর কথা বলেছিলাম। আজ শেয়ার করতে চাই একটি বাস্তব উদাহরণ।
+আমি আগের ইমেইলে Hostamar.com এর কথা বলেছিলাম। আজ দেখতে চাই এজেন্সির জন্য হিসাবটা কেমন দাঁড়ায়।
 
-Case Study Snapshot:
-  Agency: Creative Millennials BD (Dhaka-based digital agency)
-  Challenge: 40+ client videos/month, outsourcing costs ৳4.5L+/month
-  Solution: Migrated 70% of video production to Hostamar Business plan
-  Result:
-    • Monthly video cost dropped from ৳4.5L to ৳85,000
-    • Turnaround reduced from 5 days to 2 hours
-    • Team of 3 video editors redeployed to high-value creative work
-    • Client satisfaction score increased by 35%
+Illustrative example — not a customer; your numbers will differ:
+  Setup: a Dhaka digital agency handling 40+ client videos/month
+  Today: outsourcing the simple edits costs ~৳4.5L+/month
+  With Hostamar: simple videos generated from Business (৳2900/mo + credits)
+  Illustrative effect:
+    • Simple videos come from credits instead of a freelancer invoice
+    • Turnaround drops from days to minutes for simple videos
+    • Editors spend their time on high-value creative work
+    • No new tooling to learn — same workflow, faster output
 
-They started with a 14-day trial, saw results in week 1, and upgraded to Business by month 2.
+The usual path: start on the free tier (6,000 credits, no card) or the 7-day trial, then move to Business when the volume justifies it.
 
 Why this matters for your agency now:
 • Your competitors are adopting AI production — early movers win the pricing war
@@ -166,7 +166,7 @@ Pricing reminder:
 White-label (your brand on the platform) is included with the Business plan — ৳2900/mo.
 
 CTA:
-Reply "Case Study" and I'll send you the full breakdown with screenshots and numbers. Or book a 15-min call with me directly: https://hostamar.com/agency-demo
+Reply "PRICING" and I'll send you the plan breakdown. Or book a 15-min call with me directly: https://hostamar.com/agency-demo
 
 —
 Romel Raisul
@@ -176,10 +176,10 @@ Founder, Hostamar.com
 
 ────────────────────────────────────────────────────────────────────────────────
 TEMPLATE 5 — YouTube Creators / Production Houses (Price & ROI Focus)
-Title:  YouTube Creator Outreach — ৳1900/mo for Unlimited Videos?
+Title:  YouTube Creator Outreach — more videos from ৳1900/mo?
 ────────────────────────────────────────────────────────────────────────────────
 
-Subject:  মাসে ১,৯০০ টাকায় আনলিমিটেড ইউটিউব ভিডিও? 😲
+Subject:  মাসে ১,৯০০ টাকায় বেশি ইউটিউব ভিডিও — কীভাবে? 😲
 
 Body:
 
@@ -194,10 +194,10 @@ Without Hostamar:
   • Time per video: 4–8 hours (if in-house)
   • Monthly limit: 8–15 videos (realistically)
 
-With Hostamar Business (৳1900/mo):
+With Hostamar Pro (৳1900/mo):
   • Per video cost: ~৳35
   • Time per video: 5 minutes
-  • Monthly capacity: 100+ videos
+  • Monthly capacity: 50+ videos (13,000 credits)
 
 That's 140x cost reduction and 96x time reduction.
 

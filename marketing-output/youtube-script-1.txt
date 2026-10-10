@@ -247,16 +247,16 @@ HOST:
 thake. Kintu test korar jonno ekdom perfect. Kono credit card lage na."
 
 HOST:
-"BASIC PLAN — Prothom paid tier. Somvaboto $12/month or $99/year (discount
-paben). 1080p, watermark removed, sob templates unlocked. Amar mone hoy
+"STARTER PLAN — Prothom paid tier. ৳990/month. Start korar jonno
+6,000 credit free. 1080p, watermark removed, sob templates unlocked. Amar mone hoy
 ei tier tai best for beginners."
 
 HOST:
-"PRO PLAN — $24/month or $199/year. Extra features: AI auto-generation,
+"PRO PLAN — ৳1900/month. Extra features: AI auto-generation,
 priority export, commercial license. Professionals der jonno."
 
 HOST:
-"ENTERPRISE — Custom pricing. Agency der jonno team collaboration feature
+"BUSINESS — ৳2900/month. Agency der jonno team collaboration feature
 niye."
 
 (VISUAL: Comparison chart — Hostamar vs other tools)
@@ -264,7 +264,7 @@ niye."
 HOST:
 "Compare korun — Canva Pro $13/month (limited video), Animaker $25/month,
 Pictory $19/month. Hostamar free plan eo customized Bangla video banano jay.
-Paid plans gula fully loaded. Dollar e price, kintu Bangladeshi users der
+Paid plans gula fully loaded. Taka e price (Starter ৳990 — roughly $8), kintu Bangladeshi users der
 jonno features er quality ar time saving ta mone rakhle — value for money
 manifest hoy."
 

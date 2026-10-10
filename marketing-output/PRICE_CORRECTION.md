@@ -80,7 +80,38 @@ Left deliberately (decided, not overlooked):
 - `app/api/marketing/first10/route.ts` advertises "good-models 9 live hourly", but
   `UPSTASH_REDIS_*` is unset on the Worker so that cache is empty. Set Upstash, or soften the copy.
 
-Acceptance check = a ZERO-claim regex over the whole asset tree: 50% OFF family, Enterprise,
-per-plan video quotas, fake urgency/beta, stale `hostamar.vercel.app`, stale prices,
-unlimited-plan claim. **All seven report 0.** `/pricing` and the asset set now agree line for line.
+Acceptance check = a ZERO-claim regex over the whole asset tree, covering twelve categories:
+50% OFF family, Enterprise, per-plan video quotas, fake urgency/beta, fabricated social proof,
+fabricated testimonials, fabricated results/case study, non-taka plan pricing (the invented
+`$12`/`$24`/`$99`/`$199` tiers and "ENTERPRISE — Custom pricing"), unlimited claims, stale
+`hostamar.vercel.app`, stale prices, unlimited-plan claim. **All twelve report 0 over 112 files.**
+`/pricing` and the asset set now agree line for line.
+
+## Second pass — fabricated proof removed (2026-10-10, later)
+
+The first pass caught the *framing* claims; an independent re-audit then caught the *story*
+claims a reviewer is most likely to spot-check against reality. `--apply` is idempotent
+(a re-run reports `0 replacements`); a replay against the pre-pass snapshot
+(`~/backups/marketing-copy-claims-2nd/`) confirms **46 replacements across 22 files**.
+
+| # | item | decision |
+|---|---|---|
+| 6 | fabricated customer stories with quantified results | **Removed.** A named Dhaka agency ("Creative Millennials BD") with `৳4.5L → ৳85,000`, `5 days → 2 hours`, `+35% CSAT`, and a "we got these results" post (`৬০% সময় বাঁচালাম / ২০০% রিচ`) were invented. Replaced with an explicitly-labelled *Illustrative example — not a customer; your numbers will differ*. Numbers we cannot point to do not go in a marketplace listing. |
+| 7 | `LAUNCH50` coupon + "শুধু আজকের জন্য" deadline | **Removed.** Neither code nor deadline exists in the app; the post now states the real offer (৬,০০০ ক্রেডিট ফ্রি, কার্ড লাগবে না). |
+| 8 | dollar plan pricing in the YouTube script | **Fixed to taka.** `$12/$24/month`, `$99/$199/year` and "ENTERPRISE — Custom pricing" were invented tiers. Now Starter ৳990 / Pro ৳1900 / Business ৳2900, matching `/pricing`. |
+| 9 | "unlimited videos / unlimited template access" | **Fixed.** Plans meter credits — Pro is 13,000/month. Copy now says credits or "all templates"; the Business row in the AppSumo sheet states `30,000 credits/mo`. |
+| 10 | plan/price mix-up (`Business (৳1900/mo)`), `100+ videos` capacity | **Fixed.** ৳1900 is Pro; capacity re-stated as credits (13,000 → tens of videos). |
+| 11 | "14-day trial" / "screenshots and numbers" follow-up | **Removed.** The trial is 7 days; there were no screenshots because there was no customer. |
+| 12 | `whatsapp-templates.txt` "TEMPLATE 3 — LIMITED-TIME DISCOUNT" header | **Retitled** to `(Current Pricing)`. |
+
+Left deliberately (decided, not overlooked):
+
+- `fb_launch_400k_campaign.txt` "referral link → free credits" — true only while a referral
+  program is live; verify before publishing.
+- `app/api/marketing/first10/route.ts` advertises "good-models 9 live hourly", but
+  `UPSTASH_REDIS_*` is unset on the Worker so that cache is empty. Set Upstash, or soften the copy.
+- `email-templates.txt` outsourcing figures `৳5,000–৳10,000/mo` for `8–15 videos` — a market
+  assumption about the reader's own costs, not a claim about us.
+- Competitor price rows (`$12.99/mo ≈ ৳1,500+`) — factually a competitor's charge, kept.
+
 

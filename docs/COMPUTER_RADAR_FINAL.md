@@ -132,3 +132,40 @@ note "AppSumo Render scanner". Radar reports this as SKIP, never FAIL. Not block
    digit once `tot > 3000` — at 3,171 events it printed **0.9%** where the true bound is
    **0.09%**, i.e. more green events made the number look ten times worse. Fixed inline
    (`1 - 0.05**(1/tot)`, 2 dp); one-liner check above the L7 block prints both forms.
+
+## Backlog closed — measured values (2026-10-10 06:00)
+
+9. **The real fleet is 6 containers + 1 native provisioner + ~20 systemd units, not "16".**
+   `podman ps -a`: `hostamar-tv-rtmp`, `puppy-linux`, `hostamar-openwebui`, `hostamar-code-server`,
+   `hostamar-uptime`, `hostamar-minio` (all Up 27–37 h) plus `hostamar-provisioner` Exited(1)
+   (deliberate, `restart:no`, the one-poller note). The "16" was a systemd-side count that got
+   written down as a container count. Native units doing real work: `comfyui`,
+   `hostamar-comfy-worker`, `hostamar-next`, `hostamar-litserve`, `hostamar-jev(-model)`,
+   `hostamar-whisper`, `hostamar-ollama`, `hostamar-embedding-router`, `hostamar-interop-bridge`,
+   `hostamar-provisioner-native`, `cloudflared`/`hostamar-tunnel`/`camofox(-tunnel)`,
+   `medusa-ingress-tunnel`, `nvidia-guard`, `radar.timer`. `systemctl --failed` = 0.
+10. **ComfyUI is at the capacity cliff and was NOT restarted — it was mid-render.**
+    `logs` showed `MiniMaxMusic3TEModel ... AR sampling 3/751` written the same second as the
+    check, GPU 95–100%, RSS 11.9 GB, swap **16,382 / 16,384 MB used**, mem avail 9.8 GB. Restarting
+    a live render to reclaim RAM would have killed real work, so the plan stands: restart `comfyui`
+    **when idle** (`systemctl --user restart comfyui`), and the durable fix is offloading ComfyUI to
+    a second box or cloud. `L4 mem`/`L4 gpu` WARN on purpose — that is the cliff, visible.
+11. **`/api/v1/good-models` is not dead code.** It returns 200 with
+    `{"count":0,"error":"no-redis"}`; callers are `app/admin/chat/chat-client.tsx` and
+    `app/api/v1/models/route.ts`. The empty list is a missing `UPSTASH_REDIS_*` on the Worker
+    (config gap), not a broken route — so radar WARNs rather than SKIPs, and the two API strings
+    that claimed "good-models 9 live hourly" were corrected (`first10/route.ts`,
+    `chat-all-answers/route.ts`).
+12. **Uptime-Kuma `:3004` → 302 is correct.** It is the unauthenticated-dashboard redirect;
+    `curl -L` lands on 200. `radar.sh` already accepts 200 or 302 for that check.
+13. **The tail ledger has grown past the earlier snapshot.** 3,851 events, `ok=3848`,
+    `exceededCpu=1`, max_cpu 1085 ms, mean 109 ms, cold>400 ms = 205 (5%), 0-kill 95%,
+    Clopper-Pearson bound **0.08%** (threshold ≤0.8%). So "595 events / exceededCpu=0" is stale —
+    the count is up and there is now one CPU exception; the bound still passes by 10x.
+14. **`/mnt/c/Users/User/hostamar` left untouched, as instructed.** `fix/store-page-design`,
+    513 dirty files, HEAD `b9e25cd`. It is a WIP checkout, not a deploy source.
+15. **`radar.service` no longer fails itself.** `SuccessExitStatus=1` added (repo-owned unit,
+    symlinked from `~/.config/systemd/user/`). Before: the 05:56 pass reported
+    `FAIL L5 systemd | system=0 user=1 failed` where the one failed unit was `radar.service`,
+    because radar.sh exits 1 when it finds problems. After `daemon-reload` + `reset-failed`:
+    `--failed` = 0 and a fresh pass is **FAIL=0 WARN=4 SKIP=1**.

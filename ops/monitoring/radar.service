@@ -10,3 +10,7 @@ Environment=PATH=/home/romel/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/lib/ws
 ExecStart=/home/romel/hostamar.com/ops/monitoring/radar.sh --fix
 Nice=5
 TimeoutStartSec=600
+# radar.sh exits 1 when it *finds* problems (that is a report, not a failure).
+# Without this, the unit goes "failed", the next pass counts it in its own L5
+# systemd check, and the FAIL never clears. Exit >=2 / a signal still fails.
+SuccessExitStatus=1

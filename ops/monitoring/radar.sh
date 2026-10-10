@@ -87,7 +87,7 @@ for pair in "models:$EXPECT_MODELS:api/v1/models" "free-models:$EXPECT_FREE:api/
   [ "$n" = "$exp" ] && ok "L2 $nm" "$n rows" || { [ "$n" = 0 ] || [ "$n" = ERR ] && fail "L2 $nm" "$n (expect $exp)" || warn "L2 $nm" "$n rows (expect $exp)"; }
 done
 gm=$(body "$SITE/api/v1/good-models")
-printf '%s' "$gm" | grep -q 'no-redis' && warn "L2 good-models" "no-redis: UPSTASH_REDIS_* unset on the Worker -> route is a no-op" || ok "L2 good-models" "served"
+printf '%s' "$gm" | grep -q 'no-redis' && warn "L2 good-models" "live 200; UPSTASH_REDIS_* unset on the Worker so the list is empty (config gap, not a bug - route has callers: admin chat + /api/v1/models)" || ok "L2 good-models" "served"
 pins=$(body "$SITE/api/decision?pins=1" | python3 -c "import sys,json
 try: print(len(json.load(sys.stdin).get('pins') or {}))
 except Exception: print(0)")

@@ -104,3 +104,21 @@ cause an outage fixing one.
 | L5 ssh | `systemctl --user restart ssh.socket`; the 2222 override exists because Windows sshd (ID 5724) owns `:22` in mirrored mode |
 | L6 price/schema gone | page edit dropped the JSON-LD; Product is in `app/page.tsx`, FAQPage in `app/faq/page.tsx` |
 | L7 exceededCpu > 0.5% | bundle mass 40.39 MB (handler.mjs + @libsql/client 19MB + jsdom 14MB + @prisma/client 8.2MB). Report, do not "optimise" billing paths |
+
+## Honest limit: the radar cannot report this box being off
+
+Every check above runs **on this box**. If Windows restarts, WSL does not come back, or the
+tunnel dies, the radar is down with the site and reports nothing — a green run here is evidence
+about this machine, never proof that `hostamar.com` is up. A `radar.timer` pass that simply
+*does not happen* is indistinguishable from a healthy quiet period unless something **outside**
+the box is watching.
+
+Fix: an external probe on `https://hostamar.com/api/health` (already 200, nothing to build).
+Manual, free-tier signup — steps in [`ops/external-probe-setup.md`](../ops/external-probe-setup.md).
+Until that exists, treat "radar green" as one-sided evidence and say so.
+
+Companion trap, same family: `radar.service` is a oneshot, and `radar.sh` exits 1 when it *finds*
+problems. Without `SuccessExitStatus=1` in the unit, a reported FAIL marks the unit failed, and
+the next pass counts that in its own `L5 systemd` check — the FAIL then never clears. That was
+live on 2026-10-10 05:56 (`FAIL L5 systemd | system=0 user=1 failed`, the one unit being
+`radar.service` itself). Fixed in `ops/monitoring/radar.service`; exit >=2 still fails.

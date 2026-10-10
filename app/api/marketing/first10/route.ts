@@ -26,7 +26,7 @@ export async function GET() {
       },
     ],
     funnel: 'Landing -> /billing bKash 5400 BDT + Stripe $49 -> /admin/chat PC-VPS LIVE support -> Fleet 19 Nova Forge Harbor Reel Pulse Bazaar Orion Quill Vertex 24/7 build',
-    whereToSee: '/admin?tab=fleet FleetReport, /admin?tab=employees ops/feed 129 events, /api/v1/models 166 brand, /api/v1/good-models 9 live hourly, self-heal.log hourly',
-    pc_off: 'Chat answers from Upstash cache good-models 9 + fleet-feed 129 + Turso backup TG 1563 + Drive 1499 even PC off',
+    whereToSee: '/admin?tab=fleet FleetReport, /admin?tab=employees ops/feed 129 events, /api/v1/models 166 brand, /api/v1/good-models live list (cached when the PC is on), self-heal.log hourly',
+    pc_off: 'Chat answers from Upstash cache good-models + fleet-feed 129 + Turso backup TG 1563 + Drive 1499 even PC off',
   }, { headers: { 'Access-Control-Allow-Origin': '*' } })
 }
