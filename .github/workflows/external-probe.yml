@@ -15,10 +15,14 @@ name: External Probe — hostamar.com health (off-box)
 #      probe detects the challenge and asks the Worker's own hostname instead
 #      (hostamar-pages.<sub>.workers.dev), which is not behind the zone's bot rules.
 #   2. `pc` liveness, not just "the Worker answered". The Worker and Turso are both
-#      off-box, so /api/health alone stays green while the home box is dead — the exact
-#      outage this probe exists for. The route now reports `pc.alive` by reaching a
-#      box-only service through the tunnel; DEGRADED:pc_off means the site serves but
-#      the box (tunnel, local models, video pipeline) is unreachable.
+#      off-box, so /api/health alone stays green while the home box is dead - the exact
+#      outage this probe exists for. `pc.alive` comes from the box's own heartbeat
+#      (fleet/loop.mjs -> FleetReport in Turso, every ~5 min; alive = newest row younger
+#      than HOSTAMAR_PC_MAX_AGE_S, default 20 min). Fetching a box-only hostname through
+#      the tunnel was tried first and abandoned: same-zone subrequests inherit the
+#      caller's challenge verdict, so a datacenter caller got 403 from the Worker's own
+#      fetch too. DEGRADED:pc_off = site serves, box/tunnel/local stack unreachable.
+#      (Liveness is inherently lagging: pc_off lands within ~max_age + one cron tick.)
 #   3. Alerts are: this run going red (GitHub mails whoever last modified this file on
 #      scheduled failures) plus the SLACK_WEBHOOK_URL secret (verified: slack_http=200).
 #      Issues are disabled in this repo, so there is no issue path.

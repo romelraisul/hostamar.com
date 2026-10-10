@@ -14,54 +14,82 @@ export const dynamic = 'force-dynamic'
  */
 
 /**
- * Box liveness (`pc`) — additive field.
+ * Box liveness (`pc`) — additive field, read by the off-box probe
+ * (`.github/workflows/external-probe.yml`). Without it this route stays green while the
+ * home box is dead, because the Worker and Turso are both off-box — that is exactly the
+ * outage radar.sh cannot report from inside.
  *
- * This Worker and Turso are both off-box, so without this the route stays green while the
- * home box (and everything it serves: the tunnel, the local models, the video pipeline) is
- * dead. That is precisely the outage `ops/monitoring/radar.sh` cannot report from inside,
- * so the off-box probe in `.github/workflows/external-probe.yml` reads this field. Existing
- * consumers only look at status/database, so adding a field changes nothing for them.
+ * Signal: the box already reports to the cloud every few minutes (fleet/loop.mjs →
+ * /api/admin/fleet → FleetReport rows in this same Turso DB), so "the box is alive" ==
+ * "the newest FleetReport row is recent". Reading it is a Turso query, which matters:
+ * the first implementation fetched a box-only hostname through the tunnel and got
+ * Cloudflare's managed challenge (HTTP 403, "Just a moment...") whenever the caller's IP
+ * was challenged — same-zone subrequests inherit that verdict, so the fetch path is
+ * unusable from a datacenter caller. A DB read cannot be challenged.
  *
- * Both URLs point at services that only exist on the box, reached through the tunnel:
- * with the box off they fail fast (tunnel 502/530) and we report pc.alive=false.
+ * FleetReport.runAt is written two ways (Prisma DateTime → epoch number; the
+ * turso-fleet-insert.cjs fallback → ISO text), so parse both instead of trusting SQL
+ * ordering on a dynamically-typed column.
  */
-const PC_PROBE_URLS = (
-  process.env.HOSTAMAR_PC_PROBE_URLS ||
-  'https://embeddings.hostamar.com/health,https://decisions.hostamar.com/health'
-)
-  .split(',')
-  .map((u) => u.trim())
-  .filter(Boolean)
+const PC_MAX_AGE_S = Number(process.env.HOSTAMAR_PC_MAX_AGE_S || 1200) // 20 min: 4 missed 5-min reports
+const PC_SAMPLE_ROWS = 100
 
 type PcProbe = {
   alive: boolean
-  via?: string
-  status?: number
+  via: string
+  lastSeen?: string | null
+  ageSeconds?: number | null
+  maxAgeSeconds: number
+  rows?: number
   ms: number
-  tried: string[]
+  error?: string
+}
+
+function toEpochMs(v: unknown): number | null {
+  if (v === null || v === undefined) return null
+  if (typeof v === 'number') return v > 1e12 ? v : v * 1000 // ms vs epoch seconds
+  const s = String(v).trim()
+  if (!s) return null
+  if (/^-?\d+$/.test(s)) {
+    const n = Number(s)
+    return n > 1e12 ? n : n * 1000
+  }
+  const t = Date.parse(s.includes('T') ? s : s.replace(' ', 'T'))
+  return Number.isNaN(t) ? null : t
 }
 
 async function probePc(): Promise<PcProbe> {
   const started = Date.now()
-  const tried: string[] = []
-  for (const url of PC_PROBE_URLS) {
-    const t0 = Date.now()
-    try {
-      const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}from=health`, {
-        cache: 'no-store',
-        // Short cap: a health route must not hang behind a dead tunnel.
-        signal: AbortSignal.timeout(2500),
-        headers: { 'user-agent': 'hostamar-health-probe' },
-      })
-      tried.push(`${url.replace(/^https?:\/\//, '')}=${res.status}`)
-      if (res.ok) {
-        return { alive: true, via: url, status: res.status, ms: Date.now() - t0, tried }
-      }
-    } catch (e) {
-      tried.push(`${url.replace(/^https?:\/\//, '')}=${(e as Error)?.name || 'error'}`)
+  try {
+    const client = getTursoEdgeClient()
+    // rowid DESC = insertion order: independent of how runAt is encoded.
+    const res = await client.execute(
+      `SELECT "runAt" FROM "FleetReport" ORDER BY rowid DESC LIMIT ${PC_SAMPLE_ROWS}`,
+    )
+    let newest: number | null = null
+    for (const row of res.rows) {
+      const ms = toEpochMs((row as Record<string, unknown>).runAt)
+      if (ms !== null && (newest === null || ms > newest)) newest = ms
+    }
+    const ageSeconds = newest === null ? null : Math.round((Date.now() - newest) / 1000)
+    return {
+      alive: ageSeconds !== null && ageSeconds <= PC_MAX_AGE_S,
+      via: 'turso:FleetReport.runAt',
+      lastSeen: newest === null ? null : new Date(newest).toISOString(),
+      ageSeconds,
+      maxAgeSeconds: PC_MAX_AGE_S,
+      rows: res.rows.length,
+      ms: Date.now() - started,
+    }
+  } catch (e) {
+    return {
+      alive: false,
+      via: 'turso:FleetReport.runAt',
+      maxAgeSeconds: PC_MAX_AGE_S,
+      ms: Date.now() - started,
+      error: (e as Error)?.name || 'error',
     }
   }
-  return { alive: false, ms: Date.now() - started, tried }
 }
 
 async function checkDb(): Promise<{ connected: boolean; customers: number }> {
@@ -77,8 +105,7 @@ async function checkDb(): Promise<{ connected: boolean; customers: number }> {
 }
 
 export async function GET() {
-  // Together, not in sequence: the pc probe costs a tunnel round-trip and must not add its
-  // latency to a route other services also poll.
+  // Together, not in sequence: keep the route at one round-trip of latency.
   const [database, pc] = await Promise.all([checkDb(), probePc()])
 
   const payload = {
@@ -93,7 +120,7 @@ export async function GET() {
       apiBackend: env.NEXT_PUBLIC_API_URL || 'not set',
     },
     aiFallback: getFallbackStatus(),
-    version: '1.0.2',
+    version: '1.0.3',
   }
 
   return NextResponse.json(payload, { status: 200 })
