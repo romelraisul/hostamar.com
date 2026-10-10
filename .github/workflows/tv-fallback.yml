@@ -1,3 +1,10 @@
+# KNOWN BROKEN (2026-10-10, measured): the heartbeat check below is challenged by the
+# zone's bot protection from datacenter IPs — https://hostamar.com/api/tv/heartbeat answers
+# 403 "Just a moment..." from a GitHub runner on every attempt, so pcAlive is always false
+# here and this fallback never sees a live PC. It currently exits green only because
+# YT_RTMP_URL/FB_RTMP_URL are unset; if those are set it would stream a loop over the live
+# stream while the box is fine. Fix = have this workflow use the same workers.dev fallback as
+# .github/workflows/external-probe.yml (or exempt /api/tv/heartbeat at the zone).
 name: TV Fallback — GitHub -> YT/FB when PC down
 on:
   schedule:
