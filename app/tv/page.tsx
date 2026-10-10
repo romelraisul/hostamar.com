@@ -524,6 +524,8 @@ export default function TvPage() {
                 { f: 'programme-eu-bd-gpu-spot-narrated.mp4', t: 'EU-BD GPU Spot Market — Narrated (221s, narrated)' },
                 { f: 'build-log-005-narrated.mp4', t: 'Build Log 005 — Infrastructure & Growth (201s, narrated)' },
                 { f: 'programme-build-log-007-narrated.mp4', t: 'Build Log 007 — ১০৬ সার্ভিস, ১২০ মডেল, Orca ADE (১৩১s, নেরেশনসহ)' },
+                { f: 'build-log-008-narrated.mp4', t: 'Build Log 008 — Deploy Chains That Lie: rc=0 deploys that shipped nothing (128s, নেরেশনসহ)' },
+                { f: 'shorts-build-log-008.mp4', t: 'Build Log 008 Short — Deploy Chains That Lie (৩০s Vertical)' },
                 { f: 'shorts-build-log-007.mp4', t: 'Build Log 007 Short — ১০৬ সার্ভিস (৩০s Vertical)' },
                 { f: 'shorts-build-log-005.mp4', t: 'Build Log 005 Short — 30s Vertical' },
                 { f: 'shorts-eu-bd-gpu-spot.mp4', t: 'EU-BD GPU Spot Short — 30s Vertical' },
