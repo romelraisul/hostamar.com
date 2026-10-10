@@ -173,6 +173,19 @@ Since the fix the 503/RST side has been flat: 0 models dead, 0 503 in the 2 h wi
 03:00 (pre-fix counts were 447 + 237 + 183 in 00:00-02:00), and re-verified bursts give
 29x200 + 1x429, 0 transport, 0 503.
 
+**Correction (2026-10-10, later).** That "0 transport in the 2 h window after 03:00" line was
+measured from a *tail window* and does not hold against the whole log. File-level hourly counts
+of closing-transport lines for 2026-10-10: 00h 15, 01h 23, **02h 138, 03h 261**, 04h 23, last
+line **04:16:52** — the storm tapered sharply and did not stop at 03:00. What is true, and now
+measured: the service restarted at **05:17:28**, and the count since is **0** in both `guard.log`
+and `journalctl -u nvidia-guard`, with NRestarts 0. A re-verified burst after that restart gives
+`{'200': 12}` concurrent + `{'200': 3}` serial, 0 transport, 0 503, 0 sheds.
+
+Read the two shapes apart (`ops/nvidia-guard/README.md` has the detail): `forward error key#N:
+Cannot write to closing transport` is the benign client-hangup class that `_forward_bytes` ends
+cleanly; `transport <model> try#N/3: ClientConnectionResetError` is an upstream reset and is
+retried by design.
+
 ## Substitutions floor max_tokens at 800
 
 Reasoning models emit hidden thinking tokens before any content, so a small client ceiling

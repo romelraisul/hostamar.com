@@ -1,69 +1,60 @@
-# External uptime probe — manual setup (NOT automatable from this box)
+# External uptime probe — setup (manual, ~3 minutes)
 
-## Why this exists
+## Why this exists (the honest limit)
 
-`ops/monitoring/radar.sh` runs **on DESKTOP-9KA03CQ**. If that host is off (or WSL is not
-running), radar cannot tell you that hostamar.com is down — the thing that would report it
-is the thing that is off. So there is a blind spot that no amount of local checks closes:
+`ops/monitoring/radar.sh` runs **on this box**. If the box is off, the tunnel is down, or WSL
+did not come back after a Windows restart, the radar is off with it — it cannot report its own
+outage. Every green radar run is therefore evidence about *this* box only.
 
-    radar.sh can detect:  a service down while the host is up
-    radar.sh cannot detect: the host itself being off
+The fix is a probe that lives somewhere else and watches one endpoint:
 
-`sleep`-based local watchdogs do not help — an on-host watchdog dies with the host. The only
-fix is a prober that lives *off* the box.
+    https://hostamar.com/api/health
 
-## What to probe (one monitor is enough)
+The endpoint is already there and already 200s. Nothing to build — pick one free provider below
+and point it at that URL.
 
-    URL         https://hostamar.com/api/health
-    expect      HTTP 200 and body containing "healthy"
-    interval    5 min (free tier floor) — 1 min if the plan allows
-    timeout     30 s
-    keyword     healthy        <- keyword monitors catch a 200 that is actually an error page
+## Option A — UptimeRobot (free tier: 50 monitors, 5-min checks)
 
-Optionally a second monitor on `https://hostamar.com/store` (the public conversion page) and a
-third on `https://hostamar.com/api/v1/models` (returns 4 model ids, 590 B — a good liveness signal).
-
-Do **not** probe ports on this box (2222 ssh, 3004 kuma, 11445 litserve): they are not public,
-and the Cloudflare tunnel is what makes them reachable.
-
-## Free options
-
-| service | free tier | notes |
-|---|---|---|
-| UptimeRobot | 50 monitors, 5-min interval | email/Slack/webhook alerts; keyword monitoring on free tier |
-| BetterStack (Better Uptime) | 10 monitors, 3-min interval | nicer status pages, 3-min checks on free |
-| Cloudflare Health Checks | **paid** (part of a paid plan) | only if a paid zone already exists — it does not here |
-
-UptimeRobot is the default pick: 5-min checks, keyword match, and a public status page all fit
-the free tier.
-
-## Steps (about 2 minutes, browser, no automation possible — needs an account)
-
-1. https://uptimerobot.com → Sign up (email only, no card).
-2. Add New Monitor:
-   - Monitor Type: **Keyword**
-   - Friendly Name: `hostamar.com health`
+1. Sign up: https://uptimerobot.com  (free, no card)
+2. **Add New Monitor**
+   - Monitor Type: **HTTP(s)**
+   - Friendly Name: `hostamar.com`
    - URL: `https://hostamar.com/api/health`
-   - Keyword Type: **exists**, Keyword: `healthy`
-   - Monitoring Interval: 5 minutes
-   - Alert Contacts: your email (add Slack/Telegram webhook later if wanted)
-3. Save. It turns green on the first successful check.
-4. Optional: My Settings → add a Telegram/Slack webhook so an outage pings where you already are.
-5. Optional: public status page (Status Pages → create → add the monitor) and link it from
-   the marketing site footer.
+   - Monitoring Interval: **5 minutes** (the free tier's floor)
+   - Alert Contacts: your email (add Telegram under *My Settings → Add Alert Contact* if wanted)
+3. Save. Optional, catches a *wrong-content* outage the status code alone misses:
+   **Alert when keyword does not exist** → keyword `ok`.
 
-## If it never goes green
+Free-tier floor is 5 min, not 1 — a 1-minute check is a paid feature. 5 min is enough to tell
+you the site died while you were asleep, which is the whole point.
 
-- Cloudflare Bot Fight Mode / WAF can 403 a datacentre prober. If that happens, add the
-  prober's IP ranges to the same **IP Access Rule «Allow»** list as the AppSumo ranges
-  (Cloudflare → hostamar.com → Security → WAF → Tools → IP Access Rules). Radar reports the
-  AppSumo/WAF item as SKIP, never FAIL, so this does not affect local radar results.
-- UptimeRobot shows the response body/headers for a failing check — read it before touching
-  production.
+## Option B — BetterStack (free tier: 10 monitors, 30-second checks)
+
+1. Sign up: https://betterstack.com/uptime
+2. **Create monitor** → HTTP, URL `https://hostamar.com/api/health`, check every **30 seconds**
+3. Alert: email, or a webhook to the Telegram bot for a push notification.
+
+Better free cadence than UptimeRobot. Use this one if you want the tighter interval.
+
+## Option C — Cloudflare Health Checks
+
+Requires a paid Cloudflare plan (the zone here is on free) — **not usable**. Listed so nobody
+re-researches it.
+
+## What NOT to do
+
+- Do not add a Cloudflare Worker as the probe: a Worker inside the same zone fails together with
+  the zone (and with `hostamar-pages`) — it proves nothing about an account-level outage.
+- Do not point the probe at `/` : the landing page is cached by the edge and will keep serving 200
+  from cache while the origin behind it is dead. `/api/health` is dynamic; that is the point.
+
+## Verification that it works
+
+After saving the monitor, power the box off for one check interval (or stop the tunnel:
+`systemctl --user stop cloudflared.service`). You should get exactly one **DOWN** alert, then a
+recovery alert when it is back. If no alert arrives, no probe exists — check the alert contact.
 
 ## Status
 
-**Manual backlog.** Not automated here: creating the account needs a human signup (email
-verification, no API path without an account), and storing the API key is outside what this
-box should hold. Recorded so the blind spot is explicit rather than assumed away — see
-`docs/COMPUTER_RADAR_FINAL.md` § "What is NOT automated".
+- [ ] Signup done, monitor live, alert contact confirmed (manual, not automatable — free-tier
+      account creation needs a human email confirmation)

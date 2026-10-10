@@ -79,7 +79,7 @@ nothing expires on a timer. Top-up is always available at the same peg.
 |---|---|---|---|
 | Starter | ৳990 | 6,000 | 10 GB NVMe, free `.com` domain, 50+ Bangla templates, 1080p no watermark |
 | Pro | ৳1,900 | 13,000 | 50 GB NVMe, free SSL, API access, team of 5, 4K export |
-| Business | ৳2,900 | 30,000 | unlimited hosting, free SSL, unlimited AI video, API, unlimited team, dedicated support, custom domain |
+| Business | ৳2,900 | 30,000 credits/mo | unlimited hosting, free SSL, team seats, API access, dedicated support, custom domain |
 | Bangla LLM training | ৳5,000 once | 5,000 | QLoRA fine-tune + dataset builder + 1,000 inferences |
 | New account | ৳0 | 6,000 (start bonus) | no card needed (site) |
 
