@@ -628,6 +628,9 @@ export default function TvPage() {
                 { f: 'build-log-004-short-v2.mp4', t: 'Build Log 004 Short v2 — 30s (-32.3 dB, af 0.67)' },
                 { f: 'build-log-004-short.mp4', t: 'Build Log 004 Short — 30s (-28.2 dB)' },
                 { f: 'eu-bd-gpu-spot-narrated-full.mp4', t: 'EU-BD GPU Spot Narrated Full — 221s (-30.7 dB)' },
+                { f: 'shorts-sovereign-receipt-narrated2.mp4', t: 'Sovereign Receipt Short 2 — 30s ভার্টিকেল (-27.5 dB)' },
+                { f: 'sovereign-receipt-episode-narrated2.mp4', t: 'Sovereign Episode Narrated 2 — 77s (-27.5 dB)' },
+                { f: 'shorts-dubbing-bn-episode.mp4', t: 'Dubbing BN Short — 30s ভার্টিকেল (-24.9 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
