@@ -631,6 +631,7 @@ export default function TvPage() {
                 { f: 'shorts-sovereign-receipt-narrated2.mp4', t: 'Sovereign Receipt Short 2 — 30s ভার্টিকেল (-27.5 dB)' },
                 { f: 'sovereign-receipt-episode-narrated2.mp4', t: 'Sovereign Episode Narrated 2 — 77s (-27.5 dB)' },
                 { f: 'shorts-dubbing-bn-episode.mp4', t: 'Dubbing BN Short — 30s ভার্টিকেল (-24.9 dB)' },
+                { f: 'receipt-agent-fleet.mp4', t: 'Agent Fleet Receipt — 24/7 autonomous employees, $49/mo (-24.8 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
