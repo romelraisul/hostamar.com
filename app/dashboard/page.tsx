@@ -75,7 +75,7 @@ function RecentCard({ videos }: { videos: RecentVideo[] }) {
     <div className="bp-card overflow-hidden">
       <div className="px-5 py-4 border-b flex items-center justify-between">
         <h3 className="font-semibold text-[#0F172A] flex items-center gap-2"><Clock className="w-4 h-4 text-[#64748B]" /> Recent Projects</h3>
-        <Link href="/dashboard/videos" className="text-xs font-semibold text-[#2563EB] hover:underline">View all →</Link>
+        <a href="https://comfy.hostamar.com/" target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#2563EB] hover:underline">View all →</a>
       </div>
       {videos.length ? (
         <div className="divide-y divide-[#F1F5F9]">
@@ -94,7 +94,7 @@ function RecentCard({ videos }: { videos: RecentVideo[] }) {
         <div className="p-8 text-center">
           <Video className="w-10 h-10 text-[#CBD5E1] mx-auto" />
           <p className="text-sm text-[#64748B] mt-2">{t('dashboard.noVideos') || 'No videos yet'}</p>
-          <Link href="/dashboard/videos/new" className="text-sm font-medium text-[#0E7C3A] hover:underline">Create first →</Link>
+          <a href="https://comfy.hostamar.com/" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[#0E7C3A] hover:underline">Create first →</a>
         </div>
       )}
     </div>
