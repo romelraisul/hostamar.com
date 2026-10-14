@@ -330,10 +330,10 @@ export const pageSeo: Record<string, Metadata> = {
   }),
 
   '/dashboard/videos': seo({
-    title: 'My Videos — Hostamar Dashboard',
+    title: 'ভিডিও OS — ComfyUI | Hostamar',
     description:
-      'Manage your AI-generated videos: view, download, share, and delete. Track views, downloads, and video performance from your Hostamar dashboard.',
-    path: '/dashboard/videos',
+      'Hostamar ভিডিও OS এখন comfy.hostamar.com এ — Minimax Design এর ৪টা pillar (Agent, Multi-model, Voice/Music, Timeline) ComfyUI তে 90% rebuild করার গাইড।',
+    path: 'https://comfy.hostamar.com/',
     noindex: true,
   }),
 
