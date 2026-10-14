@@ -18,6 +18,8 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/dashboard/chatos', destination: '/dashboard/admin/chat-os', permanent: true },
+      // Video OS moved to the ComfyUI tunnel — deep links (1+ segments) 308, bare path renders the moved-notice + guide page
+      { source: '/dashboard/videos/:path+', destination: 'https://comfy.hostamar.com/', permanent: true },
     ]
   },
   // reactStrictMode disabled: Next 14.2.5's build-time prerender of the

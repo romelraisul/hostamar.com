@@ -31,6 +31,7 @@ import {
   ChevronRight,
   Tv,
   Clapperboard,
+  ExternalLink,
 } from 'lucide-react'
 import { PRODUCT_NAV } from '@/lib/products'
 import { DASHBOARD_ROUTES } from '@/lib/dashboard-routes'
@@ -126,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const secondaryNav = [
     { href: '/dashboard/ai-services', icon: Sparkles, label: 'AI Store', labelBn: 'AI স্টোর', badge: '50+', description: '50+ AI সার্ভিস — Instagram, FB Ads, YouTube' },
     { href: '/dashboard/chat', icon: MessageCircle, label: 'AI Chat', labelBn: 'AI চ্যাট', badge: '120', description: '120 মডেল ফ্রি' },
-    { href: '/dashboard/videos', icon: Video, label: 'Videos', labelBn: 'ভিডিও', badge: '37', description: 'আমার ভিডিও' },
+    { href: 'https://comfy.hostamar.com/', icon: Video, label: 'Videos', labelBn: 'ভিডিও', description: 'ভিডিও OS — ComfyUI', external: true },
     { href: '/dashboard/drive', icon: HardDrive, label: 'Drive', labelBn: 'ড্রাইভ', badge: '∞', description: 'Hostamar Drive — Telegram-backed আনলিমিটেড স্টোরেজ' },
     { href: '/dashboard/game', icon: Gamepad2, label: 'Game', labelBn: 'গেম', description: 'গেম হোস্টিং' },
     { href: '/dashboard/ide', icon: Code2, label: 'IDE', labelBn: 'IDE', description: 'ব্রাউজার IDE' },
@@ -144,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { label: 'ওভারভিউ', href: '/dashboard', icon: LayoutDashboard, kbd: 'G D' },
     ...navProducts.map((p) => ({ label: p.nameEn, href: p.href, icon: p.icon, kbd: '' })),
     ...secondaryNav.map((s) => ({ label: s.label, href: s.href, icon: s.icon, kbd: '' })),
-    { label: 'Create Video', href: '/dashboard/videos/new', icon: Video, kbd: 'C V' },
+    { label: 'Create Video', href: 'https://comfy.hostamar.com/', icon: Video, kbd: 'C V', external: true },
     { label: 'New Service', href: '/dashboard/services/new', icon: Server, kbd: 'N S' },
     { label: 'Billing / bKash Renew', href: '/dashboard/payment', icon: CreditCard, kbd: 'B' },
   ]
@@ -165,7 +166,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     (href: string) => {
       setPaletteOpen(false)
       setPaletteQuery('')
-      router.push(href)
+      if (/^https?:\/\//.test(href)) window.open(href, '_blank')
+      else router.push(href)
     },
     [router]
   )
@@ -346,6 +348,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {'badge' in item && item.badge ? (
                       <span className="rounded-full bg-[#0E7C3A] px-1.5 py-0.5 text-[10px] font-bold text-white">{item.badge}</span>
                     ) : null}
+                    {'external' in item && item.external ? <ExternalLink className="h-3 w-3 text-[#94A3B8]" /> : null}
                   </Link>
                 )
               })}
@@ -359,9 +362,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Clock className="h-3.5 w-3.5 text-[#64748B]" />
                 Recent
               </p>
-              <Link href="/dashboard/videos" className="text-[11px] font-medium text-[#2563EB] hover:underline">
+              <a href="https://comfy.hostamar.com/" className="text-[11px] font-medium text-[#2563EB] hover:underline">
                 View all
-              </Link>
+              </a>
             </div>
             {statsLoading ? (
               <div className="mt-2 space-y-2">
@@ -372,13 +375,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <ul className="mt-2 space-y-1">
                 {recentVideos.map((v) => (
                   <li key={v.id}>
-                    <Link href="/dashboard/videos" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-white">
+                    <a href="https://comfy.hostamar.com/" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-white">
                       <span className="flex h-7 w-7 items-center justify-center rounded bg-white border">
                         <Video className="h-3.5 w-3.5 text-[#64748B]" />
                       </span>
                       <span className="min-w-0 flex-1 truncate text-xs font-medium text-[#0F172A]">{v.title}</span>
                       <ChevronRight className="h-3 w-3 text-[#94A3B8] shrink-0" />
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>
