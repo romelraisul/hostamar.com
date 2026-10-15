@@ -8,7 +8,6 @@ import { catalogKv } from './catalog-kv'
  *   - kilocode gateway : https://api.kilo.ai/api/gateway/models   (377 models, :free set)
  *   - openrouter       : https://openrouter.ai/api/v1/models     (445 models, :free set)
  *   - opencode zen     : https://opencode.ai/zen/v1/models       (free ids, User-Agent required)
- *   - nvidia NIM       : https://integrate.api.nvidia.com/v1/models (public list; free 1M tok/mo tier)
  * tokenrouter free set is small and stable (z-ai/glm-5.3-free,
  * nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free) — kept as a static map
  * because its /models requires a key we do not ship to Vercel.
