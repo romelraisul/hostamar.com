@@ -93,7 +93,7 @@ export const voicePostCallWorker = inngest.createFunction(
 
     // Here a real deployment would:
     //  - create a CRM entry + support ticket (if action_items mention a problem)
-    //  - draft a video in comfy.hostamar.com (ComfyUI) when the agent requested create_video
+    //  - draft a video in the Video OS (hostamar.com/dashboard/videos, ComfyUI) when the agent requested create_video
     //  - update GoalRunner KPIs (auto-handled support tickets -> ROI)
     // We record the processed marker so downstream dashboards can poll.
     console.log(`[voice] processed call ${report.call_id}: ${report.action_items.length} action items`)

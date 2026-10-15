@@ -14,14 +14,14 @@ export default async function VideosEmbedPage() {
   const user = await getAuthUser()
   if (!user) redirect('/login?next=/dashboard/videos')
 
-  // Same-tab embed of the Video OS. SSO cookie (Domain=.hostamar.com,
-  // HttpOnly) travels automatically — no token in URL, no repeated login.
-  // ponytail: no postMessage token dance; cookie SSO + comfy's own 401
-  // interceptor covers the fallback.
+  // MIGRATION 2026-10-15: comfy.hostamar.com subdomain removed. The Video OS
+  // is now served SAME-ORIGIN at /video-os (middleware proxies it from the
+  // tunnel backend). Host-only SameSite=Lax cookie rides along natively —
+  // no cross-domain cookie sharing, no SameSite=None, no login loop.
   return (
     <div className="h-[calc(100vh-64px)] w-full overflow-hidden rounded-xl border border-slate-200 bg-white">
       <iframe
-        src="https://comfy.hostamar.com/"
+        src="/video-os"
         title="Hostamar Video OS"
         className="h-full w-full"
         style={{ border: 0 }}

@@ -304,7 +304,7 @@ export default function AiServicesPage() {
           </div>
 
           {activeChat.status === 'delivered' && (
-            <a href="#download" onClick={e => { e.preventDefault(); window.open('https://comfy.hostamar.com/', '_blank') }}
+            <a href="#download" onClick={e => { e.preventDefault(); window.open('/dashboard/videos', '_blank') }}
               className="mx-3 mt-2 flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold text-white" style={{ background: GREEN }}>
               <Download className="h-3.5 w-3.5" /> রেজাল্ট ডাউনলোড
             </a>

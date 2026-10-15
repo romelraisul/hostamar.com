@@ -332,8 +332,8 @@ export const pageSeo: Record<string, Metadata> = {
   '/dashboard/videos': seo({
     title: 'ভিডিও OS — ComfyUI | Hostamar',
     description:
-      'Hostamar ভিডিও OS এখন comfy.hostamar.com এ — Minimax Design এর ৪টা pillar (Agent, Multi-model, Voice/Music, Timeline) ComfyUI তে 90% rebuild করার গাইড।',
-    path: 'https://comfy.hostamar.com/',
+      'Hostamar ভিডিও OS এখন hostamar.com/dashboard/videos এ — Minimax Design এর ৪টা pillar (Agent, Multi-model, Voice/Music, Timeline) ComfyUI তে 90% rebuild করার গাইড।',
+    path: 'https://hostamar.com/dashboard/videos/',
     noindex: true,
   }),
 

@@ -18,8 +18,6 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/dashboard/chatos', destination: '/dashboard/admin/chat-os', permanent: true },
-      // Video OS moved to the ComfyUI tunnel — deep links (1+ segments) 308, bare path renders the moved-notice + guide page
-      { source: '/dashboard/videos/:path+', destination: 'https://comfy.hostamar.com/', permanent: true },
     ]
   },
   // reactStrictMode disabled: Next 14.2.5's build-time prerender of the
@@ -49,7 +47,7 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://comfy.hostamar.com; connect-src 'self' https://comfy.hostamar.com https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'" },
+          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; connect-src 'self' https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'" },
         ],
       },
       {
