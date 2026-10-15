@@ -87,13 +87,14 @@ export async function POST(request: NextRequest) {
       // cookie name — the expiry writes below erased the real session cookie
       // and shipped only "auth_token=" → every login produced an empty cookie
       // → infinite login loop. Raw Set-Cookie headers append instead.
+      // SameSite=None required for iframe embedding in /dashboard/videos (comfy.hostamar.com embedded in hostamar.com dashboard).
       res.headers.append('Set-Cookie',
-        `auth_token=${token}; Path=/; Max-Age=${60*60*24*30}; Domain=.hostamar.com; Secure; HttpOnly; SameSite=Lax`)
+        `auth_token=${token}; Path=/; Max-Age=${60*60*24*30}; Domain=.hostamar.com; Secure; HttpOnly; SameSite=None`)
       // Expire stale pre-fix cookies. The host-only one (set with NO Domain
       // attribute) is deleted ONLY by a Set-Cookie with no Domain attribute —
       // that is why this line is here; Domain=hostamar.com never matched it.
-      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax')
-      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=www.hostamar.com; Secure; HttpOnly; SameSite=Lax')
+      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None')
+      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=www.hostamar.com; Secure; HttpOnly; SameSite=None')
       return res
     } catch (e: any) {
       console.error('Local login error, falling back to proxy:', e)
