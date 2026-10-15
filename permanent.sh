@@ -121,7 +121,6 @@ if ! docker ps --format '{{.Names}}' | grep -q '^litellm-play$'; then
     -v "$BUILD/guard:/tmp/guard:ro" \
     -v "$BUILD/state/guard_history.db:/tmp/guard_history.db" \
     -e PYTHONPATH=/tmp/guard:/tmp \
-    -e NVIDIA_API_KEY="${NVIDIA_API_KEY:-}" \
     -e KILOCODE_API_KEY="${KILOCODE_API_KEY:-}" \
     -e KILOCODE_BASE_URL="${KILOCODE_BASE_URL:-https://api.kilo.ai/api/gateway}" \
     -e TG_DB=/tmp/guard_history.db \

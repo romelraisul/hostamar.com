@@ -11,7 +11,6 @@ import { env } from '@/lib/env'
 
 const DEFAULT_BASE = 'https://api.kilo.ai/api/gateway'
 const TOKENROUTER_BASE = env.TOKENROUTER_BASE_URL || 'https://api.tokenrouter.com/v1'
-const NVIDIA_BASE = env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1'
 const OPENCODE_BASE = env.OPENCODE_ZEN_BASE_URL || 'https://opencode.ai/zen/v1'
 
 export interface ChatMessage {
@@ -69,10 +68,6 @@ function getTokenRouterToken(): string | null {
   return t && t.trim().length > 0 ? t.trim() : null
 }
 
-function getNvidiaToken(): string | null {
-  const t = env.NVIDIA_API_KEY
-  return t && t.trim().length > 0 ? t.trim() : null
-}
 
 function getOpenCodeToken(): string | null {
   const t = env.OPENCODE_ZEN_API_KEY
@@ -232,7 +227,6 @@ export async function chatWithFallback(
 
   const chain: Array<{ label: string; base: string; token: string | null; model: string }> = [
     { label: 'KiloCode', base: getBase(), token: getToken(), model: 'kilo-auto/free' },
-    { label: 'NVIDIA', base: NVIDIA_BASE, token: getNvidiaToken(), model: 'meta/llama-3.1-8b-instruct' },
     { label: 'TokenRouter', base: TOKENROUTER_BASE, token: getTokenRouterToken(), model: 'qwen/qwen3.8-max-free' },
     { label: 'OpenCode', base: OPENCODE_BASE, token: getOpenCodeToken(), model: 'hy3-free' },
   ]
@@ -259,7 +253,6 @@ export async function chatWithFallback(
 export function getFallbackStatus(): Array<{ provider: string; configured: boolean; model: string }> {
   return [
     { provider: 'kilocode', configured: !!getToken(), model: 'kilo-auto/free' },
-    { provider: 'nvidia', configured: !!getNvidiaToken(), model: 'meta/llama-3.1-8b-instruct' },
     { provider: 'tokenrouter', configured: !!getTokenRouterToken(), model: 'qwen/qwen3.8-max-free' },
     { provider: 'opencode', configured: !!getOpenCodeToken(), model: 'hy3-free' },
   ]

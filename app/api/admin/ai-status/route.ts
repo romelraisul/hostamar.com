@@ -34,11 +34,6 @@ const PROVIDER_PROBES: Record<string, { base: string; envKey: string; modelsPath
     modelsPath: '/v1/models',
     freeFilter: (id) => id.endsWith(':free') || id.includes('/free'),
   },
-  nvidia: {
-    base: env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
-    envKey: 'NVIDIA_API_KEY',
-    modelsPath: '/models',
-  },
   tokenrouter: {
     base: env.TOKENROUTER_BASE_URL || 'https://api.tokenrouter.com/v1',
     envKey: 'TOKENROUTER_API_KEY',

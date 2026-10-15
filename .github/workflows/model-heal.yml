@@ -26,7 +26,6 @@ jobs:
           OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}
           KILOCODE_API_KEY=${{ secrets.KILO_API_KEY }}
           OPENCODE_ZEN_API_KEY=${{ secrets.OPENCODE_ZEN_API_KEY }}
-          NVIDIA_API_KEY=${{ secrets.NVIDIA_API_KEY }}
           ENVFILE
 
       - name: Regenerate catalog from live upstreams
@@ -34,7 +33,6 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           KILOCODE_API_KEY: ${{ secrets.KILOCODE_API_KEY }}
           OPENCODE_ZEN_API_KEY: ${{ secrets.OPENCODE_ZEN_API_KEY }}
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
         run: node scripts/gen-model-catalog.mjs
 
       - name: Fix context lengths from live docs

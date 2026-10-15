@@ -27,7 +27,6 @@ except Exception as e:
     _GUARD = None
 
 PROVIDER_HINTS = {
-    "integrate.api.nvidia.com": "nvidia",
     "kilo.ai": "kilocode",
     "ollama": "ollama",
 }
