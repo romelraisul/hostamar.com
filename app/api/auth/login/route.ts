@@ -83,27 +83,17 @@ export async function POST(request: NextRequest) {
         token,
         user: { id: customer.id, email: customer.email, name: customer.name, role: customer.role }
       })
-      res.cookies.set('auth_token', token, {
-        httpOnly: true,
-        secure: true,
-        // SECURITY FIX 2026-10-15: Lax + parent domain so the SSO cookie also
-        // reaches comfy.hostamar.com (Video OS) on top-level navigation.
-        sameSite: 'lax',
-        domain: '.hostamar.com',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/',
-      })
-      // Clear any pre-fix host-only cookie (no Domain) — the browser held a
-      // stale one and kept re-sending it, which failed verification → login
-      // loop. Explicitly expires it on the bare host so it stops winning.
-      res.cookies.set('auth_token', '', {
-        httpOnly: true, secure: true, sameSite: 'lax',
-        domain: 'hostamar.com', maxAge: 0, path: '/',
-      })
-      res.cookies.set('auth_token', '', {
-        httpOnly: true, secure: true, sameSite: 'lax',
-        domain: 'www.hostamar.com', maxAge: 0, path: '/',
-      })
+      // BUG (found by E2E customer sim 2026-10-15): res.cookies.set DEDUPES by
+      // cookie name — the expiry writes below erased the real session cookie
+      // and shipped only "auth_token=" → every login produced an empty cookie
+      // → infinite login loop. Raw Set-Cookie headers append instead.
+      res.headers.append('Set-Cookie',
+        `auth_token=${token}; Path=/; Max-Age=${60*60*24*30}; Domain=.hostamar.com; Secure; HttpOnly; SameSite=Lax`)
+      // Expire stale pre-fix cookies. The host-only one (set with NO Domain
+      // attribute) is deleted ONLY by a Set-Cookie with no Domain attribute —
+      // that is why this line is here; Domain=hostamar.com never matched it.
+      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax')
+      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=www.hostamar.com; Secure; HttpOnly; SameSite=Lax')
       return res
     } catch (e: any) {
       console.error('Local login error, falling back to proxy:', e)
