@@ -46,6 +46,13 @@ export async function POST(request: NextRequest) {
       if (!email || !password || !name) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
       }
+      // E2E sim found this missing: 3-char passwords were accepted.
+      if (typeof password !== 'string' || password.length < 6 || password.length > 128) {
+        return NextResponse.json({ error: 'Password must be 6-128 characters' }, { status: 400 })
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
+      }
 
       const existingCustomer = await prisma.customer.findUnique({ where: { email } })
       if (existingCustomer) {
