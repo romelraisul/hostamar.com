@@ -49,12 +49,21 @@ export default async function AdminVideos() {
   return (
     <div className="min-h-screen bg-[#fffdf6] p-6 text-white">
       <div className="flex justify-between items-start gap-4">
-        <h1 className="text-2xl font-bold">ভিডিও Tab — Customer Video Management</h1>
+        <h1 className="text-2xl font-bold">AI Marketing Videos — Admin</h1>
         <a href="/admin/videos/reference-copy" className="text-xs underline text-blue-700">H3 ReferenceToVideo নকল — video copy local unlimited →</a>
         <div className="text-xs bg-white border p-2 rounded max-w-md">
           ComfyUI :8188 running {queue.running} pending {queue.pending} history {queue.history} · WSL ~/ComfyUI/output ({files.length} files) · Prisma sqlite/Turso
         </div>
       </div>
+
+      {/* Admin's own Video OS workspace — same SSO iframe as the customer tab */}
+      <div className="mt-4">
+        <h2 className="text-base font-bold mb-2">Video OS (admin workspace)</h2>
+        <div className="h-[70vh] w-full overflow-hidden rounded border bg-white">
+          <iframe src="https://comfy.hostamar.com/" title="Hostamar Video OS" className="h-full w-full" style={{ border: 0 }} allow="clipboard-read; clipboard-write; fullscreen" />
+        </div>
+      </div>
+
       {dbError && <p className="mt-3 text-sm text-red-600 border border-red-300 bg-white rounded p-2">DB error: {dbError}</p>}
 
       <div className="mt-4 grid grid-cols-1 gap-4">

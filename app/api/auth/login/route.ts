@@ -93,6 +93,17 @@ export async function POST(request: NextRequest) {
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: '/',
       })
+      // Clear any pre-fix host-only cookie (no Domain) — the browser held a
+      // stale one and kept re-sending it, which failed verification → login
+      // loop. Explicitly expires it on the bare host so it stops winning.
+      res.cookies.set('auth_token', '', {
+        httpOnly: true, secure: true, sameSite: 'lax',
+        domain: 'hostamar.com', maxAge: 0, path: '/',
+      })
+      res.cookies.set('auth_token', '', {
+        httpOnly: true, secure: true, sameSite: 'lax',
+        domain: 'www.hostamar.com', maxAge: 0, path: '/',
+      })
       return res
     } catch (e: any) {
       console.error('Local login error, falling back to proxy:', e)

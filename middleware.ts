@@ -8,6 +8,10 @@ import type { NextRequest } from "next/server";
 // customer data are cookie-gated here; every other /api/* route keeps its own
 // internal auth (API-key/session checks) so nothing else changes behavior.
 const PAGE_PROTECTED = "/dashboard";
+// SECURITY FIX 2026-10-15 #2: /admin pages were serving customer emails +
+// video rows to anonymous visitors (page-level gate existed only for
+// /dashboard). Same cookie gate extended to /admin pages.
+const ADMIN_PAGE_PROTECTED = "/admin";
 const API_PROTECTED = ["/api/dashboard/", "/api/admin/"];
 // Admin endpoints that are intentionally public (unchanged from previous behavior).
 const ADMIN_PUBLIC = ["/api/admin/chat", "/api/admin/audit", "/api/admin/health", "/api/admin/models", "/api/video-os/"];
@@ -48,6 +52,7 @@ export function middleware(req: NextRequest) {
 
   const needsAuth =
     pathname === PAGE_PROTECTED || pathname.startsWith(PAGE_PROTECTED + "/") ||
+    pathname === ADMIN_PAGE_PROTECTED || pathname.startsWith(ADMIN_PAGE_PROTECTED + "/") ||
     API_PROTECTED.some(p => pathname.startsWith(p));
   const isPublicApi =
     ADMIN_PUBLIC.some(p => pathname.startsWith(p)) ||

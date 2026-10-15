@@ -31,7 +31,7 @@ const navItems = [
   { id: 'products', href: '/admin?tab=products', icon: Package, label: 'Products' },
   { id: 'hosting', href: '/admin?tab=hosting', icon: Server, label: 'Hosting' },
   { id: 'tv', href: '/admin/tv', icon: Tv, label: 'TV Station' },
-  { id: 'videos', href: '/admin/videos', icon: Video, label: 'ভিডিও Video' },
+  { id: 'videos', href: '/admin/videos', icon: Video, label: 'AI Marketing Videos' },
   { id: 'tv-analytics', href: '/admin/tv-analytics', icon: BarChart3, label: 'TV Analytics' },
   { id: 'nodes', href: '/admin/nodes', icon: Server, label: 'Nodes' },
 ]
