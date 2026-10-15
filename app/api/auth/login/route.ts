@@ -86,7 +86,10 @@ export async function POST(request: NextRequest) {
       res.cookies.set('auth_token', token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'strict',
+        // SECURITY FIX 2026-10-15: Lax + parent domain so the SSO cookie also
+        // reaches comfy.hostamar.com (Video OS) on top-level navigation.
+        sameSite: 'lax',
+        domain: '.hostamar.com',
         maxAge: 60 * 60 * 24 * 7, // 7 days
         path: '/',
       })

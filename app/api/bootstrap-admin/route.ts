@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
       sameSite: 'lax',
+      domain: '.hostamar.com',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })

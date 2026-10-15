@@ -42,6 +42,7 @@ export function setSsoSessionCookie(res: NextResponse, customer: Customer, ssoEn
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
     sameSite: 'lax', // IdP cross-site redirect — 'strict' would drop the cookie
+    domain: '.hostamar.com', // SSO must also cover comfy.hostamar.com (Video OS)
     maxAge: MAX_AGE,
     path: '/',
   })
