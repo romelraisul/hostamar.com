@@ -87,14 +87,15 @@ export async function POST(request: NextRequest) {
       // cookie name — the expiry writes below erased the real session cookie
       // and shipped only "auth_token=" → every login produced an empty cookie
       // → infinite login loop. Raw Set-Cookie headers append instead.
-      // SameSite=None required for iframe embedding in /dashboard/videos (comfy.hostamar.com embedded in hostamar.com dashboard).
+      // MIGRATION 2026-10-15: subdomain removed → all Video OS traffic is
+      // same-origin on hostamar.com. Host-only cookie (no Domain attr) +
+      // SameSite=Lax works natively everywhere; the Domain=None era is over.
       res.headers.append('Set-Cookie',
-        `auth_token=${token}; Path=/; Max-Age=${60*60*24*30}; Domain=.hostamar.com; Secure; HttpOnly; SameSite=None`)
-      // Expire stale pre-fix cookies. The host-only one (set with NO Domain
-      // attribute) is deleted ONLY by a Set-Cookie with no Domain attribute —
-      // that is why this line is here; Domain=hostamar.com never matched it.
-      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None')
-      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=www.hostamar.com; Secure; HttpOnly; SameSite=None')
+        `auth_token=${token}; Path=/; Max-Age=${60*60*24*30}; Secure; HttpOnly; SameSite=Lax`)
+      // Expire stale pre-migration cookies: the old Domain=.hostamar.com
+      // (None) cookie and any www-variant. The host-only new cookie above
+      // replaces the old host-only one by name+path.
+      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=.hostamar.com; Secure; HttpOnly; SameSite=Lax')
       res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
       return res
     } catch (e: any) {

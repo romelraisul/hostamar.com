@@ -94,7 +94,7 @@ export default function DevelopersPage() {
               <div className="mt-2 rounded-lg bg-zinc-900 p-4 text-sm text-green-400 font-mono overflow-x-auto">
                 <div>{`{`}</div>
                 <div>  "success": true,</div>
-                <div>  "images": ["https://comfy.hostamar.com/view?filename=..."],</div>
+                <div>  "images": ["https://hostamar.com/view?filename=..."],</div>
                 <div>  "model": "sd_xl_turbo_1.0_fp16.safetensors",</div>
                 <div>  "seed": 123456789,</div>
                 <div>  "steps": 4</div>

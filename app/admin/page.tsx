@@ -1008,7 +1008,7 @@ function HostingTab() {
         <div className="text-xs tracking-[0.2em] text-amber-300 mb-2">TUNNEL STATUS</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
           <div className="rounded-xl bg-black border border-zinc-800 p-3"><div className="text-zinc-500 text-xs">browser.hostamar.com</div><div className="font-mono text-red-400">530 error 1033</div><div className="text-xs text-zinc-600">Argo tunnel — origin DOWN</div></div>
-          <div className="rounded-xl bg-black border border-zinc-800 p-3"><div className="text-zinc-500 text-xs">comfy.hostamar.com</div><div className="font-mono text-red-400">530 error 1033</div><div className="text-xs text-zinc-600">Tunnel DOWN</div></div>
+          <div className="rounded-xl bg-black border border-zinc-800 p-3"><div className="text-zinc-500 text-xs">video-os backend (tunnel)</div><div className="font-mono text-red-400">530 error 1033</div><div className="text-xs text-zinc-600">Tunnel DOWN</div></div>
           <div className="rounded-xl bg-black border border-zinc-800 p-3"><div className="text-zinc-500 text-xs">ai.hostamar.com</div><div className="font-mono text-[#10B981]">200 ● live</div><div className="text-xs text-zinc-500">93 models • 6000 credit</div></div>
         </div>
         <div className="mt-3 rounded-xl bg-black border border-zinc-800 p-3 font-mono text-xs text-zinc-400">

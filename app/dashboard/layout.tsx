@@ -145,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { label: 'ওভারভিউ', href: '/dashboard', icon: LayoutDashboard, kbd: 'G D' },
     ...navProducts.map((p) => ({ label: p.nameEn, href: p.href, icon: p.icon, kbd: '' })),
     ...secondaryNav.map((s) => ({ label: s.label, href: s.href, icon: s.icon, kbd: '' })),
-    { label: 'Create Video', href: 'https://comfy.hostamar.com/', icon: Video, kbd: 'C V', external: true },
+    { label: 'Create Video', href: '/dashboard/videos', icon: Video, kbd: 'C V' },
     { label: 'New Service', href: '/dashboard/services/new', icon: Server, kbd: 'N S' },
     { label: 'Billing / bKash Renew', href: '/dashboard/payment', icon: CreditCard, kbd: 'B' },
   ]
@@ -362,7 +362,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Clock className="h-3.5 w-3.5 text-[#64748B]" />
                 Recent
               </p>
-              <a href="https://comfy.hostamar.com/" className="text-[11px] font-medium text-[#2563EB] hover:underline">
+              <a href="/dashboard/videos" className="text-[11px] font-medium text-[#2563EB] hover:underline">
                 View all
               </a>
             </div>
@@ -375,7 +375,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <ul className="mt-2 space-y-1">
                 {recentVideos.map((v) => (
                   <li key={v.id}>
-                    <a href="https://comfy.hostamar.com/" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-white">
+                    <a href="/dashboard/videos" className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-white">
                       <span className="flex h-7 w-7 items-center justify-center rounded bg-white border">
                         <Video className="h-3.5 w-3.5 text-[#64748B]" />
                       </span>

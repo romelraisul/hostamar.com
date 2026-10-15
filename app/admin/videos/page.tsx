@@ -60,7 +60,7 @@ export default async function AdminVideos() {
       <div className="mt-4">
         <h2 className="text-base font-bold mb-2">Video OS (admin workspace)</h2>
         <div className="h-[70vh] w-full overflow-hidden rounded border bg-white">
-          <iframe src="https://comfy.hostamar.com/" title="Hostamar Video OS" className="h-full w-full" style={{ border: 0 }} allow="clipboard-read; clipboard-write; fullscreen" />
+          <iframe src="/video-os" title="Hostamar Video OS" className="h-full w-full" style={{ border: 0 }} allow="clipboard-read; clipboard-write; fullscreen" />
         </div>
       </div>
 
