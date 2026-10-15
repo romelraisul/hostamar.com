@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = [
-  "/", "/pricing", "/docs", "/docs/bn", "/blog",
-  "/api/health", "/api/v1/models", "/api/docs", "/api/ai-services/catalog",
-  "/api/chat", "/api/hermes", "/api/admin/chat", "/api/admin/audit", "/api/admin/health", "/api/admin/models", "/api/video-os/models", "/api/video-os/comfyui",
-  "/api/store/checkout",
-  "/api/probe-store",
-  "/api/drive/file",  // share-token auth handled by route
-  "/sitemap.xml", "/robots.txt", "/favicon.ico", "/_next", "/static"
-];
+// SECURITY FIX 2026-10-15: the old guard was dead code — PUBLIC_PATHS contains "/"
+// and the match used startsWith(p), so every path (incl. /dashboard) matched and
+// the auth check never ran. /dashboard/videos rendered the credits dashboard to
+// anonymous visitors. Scopes below are deliberate: only routes known to serve
+// customer data are cookie-gated here; every other /api/* route keeps its own
+// internal auth (API-key/session checks) so nothing else changes behavior.
+const PAGE_PROTECTED = "/dashboard";
+const API_PROTECTED = ["/api/dashboard/", "/api/admin/"];
+// Admin endpoints that are intentionally public (unchanged from previous behavior).
+const ADMIN_PUBLIC = ["/api/admin/chat", "/api/admin/audit", "/api/admin/health", "/api/admin/models", "/api/video-os/"];
+// Dashboard nodes route is an infrastructure health beacon, not customer data.
+const DASH_API_PUBLIC = ["/api/dashboard/nodes"];
 
 // ponytail: in-memory sliding window, per-instance ceiling only.
-// Fine at Vercel scale (each Lambda is its own bucket). If /api/auth/* traffic
+// Fine at edge scale (each isolate is its own bucket). If /api/auth/* traffic
 // ever needs cross-instance correctness, swap to Upstash Ratelimit. 10 req/10s
 // per IP matches bot-abuse signature without touching real users.
 const RL = new Map<string, number[]>();
@@ -39,15 +42,22 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  if (pathname.startsWith("/_next") || pathname.includes(".") || PUBLIC_PATHS.some(p => pathname===p || pathname.startsWith(p+"/") || pathname.startsWith(p))) {
+  if (pathname.startsWith("/_next") || pathname.includes(".")) {
     return res;
   }
-  const authToken = req.cookies.get("auth_token")?.value;
-  if (!authToken && (pathname.startsWith("/dashboard") || pathname.startsWith("/api/"))) {
+
+  const needsAuth =
+    pathname === PAGE_PROTECTED || pathname.startsWith(PAGE_PROTECTED + "/") ||
+    API_PROTECTED.some(p => pathname.startsWith(p));
+  const isPublicApi =
+    ADMIN_PUBLIC.some(p => pathname.startsWith(p)) ||
+    DASH_API_PUBLIC.some(p => pathname.startsWith(p));
+
+  if (needsAuth && !isPublicApi && !req.cookies.get("auth_token")?.value) {
     if (pathname.startsWith("/api/")) {
       const auto = req.headers.get("x-hostamar-autonomous");
       if (auto && process.env.AUTONOMOUS_SECRET && auto === process.env.AUTONOMOUS_SECRET) return res;
-      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHENTICATED", hint: "Need auth_token cookie - admin.hostamar.com login" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHENTICATED", hint: "Need auth_token cookie - hostamar.com/login" }, { status: 401 });
     }
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("next", pathname);
