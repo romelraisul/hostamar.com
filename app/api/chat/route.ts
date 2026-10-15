@@ -32,8 +32,6 @@ function getProvider(model: string): { base: string; key?: string; provider: str
     return { base: EDGE_URL, key: EDGE_INTERNAL_KEY, provider: 'kilo-edge', edge: true } as any
   }
   switch (ROUTE_MAP[model]) {
-    case 'nvidia':
-      return { base: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1', key: process.env.NVIDIA_API_KEY, provider: 'nvidia' }
     default:
       return { base: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1', key: process.env.OPENROUTER_API_KEY, provider: 'openrouter' }
   }

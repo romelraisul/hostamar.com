@@ -58,7 +58,6 @@ because all model backends are unreachable or unconfigured:
 | Backend | Where to set | Current state |
 |---|---|---|
 | **Ollama local models** | Run `ollama pull gema4:4b` on host (port 11434) | ❌ Ollama not running |
-| **NVIDIA NIM (glm-5.2, minimax-m3)** | Export `NVIDIA_API_KEY=<your-key>` before `permanent.sh` or in `.env.docker` | ❌ Key not exported |
 | **KiloCode Fast (kilocode-fast)** | Export `KILOCODE_API_KEY=<your-key>` before `permanent.sh` or in `.env.docker` | ⏳ Key exists but may need rotation (times out) |
 
 **Quick way to restore story-gen:** Enable ONE of these backends and run:

@@ -2,7 +2,6 @@
 // Sources (authoritative context windows):
 //   - Kilo gateway      (context_length + pricing per model)
 //   - OpenRouter        (context_length + pricing per model)
-//   - NVIDIA NIM        (ids only — contexts from NV_CTX docs table below)
 //   - OpenCode Zen      (ids only — contexts from scripts/opencode-ctx.json probes)
 // Rules:
 //   - zero-cost: every free model from ANY provider is included
@@ -42,8 +41,6 @@ const kiloBase = (env.KILOCODE_BASE_URL || 'https://api.kilo.ai/api/gateway').re
 const kiloData = await getJson(`${kiloBase}/models`, { Authorization: `Bearer ${env.KILOCODE_API_KEY}` })
 const kiloModels = kiloData?.data || []
 
-const nvData = await getJson('https://integrate.api.nvidia.com/v1/models', { Authorization: `Bearer ${env.NVIDIA_API_KEY}` })
-const nvIds = new Set((nvData?.data || []).map(m => m.id))
 
 const zenBase = (env.OPENCODE_ZEN_BASE_URL || 'https://opencode.ai/zen/v1').replace(/\/+$/, '')
 const zenData = await getJson(`${zenBase}/models`, { Authorization: `Bearer ${env.OPENCODE_ZEN_API_KEY}`, 'User-Agent': 'Mozilla/5.0' })
@@ -52,7 +49,7 @@ const zenModels = zenData?.data || []
 let probed = {}
 try { probed = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/opencode-ctx.json'), 'utf8')) } catch {}
 
-console.log(`upstreams: openrouter=${orModels.length} kilo=${kiloModels.length} nvidia=${nvIds.size} zen=${zenModels.length}`)
+console.log(`upstreams: openrouter=${orModels.length} kilo=${kiloModels.length} zen=${zenModels.length}`)
 
 // ---------- indexes ----------
 const byId = arr => Object.fromEntries(arr.map(m => [m.id, m]))
@@ -69,50 +66,7 @@ const priceOf = m => {
   return pr + pc
 }
 
-// NVIDIA official-docs context lengths for NIM catalog ids (static, docs-sourced;
-// used because integrate.api.nvidia.com /models exposes no metadata).
-const NV_CTX = {
-  '01-ai/yi-large': 32000, 'ai21labs/jamba-1.5-large-instruct': 256000,
-  'aisingapore/sea-lion-7b-instruct': 4000, 'bigcode/starcoder2-15b': 16000,
-  'databricks/dbrx-instruct': 32000, 'deepseek-ai/deepseek-coder-6.7b-instruct': 16000,
-  'deepseek-ai/deepseek-v4-flash-0731': 163840, 'google/codegemma-1.1-7b': 8000,
-  'google/codegemma-7b': 8000, 'google/gemma-2b': 8000, 'google/recurrentgemma-2b': 8000,
-  'ibm/granite-3.0-3b-a800m-instruct': 4000, 'ibm/granite-3.0-8b-instruct': 128000,
-  'ibm/granite-34b-code-instruct': 8000, 'ibm/granite-8b-code-instruct': 128000,
-  'meta/codellama-70b': 16000, 'meta/llama-3.1-70b-instruct': 128000,
-  'meta/llama-3.1-8b-instruct': 128000, 'meta/llama-3.2-1b-instruct': 128000,
-  'meta/llama-3.2-3b-instruct': 128000, 'meta/llama-3.3-70b-instruct': 128000,
-  'microsoft/phi-3.5-moe-instruct': 128000, 'mistralai/mistral-7b-instruct-v0.3': 32000,
-  'mistralai/mixtral-8x22b-v0.1': 64000, 'nv-mistralai/mistral-nemo-12b-instruct': 128000,
-  'nvidia/cosmos-reason2-8b': 128000, 'nvidia/llama-3.1-nemotron-51b-instruct': 128000,
-  'nvidia/llama-3.1-nemotron-70b-instruct': 128000, 'nvidia/llama-3.1-nemotron-nano-8b-v1': 128000,
-  'nvidia/llama-3.1-nemotron-nano-vl-8b-v1': 128000, 'nvidia/llama-3.1-nemotron-ultra-253b-v1': 128000,
-  'nvidia/llama-3.3-nemotron-super-49b-v1': 128000, 'nvidia/llama-3.3-nemotron-super-49b-v1.5': 128000,
-  'nvidia/llama3-chatqa-1.5-70b': 8000, 'nvidia/mistral-nemo-minitron-8b-8k-instruct': 8000,
-  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning': 256000, 'nvidia/nemotron-3.5-lightning-30b-a3b': 128000,
-  'nvidia/nemotron-4-340b-instruct': 4000, 'nvidia/nemotron-4-340b-reward': 4000,
-  'nvidia/nemotron-mini-4b-instruct': 4000, 'nvidia/nemotron-nano-12b-v2-vl': 128000,
-  'nvidia/nemotron-nano-3-30b-a3b': 128000, 'nvidia/nemotron-parse': 8000,
-  'nvidia/neva-22b': 4000, 'nvidia/nvidia-nemotron-nano-9b-v2': 128000,
-  'nvidia/riva-translate-4b-instruct': 4000, 'nvidia/riva-translate-4b-instruct-v1.1': 4000,
-  'nvidia/riva-translate-4b-instruct-v2': 4000, 'nvidia/vila': 128000,
- 'writer/palmyra-creative-122b': 128000, 'writer/palmyra-fin-70b-32k': 32000,
- 'writer/palmyra-med-70b': 128000, 'writer/palmyra-med-70b-32k': 32000,
- // second wave of NIM ids seen on the live /models list
- 'google/gemma-3-12b-it': 131072, 'google/gemma-3-4b-it': 131072,
- 'meta/llama2-70b': 4096, 'minimaxai/minimax-m3': 1048576,
- 'mistralai/codestral-22b-instruct-v0.1': 32000, 'mistralai/mistral-large': 128000,
- 'mistralai/mistral-large-2-instruct': 128000, 'mistralai/mistral-nemotron': 128000,
- 'nvidia/nemotron-3-nano-30b-a3b': 262144, 'nvidia/nemotron-3-super-120b-a12b': 1000000,
- 'nvidia/nemotron-3-ultra-550b-a55b': 512288, 'stepfun-ai/step-3.7-flash': 32000,
- 'zyphra/zamba2-7b-instruct': 128000, 'adept/fuyu-8b': 4096,
- 'microsoft/phi-3-vision-128k-instruct': 128000, 'meta/llama-3.2-11b-vision-instruct': 128000,
- 'meta/llama-3.2-90b-vision-instruct': 128000, 'microsoft/kosmos-2': 4096,
- }
 
- // non-chat NIM endpoints (embeddings, rerankers, guards, detectors, CLIP) —
- // they cannot serve /chat/completions so they must not appear in the catalog
- const NON_CHAT_NVIDIA = /(embed|rerank|retriever|guard|safety|topic-control|nvclip|detector|calibration|deplot|diffusion|fuyu)/i
 
 const fmt = n => (n >= 1_000_000 ? `${Math.round((n / 1_000_000) * 10) / 10}M` : n >= 1000 ? `${Math.round(n / 1000)}K` : `${n}`)
 const isFreeId = id => /(:free$|\/free$|-free$)/i.test(id)
@@ -182,14 +136,6 @@ function readPrevMap() {
 }
 const prevMap = { ...readPrevMap() }
 
-// 3) nvidia NIM catalog (paid, own key). Live /models exposes no metadata, so
-// contexts come from official NIM docs; previous served value as fallback.
-for (const id of nvIds) {
-  if (entries.has(id)) continue
-  if (NON_CHAT_NVIDIA.test(id)) continue
-  const ctx = NV_CTX[id] || prevMap[id] || 0
-  add(id, 'nvidia', ctx, 'nvidia-docs', isFreeId(id))
-}
 
 // 4) hostamar aliases (stable customer-facing ids)
 add('hostamar-1m-a', 'hostamar-alias', 1_048_576, 'alias', false)
@@ -212,7 +158,7 @@ const list = [...entries.values()].sort((a, b) => {
 const lines = []
 lines.push('// GENERATED by scripts/gen-model-catalog.mjs — DO NOT EDIT BY HAND')
 lines.push(`// Generated ${new Date().toISOString()} from live upstream catalogs:`)
-lines.push(`//   openrouter=${orModels.length} kilo=${kiloModels.length} nvidia=${nvIds.size} zen=${zenModels.length}`)
+lines.push(`//   openrouter=${orModels.length} kilo=${kiloModels.length} zen=${zenModels.length}`)
 lines.push('// Re-run: node scripts/gen-model-catalog.mjs && npm run build')
 lines.push('')
 lines.push('export type CatalogModel = {')

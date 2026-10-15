@@ -31,21 +31,6 @@ model_list:
       alias: gemma4-12b-code
       timeout: 1800
 
-  # NVIDIA NIM free-tier (cloud, 1M tok/month). Token-guarded.
-  - model_name: glm-5.2
-    litellm_params:
-      model: openai/z-ai/glm-5.2
-      api_base: https://integrate.api.nvidia.com/v1
-      api_key: os.environ/NVIDIA_API_KEY
-      timeout: 300
-      max_retries: 0    # let the token guard be the only retry source
-  - model_name: minimax-m3
-    litellm_params:
-      model: openai/minimaxai/minimax-m3
-      api_base: https://integrate.api.nvidia.com/v1
-      api_key: os.environ/NVIDIA_API_KEY
-      timeout: 300
-      max_retries: 0
 
   # KiloCode gateway. Token-guarded. Secret via env.
   - model_name: kilocode-fast

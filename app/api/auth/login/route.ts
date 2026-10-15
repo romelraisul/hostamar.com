@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
       // that is why this line is here; Domain=hostamar.com never matched it.
       res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None')
       res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=www.hostamar.com; Secure; HttpOnly; SameSite=None')
+      res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
       return res
     } catch (e: any) {
       console.error('Local login error, falling back to proxy:', e)
