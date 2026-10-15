@@ -127,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const secondaryNav = [
     { href: '/dashboard/ai-services', icon: Sparkles, label: 'AI Store', labelBn: 'AI স্টোর', badge: '50+', description: '50+ AI সার্ভিস — Instagram, FB Ads, YouTube' },
     { href: '/dashboard/chat', icon: MessageCircle, label: 'AI Chat', labelBn: 'AI চ্যাট', badge: '120', description: '120 মডেল ফ্রি' },
-    { href: 'https://comfy.hostamar.com/', icon: Video, label: 'Videos', labelBn: 'ভিডিও', description: 'ভিডিও OS — ComfyUI', external: true },
+    { href: '/dashboard/videos', icon: Video, label: 'AI Marketing Videos', labelBn: 'ভিডিও', badge: 'NEW', description: 'AI Marketing Videos — Video OS (ComfyUI)' },
     { href: '/dashboard/drive', icon: HardDrive, label: 'Drive', labelBn: 'ড্রাইভ', badge: '∞', description: 'Hostamar Drive — Telegram-backed আনলিমিটেড স্টোরেজ' },
     { href: '/dashboard/game', icon: Gamepad2, label: 'Game', labelBn: 'গেম', description: 'গেম হোস্টিং' },
     { href: '/dashboard/ide', icon: Code2, label: 'IDE', labelBn: 'IDE', description: 'ব্রাউজার IDE' },
@@ -333,7 +333,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <p className="px-3 pb-2 text-[11px] font-semibold tracking-widest text-[#64748B]">MANAGE</p>
             <div className="space-y-1">
               {secondaryNav.map((item) => {
-                const active = pathname === item.href
+                const active = pathname === item.href || pathname.startsWith(item.href + '/')
                 return (
                   <Link
                     key={item.href}
