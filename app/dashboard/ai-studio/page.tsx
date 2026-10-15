@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export default function AIStudioPage() {
   const services = [
-    { name: 'এআই ভিডিও', href: 'https://comfy.hostamar.com/', icon: '🎬' },
+    { name: 'এআই ভিডিও', href: '/dashboard/videos', icon: '🎬' },
     { name: 'এআই ইমেজ', href: '/dashboard/ai-studio/image', icon: '🎨' },
     { name: 'এআই ভয়েস', href: '/dashboard/ai-studio/voice', icon: '🔊' },
     { name: 'এআই অ্যাভাটার', href: '/dashboard/ai-studio/avatar', icon: '👤' },

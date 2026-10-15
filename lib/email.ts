@@ -257,7 +257,7 @@ export async function sendVideoReadyEmail(to: string, name: string, videoTitle: 
   <a href="${videoUrl}" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Watch Video</a>
 </div>
 <p style="margin:0 0 16px;color:#6b7280;font-size:14px">
-  You can also view all your videos in your <a href="https://comfy.hostamar.com/" style="color:#3b82f6">video workspace</a>.
+  You can also view all your videos in your <a href="https://hostamar.com/dashboard/videos" style="color:#3b82f6">video workspace</a>.
 </p>
 </td></tr>
 <tr><td style="background:#f9fafb;padding:16px 32px;text-align:center;color:#9ca3af;font-size:12px">
@@ -295,7 +295,7 @@ export async function sendVideoFailedEmail(to: string, name: string, videoTitle:
   Please try again or contact support if the issue persists.
 </p>
 <div style="text-align:center;margin:24px 0">
-  <a href="https://comfy.hostamar.com/" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Try Again</a>
+  <a href="https://hostamar.com/dashboard/videos" style="display:inline-block;padding:12px 24px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Try Again</a>
 </div>
 </td></tr>
 <tr><td style="background:#f9fafb;padding:16px 32px;text-align:center;color:#9ca3af;font-size:12px">

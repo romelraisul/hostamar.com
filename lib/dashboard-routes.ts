@@ -2,7 +2,7 @@
 // Used by app/dashboard/layout.tsx, app/dashboard/page.tsx and any nav code.
 
 export const DASHBOARD_ROUTES: Record<string, string> = {
-  'ai-video': 'https://comfy.hostamar.com/',
+  'ai-video': 'https://hostamar.com/dashboard/videos',
   'cloud-hosting': '/dashboard/hosting',
   'ai-chat': '/dashboard/chat',
   'ai-browser': '/dashboard/browser',

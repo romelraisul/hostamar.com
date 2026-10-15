@@ -18,6 +18,17 @@ const ADMIN_PUBLIC = ["/api/admin/chat", "/api/admin/audit", "/api/admin/health"
 // Dashboard nodes route is an infrastructure health beacon, not customer data.
 const DASH_API_PUBLIC = ["/api/dashboard/nodes"];
 
+// MIGRATION 2026-10-15: comfy.hostamar.com subdomain removed. Video OS is now
+// same-origin on hostamar.com — middleware proxies these paths from the edge
+// to the WSL :8199 backend (cloudflared tunnel), streaming the response back.
+// Same-origin = host-only SameSite=Lax cookie just works; no CORS, no Domain
+// attr, no SameSite=None, login loop structurally impossible.
+// comfy.hostamar.com remains a BACKEND-ONLY hostname (tunnel ingress kept);
+// browsers never hit it directly anymore.
+const COMFY_BACKEND = "https://comfy.hostamar.com";
+const VIDEO_OS_PAGE = "/video-os";
+const COMFY_PROXY = ["/video-os", "/api/comfy", "/view", "/api/sign"];
+
 // ponytail: in-memory sliding window, per-instance ceiling only.
 // Fine at edge scale (each isolate is its own bucket). If /api/auth/* traffic
 // ever needs cross-instance correctness, swap to Upstash Ratelimit. 10 req/10s
@@ -33,6 +44,25 @@ function rateLimited(ip: string, limit = 10, windowMs = 10000): boolean {
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Same-origin proxy to the Video OS backend (comfy tunnel). Everything is
+  // served under hostamar.com — the browser only ever talks to this domain.
+  if (COMFY_PROXY.some(p => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p + "?"))) {
+    // /video-os is the human UI → require login at the edge (redirect);
+    // API paths stay unauthenticated here — the backend enforces JWT/401 itself.
+    if (pathname === VIDEO_OS_PAGE || pathname.startsWith(VIDEO_OS_PAGE + "/")) {
+      if (!req.cookies.get("auth_token")?.value) {
+        const loginUrl = new URL("/login", req.url);
+        loginUrl.searchParams.set("next", pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+      // /video-os/* → backend /* (UI lives at / on :8199)
+      const rest = pathname === VIDEO_OS_PAGE ? "/" : pathname.slice(VIDEO_OS_PAGE.length);
+      return NextResponse.rewrite(new URL(COMFY_BACKEND + rest + req.nextUrl.search));
+    }
+    return NextResponse.rewrite(new URL(COMFY_BACKEND + pathname + req.nextUrl.search));
+  }
+
   const res = NextResponse.next();
   res.headers.set("X-Frame-Options", "DENY");
   res.headers.set("X-Content-Type-Options", "nosniff");
