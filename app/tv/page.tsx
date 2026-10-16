@@ -594,6 +594,7 @@ export default function TvPage() {
                 { f: 'receipt-agentcloudbn-narrated.mp4', t: 'Agent Cloud BN — নেরেশনসহ (৯s)' },
                 { f: 'shorts-eu-bd-gpu-spot2.mp4', t: 'EU-BD GPU Spot Short 2 — ৩০s ভার্টিকেল' },
                 { f: 'receipt-agentcloud-49-narrated.mp4', t: 'Agent Cloud — ৪৯ টাকার প্যাকেজ (নেরেশনসহ)' },
+                { f: 'receipt-sovereign-cloud-narrated.mp4', t: 'Sovereign Cloud Narrated — Private VPS + GPU, no vendor lock-in ($29/mo) (-17.1 dB)' },
                 { f: 'agent-cloud-episode-2-narrated.mp4', t: 'Agent Cloud Episode 2 — 103s narrated (-28.1 dB)' },
                 { f: 'agent-cloud-memory-narrated.mp4', t: 'Agent Cloud Memory — narrated (-31.8 dB)' },
                 { f: 'build-log-006-narrated.mp4', t: 'Build Log 006 — Platform Architecture (112s, নেরেশনসহ)' },
