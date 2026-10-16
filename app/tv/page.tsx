@@ -634,6 +634,9 @@ export default function TvPage() {
                 { f: 'receipt-agent-fleet.mp4', t: 'Agent Fleet Receipt — 24/7 autonomous employees, $49/mo (-24.8 dB)' },
                 { f: 'receipt-trillion-market.mp4', t: 'Trillion Market Receipt — Own the market, not just software (-24.7 dB)' },
                 { f: 'trillion-market-episode-v2-narrated.mp4', t: 'ট্রিলিয়ন মার্কেট এপিসোড V2 — AI বাজার, ডাটা সেন্টার, ক্লাউড ($2T+ ২০৩০) (-27.8 dB)' },
+                { f: 'HostamarH3_00036_.mp4', t: 'HostamarH3 Short 00036 — AI marketing Bangla (-35.9 dB)' },
+                { f: 'HostamarH3_00037_.mp4', t: 'HostamarH3 Short 00037 — AI marketing Bangla (-28.1 dB)' },
+                { f: 'HostamarH3_00038_.mp4', t: 'HostamarH3 Short 00038 — AI marketing Bangla (-22.6 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
