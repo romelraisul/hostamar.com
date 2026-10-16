@@ -637,6 +637,9 @@ export default function TvPage() {
                 { f: 'HostamarH3_00036_.mp4', t: 'HostamarH3 Short 00036 — AI marketing Bangla (-35.9 dB)' },
                 { f: 'HostamarH3_00037_.mp4', t: 'HostamarH3 Short 00037 — AI marketing Bangla (-28.1 dB)' },
                 { f: 'HostamarH3_00038_.mp4', t: 'HostamarH3 Short 00038 — AI marketing Bangla (-22.6 dB)' },
+                { f: 'HostamarH3_00039_.mp4', t: 'HostamarH3 Short 00039 — AI marketing Bangla (-20.0 dB)' },
+                { f: 'HostamarH3_00040_.mp4', t: 'HostamarH3 Short 00040 — AI marketing Bangla (-27.6 dB)' },
+                { f: 'HostamarH3_00041_.mp4', t: 'HostamarH3 Short 00041 — AI marketing Bangla (-17.9 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
