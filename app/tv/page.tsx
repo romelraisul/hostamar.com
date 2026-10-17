@@ -642,6 +642,14 @@ export default function TvPage() {
                 { f: 'HostamarH3_00039_.mp4', t: 'HostamarH3 Short 00039 — AI marketing Bangla (-20.0 dB)' },
                 { f: 'HostamarH3_00040_.mp4', t: 'HostamarH3 Short 00040 — AI marketing Bangla (-27.6 dB)' },
                 { f: 'HostamarH3_00041_.mp4', t: 'HostamarH3 Short 00041 — AI marketing Bangla (-17.9 dB)' },
+                { f: 'HostamarH3_00058_.mp4', t: 'HostamarH3 Short 00058 — AI marketing Bangla (-34.8 dB)' },
+                { f: 'HostamarH3_00059_.mp4', t: 'HostamarH3 Short 00059 — AI marketing Bangla (-15.5 dB)' },
+                { f: 'HostamarH3_00060_.mp4', t: 'HostamarH3 Short 00060 — AI marketing Bangla (-14.0 dB)' },
+                { f: 'HostamarH3_00061_.mp4', t: 'HostamarH3 Short 00061 — AI marketing Bangla (-24.9 dB)' },
+                { f: 'HostamarH3_00063_.mp4', t: 'HostamarH3 Short 00063 — AI marketing Bangla (-18.1 dB)' },
+                { f: 'HostamarH3_00065_.mp4', t: 'HostamarH3 Short 00065 — AI marketing Bangla (-17.7 dB)' },
+                { f: 'HostamarH3_00066_.mp4', t: 'HostamarH3 Short 00066 — AI marketing Bangla (-14.0 dB)' },
+                { f: 'HostamarH3_00067_.mp4', t: 'HostamarH3 Short 00067 — AI marketing Bangla (-14.0 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />

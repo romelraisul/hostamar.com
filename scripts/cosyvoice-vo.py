@@ -103,6 +103,10 @@ def main():
     model = AutoModel(model_dir=COSY_MODEL_DIR)
     print(f'[cosy] model loaded in {time.time() - t0:.1f}s | sr={model.sample_rate}', flush=True)
     assert model.sample_rate == SAMPLE_RATE
+    # torch 2.14 loads Qwen2 LLM weights in bfloat16; CosyVoice3 expects float32
+    for _n in ('llm','flow','hift'):
+        getattr(model.model, _n).to(torch.float32)
+    print('[cosy] converted llm/flow/hift to float32', flush=True)
 
     chunks = []
     vtt_lines = ['WEBVTT', '']
