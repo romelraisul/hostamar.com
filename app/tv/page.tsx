@@ -650,6 +650,7 @@ export default function TvPage() {
                 { f: 'HostamarH3_00065_.mp4', t: 'HostamarH3 Short 00065 — AI marketing Bangla (-17.7 dB)' },
                 { f: 'HostamarH3_00066_.mp4', t: 'HostamarH3 Short 00066 — AI marketing Bangla (-14.0 dB)' },
                 { f: 'HostamarH3_00067_.mp4', t: 'HostamarH3 Short 00067 — AI marketing Bangla (-14.0 dB)' },
+                { f: 'hostamar-grand-reveal-narrated.mp4', t: 'Hostamar Grand Reveal — H3 narrative Bangla (-23.2 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
