@@ -19,7 +19,6 @@ type Phase = 'idle' | 'submitting' | 'done' | 'error'
 export default function StoreBuyGrid() {
   const [all, setAll] = useState<Prod[]>([])
   const [q, setQ] = useState('')
-  const [showAll, setShowAll] = useState(false)
   const [open, setOpen] = useState<Prod | null>(null)
   const [phase, setPhase] = useState<Phase>('idle')
   const [orderId, setOrderId] = useState('')
@@ -49,9 +48,12 @@ export default function StoreBuyGrid() {
   // FORGE 2026-09-20: default = ALL 123 products. The 12-product cap was the
   // last backend friction blocking 2-click checkout — 111 catalog items had no
   // buy button by default and buyers had to hunt for the "সব দেখাও" toggle.
-  // ponytail: one-line slice removal; search still filters, toggle still exists.
+  // FORGE 2026-10-04: lift the cap so buyers see the full catalog immediately.
   const ql = q.trim().toLowerCase()
   const shown = ql ? all.filter((p) => p.title.toLowerCase().includes(ql)) : all
+
+  // FORGE 2026-10-04: lift the cap so buyers see the full catalog immediately.
+  // No "Show All" toggle — all 123 products are visible by default.
 
   // FORGE 2026-10-04: apex Worker (hostamar.com/*) throws CF-1102 resource blips —
   // the checkout POST can hang with NO response (browser fetch has no default
@@ -135,15 +137,6 @@ export default function StoreBuyGrid() {
           aria-label="সার্ভিস সার্চ"
           className="w-full sm:w-72 rounded-full border px-4 py-2 text-sm outline-none focus:border-[#0E7C3A]"
         />
-        {!ql && all.length > 12 && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="rounded-full border px-4 py-2 text-xs font-semibold hover:bg-zinc-50"
-            style={{ color: GREEN }}
-          >
-            {showAll ? 'শুধু টপ ১২ দেখাও' : `সব ${all.length}টি দেখাও`}
-          </button>
-        )}
         {ql && <span className="text-xs text-zinc-500">{shown.length}টি ফলাফল</span>}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
@@ -185,8 +178,7 @@ export default function StoreBuyGrid() {
                 <div className="mt-1">অর্ডার আইডি: <code className="text-xs">{orderId}</code></div>
                 <div className="mt-1 text-xs text-gray-600">রসিদ + Send Money নির্দেশনা আপনার ইমেইলে পাঠানো হচ্ছে (১-২ মিনিট)।</div>
                 <div className="mt-2 text-gray-700">
-                  এখন <b>Send Money</b> (Cash Out নয়): bKash/Nagad/Rocket <b>{BKASH}</b> → ৳{open.amountBdt.toLocaleString('en-BD')}।
-                  পাঠানোর ৫ মিনিটের মধ্যে অর্ডার কনফার্ম হয়ে যাবে।
+                  এখন <b>Send Money</b> (Cash Out নয়): bKash/Nagad/Rocket <b>{BKASH}</b> → ৳{open.amountBdt.toLocaleString('en-BD')}. পাঠানোর ৫ মিনিটের মধ্যে অর্ডার কনফার্ম হয়ে যাবে।
                 </div>
                 <button onClick={() => setOpen(null)} className="mt-3 w-full rounded-full px-4 py-2 text-xs font-bold text-white" style={{ background: GREEN }}>
                   বন্ধ করো
