@@ -224,3 +224,7 @@ public/sitemap.xml
 .wrangler/
 public/tv/loop.mp4
 .venv
+
+# litellm router config: holds api_key structure; never track (real keys once lived
+# in litellm-config*.yaml.bak* — see 2026-10-04 incident). Env refs only today.
+litellm-config*.yaml*
