@@ -27,6 +27,12 @@ routes = [
 binding = "HOSTAMAR_CATALOG"
 id = "7ce14c69f70d48449dd50edd4be3dca3"
 
+# OpenNext incremental cache (prerendered HTML served from KV on cold isolates
+# instead of full SSR — kills the 700-1250ms cold TTFB PSI charges).
+[[kv_namespaces]]
+binding = "NEXT_INC_CACHE_KV"
+id = "6e3e5048a15e409f9e353651cb4e2336"
+
 # ponytail: Prisma's workerd loader does `await import('./query_engine_bg.wasm')`
 # during a request; workerd does not count that pending module load as I/O, so the
 # first prisma request on a fresh isolate is killed as "hung" (~27% of requests).

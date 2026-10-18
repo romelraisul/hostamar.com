@@ -4,6 +4,7 @@ import path from 'node:path';
 import { FAQS } from '@/lib/faqs';
 import tools from '@/lib/services-catalog-tools.json';
 import BazaarNav from '@/components/home/BazaarNav';
+import LazyVideo from '@/components/lazy-video';
 import BazaarFooter from '@/components/home/BazaarFooter';
 
 // Bazaar Poster homepage (Direction C, approved 2026-09-14).
@@ -93,7 +94,7 @@ export default async function HomePage() {
               </svg>
               <div className="bp-frame bp-frame-tilt-r">
                 <div className="bp-media">
-                  <img src="/redesign/hero-bazaar-760.jpg" alt="বাংলাদেশি উৎসবের বাজারের পোস্টার-ধাঁচের ইলাস্ট্রেশন" width="760" height="475" {...({ fetchpriority: 'high' } as object)} />
+                  <img src="/redesign/hero-bazaar-640.jpg" alt="বাংলাদেশি উৎসবের বাজারের পোস্টার-ধাঁচের ইলাস্ট্রেশন" width="640" height="400" {...({ fetchpriority: 'high' } as object)} />
                 </div>
               </div>
             </div>
@@ -136,19 +137,19 @@ export default async function HomePage() {
             <div className="bp-wall">
               <div className="bp-tile bp-w-eid">
                 <div className="bp-media" style={{ flex: 1 }}>
-                  <img src="/redesign/poster-eid-846.jpg" alt="ঈদ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="846" height="1128" />
+                  <img src="/redesign/poster-eid-600.jpg" alt="ঈদ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="600" height="800" />
                 </div>
                 <div className="bp-cap"><span>ঈদ মুবারক সেল</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>টেমপ্লেট</span></div>
               </div>
               <div className="bp-tile bp-w-bok">
                 <div className="bp-media">
-                  <img src="/redesign/poster-boishakh-846.jpg" alt="পহেলা বৈশাখ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="846" height="1128" />
+                  <img src="/redesign/poster-boishakh-600.jpg" alt="পহেলা বৈশাখ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="600" height="800" />
                 </div>
                 <div className="bp-cap"><span>পহেলা বৈশাখ</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>টেমপ্লেট</span></div>
               </div>
               <div className="bp-tile bp-w-r1">
                 <div className="bp-media" style={{ aspectRatio: '16/9' }}>
-                  <video
+                  <LazyVideo
                     src="/tv/shorts-agent-autonomous-employee.mp4"
                     poster="/showcase/cmtmt2jteyldrvv.jpg"
                     autoPlay
