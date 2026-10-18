@@ -2,6 +2,7 @@
 // at the edge is irrelevant for a 2-click buyer and removes the per-request
 // cold function + bridge hop that made 2/3 prod loads take ~20s.
 export const revalidate = 300
+export const dynamic = 'force-dynamic' // FORGE 2026-10-18: caches.* is Workers-only; static gen crashes
 
 // FORGE 2026-10-18: Cloudflare Workers Cache API edge cache.
 // Next's fetch cache (cache:'default') doesn't persist across Worker
@@ -25,9 +26,12 @@ import { NextResponse } from 'next/server'
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
 export async function GET() {
-  // Edge cache: check before hitting Medusa. caches.open() is available in
-  // the CF Workers runtime; in dev/local Node it throws and we swallow it.
-  const edgeCache = await caches.open('store-products').catch(() => null)
+  // Edge cache: check before hitting Medusa. caches.open() is available in the
+  // CF Workers runtime; in dev/Vercel Node it is undefined and throws synchronously
+  // (NOT a rejected promise) so .catch can't swallow it — guard by typeof.
+  const edgeCache = typeof caches !== 'undefined'
+    ? await caches.open('store-products').catch(() => null)
+    : null
   if (edgeCache) {
     const cached = await edgeCache.match(CACHE_KEY).catch(() => null)
     if (cached) return cached
