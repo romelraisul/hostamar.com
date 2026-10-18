@@ -29,15 +29,16 @@ jobs:
           NEON_URL: ${{ secrets.NEON_URL }}
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$NEON_URL" ]; then echo "secrets missing — skipping pg_dump"; exit 0; fi
-          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 > /dev/null
-          export PATH="/usr/lib/postgresql/17/bin:$PATH"
-          pg_dump "$SUPABASE_URL" --no-owner --no-acl > backup.sql
-          echo "backup.sql: $(wc -l < backup.sql) lines"
-          if psql "$NEON_URL" -v ON_ERROR_STOP=0 -q -f backup.sql > psql.log 2>&1; then :; fi
-          if grep -qi "error" psql.log; then
-            echo "::warning::Neon restore errors (first 3):"; grep -i error psql.log | head -3
-          fi
-          n=$(psql "$NEON_URL" -t -c "SELECT count(*) FROM \"Customer\"" 2>/dev/null | tr -d '[:space:]')
+          # postgres:17 image — runner apt lacks postgresql-client-17 and client
+          # version must match server major (both DBs are pg17).
+          docker run --rm -v "$PWD:/w" -e S="$SUPABASE_URL" -e N="$NEON_URL" postgres:17-alpine sh -c '
+            pg_dump "$S" --no-owner --no-acl > /w/backup.sql &&
+            echo "dump lines: $(wc -l < /w/backup.sql)" &&
+            psql "$N" -v ON_ERROR_STOP=0 -q -f /w/backup.sql > /w/psql.log 2>&1; true
+            echo "restore error count: $(grep -ci error /w/psql.log || echo 0)"
+            grep -i error /w/psql.log | head -3; true
+          ' || true
+          n=$(docker run --rm -e N="$NEON_URL" postgres:17-alpine sh -c 'psql "$N" -t -c "SELECT count(*) FROM \"Customer\"" 2>/dev/null' | tr -d '[:space:]' || true)
           echo "Neon Customer rows after restore: ${n:-unreachable}"
           if [ -n "$n" ] && [ "$n" != "0" ]; then
             echo "Mirror complete: Supabase -> Neon"
