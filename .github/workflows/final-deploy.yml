@@ -55,6 +55,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Verify route answers
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://api.hostamar.com/api/health)
-          echo "api.hostamar.com/api/health -> $code"
-          [ "$code" = "200" ] || [ "$code" = "202" ]
+          served=$(curl -s -D- -o /dev/null --max-time 30 https://api.hostamar.com/api/health | grep -i '^x-served-by' | tr -d '\r')
+          echo "api.hostamar.com/api/health -> ${served:-no x-served-by header}"
+          # primary (PC on) answers 401/404, fallback (PC off) 200/202 — any
+          # x-served-by header means the router itself is alive.
+          [ -n "$served" ]
