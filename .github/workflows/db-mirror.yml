@@ -44,7 +44,9 @@ jobs:
             grep -i error /w/psql.log | head -3
             psql "$N" -t -c "SELECT count(*) FROM \"Customer\"" > /w/neon_count.txt 2> /w/neon_err.txt
             echo "count rc=$? err=$(head -c 120 /w/neon_err.txt)"
-            echo "tables: $(psql "$N" -t -c "SELECT coalesce(string_agg(tablename, chr(44)), chr(45)) FROM pg_tables WHERE schemaname = $$public$$")"
+            echo "db: $(psql "$N" -t -c "SELECT current_database() || chr(64) || current_user")"
+            echo "tables: $(psql "$N" -t -c "SELECT coalesce(string_agg(tablename, chr(44)), chr(45)) FROM pg_tables WHERE schemaname = concat(chr(112),chr(117),chr(98),chr(108),chr(105),chr(99))")"
+            echo "psqllog: $(head -c 200 /w/psql.log)"
           ' || true
           n=$(tr -d '[:space:]' < neon_count.txt 2>/dev/null || true)
           echo "Neon Customer rows after restore: ${n:-unreachable}"
