@@ -38,7 +38,7 @@ jobs:
             # Neon = replica of Supabase public schema. No createdb (pooled endpoint
             # rejects CREATE DATABASE) — clean the schema instead, then restore.
             psql "$N" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" > /dev/null 2>&1
-            sed '/^CREATE SCHEMA public/d;/^COMMENT ON SCHEMA/d' /w/backup.sql > /w/backup2.sql
+            sed -e '/^CREATE SCHEMA public/d' -e '/^COMMENT ON SCHEMA/d' /w/backup.sql > /w/backup2.sql
             psql "$N" -v ON_ERROR_STOP=0 -q -f /w/backup2.sql > /w/psql.log 2>&1
             echo "restore error count: $(grep -ci error /w/psql.log)"
             grep -i error /w/psql.log | head -3
