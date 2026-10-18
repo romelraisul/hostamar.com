@@ -3,15 +3,19 @@ main = "workers/api-router.js"
 compatibility_date = "2024-01-01"
 # account_id is picked up automatically from `wrangler login`; do NOT set empty string.
 
-# Route api.hostamar.com/* through this Worker.
-# IMPORTANT: api.hostamar.com is owned by the Worker (Custom Domain / Route),
-# NOT a DNS CNAME. Do NOT add a CNAME for api.hostamar.com to Railway or Tunnel.
-routes = [
-  { pattern = "api.hostamar.com/*", zone_name = "hostamar.com" }
-]
+# Route api.hostamar.com/* is ALREADY configured on the zone (dash: Workers
+# Routes) — it survives script re-deploys. It is deliberately NOT declared
+# here: the CI token (CLOUDFLARE_WORKERS_API_TOKEN) has Workers Scripts:Edit
+# but not Zone Workers Routes:Edit, and wrangler only needs to update the
+# script. Re-adding routes requires a token with zone-routes scope.
+# routes = [
+#   { pattern = "api.hostamar.com/*", zone_name = "hostamar.com" }
+# ]
 
-# Optional: override the Railway fallback domain per-environment without editing code.
-# vars = { FALLBACK_URL = "https://api-fallback.up.railway.app" }
+# Fallback default lives in the worker code (hostamar.alwaysdata.net);
+# override per-environment with secrets, not toml:
+#   wrangler secret put PRIMARY_URL   (PC primary, e.g. https://api-primary.hostamar.com)
+#   wrangler secret put FALLBACK_URL  (lite fallback, e.g. https://hostamar.alwaysdata.net)
 
 # Secrets are injected at deploy time, never committed:
 #   npx wrangler secret put FALLBACK_URL
