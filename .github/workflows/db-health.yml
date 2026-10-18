@@ -6,7 +6,7 @@ on:
 
 jobs:
   check:
-    if: ${{ secrets.SUPABASE_URL != '' }}
+    # Guard in shell: `secrets` is not valid in job-level `if:`.
     runs-on: ubuntu-latest
     steps:
       - name: Check Supabase + Neon, alert Telegram on failure
@@ -16,13 +16,15 @@ jobs:
           TG_BOT: ${{ secrets.TG_BOT }}
           TG_ID: ${{ secrets.TG_ID }}
         run: |
+          if [ -z "$SUPABASE_URL" ]; then echo "SUPABASE_URL secret missing — health check disabled"; exit 0; fi
           sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
-          fail=0
+          fail=0; msg=""
           if ! psql "$SUPABASE_URL" -t -c "SELECT 'ok'" > /dev/null 2>&1; then
             msg="Supabase unreachable — check hostamar dashboard (project eviipjtymitvghmnozlj)"; fail=1; echo "$msg"
           fi
           if ! psql "$NEON_URL" -t -c "SELECT 'ok'" > /dev/null 2>&1; then
-            msg="Neon unreachable (archived? quota resets 2026-11-01 — restore from console after reset)"; fail=1; echo "$msg"
+            m="Neon unreachable (archived? quota resets 2026-11-01 — restore from console after reset)"; fail=1; echo "$m"
+            msg="${msg:+$msg; }$m"
           fi
           if [ "$fail" = "1" ] && [ -n "$TG_BOT" ]; then
             curl -s -X POST "https://api.telegram.org/bot${TG_BOT}/sendMessage" \
