@@ -6,7 +6,8 @@ on:
 
 jobs:
   mirror:
-    if: ${{ secrets.SUPABASE_URL != '' && secrets.NEON_URL != '' }}
+    # Guard lives in the step shell: `secrets` is not a valid context in
+    # job-level `if:` (GitHub 422s the whole workflow on it).
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,12 +20,15 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        run: npx tsx scripts/sync-db.ts --check
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then echo "SUPABASE_URL secret missing — skipping (mirror disabled)"; exit 0; fi
+          npx tsx scripts/sync-db.ts --check
       - name: pg_dump Supabase -> Neon
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           NEON_URL: ${{ secrets.NEON_URL }}
         run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$NEON_URL" ]; then echo "secrets missing — skipping pg_dump"; exit 0; fi
           sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
           pg_dump "$SUPABASE_URL" --no-owner --no-acl > backup.sql
           if psql "$NEON_URL" -v ON_ERROR_STOP=0 -q -f backup.sql > /dev/null 2>&1; then
@@ -34,6 +38,7 @@ jobs:
             echo "::warning::Neon mirror skipped — DB archived/unreachable. backup.sql kept as artifact."
           fi
       - name: Keep last dump as artifact (90d)
+        if: hashFiles('backup.sql') != ''  # ponytail: cheap presence check
         uses: actions/upload-artifact@v4
         with:
           name: supabase-backup-${{ github.run_id }}
