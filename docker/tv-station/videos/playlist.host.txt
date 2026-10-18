@@ -114,3 +114,5 @@ file '/home/romel/hostamar.com/public/tv/shorts-build-log-008.mp4'
 file '/home/romel/hostamar.com/public/tv/shorts-agent-cloud-memory-narrated.mp4'
 
 file '/home/romel/hostamar.com/public/tv/receipt-cron-fleet-narrated.mp4'
+file '/home/romel/hostamar.com/public/tv/agent-cloud-autonomous-employees-narrated.mp4'
+file '/home/romel/hostamar.com/public/tv/agent-cloud-autonomous-employees-shorts.mp4'
