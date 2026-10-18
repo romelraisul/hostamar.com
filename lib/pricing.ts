@@ -71,6 +71,23 @@ export const PLANS: Plan[] = [
 export const CURRENCY = 'BDT'
 
 // ============================================================================
+// Display helpers + build-time BDT rate (PSI 2026-10-18: USD strings render
+// server-side from this constant — no client fetch, no layout shift).
+// ============================================================================
+export const BDT_RATE = parseFloat(process.env.NEXT_PUBLIC_BDT_RATE || '126.25')
+
+const BN_DIGITS: Record<string, string> = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯', '.': '.', ',': ',' }
+export function toBn(s: string | number): string {
+  return String(s).split('').map(c => BN_DIGITS[c] ?? c).join('')
+}
+export function toBnInt(n: number): string {
+  return toBn(n.toLocaleString('en-US'))
+}
+export function usdFromTaka(taka: number, rate: number = BDT_RATE): string {
+  return (taka / rate).toFixed(2)
+}
+
+// ============================================================================
 // V17 — PAYMENT PLANS: single source of truth for EVERY money surface.
 // 1cr = 1TK = 1 future HOST coin. Starter ৳990→6000cr · Pro ৳1900→13000cr ·
 // Business ৳2900→30000cr. All payment routes/pages MUST import from here —

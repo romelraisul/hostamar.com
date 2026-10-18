@@ -7,17 +7,14 @@ import SupportWidget from '@/components/SupportWidget'
 import SupportChatWidget from '@/components/support-chat-widget'
 import ChromeGuard from '@/components/layout/ChromeGuard'
 import { LocaleProvider } from '@/lib/locale-context'
-import { cookies } from 'next/headers'
 import type { Locale } from '@/lib/i18n'
+import { Hind_Siliguri, Archivo } from 'next/font/google'
 
-// The root layout reads `cookies()` (request data), so the entire app is
-// dynamic. Force it explicitly to prevent Next from attempting static
-// prerender of nested client pages (which crashes on context providers
-// during prerender with "Cannot read properties of null (reading
-// 'useContext')"). This is a rendering-strategy setting, not a logic change.
-export const dynamic = 'force-dynamic'
-
-// Bengali font loaded via Google Fonts <link> in head (Hind Siliguri) — no localFont needed
+// Self-hosted via next/font (PSI 2026-10-18: the Google Fonts <link> was
+// render-blocking third-party CSS + FOIT risk). The CSS variables feed the
+// font-family rules in globals.css. Weights match the old <link> exactly.
+const hindSiliguri = Hind_Siliguri({ subsets: ['bengali', 'latin'], weight: ['400', '700'], display: 'swap', variable: '--font-hind' })
+const archivo = Archivo({ subsets: ['latin'], weight: ['700', '800', '900'], display: 'swap', variable: '--font-archivo' })
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 
@@ -141,36 +138,21 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Read locale from cookie. During Vercel's build-time static prerender of the
-  // special /404 and /500 routes, `cookies()` throws "Dynamic server usage",
-  // which cascades into Next's internal /_error page (imports `Html` from
-  // next/document) and crashes the build with "<Html> should not be imported
-  // outside of pages/_document". Guard it so the prerender completes with the
-  // default locale instead of throwing.
-  let locale: Locale = 'bn'
-  try {
-    const cookieStore = await cookies()
-    locale = (cookieStore.get('locale')?.value || 'bn') as Locale
-  } catch {
-    locale = 'bn'
-  }
+  // Locale cookie is never set anywhere (grep across repo 2026-10-18) — it
+  // always evaluated to 'bn'. Hardcode it so the layout stops reading request
+  // data and pages can render static/ISR again (s-maxage cache headers).
+  const locale: Locale = 'bn'
     const isBengali = locale === 'bn'
     const htmlFontClass = isBengali ? 'bangla' : ''
 
     return (
-      <html lang={locale} dir="ltr" className={htmlFontClass}>
+      <html lang={locale} dir="ltr" className={`${htmlFontClass} ${hindSiliguri.variable} ${archivo.variable}`}>
       <head>
         <meta charSet="utf-8" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta name="format-detection" content="telephone=no, address=no, email=no" />
         <link rel="canonical" href={SITE_URL} />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Hind+Siliguri:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
         <link rel="preconnect" href="https://images.pluto.tv" />
         <meta name="theme-color" content="#0E7C3A" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
