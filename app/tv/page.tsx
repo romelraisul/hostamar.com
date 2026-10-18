@@ -647,6 +647,8 @@ export default function TvPage() {
                 { f: 'bangla-llm-episode-narrated.mp4', t: 'Bangla LLM Episode — বাংলা ভাষার মডেল (155s, -23.4 dB)' },
                 { f: 'shorts-bangla-llm-episode.mp4', t: 'Bangla LLM Short — ৩০s ভার্টিকেল (-23.4 dB)' },
                 { f: 'trillion-market-episode-narrated.mp4', t: 'ট্রিলিয়ন মার্কেট এপিসোড — AI বাজার, ডাটা সেন্টার, ক্লাউড ($7T+ ২০৩০) (-27.5 dB)' },
+                { f: 'opencut-headless-render-narrated.mp4', t: 'OpenCut হেডলেস রেন্ডার — স্ক্রিপ্ট থেকে পার্স্যাক পর্যন্ত ($0.10/মিনিট, 152s, -20.1 dB)' },
+                { f: 'shorts-opencut-headless-render.mp4', t: 'OpenCut Headless Render Short — ৩০s ভার্টিকেল (-21.8 dB)' },
                 { f: 'shorts-trillion-market-episode.mp4', t: 'ট্রিলিয়ন মার্কেট শর্ট — ৩০s ভার্টিকেল (-22.1 dB)' },
                 { f: 'HostamarH3_00036_.mp4', t: 'HostamarH3 Short 00036 — AI marketing Bangla (-35.9 dB)' },
                 { f: 'HostamarH3_00037_.mp4', t: 'HostamarH3 Short 00037 — AI marketing Bangla (-28.1 dB)' },
