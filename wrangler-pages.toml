@@ -10,12 +10,14 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 account_id = "e00717304c1139751214b8cda5078a8d"
 
-# Apex CNAME stays pointed at Vercel as an untouched fallback; these routes
-# intercept hostamar.com traffic before the origin is reached.
-# Rollback = remove the routes and redeploy.
+# Apex CNAME stays pointed at Vercel as an untouched fallback.
+# Rollback = uncomment the routes and redeploy.
+# ROUTES DISABLED 2026-10-19: hostamar.com 503 ~100% of probes since ~21:00
+# (CF error 1102 "Worker exceeded resource limits", free 10ms CPU cap).
+# Traffic now falls through to Vercel origin (hostamar-build.vercel.app 200).
 routes = [
-  { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
-  { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
+  # { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
+  # { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
 ]
 
 # KV: read-mostly catalogs. Same account namespace the ai-gateway worker already
@@ -27,12 +29,10 @@ routes = [
 binding = "HOSTAMAR_CATALOG"
 id = "7ce14c69f70d48449dd50edd4be3dca3"
 
-# OpenNext incremental cache (prerendered HTML served from KV on cold isolates
-# instead of full SSR — kills the 700-1250ms cold TTFB PSI charges).
-[[kv_namespaces]]
-binding = "NEXT_INC_CACHE_KV"
-id = "6e3e5048a15e409f9e353651cb4e2336"
-
+# OpenNext incremental cache moved to Backblaze B2 (S3 API, key-restricted to
+# hostamar-prod, s3.us-east-005) — no daily write quota, unlike KV (error 10048).
+# NEXT_INC_CACHE_KV namespace 6e3e5048… left unbound; delete the namespace later
+# if nothing else adopts it.
 # ponytail: Prisma's workerd loader does `await import('./query_engine_bg.wasm')`
 # during a request; workerd does not count that pending module load as I/O, so the
 # first prisma request on a fresh isolate is killed as "hung" (~27% of requests).
@@ -48,6 +48,12 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 
 [vars]
+# B2 S3-compatible incremental cache target (creds stay in worker secrets:
+# B2_ACCOUNT_ID / B2_APPLICATION_KEY). Endpoint+bucket are the key's actual
+# grants — verified against b2_authorize_account (us-east-005, hostamar-prod).
+B2_S3_ENDPOINT = "https://s3.us-east-005.backblazeb2.com"
+B2_S3_REGION = "us-east-005"
+B2_CACHE_BUCKET = "hostamar-prod"
 # Box liveness for /api/health ( field): the box reports to Turso every few minutes
 # (fleet/loop.mjs -> FleetReport); pc.alive = newest report younger than this many seconds.
 HOSTAMAR_PC_MAX_AGE_S = "1200"
