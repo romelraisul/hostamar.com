@@ -1,3 +1,4 @@
 file '/home/romel/hostamar-build/public/tv/sovereign-cloud-pricing-narrated.mp4'
 file '/home/romel/hostamar-build/public/tv/agent-cloud-autonomous-employees-narrated.mp4'
 file '/home/romel/hostamar-build/public/tv/agent-cloud-autonomous-employees-shorts.mp4'
+file '/home/romel/hostamar.com/public/tv/shorts-trillion-market-episode-v2.mp4'
