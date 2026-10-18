@@ -1,9 +1,13 @@
 import { prisma } from '@/lib/prisma'
-import fs from 'fs'
+import LiveStatus from './LiveStatus'
 
 export const dynamic = 'force-dynamic'
 
-const OUTPUT_DIR = '/home/romel/ComfyUI/output'
+// Runs on the Cloudflare Worker (OpenNext): only cloud-DB data here — no fs
+// reads, no localhost ComfyUI (both are impossible on Workers and silently
+// rendered this page empty before). Live PC-side status comes from
+// LiveStatus, a client component whose fetches carry the admin session
+// cookie through the same-origin /api/comfy proxy.
 
 export default async function AdminVideos() {
   let videos: any[] = []
@@ -18,17 +22,9 @@ export default async function AdminVideos() {
     dbError = e?.message || 'DB failed'
   }
 
-  let queue = { running: 0, pending: 0, history: 0 }
-  let files: string[] = []
+  let customers: { id: string; email: string | null; name: string | null }[] = []
   try {
-    const [q, h] = await Promise.all([
-      fetch('http://127.0.0.1:8188/queue', { cache: 'no-store' }).then((r) => r.json()),
-      fetch('http://127.0.0.1:8188/history', { cache: 'no-store' }).then((r) => r.json()),
-    ])
-    queue = { running: q.queue_running?.length || 0, pending: q.queue_pending?.length || 0, history: Object.keys(h).length }
-  } catch {}
-  try {
-    files = fs.readdirSync(OUTPUT_DIR).filter((f: string) => f.endsWith('.mp4') || f.endsWith('.png')).slice(-20)
+    customers = await prisma.customer.findMany({ select: { id: true, email: true, name: true } })
   } catch {}
 
   // V87: real failure reason per row (VideoQueue.renderError — the worker's
@@ -51,14 +47,12 @@ export default async function AdminVideos() {
       <div className="flex justify-between items-start gap-4">
         <h1 className="text-2xl font-bold">AI Marketing Videos — Admin</h1>
         <a href="/admin/videos/reference-copy" className="text-xs underline text-blue-700">H3 ReferenceToVideo নকল — video copy local unlimited →</a>
-        <div className="text-xs bg-white border p-2 rounded max-w-md">
-          ComfyUI :8188 running {queue.running} pending {queue.pending} history {queue.history} · WSL ~/ComfyUI/output ({files.length} files) · Prisma sqlite/Turso
-        </div>
+        <LiveStatus customers={customers} />
       </div>
 
       {/* Admin's own Video OS workspace — same SSO iframe as the customer tab */}
       <div className="mt-4">
-        <h2 className="text-base font-bold mb-2">Video OS (admin workspace)</h2>
+        <h2 className="text-base font-bold mb-2">Video OS (admin workspace — live renders, queue, uploads)</h2>
         <div className="h-[70vh] w-full overflow-hidden rounded border bg-white">
           <iframe src="/video-os" title="Hostamar Video OS" className="h-full w-full" style={{ border: 0 }} allow="clipboard-read; clipboard-write; fullscreen" />
         </div>
@@ -66,7 +60,8 @@ export default async function AdminVideos() {
 
       {dbError && <p className="mt-3 text-sm text-red-600 border border-red-300 bg-white rounded p-2">DB error: {dbError}</p>}
 
-      <div className="mt-4 grid grid-cols-1 gap-4">
+      <h2 className="mt-6 text-base font-bold">Completed videos (Turso DB — {videos.length})</h2>
+      <div className="mt-2 grid grid-cols-1 gap-4">
         {videos.map((v: any) => (
           <div key={v.id} className="border-2 border-[#0E7C3A]/30 bg-white rounded p-4">
             <div className="flex justify-between gap-4">
@@ -113,7 +108,7 @@ export default async function AdminVideos() {
                     <button type="submit" className="text-xs border px-3 py-1 rounded bg-[#0E7C3A] text-white w-full">Retry</button>
                   </form>
                 )}
-                <a href={`/api/video/logs?videoId=${v.id}`} className="text-xs border px-3 py-1 rounded bg-white text-center">Logs :8188</a>
+                <a href={`/api/video/logs?videoId=${v.id}`} className="text-xs border px-3 py-1 rounded bg-white text-center">Logs</a>
                 {v.url && (
                   <a href={`/api/video/file?path=${encodeURIComponent(v.url)}&download=1`} className="text-xs border px-3 py-1 rounded bg-white text-center">Download</a>
                 )}
@@ -121,7 +116,7 @@ export default async function AdminVideos() {
             </div>
           </div>
         ))}
-        {!videos.length && !dbError && <p className="text-sm text-gray-500">No videos in DB yet.</p>}
+        {!videos.length && !dbError && <p className="text-sm text-gray-500">No videos in DB yet — renders made in Video OS appear live in the workspace above.</p>}
       </div>
     </div>
   )

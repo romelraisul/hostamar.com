@@ -1,0 +1,54 @@
+name: Final Deploy — Alwaysdata + Cloudflare router
+# Layer 5 control plane: one push to main ships the 0-taka stack.
+#   - Vercel: auto-deploys via its own Git integration (see deploy.yml) — nothing here.
+#   - Alwaysdata lite API (layer 3): rsync over SSH using secret ALWAYSDATA_SSH_KEY.
+#   - Cloudflare thin router (layer 1, workers/api-router.js): wrangler deploy.
+#     NOTE: hostamar-pages (the OpenNext site) is NOT deployed here — it needs a
+#     local `next build` + opennextjs-cloudflare build; deploy it from WSL.
+#     CI deploys only the failover router, which is static proxy code.
+
+on:
+  push:
+    branches: [main]
+    paths: ['alwaysdata/**', 'workers/api-router.js', 'wrangler.toml', '.github/workflows/final-deploy.yml']
+  workflow_dispatch: {}
+
+concurrency:
+  group: final-deploy
+  cancel-in-progress: false
+
+jobs:
+  alwaysdata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SSH key + host
+        run: |
+          install -dm 700 ~/.ssh
+          printf '%s' "${{ secrets.ALWAYSDATA_SSH_KEY }}" | base64 -d > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ssh-hostamar.alwaysdata.net >> ~/.ssh/known_hosts
+      - name: rsync lite API -> ~/www
+        run: rsync -av --exclude README.md alwaysdata/lite/ hostamar@ssh-hostamar.alwaysdata.net:~/www/
+      - name: Verify live
+        run: curl -fsS --max-time 30 https://hostamar.alwaysdata.net/health | grep -q '"status":"ok"'
+
+  cloudflare-router:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deploy thin failover router
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Verify route answers
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://api.hostamar.com/api/health)
+          echo "api.hostamar.com/api/health -> $code"
+          [ "$code" = "200" ] || [ "$code" = "202" ]
