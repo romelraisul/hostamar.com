@@ -35,23 +35,18 @@ jobs:
             set +e
             pg_dump "$S" --no-owner --no-acl --schema=public > /w/backup.sql
             echo "dump lines: $(wc -l < /w/backup.sql)"
-            ND="${N/-pooler./.}" # DDL (dropdb/createdb/restore) needs the DIRECT endpoint — pooled rejects CREATE DATABASE
-            NB="${ND%%/neondb}/hostamar_backup"
-            dropdb "$ND" hostamar_backup 2>/dev/null
-            if createdb "$ND" hostamar_backup 2>/dev/null; then
-              echo "fresh db hostamar_backup (owner = neondb_owner)"
-              psql "$NB" -v ON_ERROR_STOP=0 -q -f /w/backup.sql > /w/psql.log 2>&1
-              echo "restore error count: $(grep -ci error /w/psql.log)"
-              grep -i error /w/psql.log | head -3
-              psql "$NB" -t -c "SELECT count(*) FROM \"Customer\"" > /w/neon_count.txt 2>/dev/null
-            else
-              echo "CREATEDB denied for hostamar_sync — mirror cannot land in owned database"
-            fi
+            # Neon = replica of Supabase public schema. No createdb (pooled endpoint
+            # rejects CREATE DATABASE) — clean the schema instead, then restore.
+            psql "$N" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" > /dev/null 2>&1
+            psql "$N" -v ON_ERROR_STOP=0 -q -f /w/backup.sql > /w/psql.log 2>&1
+            echo "restore error count: $(grep -ci error /w/psql.log)"
+            grep -i error /w/psql.log | head -3
+            psql "$N" -t -c "SELECT count(*) FROM \"Customer\"" > /w/neon_count.txt 2>/dev/null
           ' || true
           n=$(tr -d '[:space:]' < neon_count.txt 2>/dev/null || true)
           echo "Neon Customer rows after restore: ${n:-unreachable}"
           if [ -n "$n" ] && [ "$n" != "0" ]; then
-            echo "Mirror complete: Supabase -> Neon (db: hostamar_backup)"
+            echo "Mirror complete: Supabase -> Neon (schema: public)"
           else
             # Expected while Neon role lacks CREATEDB / DB archived (quota reset 2026-11-01).
             echo "::warning::Neon mirror did not land — backup.sql kept as artifact."
