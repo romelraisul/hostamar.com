@@ -7,10 +7,11 @@ export const dynamic = 'force-dynamic' // FORGE 2026-10-18: caches.* is Workers-
 // FORGE 2026-10-18: Cloudflare Workers Cache API edge cache.
 // Next's fetch cache (cache:'default') doesn't persist across Worker
 // isolates, so every request was a MISS and hammered Medusa ~every 1.2s.
-// caches.open() is the Workers-native edge cache — same 300s TTL, zero
-// Medusa hits on cache hit, survives isolate recycling.
-// ponytail: catalog changes ~never; the cache is best-effort (dev/local
-// without `caches` falls through to Medusa — same as the old behavior).
+// caches.default is the Workers-native edge cache — shared across ALL
+// requests on the Worker, same 300s TTL, zero Medusa hits on cache hit.
+// NOTE: caches.open() creates a PER-REQUEST cache (never shared) — wrong here.
+// ponytail: catalog changes ~never; best-effort (dev/local without caches.default
+// falls through to Medusa — same as the old behavior, no regression).
 const CACHE_KEY = 'https://hostamar.com/api/store/products'
 
 // ============================================================================
@@ -25,13 +26,13 @@ import { NextResponse } from 'next/server'
 
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
+// Worker-global: shared cache across all requests on the same CF Worker instance.
+// caches.default is a Workers extension not in the DOM lib types — cast to access it.
+const edgeCache: Cache | undefined =
+  typeof caches !== 'undefined' ? (caches as any).default : undefined
+
 export async function GET() {
-  // Edge cache: check before hitting Medusa. caches.open() is available in the
-  // CF Workers runtime; in dev/Vercel Node it is undefined and throws synchronously
-  // (NOT a rejected promise) so .catch can't swallow it — guard by typeof.
-  const edgeCache = typeof caches !== 'undefined'
-    ? await caches.open('store-products').catch(() => null)
-    : null
+  // Edge cache: check before hitting Medusa
   if (edgeCache) {
     const cached = await edgeCache.match(CACHE_KEY).catch(() => null)
     if (cached) return cached
@@ -82,7 +83,7 @@ export async function GET() {
         'CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600, stale-if-error=3600',
       }
     })
-    // Fire-and-forget: store in edge cache so subsequent requests skip Medusa
+    // Store in edge cache so subsequent requests skip Medusa (fire-and-forget)
     if (edgeCache) edgeCache.put(CACHE_KEY, res.clone()).catch(() => {})
     return res
   }
