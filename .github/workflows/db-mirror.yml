@@ -37,8 +37,8 @@ jobs:
             echo "dump lines: $(wc -l < /w/backup.sql)"
             NB="${N%%/neondb}/hostamar_backup"
             dropdb "$N" hostamar_backup 2>/dev/null
-            if createdb "$N" -O hostamar_sync hostamar_backup 2>/dev/null; then
-              echo "fresh db hostamar_backup (owner hostamar_sync — owns its public schema)"
+            if createdb "$N" hostamar_backup 2>/dev/null; then
+              echo "fresh db hostamar_backup (owner = neondb_owner)"
               psql "$NB" -v ON_ERROR_STOP=0 -q -f /w/backup.sql > /w/psql.log 2>&1
               echo "restore error count: $(grep -ci error /w/psql.log)"
               grep -i error /w/psql.log | head -3
