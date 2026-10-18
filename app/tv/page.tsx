@@ -706,6 +706,7 @@ export default function TvPage() {
                 { f: 'receipt-gpu-spot-eu-bd-variant.mp4', t: 'EU-BD GPU Spot Receipt Variant (10s, -25.4 dB)' },
                 { f: 'receipt-sovereign-cloud.mp4', t: 'Sovereign Cloud Receipt (9s, -24.9 dB)' },
                 { f: 'receipt-sovereign-episode.mp4', t: 'Sovereign Episode Receipt (9s, -25.0 dB)' },
+                { f: 'receipt-sovereign-infra-narrated.mp4', t: 'Sovereign Infra Receipt — Narrated (15s, -18.8 dB)' },
                 { f: 'shorts-agent-cloud-episode-narrated.mp4', t: 'Agent Cloud Episode Short — 30s Vertical (-25.0 dB)' },
                 { f: 'shorts-autopilot-v2.mp4', t: 'Autopilot v2 Short — 30s Vertical (-28.5 dB)' },
                 { f: 'shorts-build-log-001.mp4', t: 'Build Log 001 Short — 30s Vertical (-25.2 dB)' },
