@@ -35,9 +35,10 @@ jobs:
             set +e
             pg_dump "$S" --no-owner --no-acl --schema=public > /w/backup.sql
             echo "dump lines: $(wc -l < /w/backup.sql)"
-            NB="${N%%/neondb}/hostamar_backup"
-            dropdb "$N" hostamar_backup 2>/dev/null
-            if createdb "$N" hostamar_backup 2>/dev/null; then
+            ND="${N/-pooler./.}" # DDL (dropdb/createdb/restore) needs the DIRECT endpoint — pooled rejects CREATE DATABASE
+            NB="${ND%%/neondb}/hostamar_backup"
+            dropdb "$ND" hostamar_backup 2>/dev/null
+            if createdb "$ND" hostamar_backup 2>/dev/null; then
               echo "fresh db hostamar_backup (owner = neondb_owner)"
               psql "$NB" -v ON_ERROR_STOP=0 -q -f /w/backup.sql > /w/psql.log 2>&1
               echo "restore error count: $(grep -ci error /w/psql.log)"
