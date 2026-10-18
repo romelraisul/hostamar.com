@@ -35,6 +35,12 @@ jobs:
         run: curl -fsS --max-time 30 https://hostamar.alwaysdata.net/health | grep -q '"status":"ok"'
 
   cloudflare-router:
+    # Skipped until vars.ENABLE_ROUTER_DEPLOY=true + secret
+    # CLOUDFLARE_WORKERS_API_TOKEN (Workers Scripts:Edit) exist. The existing
+    # CLOUDFLARE_API_TOKEN secret is KV-scope only — wrangler deploy fails on
+    # it. Until then deploys happen from WSL: `env -u CLOUDFLARE_API_TOKEN
+    # npx wrangler deploy` (wrangler OAuth).
+    if: vars.ENABLE_ROUTER_DEPLOY == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
