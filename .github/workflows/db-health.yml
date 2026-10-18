@@ -1,0 +1,31 @@
+name: DB Health Check
+on:
+  schedule:
+    - cron: "30 0 * * *" # daily: 5-min checks would burn Neon free compute quota again
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    if: ${{ secrets.SUPABASE_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Supabase + Neon, alert Telegram on failure
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEON_URL: ${{ secrets.NEON_URL }}
+          TG_BOT: ${{ secrets.TG_BOT }}
+          TG_ID: ${{ secrets.TG_ID }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
+          fail=0
+          if ! psql "$SUPABASE_URL" -t -c "SELECT 'ok'" > /dev/null 2>&1; then
+            msg="Supabase unreachable — check hostamar dashboard (project eviipjtymitvghmnozlj)"; fail=1; echo "$msg"
+          fi
+          if ! psql "$NEON_URL" -t -c "SELECT 'ok'" > /dev/null 2>&1; then
+            msg="Neon unreachable (archived? quota resets 2026-11-01 — restore from console after reset)"; fail=1; echo "$msg"
+          fi
+          if [ "$fail" = "1" ] && [ -n "$TG_BOT" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${TG_BOT}/sendMessage" \
+              -d chat_id="$TG_ID" -d text="Hostamar DB Health: $msg" > /dev/null
+          fi
+          exit $fail

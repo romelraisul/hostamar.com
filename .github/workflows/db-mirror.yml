@@ -1,0 +1,41 @@
+name: DB Mirror (Turso -> Supabase -> Neon)
+on:
+  schedule:
+    - cron: "0 */6 * * *" # ponytail: */15 would burn Neon's free compute quota (that freeze happened before)
+  workflow_dispatch: {}
+
+jobs:
+  mirror:
+    if: ${{ secrets.SUPABASE_URL != '' && secrets.NEON_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Row-sync Turso -> Supabase
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: npx tsx scripts/sync-db.ts --check
+      - name: pg_dump Supabase -> Neon
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEON_URL: ${{ secrets.NEON_URL }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
+          pg_dump "$SUPABASE_URL" --no-owner --no-acl > backup.sql
+          if psql "$NEON_URL" -v ON_ERROR_STOP=0 -q -f backup.sql > /dev/null 2>&1; then
+            echo "Mirror complete: Supabase -> Neon"
+          else
+            # Expected while Neon free tier is archived (quota reset 2026-11-01).
+            echo "::warning::Neon mirror skipped — DB archived/unreachable. backup.sql kept as artifact."
+          fi
+      - name: Keep last dump as artifact (90d)
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: backup.sql
+          retention-days: 90
