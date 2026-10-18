@@ -1,31 +1,20 @@
-'use client'
+// Bazaar Poster pricing (Direction C, 2026-09). SERVER component — all prices
+// and USD strings render from the build-time BDT_RATE (lib/pricing): no client
+// fetch, no post-paint DOM mutation, no layout shift (PSI 2026-10-18). The
+// only client JS is the island in components/pricing-actions.tsx (bKash TrxID
+// verify + Stripe/PayPal). Billing paths preserved verbatim:
+// /api/billing/create-checkout, /api/billing/verify-trx (V17 rule: credits
+// granted on approval, never claimed client-side).
 
-// Bazaar Poster pricing (Direction C, 2026-09). ALL billing logic preserved
-// verbatim: /api/billing/create-checkout, /api/billing/verify-trx (V17 rule:
-// credits granted on approval, never claimed client-side), Binance rate,
-// Stripe/PayPal/Nagad/Rocket paths, sticky CTA. Only presentation restyled.
-
-import { useState } from 'react'
 import Link from 'next/link'
-import { Check, ShieldCheck, Sparkles, Loader2 } from 'lucide-react'
-import { PLANS, type Plan } from '@/lib/pricing'
-import { useBinanceRate, BinanceBadge, WelcomeBanner, HostaTeaser } from '@/components/pricing-binance'
+import { Sparkles, Coins } from 'lucide-react'
+import { PLANS, BDT_RATE, toBn, toBnInt, usdFromTaka } from '@/lib/pricing'
+import { TrxVerify, CheckoutButtons } from '@/components/pricing-actions'
 
 // Brand
 const BKASH = '#E2136E'
-const STRIPE = '#635BFF'
 
-// Helpers: English -> Bangla digits
-const BN_DIGITS: Record<string, string> = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯', '.': '.', ',': ',' }
-function toBn(s: string | number): string {
-  return String(s).split('').map(c => BN_DIGITS[c] ?? c).join('')
-}
-function toBnInt(n: number): string {
-  return toBn(n.toLocaleString('en-US'))
-}
-function usdFromTaka(taka: number, rate: number): string {
-  return (taka / rate).toFixed(2)
-}
+export const revalidate = 3600
 
 // SEO
 const pricingJsonLd = {
@@ -41,97 +30,8 @@ const pricingJsonLd = {
   ],
 }
 
-type TrxState = 'idle' | 'verifying' | 'success' | 'error'
-
-function TrxVerify({ plan, credits }: { plan: Plan; credits: number }) {
-  const [trx, setTrx] = useState('')
-  const [state, setState] = useState<TrxState>('idle')
-  const [msg, setMsg] = useState('')
-
-  async function verify() {
-    if (!trx.trim()) { setMsg('ট্রানজেকশন আইডি দিন'); setState('error'); return }
-    setState('verifying')
-    setMsg('TrxID যাচাই হচ্ছে…')
-    try {
-      // V17: REAL verification only — /api/billing/verify-trx records the
-      // TrxID for admin/SMS approval. Credits are granted on approval, NEVER
-      // claimed client-side. No demo/fake-success branch anymore.
-      const res = await fetch('/api/billing/verify-trx', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trxId: trx.trim(), plan: plan.id }),
-      })
-      const data = await res.json().catch(() => null)
-      if (res.ok && (data?.ok || data?.success)) {
-        setState('success')
-        setMsg(data?.message || `TrxID গৃহীত — অনুমোদনের পর ${toBn(credits)} ক্রেডিট যোগ হবে`)
-      } else {
-        setState('error')
-        setMsg(data?.error || 'TrxID যাচাই ব্যর্থ — আবার চেষ্টা করুন')
-      }
-    } catch {
-      setState('error')
-      setMsg('যাচাই ব্যর্থ — আবার চেষ্টা করুন')
-    }
-  }
-
-  return (
-    <div className="bp-trx">
-      <p className="bp-trx-label">bKash ট্রানজেকশন যাচাই</p>
-      <div className="bp-trx-row">
-        <input
-          value={trx}
-          onChange={e => { setTrx(e.target.value); if (state !== 'idle') setState('idle') }}
-          placeholder="ট্রানজেকশন আইডি লিখুন"
-          className="bp-trx-input"
-        />
-        <button
-          onClick={verify}
-          disabled={state === 'verifying'}
-          className="bp-trx-btn"
-          style={{ background: BKASH }}
-        >
-          {state === 'verifying' ? (
-            <span className="bp-trx-loading"><Loader2 className="bp-trx-spin" size={14} aria-hidden="true" /> যাচাই হচ্ছে...</span>
-          ) : 'যাচাই করুন'}
-        </button>
-      </div>
-      {state === 'success' && <p className="bp-trx-ok">{msg}</p>}
-      {state === 'error' && <p className="bp-trx-err">{msg}</p>}
-    </div>
-  )
-}
-
 export default function PricingPage() {
-  const binance = useBinanceRate()
-  const rate = binance?.usdtBdt ?? 126.25
-
-  const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null)
-
-  async function startStripe(plan: Plan['id']) {
-    setCheckoutPlan(plan)
-    try {
-      const res = await fetch('/api/billing/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      })
-      const data = await res.json().catch(() => null)
-      if (data?.url || data?.stripeUrl) {
-        window.location.href = data.url || data.stripeUrl
-        return
-      }
-      if (data?.bkashURL) {
-        window.location.href = data.bkashURL
-        return
-      }
-      window.location.href = `/signup?plan=${plan}`
-    } catch {
-      window.location.href = `/signup?plan=${plan}`
-    } finally {
-      setCheckoutPlan(null)
-    }
-  }
+  const rate = BDT_RATE
 
   return (
     <div className="bp-theme">
@@ -149,11 +49,29 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* Binance live rate + welcome banner */}
+      {/* Welcome banner + Binance P2P rate — STATIC (was client-fetch gated → CLS) */}
       <div className="bp-wrap" style={{ paddingTop: '1.4rem' }}>
-        <WelcomeBanner />
+        <div className="rounded-2xl border border-[#0E7C3A]/25 bg-gradient-to-r from-[#0E7C3A]/8 to-transparent p-5">
+          <p className="text-lg font-bold text-[#0F172A]">
+            Create account and get{' '}
+            <span className="text-[#0E7C3A]">6000 Taka</span>{' '}
+            <span className="text-base font-semibold text-slate-500">≈ ${usdFromTaka(6000, rate)} USD</span>
+          </p>
+          <p className="mt-1 text-sm text-slate-600">
+            Chat with 100+ AI models, generate videos, host servers. No card needed.
+          </p>
+          <p className="mt-2 text-xs text-slate-500">
+            6000 Taka = 6000 GPT-4o-mini chats · or 40 videos · or 10 months Starter hosting
+          </p>
+        </div>
         <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '.8rem' }}>
-          <BinanceBadge rate={binance} />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0E7C3A]/10 px-3 py-1 text-xs font-medium text-[#0E7C3A]">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0E7C3A] opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0E7C3A]" />
+            </span>
+            Binance P2P: 1 USDT ≈ {toBn(rate.toFixed(2))} BDT — not bank rate
+          </span>
           <span className="bp-muted" style={{ fontSize: '.8rem' }}>১ USDT ≈ {toBn(rate.toFixed(2))} BDT (Binance P2P)</span>
         </div>
       </div>
@@ -216,24 +134,8 @@ export default function PricingPage() {
                   </a>
                   <TrxVerify plan={p} credits={p.credits} />
 
-                  {/* Card checkout (Stripe/PayPal) — one shared handler */}
-                  <button
-                    onClick={() => startStripe(p.id)}
-                    disabled={checkoutPlan !== null}
-                    className="bp-btn"
-                    style={{ background: STRIPE, color: '#fff' }}
-                  >
-                    {checkoutPlan === p.id ? 'প্রসেস হচ্ছে…' : 'Pay with Stripe'}
-                  </button>
-
-                  {/* PayPal */}
-                  <button
-                    onClick={() => startStripe(p.id)}
-                    className="bp-btn"
-                    style={{ background: '#FFC439', color: '#0F172A', borderColor: '#E2B500' }}
-                  >
-                    Pay with PayPal
-                  </button>
+                  {/* Card checkout (Stripe/PayPal) — shared client island */}
+                  <CheckoutButtons planId={p.id} />
 
                   {/* Nagad / Rocket */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.5rem' }}>
@@ -306,8 +208,21 @@ export default function PricingPage() {
         </div>
       </div>
 
+      {/* $HOSTA teaser — STATIC (was client fetch-gated → CLS). Coin isn't
+          listed yet; when /api/market-adjust starts returning a price, move
+          this into an ISR route and render the number server-side. */}
       <div className="bp-wrap" style={{ paddingBottom: '1.5rem' }}>
-        <HostaTeaser />
+        <div className="mt-12 rounded-2xl border border-dashed border-[#F59E0B]/50 bg-amber-50/40 p-6 text-center">
+          <Coins className="mx-auto mb-2 h-6 w-6 text-[#F59E0B]" />
+          <h3 className="text-lg font-bold">
+            Future $HOSTA Coin — your credits convert 1:1
+          </h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600">
+            1 Credit = 1 Taka ≈ {(1 / rate).toFixed(4)} USDT @ {rate.toFixed(2)} BDT (Binance P2P pegged). Total supply 1B $HOSTA.
+            Your credits are the pre-mine — every Taka you spend today becomes $HOSTA at listing.
+          </p>
+          <p className="mt-1 text-xs text-slate-500">599 Taka Starter = ${usdFromTaka(599, rate)} USD @ {rate.toFixed(2)} • 5999.46 Taka ≈ $47.53 ≈ 1234 $HOSTA</p>
+        </div>
       </div>
     </div>
   );

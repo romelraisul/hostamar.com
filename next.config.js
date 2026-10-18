@@ -50,6 +50,21 @@ const nextConfig = {
           { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: data: https:; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self'; connect-src 'self' https://api.hostamar.com https://tv.hostamar.com https://vp9.hostamar.com; frame-ancestors 'none'" },
         ],
       },
+      // PSI 2026-10-18: HTML was served private,no-cache (root layout read
+      // cookies + force-dynamic). Layout is now static-friendly — these give
+      // the CDN/browser 1h HTML cache with SWR.
+      {
+        source: '/',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        source: '/pricing',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+        ],
+      },
       {
         source: '/opengraph-image.png',
         headers: [
