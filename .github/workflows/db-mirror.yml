@@ -32,18 +32,27 @@ jobs:
           # postgres:17 image — runner apt lacks postgresql-client-17 and client
           # version must match server major (both DBs are pg17).
           docker run --rm -v "$PWD:/w" -e S="$SUPABASE_URL" -e N="$NEON_URL" postgres:17-alpine sh -c '
-            pg_dump "$S" --no-owner --no-acl > /w/backup.sql &&
-            echo "dump lines: $(wc -l < /w/backup.sql)" &&
-            psql "$N" -v ON_ERROR_STOP=0 -q -f /w/backup.sql > /w/psql.log 2>&1; true
-            echo "restore error count: $(grep -ci error /w/psql.log || echo 0)"
-            grep -i error /w/psql.log | head -3; true
+            set +e
+            pg_dump "$S" --no-owner --no-acl --schema=public > /w/backup.sql
+            echo "dump lines: $(wc -l < /w/backup.sql)"
+            NB="${N%%/neondb}/hostamar_backup"
+            dropdb "$N" hostamar_backup 2>/dev/null
+            if createdb "$N" -O hostamar_sync hostamar_backup 2>/dev/null; then
+              echo "fresh db hostamar_backup (owner hostamar_sync — owns its public schema)"
+              psql "$NB" -v ON_ERROR_STOP=0 -q -f /w/backup.sql > /w/psql.log 2>&1
+              echo "restore error count: $(grep -ci error /w/psql.log)"
+              grep -i error /w/psql.log | head -3
+              psql "$NB" -t -c "SELECT count(*) FROM \"Customer\"" > /w/neon_count.txt 2>/dev/null
+            else
+              echo "CREATEDB denied for hostamar_sync — mirror cannot land in owned database"
+            fi
           ' || true
-          n=$(docker run --rm -e N="$NEON_URL" postgres:17-alpine sh -c 'psql "$N" -t -c "SELECT count(*) FROM \"Customer\"" 2>/dev/null' | tr -d '[:space:]' || true)
+          n=$(tr -d '[:space:]' < neon_count.txt 2>/dev/null || true)
           echo "Neon Customer rows after restore: ${n:-unreachable}"
           if [ -n "$n" ] && [ "$n" != "0" ]; then
-            echo "Mirror complete: Supabase -> Neon"
+            echo "Mirror complete: Supabase -> Neon (db: hostamar_backup)"
           else
-            # Expected while Neon role lacks schema rights / DB archived (quota reset 2026-11-01).
+            # Expected while Neon role lacks CREATEDB / DB archived (quota reset 2026-11-01).
             echo "::warning::Neon mirror did not land — backup.sql kept as artifact."
           fi
       - name: Keep last dump as artifact (90d)
