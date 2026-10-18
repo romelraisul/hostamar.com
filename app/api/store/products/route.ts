@@ -1,8 +1,16 @@
-
 // Catalog changes ~never (116-123 products, manual admin edits). Stale-by-5min
 // at the edge is irrelevant for a 2-click buyer and removes the per-request
 // cold function + bridge hop that made 2/3 prod loads take ~20s.
 export const revalidate = 300
+
+// FORGE 2026-10-18: Cloudflare Workers Cache API edge cache.
+// Next's fetch cache (cache:'default') doesn't persist across Worker
+// isolates, so every request was a MISS and hammered Medusa ~every 1.2s.
+// caches.open() is the Workers-native edge cache — same 300s TTL, zero
+// Medusa hits on cache hit, survives isolate recycling.
+// ponytail: catalog changes ~never; the cache is best-effort (dev/local
+// without `caches` falls through to Medusa — same as the old behavior).
+const CACHE_KEY = 'https://hostamar.com/api/store/products'
 
 // ============================================================================
 // GET /api/store/products — public Medusa catalog bridge (FORGE, 2026-09-14).
@@ -17,17 +25,22 @@ import { NextResponse } from 'next/server'
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
 export async function GET() {
-  const pk = process.env.MEDUSA_PK
-  if (!pk) return NextResponse.json({ error: 'not configured' }, { status: 500 })
+  // Edge cache: check before hitting Medusa. caches.open() is available in
+  // the CF Workers runtime; in dev/local Node it throws and we swallow it.
+  const edgeCache = await caches.open('store-products').catch(() => null)
+  if (edgeCache) {
+    const cached = await edgeCache.match(CACHE_KEY).catch(() => null)
+    if (cached) return cached
+  }
 
-  // FORGE 2026-10-08: prod MEDUSA_URL is set but EMPTY ("") — the old
+  // FORGE 2026-10-04: prod MEDUSA_URL is set but EMPTY ("") — the old
   // `fallbackBase = bridgeUrl` made both bases identical, so the
   // store.hostamar.com fallback was dead code. Fallback is now always the
   // real independent origin; empty/unset MEDUSA_URL just means no primary.
-    const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
-    // Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
-    const primaryBase = bridgeUrl || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
-    const fallbackBase = 'https://store.hostamar.com'
+  const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
+  // Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
+  const primaryBase = bridgeUrl || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+  const fallbackBase = 'https://store.hostamar.com'
 
   async function tryFetch(base: string) {
     const pk = process.env.MEDUSA_PK
@@ -42,39 +55,43 @@ export async function GET() {
     return data
   }
 
+  // Helper: map raw Medusa products to the thin shape the storefront needs
+  function mapProducts(data: any) {
+    return (data.products || []).map((p: any) => {
+      const v = p.variants?.[0]
+      const cp = v?.calculated_price
+      return {
+        id: p.id,
+        title: p.title,
+        variantId: v?.id,
+        amountBdt: Math.round(((Array.isArray(cp) ? cp[0]?.calculated_amount : cp?.calculated_amount) ?? 0) / 100),
+      }
+    }).filter((p: any) => p.variantId)
+  }
+
+  // Cache the response: store in edge cache, then return
+  async function cacheAndReturn(data: any) {
+    const products = mapProducts(data)
+    const res = NextResponse.json({ count: data.count ?? products.length, products }, {
+      headers: {
+        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600',
+        'CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600, stale-if-error=3600',
+      }
+    })
+    // Fire-and-forget: store in edge cache so subsequent requests skip Medusa
+    if (edgeCache) edgeCache.put(CACHE_KEY, res.clone()).catch(() => {})
+    return res
+  }
+
   try {
     const data = await tryFetch(primaryBase)
-    const products = (data.products || [])
-      .map((p: any) => {
-        const v = p.variants?.[0]
-        const cp = v?.calculated_price
-        return {
-          id: p.id,
-          title: p.title,
-          variantId: v?.id,
-          amountBdt: Math.round(((Array.isArray(cp) ? cp[0]?.calculated_amount : cp?.calculated_amount) ?? 0) / 100),
-        }
-      })
-      .filter((p: any) => p.variantId)
-    return NextResponse.json({ count: data.count ?? products.length, products }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' } })
+    return cacheAndReturn(data)
   } catch (e: any) {
     if (fallbackBase) {
       console.warn('[store/products] bridge failed, falling back to store.hostamar.com:', e?.message?.slice(0, 120))
       try {
         const data = await tryFetch(fallbackBase)
-        const products = (data.products || [])
-          .map((p: any) => {
-            const v = p.variants?.[0]
-            const cp = v?.calculated_price
-            return {
-              id: p.id,
-              title: p.title,
-              variantId: v?.id,
-              amountBdt: Math.round(((Array.isArray(cp) ? cp[0]?.calculated_amount : cp?.calculated_amount) ?? 0) / 100),
-            }
-          })
-          .filter((p: any) => p.variantId)
-        return NextResponse.json({ count: data.count ?? products.length, products }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' } })
+        return cacheAndReturn(data)
       } catch {
         return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
       }
