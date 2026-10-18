@@ -14,7 +14,7 @@ import { Hind_Siliguri, Archivo } from 'next/font/google'
 // render-blocking third-party CSS + FOIT risk). The CSS variables feed the
 // font-family rules in globals.css. Weights match the old <link> exactly.
 const hindSiliguri = Hind_Siliguri({ subsets: ['bengali', 'latin'], weight: ['400', '700'], display: 'swap', variable: '--font-hind' })
-const archivo = Archivo({ subsets: ['latin'], weight: ['700', '800', '900'], display: 'swap', variable: '--font-archivo' })
+const archivo = Archivo({ subsets: ['latin'], weight: ['800', '900'], display: 'swap', variable: '--font-archivo' })
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 
