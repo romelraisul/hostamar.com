@@ -674,6 +674,7 @@ export default function TvPage() {
                 { f: 'opencut-headless-render-narrated.mp4', t: 'OpenCut হেডলেস রেন্ডার — স্ক্রিপ্ট থেকে পার্স্যাক পর্যন্ত (152s, -20.1 dB)' },
                 { f: 'shorts-opencut-headless-render.mp4', t: 'OpenCut Headless Render Short — ৩০s ভার্টিকেল (-21.8 dB)' },
                 { f: 'shorts-cdn-edge-episode.mp4', t: 'CDN Edge Short — ৩০s ভার্টিকেল (-26.8 dB)' },
+                { f: 'receipt-agent-cloud-infra-narrated.mp4', t: 'Receipt Agent Cloud Infra — ২৪/৭ এজেন্ট ক্লাউড (15s, -17.1 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
                   <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
