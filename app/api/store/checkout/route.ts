@@ -68,13 +68,14 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
     return data
   }
 
-  // Skipped primary worker; use fallback only
-  // console.log('[store/checkout] trying primary:', primaryBase)
-  // return await tryFetch(primaryBase)
-  // console.log('[store/checkout] trying fallback:', fallbackBase)
-  // return await tryFetch(fallbackBase)
-  console.log('[store/checkout] using fallback:', fallbackBase)
-  return await tryFetch(fallbackBase)
+  // Try primary first, fallback on any error (including network/timeout)
+  try {
+    console.log('[store/checkout] trying primary:', primaryBase)
+    return await tryFetch(primaryBase)
+  } catch (e) {
+    console.warn('[store/checkout] primary failed, falling back to store.hostamar.com:', e instanceof Error ? e.message : String(e))
+    return await tryFetch(fallbackBase)
+  }
 
 }
 
