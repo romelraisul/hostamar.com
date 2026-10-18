@@ -55,12 +55,13 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Verify route answers
         run: |
+          # api.hostamar.com sits behind zone bot checks that challenge datacenter
+          # IPs (runner gets an HTML challenge, no worker headers) — verify on the
+          # workers.dev route instead: same script, no zone firewall.
           for i in 1 2 3 4 5; do
-            served=$(curl -s -D- -o /dev/null --max-time 30 https://api.hostamar.com/api/health | grep -i '^x-served-by' | tr -d '\r')
+            served=$(curl -s -D- -o /dev/null --max-time 30 https://api-router.romelraisul.workers.dev/api/health | grep -i '^x-served-by' | tr -d '\r')
             [ -n "$served" ] && break
             echo "attempt $i: no header yet (edge propagation) — waiting 15s"; sleep 15
           done
-          echo "api.hostamar.com/api/health -> ${served:-no x-served-by header}"
-          # primary (PC on) answers 401/404, fallback (PC off) 200/202 — any
-          # x-served-by header means the router itself is alive.
+          echo "router /api/health -> ${served:-no x-served-by header}"
           [ -n "$served" ]

@@ -29,13 +29,21 @@ jobs:
           NEON_URL: ${{ secrets.NEON_URL }}
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$NEON_URL" ]; then echo "secrets missing — skipping pg_dump"; exit 0; fi
-          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 > /dev/null
+          export PATH="/usr/lib/postgresql/17/bin:$PATH"
           pg_dump "$SUPABASE_URL" --no-owner --no-acl > backup.sql
-          if psql "$NEON_URL" -v ON_ERROR_STOP=0 -q -f backup.sql > /dev/null 2>&1; then
+          echo "backup.sql: $(wc -l < backup.sql) lines"
+          if psql "$NEON_URL" -v ON_ERROR_STOP=0 -q -f backup.sql > psql.log 2>&1; then :; fi
+          if grep -qi "error" psql.log; then
+            echo "::warning::Neon restore errors (first 3):"; grep -i error psql.log | head -3
+          fi
+          n=$(psql "$NEON_URL" -t -c "SELECT count(*) FROM \"Customer\"" 2>/dev/null | tr -d '[:space:]')
+          echo "Neon Customer rows after restore: ${n:-unreachable}"
+          if [ -n "$n" ] && [ "$n" != "0" ]; then
             echo "Mirror complete: Supabase -> Neon"
           else
-            # Expected while Neon free tier is archived (quota reset 2026-11-01).
-            echo "::warning::Neon mirror skipped — DB archived/unreachable. backup.sql kept as artifact."
+            # Expected while Neon role lacks schema rights / DB archived (quota reset 2026-11-01).
+            echo "::warning::Neon mirror did not land — backup.sql kept as artifact."
           fi
       - name: Keep last dump as artifact (90d)
         if: hashFiles('backup.sql') != ''  # ponytail: cheap presence check
