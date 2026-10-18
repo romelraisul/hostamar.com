@@ -24,9 +24,10 @@ export async function GET() {
   // `fallbackBase = bridgeUrl` made both bases identical, so the
   // store.hostamar.com fallback was dead code. Fallback is now always the
   // real independent origin; empty/unset MEDUSA_URL just means no primary.
-  const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
-  const primaryBase = bridgeUrl || 'https://store.hostamar.com'
-  const fallbackBase = 'https://store.hostamar.com'
+    const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
+    // Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
+    const primaryBase = bridgeUrl || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+    const fallbackBase = 'https://store.hostamar.com'
 
   async function tryFetch(base: string) {
     const pk = process.env.MEDUSA_PK
