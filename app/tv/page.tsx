@@ -523,6 +523,8 @@ export default function TvPage() {
                 { f: 'shorts-context-graph.mp4', t: 'Context Graph Short — ৩০s ভার্টিকেল' },
                 { f: 'programme-eu-bd-gpu-spot-narrated.mp4', t: 'EU-BD GPU Spot Market — Narrated (221s, narrated)' },
                 { f: 'build-log-005-narrated.mp4', t: 'Build Log 005 — Infrastructure & Growth (201s, narrated)' },
+                { f: 'build-log-006-arch-narrated.mp4', t: 'Build Log 006 — Platform Overview + AI Agent Cloud (112s, -26.1 dB)' },
+                { f: 'build-log-006-arch-shorts.mp4', t: 'Build Log 006 Short — ৩০s ভার্টিকেল (-28.8 dB)' },
                 { f: 'programme-build-log-007-narrated.mp4', t: 'Build Log 007 — ১০৬ সার্ভিস, ১২০ মডেল, Orca ADE (১৩১s, নেরেশনসহ)' },
                 { f: 'build-log-008-narrated.mp4', t: 'Build Log 008 — Deploy Chains That Lie: rc=0 deploys that shipped nothing (128s, নেরেশনসহ)' },
                 { f: 'shorts-build-log-008.mp4', t: 'Build Log 008 Short — Deploy Chains That Lie (৩০s Vertical)' },
