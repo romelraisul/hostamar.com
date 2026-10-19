@@ -27,6 +27,11 @@ import { b2S3Fetch, sha256hex } from "./opennext-b2-s3.js";
 
 export const NAME = "cf-b2-incremental-cache";
 
+// TTL for the colo-side Cache API layer sitting in front of B2 (see get()).
+const CACHE_TTL = 300;
+// named colo cache (caches.default is untyped in this tsconfig; open() is typed)
+const ccache = () => caches.open("b2-inc-cache-v1");
+
 // Lazy: module scope runs outside the request context — env is not ready yet.
 function cfg() {
   return {
@@ -56,17 +61,42 @@ class B2IncrementalCache {
     // 1102-die (3/3 with live fetch cache, 200 on the no-op control). Pages (ISR)
     // keep full B2 — those entries are pre-populated from .open-next/cache.
     if (cacheType === "fetch") return null;
+    const t0 = Date.now();
     try {
-      const res = await b2S3Fetch(cfg(), "GET", await cacheKey(key, cacheType));
+      const ck = await cacheKey(key, cacheType);
+      // Cache API is zone-scoped in workerd: put/match silently no-op for URLs
+      // outside the worker's own zone (b2-cache.internal missed 100% in tail).
+      // Key under the live zone instead — the path has no real route behind it.
+      const url = `https://hostamar.com/_b2cache/${ck}`;
+      // ponytail: colo-side Cache API in front of B2 — a B2 GET is a cross-region
+      // round trip (~600ms TTFB tax on every hit); a cache hit is ~10ms. 5-min
+      // TTL: edits propagate within 5min; add a purge hook if that ever matters.
+      const store = await ccache();
+      const hit = await store.match(url);
+      if (hit?.ok) {
+        console.log(`[b2-t] HIT ${Date.now() - t0}ms ${ck.slice(0, 48)}`);
+        return {
+          value: JSON.parse(await hit.text()),
+          lastModified: Number(hit.headers.get("x-b2-lm")) || Date.now(),
+        };
+      }
+      const res = await b2S3Fetch(cfg(), "GET", ck);
+      console.log(`[b2-t] B2 ${res.status} ${Date.now() - t0}ms ${ck.slice(0, 48)}`);
       if (!res.ok) {
         if (res.status !== 404) console.error("[b2-inc-cache] get error:", res.status);
+        else console.warn("[b2-inc-cache] page MISS — B2 populate stale or BUILD_ID changed:", ck);
         return null; // 404 = cold entry, a normal miss
       }
+      const text = await res.text();
       const lastModified = res.headers.get("last-modified");
-      return {
-        value: JSON.parse(await res.text()),
-        lastModified: lastModified ? new Date(lastModified).getTime() : Date.now(),
-      };
+      const lm = lastModified ? new Date(lastModified).getTime() : Date.now();
+      await caches.default.put(
+        url,
+        new Response(text, {
+          headers: { "cache-control": `public, max-age=${CACHE_TTL}`, "x-b2-lm": String(lm) },
+        })
+      );
+      return { value: JSON.parse(text), lastModified: lm };
     } catch (e) {
       console.error("[b2-inc-cache] get threw:", e instanceof Error ? e.name : e);
       return null;
@@ -76,8 +106,18 @@ class B2IncrementalCache {
   async set(key: string, value: unknown, cacheType?: string): Promise<void> {
     if (cacheType === "fetch") return; // see get(): fetch-cache set work 1102-dies products
     try {
-      const res = await b2S3Fetch(cfg(), "PUT", await cacheKey(key, cacheType), JSON.stringify(value));
+      const ck = await cacheKey(key, cacheType);
+      const text = JSON.stringify(value);
+      const res = await b2S3Fetch(cfg(), "PUT", ck, text);
       if (!res.ok) console.error("[b2-inc-cache] set failed:", res.status);
+      // make own-write visible colo-side immediately
+      const store = await ccache();
+      await store.put(
+        `https://hostamar.com/_b2cache/${ck}`,
+        new Response(text, {
+          headers: { "cache-control": `public, max-age=${CACHE_TTL}`, "x-b2-lm": String(Date.now()) },
+        })
+      );
     } catch (e) {
       console.error("[b2-inc-cache] set threw:", e instanceof Error ? e.name : e);
     }
@@ -85,8 +125,10 @@ class B2IncrementalCache {
 
   async delete(key: string): Promise<void> {
     try {
-      const res = await b2S3Fetch(cfg(), "DELETE", await cacheKey(key));
+      const ck = await cacheKey(key);
+      const res = await b2S3Fetch(cfg(), "DELETE", ck);
       if (!res.ok && res.status !== 404) console.error("[b2-inc-cache] delete failed:", res.status);
+      await (await ccache()).delete(`https://hostamar.com/_b2cache/${ck}`);
     } catch (e) {
       console.error("[b2-inc-cache] delete threw:", e instanceof Error ? e.name : e);
     }

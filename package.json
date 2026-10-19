@@ -22,7 +22,9 @@
     "make": "make",
     "prepush": "bash scripts/check-vercel-quota.sh && npm run build",
     "check:vercel-quota": "bash scripts/check-vercel-quota.sh",
-    "build:cloudflare": "next build"
+    "build:cloudflare": "next build",
+    "worker:build": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion",
+    "worker:deploy": "node scripts/populate-b2.mjs && env -u CLOUDFLARE_API_TOKEN wrangler deploy -c wrangler-pages.toml"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.51",
