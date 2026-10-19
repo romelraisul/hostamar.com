@@ -30,9 +30,24 @@ import { NextResponse } from 'next/server'
 // as markup), so the fallback can only tighten input. The MALICIOUS_RE tripwire
 // below still rejects anything that smells like injection either way.
 let purify: { sanitize: (s: string) => string } | null = null
-let purifyRequested = false
 
 const ON_WORKERD = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers'
+
+// Preload the sanitizer at module load (Node only — workerd keeps the escape
+// fallback; importing jsdom there 500s the Worker, see above). Preloading at
+// boot instead of first call kills the cold-isolate race where request #1 got
+// the escapeAll output and the tripwire then rejected its own escaped text.
+// deepSanitize stays sync; callers/tests that need deterministic DOMPurify
+// semantics can await `sanitizerReady`.
+export const sanitizerReady: Promise<void> = ON_WORKERD
+  ? Promise.resolve()
+  : import('isomorphic-dompurify')
+      .then((m) => {
+        purify = ((m as unknown as { default?: unknown }).default ?? m) as typeof purify
+      })
+      .catch(() => {
+        purify = null
+      })
 
 function escapeAll(s: string): string {
   return s
@@ -44,16 +59,6 @@ function escapeAll(s: string): string {
 }
 
 function sanitizeOne(s: string): string {
-  if (!ON_WORKERD && !purifyRequested) {
-    purifyRequested = true
-    void import('isomorphic-dompurify')
-      .then((m) => {
-        purify = ((m as unknown as { default?: unknown }).default ?? m) as typeof purify
-      })
-      .catch(() => {
-        purify = null
-      })
-  }
   if (purify) return purify.sanitize(s)
   return escapeAll(s)
 }
@@ -62,9 +67,10 @@ export const DEFAULT_MAX_STRING = 10_000
 
 const PROTO_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 // Post-sanitization tripwire. DOMPurify already strips <script> / event
-// handlers, but we hard-reject anything that still smells like an injection
-// vector (defence in depth + explicit 400 for audit trails).
-const MALICIOUS_RE = /<script|javascript:|data:text\/html|vbscript:|onerror=|onload=/i
+// handlers, and the escapeAll fallback makes them inert, so only scheme /
+// live-script vectors are rejected here — flagging onerror=/onload= too just
+// 400'd inert, escaped text (defence in depth + explicit 400 for audit trails).
+const MALICIOUS_RE = /<script|javascript:|data:text\/html|vbscript:/i
 
 export class ValidationError extends Error {
   status: number
