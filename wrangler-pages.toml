@@ -10,6 +10,13 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 account_id = "e00717304c1139751214b8cda5078a8d"
 
+# 2026-10-19: put CF edge cache in front of the worker for eyeball requests
+# (route-attached workers can't use the Cache API — silently no-ops — so this
+# per-worker fetch-cache is the only machine-doable edge-HIT path; docs:
+# developers.cloudflare.com/workers/cache/configuration).
+[cache]
+enabled = true
+
 # Apex CNAME stays pointed at Vercel as an untouched fallback.
 # Rollback = uncomment the routes and redeploy.
 # ROUTES DISABLED 2026-10-19: hostamar.com 503 ~100% of probes since ~21:00
