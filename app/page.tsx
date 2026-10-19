@@ -94,7 +94,7 @@ export default async function HomePage() {
               </svg>
               <div className="bp-frame bp-frame-tilt-r">
                 <div className="bp-media">
-                  <img src="/redesign/hero-bazaar-640.jpg" alt="বাংলাদেশি উৎসবের বাজারের পোস্টার-ধাঁচের ইলাস্ট্রেশন" width="640" height="400" {...({ fetchpriority: 'high' } as object)} />
+                  <img src="/redesign/hero-bazaar-640.avif" alt="বাংলাদেশি উৎসবের বাজারের পোস্টার-ধাঁচের ইলাস্ট্রেশন" width="640" height="400" {...({ fetchpriority: 'high' } as object)} />
                 </div>
               </div>
             </div>
@@ -137,13 +137,13 @@ export default async function HomePage() {
             <div className="bp-wall">
               <div className="bp-tile bp-w-eid">
                 <div className="bp-media" style={{ flex: 1 }}>
-                  <img src="/redesign/poster-eid-600.jpg" alt="ঈদ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="600" height="800" />
+                  <img src="/redesign/poster-eid-600.avif" alt="ঈদ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="600" height="800" />
                 </div>
                 <div className="bp-cap"><span>ঈদ মুবারক সেল</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>টেমপ্লেট</span></div>
               </div>
               <div className="bp-tile bp-w-bok">
                 <div className="bp-media">
-                  <img src="/redesign/poster-boishakh-600.jpg" alt="পহেলা বৈশাখ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="600" height="800" />
+                  <img src="/redesign/poster-boishakh-600.avif" alt="পহেলা বৈশাখ টেমপ্লেটের পোস্টার কভার" loading="lazy" width="600" height="800" />
                 </div>
                 <div className="bp-cap"><span>পহেলা বৈশাখ</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>টেমপ্লেট</span></div>
               </div>
