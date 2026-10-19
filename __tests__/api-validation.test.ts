@@ -7,7 +7,7 @@
 // ============================================================================
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
-import { deepSanitize, validateData, ValidationError } from '@/lib/api/validator'
+import { deepSanitize, validateData, ValidationError, sanitizerReady } from '@/lib/api/validator'
 
 const echoSchema = z.object({
   note: z.string(),
@@ -17,6 +17,7 @@ const echoSchema = z.object({
 
 describe('api validation — deepSanitize / validateData', () => {
   it('1) strips an <img onerror> payload (XSS) but still parses', async () => {
+    await sanitizerReady // Node preloads DOMPurify; await it so the assertion is deterministic
     const out = deepSanitize({ note: '<img src=x onerror=alert(1)>hello', tool: 'get_status' })
     expect((out as any).note).toBe('<img src="x">hello')
     // still valid for the schema
