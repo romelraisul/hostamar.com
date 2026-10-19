@@ -31,6 +31,7 @@ export const NAME = "cf-b2-incremental-cache";
 const CACHE_TTL = 300;
 // named colo cache (caches.default is untyped in this tsconfig; open() is typed)
 const ccache = () => caches.open("b2-inc-cache-v1");
+const ccacheDefault = () => (caches as unknown as { default: Cache }).default;
 
 // Lazy: module scope runs outside the request context — env is not ready yet.
 function cfg() {
@@ -90,7 +91,7 @@ class B2IncrementalCache {
       const text = await res.text();
       const lastModified = res.headers.get("last-modified");
       const lm = lastModified ? new Date(lastModified).getTime() : Date.now();
-      await caches.default.put(
+      await ccacheDefault().put(
         url,
         new Response(text, {
           headers: { "cache-control": `public, max-age=${CACHE_TTL}`, "x-b2-lm": String(lm) },
