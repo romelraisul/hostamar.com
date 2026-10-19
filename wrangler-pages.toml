@@ -22,6 +22,15 @@ enabled = true
 # ROUTES DISABLED 2026-10-19: hostamar.com 503 ~100% of probes since ~21:00
 # (CF error 1102 "Worker exceeded resource limits", free 10ms CPU cap).
 # Traffic now falls through to Vercel origin (hostamar-build.vercel.app 200).
+# 2026-10-19: hostamar.com attached as a Worker CUSTOM DOMAIN via the dash
+# (id c666cd44…, cert d988737c…, service hostamar-pages / production, enabled).
+# Apex TLS cert is valid (Google Trust Services WE1, CN=hostamar.com) — no 526.
+# Zone-level routes hostamar.com/* and www.hostamar.com/* (set in the dash, NOT
+# here) are deliberately RETAINED as the fallback path; the custom domain takes
+# precedence while they keep serving if it ever detaches. Cache API is only
+# functional on custom domains — before this attach the adapter's colo front
+# silently no-opped.
+# Rollback = remove the custom domain in the dash; routes keep the site up.
 routes = [
   # { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
   # { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
