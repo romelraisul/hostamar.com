@@ -98,6 +98,7 @@ function loadEnv(): ServerEnv {
 
 /** Validated, typed access to all server environment variables. */
 export const env: ServerEnv = loadEnv()
+console.log('[env] TV_HLS_URL:', process.env.TV_HLS_URL, '-> env.TV_HLS_URL:', env.TV_HLS_URL)
 
 // ── Convenience helpers (honest 503s instead of mocks) ─────────────
 

@@ -14,7 +14,9 @@ import { TrxVerify, CheckoutButtons } from '@/components/pricing-actions'
 // Brand
 const BKASH = '#E2136E'
 
-export const revalidate = 3600
+// ponytail: 86400 — same rationale as app/page.tsx (CPU ceiling kills runtime
+// re-renders; 3600 degraded to stale-serve s-maxage=2 between deploys).
+export const revalidate = 86400
 
 // SEO
 const pricingJsonLd = {

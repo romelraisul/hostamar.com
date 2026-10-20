@@ -17,11 +17,12 @@ export interface TvConfig {
   autoGenerate: boolean
   rssFeeds: string[]
   isConfigured: boolean
-  source: 'db' | 'tunnel' | 'env' | 'none'
+  source: 'db' | 'tunnel' | 'env' | 'none' | 'env-direct'
   tunnelConfigured: boolean
 }
 
 export async function getTvConfig(): Promise<TvConfig> {
+  console.log('[getTvConfig] START - env.TV_HLS_URL:', process.env.TV_HLS_URL)
   const rtmpUrl = env.TV_RTMP_URL || 'rtmp://localhost:1935/live/tv'
   const channelName = env.TV_CHANNEL_NAME || 'Hostamar TV'
   const autoGenerate = env.TV_AUTO_GENERATE_ENABLED === 'true'
@@ -35,6 +36,9 @@ export async function getTvConfig(): Promise<TvConfig> {
     const { ensureSchema } = await import('@/lib/ensure-schema')
     await ensureSchema()
     const settings = await (prisma as any).tvSettings?.findFirst?.()
+    console.log('[getTvConfig] DB settings:', JSON.stringify(settings))
+    console.log('[getTvConfig] env.TV_HLS_URL:', process.env.TV_HLS_URL)
+    console.log('[getTvConfig] tunnelUrl:', tunnelUrl)
     if (settings?.hlsUrl) {
       return { hlsUrl: settings.hlsUrl, rtmpUrl: settings.rtmpUrl || rtmpUrl, channelName: settings.channelName || channelName, autoGenerate: settings.autoGenerate ?? autoGenerate, rssFeeds: settings.rssFeeds?.length ? settings.rssFeeds : rssFeeds, isConfigured: true, source: 'db', tunnelConfigured }
     }
@@ -45,6 +49,8 @@ export async function getTvConfig(): Promise<TvConfig> {
 
   if (tunnelUrl) return { hlsUrl: tunnelUrl, rtmpUrl, channelName, autoGenerate, rssFeeds, isConfigured: true, source: 'tunnel', tunnelConfigured }
   if (env.TV_HLS_URL) return { hlsUrl: env.TV_HLS_URL, rtmpUrl, channelName, autoGenerate, rssFeeds, isConfigured: true, source: 'env', tunnelConfigured }
+  // Fallback: read directly from process.env
+  if (process.env.TV_HLS_URL) return { hlsUrl: process.env.TV_HLS_URL, rtmpUrl, channelName, autoGenerate, rssFeeds, isConfigured: true, source: 'env-direct', tunnelConfigured }
   return { hlsUrl: null, rtmpUrl, channelName, autoGenerate, rssFeeds, isConfigured: false, source: 'none', tunnelConfigured }
 }
 
