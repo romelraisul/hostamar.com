@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, Subtitles } from 'lucide-react';
 import SubtitlesPageClient from './client';
 import { useLocale } from '@/lib/locale-context';
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 export default function SubtitlesPage() {
   const { t } = useLocale();

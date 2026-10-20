@@ -3,6 +3,23 @@
 @tailwind utilities;
 
 /* ==========================================================================
+   Self-hosted glyph-subset fonts (2026-10-20). Regenerate with
+   /usr/bin/python3 scripts/fonts/make-subsets.py. Only the 400 is preloaded
+   (layout <head>); 700 + Archivo arrive async. Fallback faces are Arial tuned
+   with next/font's capsize formula so the swap paints without reflow (CLS 0).
+   ========================================================================== */
+@font-face{font-family:"Hind Siliguri";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/hind-siliguri-400-subset.woff2) format("woff2")}
+@font-face{font-family:"Hind Siliguri";font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/hind-siliguri-700-subset.woff2) format("woff2")}
+@font-face{font-family:"Archivo";font-style:normal;font-weight:800 900;font-display:swap;src:url(/fonts/archivo-var-subset.woff2) format("woff2-variations")}
+@font-face{font-family:"Hind Siliguri Fallback";font-style:normal;font-weight:400 900;src:local("Arial");ascent-override:116.79%;descent-override:52.43%;line-gap-override:0.00%;size-adjust:95.56%}
+@font-face{font-family:"Archivo Fallback";font-style:normal;font-weight:400 900;src:local("Arial");ascent-override:88.96%;descent-override:21.28%;line-gap-override:0.00%;size-adjust:98.70%}
+:root {
+  --font-hind: "Hind Siliguri", "Hind Siliguri Fallback";
+  --font-archivo: "Archivo", "Archivo Fallback";
+}
+
+
+/* ==========================================================================
    Hostamar — Global design tokens / utilities
    Keep this file valid CSS; targeted component redesign lives in TSX files.
    ========================================================================== */

@@ -14,6 +14,7 @@ import {
   Lock,
   RefreshCw
 } from "lucide-react"
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 import { useLocale } from "@/lib/locale-context"
 
 interface SubscriptionData {

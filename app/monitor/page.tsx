@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react';
 import { useLocale } from '@/lib/locale-context';
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 interface ServiceHealth {
   name: string;

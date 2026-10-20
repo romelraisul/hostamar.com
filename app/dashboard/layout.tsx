@@ -33,6 +33,7 @@ import {
   Clapperboard,
   ExternalLink,
 } from 'lucide-react'
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 import { PRODUCT_NAV } from '@/lib/products'
 import { DASHBOARD_ROUTES } from '@/lib/dashboard-routes'
 import dynamic from 'next/dynamic'

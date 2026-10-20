@@ -1,8 +1,8 @@
 'use client'
 
-import { createContext, useContext, useCallback, useMemo } from 'react'
+import { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react'
 import type { Locale } from '@/lib/i18n'
-import { t as i18nT, locales } from '@/lib/i18n'
+import { i18nState } from '@/lib/i18n-registry'
 
 type LocaleContextType = {
   locale: Locale
@@ -44,9 +44,22 @@ export function LocaleProvider({
     }
   }, [])
 
+  // Safety net: routes whose chunks don't statically import the dictionary
+  // still get real strings shortly after mount (any t() called before then
+  // renders the key and self-heals on this state flip).
+  const [dictReady, setDictReady] = useState(false)
+  useEffect(() => {
+    if (!i18nState.t) {
+      import('@/lib/i18n-dict').then(() => setDictReady(true))
+    }
+  }, [])
+
   const t = useCallback(
-    (key: string): string => i18nT(key, locale),
-    [locale]
+    (key: string): string => (i18nState.t ? i18nState.t(key, locale) : key),
+    // dictReady: re-create t (and re-render consumers) once the dictionary
+    // lands so pre-load key fallbacks self-heal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [locale, dictReady]
   )
 
   const value = useMemo(

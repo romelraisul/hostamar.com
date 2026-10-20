@@ -3,18 +3,17 @@ import './bazaar.css'
 import { Providers } from './providers'
 import { Metadata, Viewport } from 'next'
 import { defaultSeo } from '@/lib/seo'
-import SupportWidget from '@/components/SupportWidget'
-import SupportChatWidget from '@/components/support-chat-widget'
+import LazySupport from '@/components/lazy-support'
 import ChromeGuard from '@/components/layout/ChromeGuard'
 import { LocaleProvider } from '@/lib/locale-context'
 import type { Locale } from '@/lib/i18n'
-import { Hind_Siliguri, Archivo } from 'next/font/google'
 
-// Self-hosted via next/font (PSI 2026-10-18: the Google Fonts <link> was
-// render-blocking third-party CSS + FOIT risk). The CSS variables feed the
-// font-family rules in globals.css. Weights match the old <link> exactly.
-const hindSiliguri = Hind_Siliguri({ subsets: ['bengali', 'latin'], weight: ['400', '700'], display: 'swap', variable: '--font-hind' })
-const archivo = Archivo({ subsets: ['latin'], weight: ['800', '900'], display: 'swap', variable: '--font-archivo' })
+// Fonts are self-hosted glyph subsets loaded via @font-face in globals.css
+// (perf 2026-10-20: the next/font/google load shipped 6 preloaded woff2 =
+// 126KB at high priority before CSS; subsets are 87KB across 3 files with
+// only the 400 preloaded below — font chain 126KB→33KB at head-of-line).
+// Regenerate subsets: /usr/bin/python3 scripts/fonts/make-subsets.py.
+// The --font-hind/--font-archivo vars now live in globals.css :root.
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 
@@ -146,9 +145,14 @@ export default async function RootLayout({
     const htmlFontClass = isBengali ? 'bangla' : ''
 
     return (
-      <html lang={locale} dir="ltr" className={`${htmlFontClass} ${hindSiliguri.variable} ${archivo.variable}`}>
+      <html lang={locale} dir="ltr" className={htmlFontClass}>
       <head>
         <meta charSet="utf-8" />
+        <link rel="preload" href="/fonts/hind-siliguri-400-subset.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        {/* Only the 400 preloads: on mobile-sim it IS the LCP gate (hero h1),
+            and competing 54KB of 700/Archivo preloads starved it (LCP 4.0s,
+            mobile 86). 700/Archivo are CSS-discovered; desktop CLS from the
+            late swap is ~0.05 (score 0.98) — cheap vs mobile 90. */}
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta name="format-detection" content="telephone=no, address=no, email=no" />
         <link rel="canonical" href={SITE_URL} />
@@ -180,8 +184,7 @@ export default async function RootLayout({
         <Providers>
           <LocaleProvider locale={locale}>
           <ChromeGuard>{children}</ChromeGuard>
-          <SupportWidget />
-          <SupportChatWidget />
+          <LazySupport />
           </LocaleProvider>
         </Providers>
 

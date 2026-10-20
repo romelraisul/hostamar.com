@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from '@/lib/locale-context'
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 // ============================================================================
 // CheckoutButton

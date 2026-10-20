@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { useLocale } from '@/lib/locale-context'
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 function SuccessContent() {
   const { t } = useLocale()

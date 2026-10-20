@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, Layout } from 'lucide-react';
 import EditorClient from './client';
 import { useLocale } from '@/lib/locale-context';
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 export default function EditorPage() {
   const { t } = useLocale();

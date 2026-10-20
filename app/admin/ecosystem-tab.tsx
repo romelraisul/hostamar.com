@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { RefreshCw, Globe, GraduationCap, Gamepad2, Shield, Zap, ExternalLink } from 'lucide-react'
 import { useLocale } from '@/lib/locale-context'
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 type EcosystemStatus = {
   local: boolean

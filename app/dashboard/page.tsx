@@ -8,6 +8,7 @@ import {
   Video, Server, CreditCard, TrendingUp, Play, Clock, Sparkles,
   MessageCircle, Globe, Code2, Gamepad2, HardDrive, Coins, ArrowRight, Command, Search, Zap, Eye, X,
 } from 'lucide-react'
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 import { useLocale } from '@/lib/locale-context'
 import { PRODUCT_NAV } from '@/lib/products'
 import NodeStatus from '@/components/dashboard/NodeStatus'
