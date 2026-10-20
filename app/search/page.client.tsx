@@ -6,6 +6,7 @@ import { ArrowLeft, Sparkles } from 'lucide-react'
 import { useLocale } from '@/lib/locale-context'
 import SearchBar from '@/components/search/SearchBar'
 import SearchResults, { SearchResultItem } from '@/components/search/SearchResults'
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 export default function SearchPage() {
   const { t } = useLocale()

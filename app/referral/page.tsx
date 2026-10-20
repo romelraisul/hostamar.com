@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
 import { Copy, Check, Share2, Gift, Users, Award, TrendingUp, ArrowRight, RefreshCw, CopyCheck } from "lucide-react"
 import { useLocale } from "@/lib/locale-context"
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 const GREEN = '#0E7C3A'
 

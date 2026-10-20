@@ -1,8 +1,16 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import AppHeader from '@/components/layout/AppHeader'
-import AppFooter from '@/components/layout/AppFooter'
+
+// AppHeader stays STATIC: it sits at the top of the document flow, and a
+// next/dynamic boundary tears the SSR header out during hydration until the
+// chunk lands — that flash scored CLS 0.103 on /pricing (LH 2026-10-20).
+// Its chunk is small now (the i18n dictionary was split out to lib/i18n-dict).
+// AppFooter is bottom-of-flow: the lazy-hydration flash there moves nothing
+// measurable, so it stays dynamic and keeps its chunk off self-chromed routes.
+const AppFooter = dynamic(() => import('@/components/layout/AppFooter'))
 
 // Route groups would be the "textbook" Next 14 fix, but moving 83 pages into
 // (marketing)/(app) groups is high-risk on a live site. ChromeGuard achieves

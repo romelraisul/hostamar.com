@@ -6,6 +6,7 @@ import { Check, Phone, CreditCard, AlertCircle, Loader2, ArrowLeft, Shield, Copy
 import NextImage from 'next/image';
 import { useLocale } from '@/lib/locale-context';
 import PersonalPaymentPanel from './personal-payment-panel';
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 type Plan = 'starter' | 'pro' | 'business';
 type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'usdt';

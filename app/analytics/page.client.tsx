@@ -18,6 +18,7 @@ import {
   AreaChart,
   Area
 } from "recharts"
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 import {
   Eye,
   Download,
