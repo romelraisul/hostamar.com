@@ -76,7 +76,7 @@ export default async function HomePage() {
         {/* HERO */}
         <section className="bp-hero">
           <div className="bp-wrap bp-hero-grid">
-            <div className="bp-rise">
+            <div>
               <span className="bp-eyebrow">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" /></svg>
                 বাংলাদেশের জন্য তৈরি
@@ -90,7 +90,7 @@ export default async function HomePage() {
                 <Link href="/features" className="bp-btn bp-btn-ghost">সব ৩০+ ফিচার দেখুন</Link>
               </div>
             </div>
-            <div className="bp-hero-poster bp-rise bp-d2">
+            <div className="bp-hero-poster">
               <svg className="bp-sunburst" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <line key={i} x1="50" y1="50" x2={50 + 50 * Math.cos((i * Math.PI) / 6)} y2={50 + 50 * Math.sin((i * Math.PI) / 6)} />
@@ -98,7 +98,7 @@ export default async function HomePage() {
               </svg>
               <div className="bp-frame bp-frame-tilt-r">
                 <div className="bp-media">
-                  <img src="/redesign/hero-bazaar-640.avif" alt="বাংলাদেশি উৎসবের বাজারের পোস্টার-ধাঁচের ইলাস্ট্রেশন" width="640" height="400" {...({ fetchpriority: 'high' } as object)} />
+                  <img src="/redesign/hero-bazaar-640.avif" alt="বাংলাদেশি উৎসবের বাজারের পোস্টার-ধাঁচের ইলাস্ট্রেশন" width="640" height="400" fetchPriority="high" />
                 </div>
               </div>
             </div>
