@@ -24,13 +24,16 @@ const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 // buy grid with no recovery. Fallback is now the real independent workers.dev
 // bridge (verified live: /store/products 200, full 4-hop checkout 200).
 const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
-// Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
-const primaryBase = bridgeUrl || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
-// FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com', so the old
+// FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com'. The old
 // fallbackBase was IDENTICAL to primaryBase — the fallback was dead code and any
 // store.hostamar.com blip (the monitor's site=000 class) killed the whole buy grid
-// with no recovery. workers.dev bridge is a real independent origin (verified live:
-// /store/products 200, full 4-hop checkout 200). Now: store.hostamar.com → bridge.
+// with no recovery. Fallback is now the real independent workers.dev bridge
+// (verified live: /store/products 200, full 4-hop checkout 200).
+// ponytail: primary = MEDUSA_URL (store.hostamar.com in prod), fallback = workers.dev
+// bridge. Deliberately OPPOSITE ordering from checkout/route.ts (which uses workers.dev
+// as primary) — both orders work because both origins are live; inconsistency is
+// intentional so each route's primary is the faster/cheaper hop for its traffic.
+const primaryBase = bridgeUrl || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
 const fallbackBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
 
 async function tryFetch(base: string) {
