@@ -18,23 +18,17 @@ import { NextResponse } from 'next/server'
 
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
-// FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com' (NOT empty).
-// The old fallbackBase was IDENTICAL to primaryBase — the fallback was dead code
-// and any store.hostamar.com blip (the monitor's site=000 class) killed the whole
-// buy grid with no recovery. Fallback is now the real independent workers.dev
-// bridge (verified live: /store/products 200, full 4-hop checkout 200).
-const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
 // FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com'. The old
 // fallbackBase was IDENTICAL to primaryBase — the fallback was dead code and any
 // store.hostamar.com blip (the monitor's site=000 class) killed the whole buy grid
 // with no recovery. Fallback is now the real independent workers.dev bridge
 // (verified live: /store/products 200, full 4-hop checkout 200).
-// ponytail: primary = MEDUSA_URL (store.hostamar.com in prod), fallback = workers.dev
-// bridge. Deliberately OPPOSITE ordering from checkout/route.ts (which uses workers.dev
-// as primary) — both orders work because both origins are live; inconsistency is
-// intentional so each route's primary is the faster/cheaper hop for its traffic.
-const primaryBase = bridgeUrl || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
-const fallbackBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+// FORGE 2026-10-20: checkout/route.ts docs: "store.hostamar.com zone WAF 403s Vercel
+// SSR egress" — so workers.dev MUST be primary to avoid wasted 403 + fallback on
+// every catalog load. Fallback = store.hostamar.com for resilience.
+const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
+const primaryBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
+const fallbackBase = bridgeUrl || 'https://store.hostamar.com'
 
 async function tryFetch(base: string) {
   const pk = process.env.MEDUSA_PK
