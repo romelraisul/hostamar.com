@@ -18,14 +18,20 @@ import { NextResponse } from 'next/server'
 
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 
-// FORGE 2026-10-04: prod MEDUSA_URL is set but EMPTY ("") — the old
-// `fallbackBase = bridgeUrl` made both bases identical, so the
-// store.hostamar.com fallback was dead code. Fallback is now always the
-// real independent origin; empty/unset MEDUSA_URL just means no primary.
+// FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com' (NOT empty).
+// The old fallbackBase was IDENTICAL to primaryBase — the fallback was dead code
+// and any store.hostamar.com blip (the monitor's site=000 class) killed the whole
+// buy grid with no recovery. Fallback is now the real independent workers.dev
+// bridge (verified live: /store/products 200, full 4-hop checkout 200).
 const bridgeUrl = (process.env.MEDUSA_URL || '').trim()
 // Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
 const primaryBase = bridgeUrl || 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
-const fallbackBase = 'https://store.hostamar.com'
+// FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com', so the old
+// fallbackBase was IDENTICAL to primaryBase — the fallback was dead code and any
+// store.hostamar.com blip (the monitor's site=000 class) killed the whole buy grid
+// with no recovery. workers.dev bridge is a real independent origin (verified live:
+// /store/products 200, full 4-hop checkout 200). Now: store.hostamar.com → bridge.
+const fallbackBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
 
 async function tryFetch(base: string) {
   const pk = process.env.MEDUSA_PK

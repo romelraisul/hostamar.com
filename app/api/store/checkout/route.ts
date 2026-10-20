@@ -38,7 +38,10 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
 
   // FORGE 2026-09-30: Same-zone worker not deployed (CLOUDFLARE_API_TOKEN lacks Workers:Edit scope).
   // Workers.dev bridge egress is NOT challenged by Cloudflare WAF.
-  // Use workers.dev bridge as primary; store.hostamar.com as fallback for GET-only scenarios.
+  // FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com', so primaryBase
+  // and fallbackBase were IDENTICAL — the fallback was dead code and a store.hostamar.com
+  // blip (the monitor's site=000 class) killed checkout with no recovery. Swap: workers.dev
+  // bridge is the real independent origin (verified live: full 4-hop checkout 200).
   const primaryBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
   const fallbackBase = 'https://store.hostamar.com'
 
