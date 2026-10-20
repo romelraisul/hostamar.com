@@ -697,6 +697,8 @@ export default function TvPage() {
                 { f: 'receipt-cron-fleet-narrated.mp4', t: 'Cron Fleet Receipt — ২৪/৭ স্বয়ংক্রিয় কর্মী, $৪৯/মাস (-18.1 dB)' },
                 { f: 'receipt-sovereign-video-os-narrated.mp4', t: 'Sovereign Video OS Receipt — স্ক্রিপ্ট থেকে মানি, $0.10/মিনিট (15s, -16.4 dB)' },
                 { f: 'shorts-receipt-sovereign-video-os.mp4', t: 'Sovereign Video OS Receipt Short — 15s Vertical (-16.4 dB)' },
+                { f: 'receipt-compliance-audit-narrated.mp4', t: 'Compliance & Audit Receipt — Infisical + OpenObserve + audit trail (15s, -15.7 dB)' },
+                { f: 'shorts-receipt-compliance-audit.mp4', t: 'Compliance & Audit Receipt Short — 15s Vertical (-15.7 dB)' },
                 { f: 'opencut-headless-render-narrated.mp4', t: 'OpenCut হেডলেস রেন্ডার — স্ক্রিপ্ট থেকে পার্স্যাক পর্যন্ত (152s, -20.1 dB)' },
                 { f: 'shorts-opencut-headless-render.mp4', t: 'OpenCut Headless Render Short — ৩০s ভার্টিকেল (-21.8 dB)' },
                 { f: 'shorts-cdn-edge-episode.mp4', t: 'CDN Edge Short — ৩০s ভার্টিকেল (-26.8 dB)' },
