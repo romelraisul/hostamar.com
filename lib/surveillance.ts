@@ -102,7 +102,7 @@ export async function recordSurveillance(opts: {
         opts.userId || `ip:${ipHash}`,
         ipHash,
         verdict.score,
-        `${verdict.intent} (hot-path classifier)`,
+        `${verdict.intent} (hot-path classifier; matched=${verdict.score === 90 ? 'weapon-PAT' : 'distill-PAT'})`,
       )
     }
   } catch {
