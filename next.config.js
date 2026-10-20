@@ -51,18 +51,19 @@ const nextConfig = {
         ],
       },
       // PSI 2026-10-18: HTML was served private,no-cache (root layout read
-      // cookies + force-dynamic). Layout is now static-friendly — these give
-      // the CDN/browser 1h HTML cache with SWR.
+      // cookies + force-dynamic). Layout is now static-friendly. s-maxage MUST
+      // stay >= the pages' revalidate (86400) or it clamps edge caching to 1h
+      // and every entry decays to stale-serve s-maxage=1 between deploys.
       {
         source: '/',
         headers: [
-          { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+          { key: 'Cache-Control', value: 'public, s-maxage=86400, stale-while-revalidate=86400' },
         ],
       },
       {
         source: '/pricing',
         headers: [
-          { key: 'Cache-Control', value: 'public, s-maxage=3600, stale-while-revalidate=86400' },
+          { key: 'Cache-Control', value: 'public, s-maxage=86400, stale-while-revalidate=86400' },
         ],
       },
       {

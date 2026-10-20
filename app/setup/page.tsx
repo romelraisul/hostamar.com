@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { CheckCircle, Copy, ExternalLink, Server, Mail, Database, Shield, HardDrive, Cpu } from 'lucide-react'
 import { useLocale } from '@/lib/locale-context'
+import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
 
 interface EnvField {
   label: string

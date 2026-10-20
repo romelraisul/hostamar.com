@@ -9,8 +9,12 @@ import BazaarFooter from '@/components/home/BazaarFooter';
 
 // Bazaar Poster homepage (Direction C, approved 2026-09-14).
 // Server component: FAQ uses native <details>, so no client state needed.
-// revalidate: refresh the live product counts (tools/models/videos) hourly.
-export const revalidate = 3600;
+// revalidate: content is baked at build; deploys refresh it (see below).
+// ponytail: 86400 not 3600 — runtime ISR re-renders die on the Workers CPU
+// ceiling (set() never lands), so 3600 just made every request stale-serve
+// with s-maxage=2 an hour after each deploy (TTFB 1.4-1.9s all afternoon).
+// Content is baked at build; deploys replace it anyway.
+export const revalidate = 86400;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
 
@@ -27,7 +31,7 @@ function tvVideoCount(): number {
 }
 async function modelCount(): Promise<number> {
   try {
-    const r = await fetch('https://ai.hostamar.com/v1/models', { next: { revalidate: 3600 } });
+    const r = await fetch('https://ai.hostamar.com/v1/models', { next: { revalidate: 86400 } }); // ponytail: must be >= page revalidate or Next clamps the route to 3600 and edge caching decays hourly
     const j = await r.json();
     return Array.isArray(j?.data) ? j.data.length : 152;
   } catch {
