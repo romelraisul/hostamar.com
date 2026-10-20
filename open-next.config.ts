@@ -1,11 +1,14 @@
 import { defineCloudflareConfig } from '@opennextjs/cloudflare';
 
-export default defineCloudflareConfig({
+const config = defineCloudflareConfig({
   incrementalCache: () =>
     import('./opennext-b2-cache').then((m) => m.default),
-  // Mark @libsql/isomorphic-ws as external to avoid build error
-  // (worker doesn't actually need it at runtime — libsql client uses native ws)
-  experimental: {
-    externalPackages: ['@libsql/isomorphic-ws'],
-  },
 });
+
+// @libsql/isomorphic-ws exports a `workerd` -> ./web.mjs target that Next's nft
+// trace (node conditions) never copies, so esbuild fails to resolve it.
+// Node conditions resolve ./node.mjs -> ws (traced + copied, bundled fine on
+// workerd via nodejs_compat).
+config.cloudflare!.useWorkerdCondition = false;
+
+export default config;

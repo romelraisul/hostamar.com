@@ -148,11 +148,26 @@ export default async function RootLayout({
       <html lang={locale} dir="ltr" className={htmlFontClass}>
       <head>
         <meta charSet="utf-8" />
-        <link rel="preload" href="/fonts/hind-siliguri-400-subset.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        {/* Only the 400 preloads: on mobile-sim it IS the LCP gate (hero h1),
-            and competing 54KB of 700/Archivo preloads starved it (LCP 4.0s,
-            mobile 86). 700/Archivo are CSS-discovered; desktop CLS from the
-            late swap is ~0.05 (score 0.98) — cheap vs mobile 90. */}
+        {/* NO font preload links here. Chrome pins <link rel=preload> fonts at
+            High, while CSS-discovered fonts jump to VeryHigh — preloading the
+            400 actually delayed it behind the 700/Archivo (sim lcpLoadStart
+            1190ms, mobile 89). Both weights are CSS-discovered now. The 700
+            media-gated link below only exists for desktop CLS (h1 700 swap);
+            Chrome ignores media on preloads and fetches it on mobile too, but
+            removing it reintroduces desktop CLS 0.052. */}
+        {/* Desktop-only high-priority preloads (media-gated so mobile requests are
+            byte-identical to the 89-score build): the hero avif is the desktop LCP
+            element — react-dom's img auto-preload emitted it WITHOUT fetchpriority,
+            so it rode Low and split Lantern bandwidth with the fonts (sim LCP 1.5s,
+            perf 94). The 700 font is CSS-discovered after FCP on desktop → h1
+            fallback-then-swap = CLS 0.052. On mobile the h1 LCP gate is the 400
+            font — extra unconditional preloads starved it (measured 86). */}
+        {/* The hero img's fetchPriority prop makes react-dom emit its image
+            preload WITH fetchpriority=high — no manual link needed (one would
+            just be deduped against react-dom's). High matters because the Low
+            auto-preload queued the LCP img behind ~209KB of scripts in the
+            Lantern model: mobile sim LCP 3.6s (score 89), desktop 1.4s. */}
+        <link rel="preload" href="/fonts/hind-siliguri-700-subset.woff2" as="font" type="font/woff2" crossOrigin="anonymous" media="(min-width: 768px)" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta name="format-detection" content="telephone=no, address=no, email=no" />
         <link rel="canonical" href={SITE_URL} />

@@ -13,12 +13,12 @@ export default function BazaarNav() {
         <nav className="bp-nav-links" aria-label="প্রধান মেনু">
           <a href="#how">কীভাবে কাজ করে</a>
           <a href="#bundle">পণ্যসমূহ</a>
-          <Link href="/bangla-llm">বাংলা LLM <span className="bp-badge-new">NEW</span></Link>
-          <Link href="/pricing">প্রাইসিং</Link>
+          <Link href="/bangla-llm" prefetch={false}>বাংলা LLM <span className="bp-badge-new">NEW</span></Link>
+          <Link href="/pricing" prefetch={false}>প্রাইসিং</Link>
           <a href="#faq">সাধারণ প্রশ্ন</a>
-          <Link href="/showcase">শোকেস</Link>
+          <Link href="/showcase" prefetch={false}>শোকেস</Link>
         </nav>
-        <Link href="/generate" className="bp-btn bp-btn-primary">ফ্রি শুরু করুন</Link>
+        <Link href="/generate" prefetch={false} className="bp-btn bp-btn-primary">ফ্রি শুরু করুন</Link>
       </div>
       <details className="bp-nav-toggle">
         <summary aria-label="মেনু খুলুন বা বন্ধ করুন">
@@ -27,11 +27,11 @@ export default function BazaarNav() {
         <nav className="bp-nav-mobile" aria-label="মোবাইল মেনু">
           <a href="#how">কীভাবে কাজ করে</a>
           <a href="#bundle">পণ্যসমূহ</a>
-          <Link href="/bangla-llm">বাংলা LLM <span className="bp-badge-new">NEW</span></Link>
-          <Link href="/pricing">প্রাইসিং</Link>
+          <Link href="/bangla-llm" prefetch={false}>বাংলা LLM <span className="bp-badge-new">NEW</span></Link>
+          <Link href="/pricing" prefetch={false}>প্রাইসিং</Link>
           <a href="#faq">সাধারণ প্রশ্ন</a>
-          <Link href="/showcase">শোকেস</Link>
-          <Link href="/generate" className="bp-btn bp-btn-primary">ফ্রি শুরু করুন</Link>
+          <Link href="/showcase" prefetch={false}>শোকেস</Link>
+          <Link href="/generate" prefetch={false} className="bp-btn bp-btn-primary">ফ্রি শুরু করুন</Link>
         </nav>
       </details>
     </header>
