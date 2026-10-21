@@ -105,7 +105,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let videoEntries: MetadataRoute.Sitemap = []
   try {
     const c = getTursoEdgeClient()
-    const res = await c.execute('SELECT slug, updatedAt FROM "TvVideoSeo" ORDER BY updatedAt DESC LIMIT 200')
+    const res = await c.execute('SELECT slug, updatedAt FROM "TvVideoSeo" ORDER BY updatedAt DESC LIMIT 1000')
     videoEntries = res.rows.map((r) => ({
       url: `${SITE_URL}/tv/watch/${String(r.slug)}`,
       lastModified: r.updatedAt ? new Date(String(r.updatedAt)) : now,
