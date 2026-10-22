@@ -514,6 +514,7 @@ export default function TvPage() {
                 { f: 'shorts-agent-cloud-audit-log.mp4', t: 'Audit Log Short — ৩০s ভার্টিকেল' },
                 { f: 'submarine-cables-episode-narrated.mp4', t: 'সাবমেরিন কেবল — বিশ্ব কীভাবে সংযুক্ত (193s, নেরেশনসহ)' },
                 { f: 'shorts-submarine-cables.mp4', t: 'সাবমেরিন কেবল Short — ৩০s ভার্টিকল' },
+                { f: 'receipt-store-narrated.mp4', t: 'হোস্টামার স্টোর — ই-কমার্স প্লাটফর্ম সেটআপ (15s, নেরেশনসহ)' },
                 { f: 'bangla-llm-episode-narrated.mp4', t: 'বাংলা LLM — নিজের ভাষায় নিজের AI (171s, নেরেশনসহ)' },
                 { f: 'shorts-bangla-llm.mp4', t: 'বাংলা LLM Short — ৩০s ভার্টিকল' },
                 { f: 'cdn-edge-episode-narrated.mp4', t: 'CDN ও Edge — কনটেন্ট কীভাবে কাছে আসে (196s, নেরেশনসহ)' },
