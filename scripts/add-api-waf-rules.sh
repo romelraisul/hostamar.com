@@ -20,13 +20,18 @@ RL_BODY=$(python3 - <<'PY'
 import json
 d = json.load(open('/tmp/rl-get.json'))
 if not d.get('success'):
-    raise SystemExit(json.dumps({"error": d.get('errors')}))
-keep = [r for r in d['result'].get('rules', []) if 'api.hostamar.com' not in r.get('expression', '')]
+    # 10003 = no entrypoint ruleset in this phase yet (free zone, never created) — start empty.
+    if any(e.get('code') == 10003 for e in d.get('errors', [])):
+        keep = []
+    else:
+        raise SystemExit(json.dumps({"error": d.get('errors')}))
+else:
+    keep = [r for r in d['result'].get('rules', []) if 'api.hostamar.com' not in r.get('expression', '')]
 rule = {
     "expression": '(http.host eq "api.hostamar.com")',
     "action": "block",
-    "ratelimit": {"characteristics": ["ip.src"], "period": 10, "requests_per_period": 100, "mitigation_timeout": 60},
-    "description": "api.hostamar.com 100req/10s per IP, block 60s",
+    "ratelimit": {"characteristics": ["cf.colo.id", "ip.src"], "period": 10, "requests_per_period": 100, "mitigation_timeout": 10},  # ponytail: free plan caps block at 10s (60s needs Pro)
+    "description": "api.hostamar.com 100req/10s per IP, block 10s (free-plan cap)",
     "enabled": True,
 }
 print(json.dumps({"rules": keep + [rule]}))
@@ -44,8 +49,13 @@ CR_BODY=$(python3 - <<'PY'
 import json
 d = json.load(open('/tmp/cr-get.json'))
 if not d.get('success'):
-    raise SystemExit(json.dumps({"error": d.get('errors')}))
-keep = [r for r in d['result'].get('rules', []) if 'api-curl-block' not in r.get('description', '')]
+    # 10003 = no custom-rules entrypoint yet — start empty, PUT creates it.
+    if any(e.get('code') == 10003 for e in d.get('errors', [])):
+        keep = []
+    else:
+        raise SystemExit(json.dumps({"error": d.get('errors')}))
+else:
+    keep = [r for r in d['result'].get('rules', []) if 'api-curl-block' not in r.get('description', '')]
 rule = {
     "expression": '(http.host eq "api.hostamar.com" and starts_with(http.request.uri.path, "/v1") and http.user_agent contains "curl")',
     "action": "block",
