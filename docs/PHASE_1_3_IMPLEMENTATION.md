@@ -45,11 +45,14 @@ Date: 2026-10-22 · Repo: `/home/romel/hostamar.com` (branch `main`) · Mode: NO
     in output; no token hardcoded.
 
 ## Phase 3 — Features & Protection
-3.1 WAF/rate limit: **BLOCKED by credential scope** — wrangler OAuth + cfut_ GitHub token both
-    lack WAF/rulesets (CF API error 10000 on GET+PUT for both phases). Ready to run:
-    `scripts/add-api-waf-rules.sh` (idempotent, merge-preserving) with a dash-created token that
-    has Zone.WAF Edit + Rate Limiting Edit:
-      `CLOUDFLARE_API_TOKEN=<token> bash scripts/add-api-waf-rules.sh`
+3.1 WAF/rate limit: **APPLIED 2026-10-22 15:36 +06** — 2 rules live on zone 2aef176c6f2000da2af593f4890ec298:
+    (1) rate limit api.hostamar.com — 100 req/10s per IP (cf.colo.id+ip.src), block 10s. NOTE: free plan
+        caps mitigation_timeout at 10s; the requested 60s needs Pro plan (script marked with the cap).
+    (2) custom rule api-curl-block — curl User-Agent blocked on api.hostamar.com/v1*.
+        Functionally verified: curl UA → 403 at /v1/models; browser UA → 401 (reaches API auth).
+    Applied with the dash-created scoped token (Zone.WAF Edit + Rate Limiting Edit) via
+    `scripts/add-api-waf-rules.sh`; script also fixed to create phase entrypoints when CF returns
+    10003 (no ruleset yet). Routes after WAF: exactly 1 (api.hostamar.com/* → api-router).
     It adds: rate limit 100 req/10s per IP block 60s on `api.hostamar.com` (free plan allows one
     rate rule, covers the >50 curl flood), and a custom rule blocking `curl` UA on
     `api.hostamar.com/v1/*` (billing/webhook `/api/*` left UA-agnostic so payment callbacks

@@ -61,7 +61,19 @@ A literal grep for `৳৯৯০` on raw HTML returns 0 — query the DOM or sea
 ## Content check
 
 `৳৯৯০` present on /pricing (DOM, 6 occurrences). Homepage title Bengali intact.
-Vercel project: left in place (manual unlink per spec — vercel.com/dashboard).
+Vercel project: `hostamar-build` DELETED 2026-10-22 (`vercel remove hostamar-build --yes`); only
+`hostamar.com` (hostamarcom.vercel.app) remains, untouched. Pushes no longer spawn Vercel builds.
+
+## Final state (2026-10-22 15:36 +06)
+
+- Live build: `nrIBQgr3lesYCfPXiQHHu` (deploy:guarded, Pages version 2a72016b) — apex/www/pricing 200 HIT
+- Routes: exactly 1 — api.hostamar.com/* → api-router. Custom domains: 2 (hostamar.com + www). KV HOSTAMAR_CATALOG untouched.
+- WAF: 2 rules active (rate limit 100/10s block 10s [free-plan cap, 60s needs Pro]; curl-UA block on /v1*, verified 403).
+- B2: 7,062 objects; `--verify 462` pass; new build populated 508 ISR entries.
+- Probe: hostamar-probe */5, alerting live (caught pc_off during closeout; site stayed 200).
+- Git: Phase 1-3 commit 5dc9673f + follow-up FORGE commits pushed to origin/main.
+- WAF token → Infisical project 10b51614 env dev, item CLOUDFLARE_WAF_API_TOKEN — PENDING one
+  interactive `infisical login --domain http://127.0.0.1:8089` (automation service token is read-only).
 
 ## Tunnel / TV
 
