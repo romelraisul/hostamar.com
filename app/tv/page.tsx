@@ -16,6 +16,8 @@ type TvStatus = {
   destinations?: { platform: string; label: string | null; isActive: boolean; lastError: string | null }[];
 };
 
+const TV_CDN = process.env.NEXT_PUBLIC_TV_CDN ?? '';
+
 type PlaylistItem = { id: string; title: string; url: string; source: string; position: number; category?: string; country?: string; logo?: string };
 
 type SourceMode = 'iptv' | 'youtube' | 'facebook';
@@ -613,7 +615,7 @@ export default function TvPage() {
                 { f: 'eu-bd-gpu-spot-narrated-full.mp4', t: 'EU-BD GPU Spot Narrated Full — 221s (-30.7 dB)' },
                 ].map((v) => (
                 <div key={v.f} className="rounded-xl overflow-hidden border border-white/[0.06] bg-black">
-                  <video src={`/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
+                  <video src={`${TV_CDN}/tv/${v.f}`} className="w-full aspect-video object-cover" controls playsInline preload="metadata" />
                   <div className="px-2 py-1.5 mono text-[10px] text-zinc-300 truncate">{v.t}</div>
                 </div>
               ))}
