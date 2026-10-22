@@ -3,7 +3,7 @@
 import json, os, sys, uuid
 from datetime import datetime, timezone
 
-REPO = "/home/romel/hostamar-build"
+REPO = "/home/romel/hostamar.com"
 SITE = "https://hostamar.com"
 
 
@@ -53,9 +53,8 @@ def main():
     }
 
     import psycopg2
-    from dotenv import load_dotenv
-    load_dotenv(os.path.join(REPO, ".env"))
-    conn = psycopg2.connect(os.environ["DATABASE_URL"])
+    import seo_generate as G
+    conn = psycopg2.connect(G.db_url())
     cur = conn.cursor()
     cur.execute(
         'SELECT id FROM "TvVideoSeo" WHERE slug=%s', (slug,))

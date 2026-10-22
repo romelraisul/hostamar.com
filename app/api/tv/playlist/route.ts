@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     // safety work retires third-party footage the same way. Without this filter
     // retired items keep airing, so filter here rather than at every caller.
     const res = await db.execute({
-      sql: 'SELECT "id", "title", "url", "source", "position", "videoId" FROM "TvPlaylistItem" WHERE "channelId" = ? AND "played" = false ORDER BY "position" ASC LIMIT 100',
+      sql: 'SELECT "id", "title", "url", "source", "position", "videoId" FROM "TvPlaylistItem" WHERE "channelId" = ? AND "played" = false ORDER BY "position" ASC LIMIT 200',
       args: [channelId],
     })
     let items = res.rows.map((r) => ({ ...(r as Record<string, unknown>) })) as Array<{
