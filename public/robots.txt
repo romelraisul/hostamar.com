@@ -5,5 +5,16 @@ Disallow: /admin/
 Disallow: /dashboard
 Disallow: /dashboard/
 Disallow: /api/
+Disallow: /login
+Disallow: /signin
+Disallow: /signup
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /payment/success
+Disallow: /payment/fail
+Disallow: /payment/cancel
+Disallow: /setup
+Disallow: /monitor
+Disallow: /hostamar-ceo
 Sitemap: https://hostamar.com/sitemap.xml
 Host: https://hostamar.com

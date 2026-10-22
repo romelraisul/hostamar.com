@@ -32,17 +32,21 @@ const hmac = async (key, msg) => {
  * @param {string|undefined} body request body (PUT)
  * @returns {Promise<Response>}
  */
-export async function b2S3Fetch(cfg, method, key, body = undefined) {
+export async function b2S3Fetch(cfg, method, key, body = undefined, query = undefined) {
   const url = new URL(cfg.endpoint);
   const host = url.host;
   const canonicalUri = `/${cfg.bucket}/${key}`;
+  // Optional signed query (ListObjectsV2 etc.). Sorted k=v pairs, as SigV4 requires.
+  const qs = query
+    ? Object.keys(query).sort().map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(query[k])}`).join('&')
+    : '';
   const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, ''); // YYYYMMDDTHHMMSSZ
   const dateStamp = amzDate.slice(0, 8);
   const payloadHash = await sha256hex(body ?? '');
 
   const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
   const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
-  const canonicalRequest = `${method}\n${canonicalUri}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+  const canonicalRequest = `${method}\n${canonicalUri}\n${qs}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
 
   const scope = `${dateStamp}/${cfg.region}/s3/aws4_request`;
   const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${scope}\n${await sha256hex(canonicalRequest)}`;

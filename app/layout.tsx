@@ -221,6 +221,23 @@ export default async function RootLayout({
             `,
           }}
         />
+        {/* Meta Pixel for 990 conversion — activate with a real Pixel ID when ads start */}
+        <div hidden dangerouslySetInnerHTML={{ __html: '<!-- Meta Pixel for 990 conversion -->' }} />
+        {/* fb-customerchat: Messenger chat placeholder. Renders when NEXT_PUBLIC_FB_PAGE_ID
+            is set at build time; add the Messenger SDK script in the same commit to activate. */}
+        {process.env.NEXT_PUBLIC_FB_PAGE_ID ? (
+          // page_id/attribution are read by the Messenger SDK, not React — spread keeps TS happy while emitting them literally
+          <div className="fb-customerchat" {...({ attribution: 'page_inbox', page_id: process.env.NEXT_PUBLIC_FB_PAGE_ID } as Record<string, string>)} />
+        ) : (
+          <div hidden dangerouslySetInnerHTML={{ __html: '<!-- fb-customerchat: set NEXT_PUBLIC_FB_PAGE_ID to enable Messenger chat -->' }} />
+        )}
+        {process.env.CF_WEB_ANALYTICS_TOKEN ? (
+          <script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: process.env.CF_WEB_ANALYTICS_TOKEN })}
+          />
+        ) : null}
       </body>
     </html>
   )

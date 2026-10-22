@@ -197,6 +197,37 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Trust badges + FAQ — conversion section (Phase 2.1). Static, no client JS. */}
+      <section className="bp-wrap" style={{ paddingBottom: '1.5rem' }}>
+        <div className="bp-stamp-row" style={{ justifyContent: 'center', paddingBottom: '1.2rem' }}>
+          <span className="bp-stamp" style={{ color: '#E2136E' }}>bKash</span>
+          <span className="bp-stamp" style={{ color: '#F6921E' }}>Nagad</span>
+          <span className="bp-stamp">
+            <svg className="bp-stamp-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+            SSL সিকিউর
+          </span>
+          <span className="bp-stamp">
+            <svg className="bp-stamp-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0" /><rect x="3" y="13" width="4" height="6" rx="1.5" /><rect x="17" y="13" width="4" height="6" rx="1.5" /><path d="M19 19a3 3 0 0 1-3 2h-2" /></svg>
+            ২৪/৭ সাপোর্ট
+          </span>
+        </div>
+        <h2 style={{ textAlign: 'center', margin: '0 0 1rem' }}>সাধারণ জিজ্ঞাসা</h2>
+        <div className="bp-faq" style={{ maxWidth: 680, marginInline: 'auto' }}>
+          <details>
+            <summary>কেন ৳৯৯০?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></summary>
+            <p>১cr = ১ টাকা — ৳৯৯০ = ৬,০০০ HOST ক্রেডিট + BDIX হোস্টিং + ১০০+ AI মডেল চ্যাট + ৫০+ বাংলা ভিডিও টেমপ্লেট। কোনো লুকানো চার্জ নেই, যেকোনো সময় cancel।</p>
+          </details>
+          <details>
+            <summary>bKash/Nagad দিয়ে পেমেন্ট কীভাবে?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></summary>
+            <p>bKash/Nagad/Rocket সেন্ড মানি <b>01822417463</b>-এ, সাইনআপ করে TrxID ভেরিফাই — ৩০ সেকেন্ডে ক্রেডিট। কার্ড থাকলে Stripe/PayPal, না থাকলেও সমস্যা নেই।</p>
+          </details>
+          <details>
+            <summary>রিফান্ড পাওয়া যায়?<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></summary>
+            <p>৭ দিন মানি-ব্যাক গ্যারান্টি — কাজ না করলে TrxID দিয়ে রিফান্ড। সাপোর্ট ২৪/৭ খোলা।</p>
+          </details>
+        </div>
+      </section>
+
       {/* Sticky CTA */}
       <div className="bp-sticky-cta">
         <div className="bp-wrap bp-sticky-in">

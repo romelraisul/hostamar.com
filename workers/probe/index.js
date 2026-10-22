@@ -82,6 +82,51 @@ async function probeTunnel(env) {
   }
 }
 
+// Edge-content probe (phase 1.4): /api/health can be 200 while the site itself is
+// broken (stale build, 526, challenge, lost price). Check the three public pages
+// for: HTTP 200, no 526/1102, and ৯৯০ on /pricing (React renders the ৳ as
+// ৳<!-- -->৯৯০ — the digits themselves are never comment-split, so a plain
+// body.includes('৯৯০') is the DOM-safe check). cf-cache-status MISS and TTFB > 1s
+// are RECORDED but do not fail: the cron runs from a rotating edge POP, where a
+// cold cache MISS is normal. A bot challenge is also not a failure (same policy
+// as the health probe: fall through, don't page on CF bot rules).
+const EDGE_URLS = ['https://hostamar.com/', 'https://www.hostamar.com/', 'https://hostamar.com/pricing']
+
+async function probeEdge() {
+  const pages = []
+  for (const url of EDGE_URLS) {
+    const started = Date.now()
+    try {
+      const res = await fetch(url, {
+        headers: { 'user-agent': 'hostamar-probe/1.0 (cloudflare-cron)' },
+        cf: { cacheTtl: 0 },
+      })
+      const ms = Date.now() - started
+      const body = res.status === 200 ? await res.text() : ''
+      const challenged = challengeish(body)
+      pages.push({
+        url,
+        code: res.status,
+        ms,
+        slow: ms > 1000,
+        cache: res.headers.get('cf-cache-status') || '',
+        dead: res.status === 526 || res.status === 1102,
+        challenged,
+        price: url.endsWith('/pricing') && res.status === 200 && !challenged
+          ? body.includes('৯৯০')
+          : undefined,
+      })
+    } catch (e) {
+      pages.push({ url, code: 0, ms: Date.now() - started, cache: '', slow: false, dead: false, challenged: false, error: String(e).slice(0, 80) })
+    }
+  }
+  return pages
+}
+
+function edgeFails(pages) {
+  return (pages || []).filter((p) => (p.code !== 200 && !p.challenged) || p.dead || p.price === false)
+}
+
 async function notify(env, text) {
   const results = []
   if (env.SLACK_WEBHOOK_URL) {
@@ -162,10 +207,17 @@ async function runCheck(env) {
     verdict = 'DEGRADED:tunnel_down_pending' // promoted to the real verdict by the caller's counter
   }
 
+  // Edge-content path: same two-strikes promotion as the tunnel probe, so one
+  // edge hiccup does not page anyone.
+  const edgePages = await probeEdge()
+  if (edgeFails(edgePages).length && !isBad(verdict)) {
+    verdict = 'DOWN:edge_pending' // promoted to DOWN:edge_bad by the caller's counter
+  }
+
   if (env.FORCE_DOWN === '1' && !isBad(verdict)) verdict = 'DOWN:forced_test'
 
   const pc = (observed && observed.json && observed.json.pc) || null
-  return { verdict, edge, code: observed && observed.code, pc, tunnel, ms: Date.now() - started }
+  return { verdict, edgePages, code: observed && observed.code, pc, tunnel, ms: Date.now() - started }
 }
 
 async function runAndRecord(env, { alert }) {
@@ -188,6 +240,14 @@ async function runAndRecord(env, { alert }) {
     result.verdict = tunnelFails >= TUNNEL_FAILS_TO_ALERT ? 'DEGRADED:tunnel_down' : 'UP:tunnel_blip'
   }
 
+  // Two consecutive failed edge checks are required (same rationale as the tunnel probe).
+  const edgeBadN = result.edgePages && edgeFails(result.edgePages).length
+    ? (state.consecutiveEdgeFail || 0) + 1
+    : 0
+  if (result.verdict === 'DOWN:edge_pending') {
+    result.verdict = edgeBadN >= TUNNEL_FAILS_TO_ALERT ? 'DOWN:edge_bad' : 'UP:edge_blip'
+  }
+
   const wasBad = state.lastVerdict ? isBad(state.lastVerdict) : false
   const nowBad = isBad(result.verdict)
   let alerted = null
@@ -202,7 +262,10 @@ async function runAndRecord(env, { alert }) {
           ? ':large_yellow_circle: hostamar.com DEGRADED — home box/tunnel not answering (site itself serving)'
           : result.verdict === 'DEGRADED:pc_off'
             ? ':large_yellow_circle: hostamar.com DEGRADED — no box heartbeat, home box unreachable, site itself serving'
-            : ':red_circle: hostamar.com DOWN'
+            : result.verdict === 'DOWN:edge_bad'
+              ? ':red_circle: hostamar.com DOWN — edge page check failed: ' +
+                edgeFails(result.edgePages).map((p) => p.url + ' http=' + p.code + (p.dead ? ' (526/1102)' : '') + (p.price === false ? ' (price ৯৯০ missing)' : '')).join('; ')
+              : ':red_circle: hostamar.com DOWN'
       const detail = `tunnel=${result.tunnel ? result.tunnel.code : 'n/a'} pcAge=${result.pc ? result.pc.ageSeconds : 'n/a'}s`
       alerted = await notify(env, `${label} (${result.verdict}, edge=${result.edge}, ${detail}) — Cloudflare-cron probe at ${new Date(now).toISOString()}`)
       state.lastAlertAt = now
@@ -223,6 +286,8 @@ async function runAndRecord(env, { alert }) {
     lastPc: result.pc,
     lastTunnel: result.tunnel,
     consecutiveTunnelFail: tunnelFails,
+    consecutiveEdgeFail: edgeBadN,
+    lastEdgePages: result.edgePages || null,
     lastDurationMs: result.ms,
     // keep the previous delivery result until a new alert replaces it, so the last alert's
     // channel status stays readable after the fact

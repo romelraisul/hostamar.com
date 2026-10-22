@@ -9,6 +9,13 @@ api.cloudflare.com/user/tokens/verify). It was NOT in any hostamar-build env fil
 Now merged into `/home/romel/hostamar-build/.env` under a "cloudflare API" section.
 Zone: hostamar.com = `2aef176c6f2000da2af593f4890ec298`
 
+Warning: `7ce14c69f70d48449dd50edd4be3dca3` is NOT this zone — it is the
+HOSTAMAR_CATALOG **KV namespace** id (bound in wrangler-pages.toml,
+ai-gateway-worker, workers/probe, and model-heal CI). Do not "fix" it to the
+zone id. Also: the zone has exactly ONE workers route,
+`api.hostamar.com/* -> api-router` — that is LIVE INFRA, DO NOT DELETE
+(pages fallbacks removed 2026-10-21; site serves via the 2 custom domains).
+
 Note: Windows wrangler oauth token (AppData/Roaming/xdg.config/.wrangler) is EXPIRED
 (error 9109 Invalid access token) — do not rely on it.
 

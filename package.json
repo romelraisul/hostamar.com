@@ -24,7 +24,8 @@
     "check:vercel-quota": "bash scripts/check-vercel-quota.sh",
     "build:cloudflare": "next build",
     "worker:build": "mkdir -p node_modules/@libsql/client/node_modules/@libsql && cp -rn node_modules/@libsql/isomorphic-ws node_modules/@libsql/client/node_modules/@libsql/ && opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion",
-    "worker:deploy": "node scripts/populate-b2.mjs && env -u CLOUDFLARE_API_TOKEN wrangler deploy -c wrangler-pages.toml"
+    "worker:deploy": "node scripts/populate-b2.mjs && env -u CLOUDFLARE_API_TOKEN wrangler deploy -c wrangler-pages.toml",
+    "deploy:guarded": "bash scripts/deploy-guarded.sh"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.51",
