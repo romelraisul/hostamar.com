@@ -620,6 +620,7 @@ export default function TvPage() {
                 { f: 'sovereign-cloud-pricing-narrated.mp4', t: 'Sovereign Pricing Narrated (-21.1 dB)' },
                 { f: 'shorts-sovereign-cloud-pricing.mp4', t: 'Sovereign Pricing Short — 30s vertical (-20.3 dB)' },
                 { f: 'sovereign-receipt-episode-narrated.mp4', t: 'Sovereign Episode Narrated (-23.9 dB)' },
+                { f: 'sovereign-video-os-script-to-monetizat-narrated.mp4', t: 'Sovereign Video OS — Script to Monetization (218s, narrated)' },
                 { f: 'agent-cloud-episode.mp4', t: 'Agent Cloud Episode — 231s, narrated (-26.8 dB)' },
                 { f: 'build-log-006-shorts.mp4', t: 'Build Log 006 Short — 30s vertical (-29.4 dB)' },
                 { f: 'agent-cloud-shorts.mp4', t: 'Agent Cloud Short — 30s (-25.2 dB)' },
