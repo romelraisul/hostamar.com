@@ -36,6 +36,56 @@ if (!cfg.keyId || !cfg.appKey || !cfg.bucket) {
   process.exit(1);
 }
 
+// --verify [min]: read-only CI check — count incremental-cache/ entries in B2 and
+// fail when fewer than min (default 462). Uses the B2 NATIVE list API: the stored
+// application key has listFiles but not the S3 `s3:list` capability (ListObjectsV2
+// 403s). Runs BEFORE the local walk so it works on CI checkouts with no .open-next/.
+const vi = process.argv.indexOf("--verify");
+if (vi !== -1) {
+  const next = Number(process.argv[vi + 1]);
+  const min = Number.isFinite(next) && next > 0 ? next : 462;
+  const auth = Buffer.from(`${cfg.keyId}:${cfg.appKey}`).toString("base64");
+  const ares = await fetch("https://api.backblazeb2.com/b2api/v3/b2_authorize_account", { headers: { Authorization: `Basic ${auth}` } });
+  const ajson = await ares.json();
+  const s = ajson.apiInfo?.storageApi;
+  if (!ares.ok || !s?.apiUrl) {
+    console.error(`populate-b2 --verify: b2_authorize_account failed (${ares.status})`);
+    process.exit(1);
+  }
+  // Bucket-scoped keys carry their bucketId in the authorize response; master keys list it.
+  let bucketId = s.bucketId;
+  if (!bucketId) {
+    const bres = await fetch(`${s.apiUrl}/b2api/v3/b2_list_buckets?accountId=${encodeURIComponent(ajson.accountId)}&bucketName=${encodeURIComponent(cfg.bucket)}`, { headers: { Authorization: ajson.authorizationToken } });
+    bucketId = ((await bres.json()).buckets || [])[0]?.bucketId;
+  }
+  if (!bucketId) {
+    console.error("populate-b2 --verify: cannot resolve bucketId for " + cfg.bucket);
+    process.exit(1);
+  }
+  let count = 0, startFileName = null;
+  const byBuild = {};
+  while (true) {
+    let u = `${s.apiUrl}/b2api/v3/b2_list_file_names?bucketId=${bucketId}&prefix=incremental-cache/&maxFileCount=1000`;
+    if (startFileName) u += `&startFileName=${encodeURIComponent(startFileName)}`;
+    const res = await fetch(u, { headers: { Authorization: ajson.authorizationToken } });
+    const json = await res.json();
+    if (!res.ok) {
+      console.error(`populate-b2 --verify: b2_list_file_names failed (${res.status} ${json.code || ""})`);
+      process.exit(1);
+    }
+    for (const f of json.files) {
+      const build = f.fileName.split("/")[1];
+      byBuild[build] = (byBuild[build] || 0) + 1;
+    }
+    count += json.files.length;
+    if (!json.nextFileName) break;
+    startFileName = json.nextFileName;
+  }
+  const pass = count >= min;
+  console.log(JSON.stringify({ verify: { count, min, pass, byBuild } }));
+  process.exit(pass ? 0 : 1);
+}
+
 const CACHE_DIR = path.join(ROOT, ".open-next", "cache");
 async function walk(dir) {
   const out = [];

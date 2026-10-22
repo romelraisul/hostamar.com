@@ -2,8 +2,10 @@ name: Model Catalog Self-Heal
 
 on:
   workflow_dispatch: {}
-  # DISABLED 2026-09-27 — hourly self-heal commits burned 100 Vercel deploys/day
-  # Re-enable when quota resets: uncomment the schedule line above
+  schedule:
+    # Weekly B2 + catalog verify (Mon 03:00 UTC). Deliberately weekly, NOT hourly —
+    # the old hourly schedule burned 100 Vercel deploys/day and was disabled 2026-09-27.
+    - cron: '0 3 * * 1'
   #   schedule:
   #     - cron: '0 * * * *' # hourly
 
@@ -69,6 +71,15 @@ jobs:
           npx wrangler kv key put MODEL_CATALOG --namespace-id=$NS --path=./MODEL_CATALOG.json --remote
           npx wrangler kv key put ROUTE_MAP --namespace-id=$NS --path=./ROUTE_MAP.json --remote
           npx wrangler kv key put 124_MODELS --namespace-id=$NS --path=./docs/124_MODELS.md --remote
+
+      - name: Verify B2 ISR cache (fails the job if fewer than 462 entries)
+        env:
+          # GH secret names: B2_KEY_ID = B2 account id, B2_APP_KEY = application key.
+          B2_ACCOUNT_ID: ${{ secrets.B2_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APP_KEY }}
+          B2_BUCKET: ${{ secrets.B2_BUCKET }}
+          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+        run: node scripts/populate-b2.mjs --verify 462
 
       - name: Commit + push regenerated catalog
         run: |
