@@ -194,7 +194,8 @@ tools/realesrgan/models/
 .tv-agent-secret.local
 
 # TV + video renders (must NOT be ignored — .vercelignore mirrors this)
-!public/tv/*.mp4
+public/tv/*.mp4
+!public/tv/b2-manifest.json
 !public/videos/*.mp4
 
 # secrets & backups - never commit
