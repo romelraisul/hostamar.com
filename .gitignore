@@ -216,6 +216,12 @@ data/leads/
 public/tv/cc0_*.mp4
 public/tv/clean_cc0_*.mp4
 public/tv/cmt[0-9]*.mp4
+# public/videos/ mirrors public/tv/: downloaded (cmt*) clips are third-party and
+# must NEVER ship to the edge. The force-include below (!public/videos/*.mp4) would
+# re-include them without this rule, so it sits AFTER the force-include line.
+public/videos/cmt*.mp4
+public/videos/cmt*.jpg
+
 
 # app/sitemap.ts (dynamic route, Turso-backed) serves the real sitemap; a local
 # static public/sitemap.xml shadows it with 19 entries / zero tv/watch. Keep out.

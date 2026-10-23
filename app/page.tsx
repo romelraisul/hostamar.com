@@ -155,7 +155,7 @@ export default async function HomePage() {
                 <div className="bp-media" style={{ aspectRatio: '16/9' }}>
                   <LazyVideo
                     src={`${process.env.NEXT_PUBLIC_TV_CDN ?? ''}/tv/shorts-agent-autonomous-employee.mp4`}
-                    poster="/showcase/cmtmt2jteyldrvv.jpg"
+                    poster="/redesign/hero-bazaar-640.jpg"
                     autoPlay
                     muted
                     loop
@@ -171,7 +171,7 @@ export default async function HomePage() {
               </div>
               <div className="bp-tile bp-w-r2">
                 <div className="bp-media" style={{ aspectRatio: '16/9' }}>
-                  <img src="/showcase/cmt236ien0000nde0p88smx4j.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
+                  <img src="/redesign/hero-bazaar-640.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
                   <span className="bp-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" /></svg></span>
                 </div>
                 <div className="bp-cap"><span>আসল ভিডিও</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>আসল আউটপুট</span></div>
@@ -228,7 +228,7 @@ export default async function HomePage() {
                 <p>লোগো, কালার, ফন্ট একবার সেট করুন, প্রতিটি ভিডিওতে অটো অ্যাপ্লাই হবে</p>
                 <div className="bp-frame" style={{ marginTop: '1rem', padding: 8 }}>
                   <div className="bp-media" style={{ aspectRatio: '16/9' }}>
-                    <img src="/showcase/cmtmt2jteyldrvv.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
+                    <img src="/redesign/poster-boishakh-600.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
                     <span className="bp-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" /></svg></span>
                   </div>
                 </div>
