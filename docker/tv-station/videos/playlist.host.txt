@@ -86,3 +86,4 @@ file '/home/romel/hostamar.com/public/tv/sovereign-video-os-script-to-monetizat-
 file '/home/romel/hostamar.com/public/tv/receipt-store-narrated.mp4'
 file '/home/romel/hostamar.com/public/tv/receipt-reel-studio-narrated.mp4'
 file '/home/romel/hostamar.com/public/tv/receipt-reel-lab-narrated.mp4'
+file '/home/romel/hostamar.com/public/tv/opencut-headless-render-narrated.mp4'
