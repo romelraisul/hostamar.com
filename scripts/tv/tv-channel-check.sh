@@ -32,7 +32,7 @@ for u in tv-ffmpeg tv-ffmpeg-vp9 tv-rtmp tv-hls2 tv-tunnel restream tv-agent; do
 done
 
 # 3) YouTube egress: 2+ pushers on one key makes YouTube refuse to start
-echo "youtube_pushers=$(ps -eo cmd --no-headers | grep -c '[y]outube.com/live2')"
+echo "youtube_pushers=$(ps -eo cmd --no-headers | grep -cE '[r]tmp\.youtube\.com/live2')"
 live=$(curl -sL --max-time 25 -A 'Mozilla/5.0' \
   "https://www.youtube.com/channel/UCEbTau5-kjqIVexOwL9C3dQ/live" 2>/dev/null \
   | grep -oE '"videoId":"[A-Za-z0-9_-]{11}"' | head -1 | sed 's/.*:"//;s/"//')
@@ -43,8 +43,8 @@ if [ -n "$live" ]; then
 fi
 
 # 4) what can play with the PC OFF (edge-served, git-tracked mp4s)
-echo "edge_videos=$(cd $REPO 2>/dev/null && git ls-files 'public/tv/*.mp4' 2>/dev/null | wc -l)"
-[ -s "$REPO/docker/tv-station/videos/loop.mp4" ] && echo "loop_present=yes" || echo "loop_present=no"
+echo "edge_videos=$(cd $REPO 2>/dev/null && git ls-tree -r --name-only HEAD 2>/dev/null | grep -c 'public/tv/.*\.mp4$')"
+[ -s "/home/romel/hostamar-build/docker/tv-station/videos/loop.mp4" ] && echo "loop_present=yes" || echo "loop_present=no"
 echo "playlist_items=$(grep -c '^file ' $REPO/docker/tv-station/videos/playlist.host.txt 2>/dev/null)"
 
 # 5) did the last CHANNEL shift leave uncommitted TV work? (shelf growth stalls
