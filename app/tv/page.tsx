@@ -583,6 +583,7 @@ export default function TvPage() {
                 { f: 'eu-bd-gpu-spot-programme-narrated.mp4', t: 'EU-BD GPU Spot Programme — narrated (-28.5 dB)' },
                 { f: 'quantum-computing-narrated.mp4', t: 'Quantum Computing — narrated (-28.6 dB)' },
                 { f: 'submarine-cables-episode-narrated.mp4', t: 'সাবমেরিন ক্যাবল — ইন্টারনেট সমুদ্রের নিচে (193s, নেরেশনসহ)' },
+                { f: 'opencut-headless-render-api-narrated.mp4', t: 'OpenCut Headless Render API — 152s narrated (-20.2 dB)' },
                 { f: 'shorts-submarine-cables.mp4', t: 'Submarine Cables Short — 30s vertical (-25.4 dB)' },
                 { f: 'vertical-forest-episode-narrated.mp4', t: 'গাছ কীভাবে শহর ঠান্ডা করে — Vertical Forests (155s, নেরেশনসহ)' },
                 { f: 'sovereign-cloud-pricing-narrated.mp4', t: 'Sovereign Cloud Pricing Narrated (-21.1 dB)' },
