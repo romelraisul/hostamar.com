@@ -171,6 +171,8 @@ export default async function RootLayout({
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta name="format-detection" content="telephone=no, address=no, email=no" />
         <link rel="canonical" href={SITE_URL} />
+        {/* seo-tracker: anonymous pageview+click beacons -> /api/seo/track (SeoEvent) */}
+        <script defer src="/seo-tracker.js" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="preconnect" href="https://images.pluto.tv" />
         <meta name="theme-color" content="#0E7C3A" />

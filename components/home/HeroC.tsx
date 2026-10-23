@@ -6,8 +6,18 @@ import Link from 'next/link'
 const GREEN = '#0E7C3A' // keep for bKash badge compatibility, not used as primary
 
 export default function HeroC() {
+  const offersJsonLd = {
+    '@context': 'https://schema.org', '@type': 'SoftwareApplication',
+    name: 'Hostamar', applicationCategory: 'BusinessApplication', operatingSystem: 'Web',
+    offers: [
+      { '@type': 'Offer', name: 'AI Music', price: '990', priceCurrency: 'BDT' },
+      { '@type': 'Offer', name: 'AI Dubbing', price: '1900', priceCurrency: 'BDT' },
+      { '@type': 'Offer', name: 'AI Video Ads', price: '2900', priceCurrency: 'BDT' },
+    ],
+  }
   return (
     <section className="bg-[#FFFFFF] border-b border-[#E2E8F0]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(offersJsonLd) }} />
       {/* Hero core */}
       <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0">
         <div className="py-8 sm:py-12 md:py-16">

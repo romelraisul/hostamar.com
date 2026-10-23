@@ -9,6 +9,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com'
 const routes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']; priority: number }[] = [
   { path: '', changeFrequency: 'daily', priority: 1.0 },
   { path: '/pricing', changeFrequency: 'weekly', priority: 0.9 },
+  { path: '/sovereign', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/bkash', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/faq', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/about', changeFrequency: 'monthly', priority: 0.5 },
   { path: '/blog', changeFrequency: 'daily', priority: 0.7 },
