@@ -611,6 +611,8 @@ export default function TvPage() {
                 { f: 'gpu-spot-market-narrated.mp4', t: 'GPU Spot Market Narrated — 237s (-29.2 dB)' },
                 { f: 'receipt-eubd-gpu.mp4', t: 'EU-BD GPU Receipt — 8s (-25.5 dB)' },
                 { f: 'signal-from-tomorrow-demo.mp4', t: 'Signal From Tomorrow Demo — 30s (-24.6 dB)' },
+                { f: 'HostamarH3_00069_.mp4', t: 'H3 Render 00069 — 5.2s (-17.1 dB)' },
+                { f: 'HostamarH3_00068_.mp4', t: 'H3 Render 00068 — 5.2s (-16.1 dB)' },
                 { f: 'agent-cloud-memory-shorts.mp4', t: 'Agent Cloud Memory Short — 30s vertical (-29.9 dB)' },
                 { f: 'build-log-004-short.mp4', t: 'Build Log 004 Short — 30s (-28.2 dB)' },
                 { f: 'eu-bd-gpu-spot-narrated-full.mp4', t: 'EU-BD GPU Spot Narrated Full — 221s (-30.7 dB)' },
