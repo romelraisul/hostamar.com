@@ -16,6 +16,10 @@ const MIME: Record<string, string> = {
 
 export async function GET(req: NextRequest, { params }: { params: { file: string } }) {
   const file = params.file || ''
+  // Safety: third-party cmt* clips must never be served (CONTENT-ORIGIN rule)
+  if (/^cmt[A-Za-z0-9_]+\.(mp4|jpg|jpeg|png|webm)$/i.test(file)) {
+    return new NextResponse('Not Found', { status: 404 })
+  }
   if (!/^[A-Za-z0-9_-]+\.(mp4|jpg|jpeg|png|webm)$/.test(file)) {
     return new NextResponse('Not Found', { status: 404 })
   }
