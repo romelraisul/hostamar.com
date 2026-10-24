@@ -619,7 +619,6 @@ export default function TvPage() {
                 { f: 'HostamarH3_00065_.mp4', t: 'H3 Render 00065 — 5.2s (-14.0 dB)' },
                 { f: 'HostamarH3_00064_.mp4', t: 'H3 Render 00064 — 5.2s (-14.0 dB)' },
                 { f: 'HostamarH3_00063_.mp4', t: 'H3 Render 00063 — 5.2s (-14.0 dB)' },
-                { f: 'HostamarH3_00062_.mp4', t: 'H3 Render 00062 — 5.2s (-14.1 dB)' },
                 { f: 'HostamarH3_00061_.mp4', t: 'H3 Render 00061 — 5.2s (-14.1 dB)' },
                 { f: 'HostamarH3_00060_.mp4', t: 'H3 Render 00060 — 5.2s (-14.1 dB)' },
                 { f: 'agent-cloud-memory-shorts.mp4', t: 'Agent Cloud Memory Short — 30s vertical (-29.9 dB)' },
