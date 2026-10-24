@@ -37,7 +37,7 @@ for (const s of p.src) {
 const only = p.onlySlug;
 for (const r of p.seo) {
   if (only && r.slug !== only) continue;
-  const ex = await db.execute({ sql: 'SELECT slug FROM "TvVideoSeo" WHERE slug = ?', args: [r.slug] });
+  const ex = await db.execute({ sql: 'SELECT slug FROM "TvVideoSeo" WHERE "videoSourceId" = ?', args: [r.videoSourceId] });
   if (ex.rows.length) { skip++; continue; }
   await db.execute({
     sql: 'INSERT INTO "TvVideoSeo" (id, "videoSourceId", slug, "titleBn", "metaDescription", keywords, "transcriptBn", "schemaString", "ogImage", "canonicalUrl", product, "viralScore", views, "createdAt", "updatedAt") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
@@ -160,7 +160,7 @@ def main():
         + "})().catch(e => { console.error('JSERR:', e.message); process.exit(1); });"
     )
     r = subprocess.run(["/usr/bin/env", "node", "-e", js],
-                       capture_output=True, text=True, timeout=180)
+                       capture_output=True, text=True, timeout=600)
     if r.stdout.strip():
         print(r.stdout.strip())
     if r.returncode != 0:
