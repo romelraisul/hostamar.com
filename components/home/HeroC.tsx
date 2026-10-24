@@ -143,6 +143,23 @@ export default function HeroC() {
           </div>
         </div>
       </div>
+
+      {/* Live product demo — real screen recording of the render pipeline on our own GPUs */}
+      <div className="border-t border-[#E2E8F0] bg-[#FFFFFF]">
+        <div className="mx-auto max-w-[1120px] px-4 sm:px-5 lg:px-0 py-8 sm:py-10">
+          <h2 className="text-[16px] sm:text-[18px] font-bold text-[#0F172A]">দেখুন কীভাবে কাজ করে — ৩০ সেকেন্ডের লাইভ ডেমো</h2>
+          <p className="mt-1 text-[12px] sm:text-[13px] text-[#475569]">
+            Real screen recording: brief → H3 video + TTS + Music queued on our own GPUs — no cloud, no mockup.
+          </p>
+          <video
+            className="mt-4 w-full max-w-[880px] rounded-[16px] border border-[#E2E8F0] bg-[#0F172A]"
+            controls preload="metadata"
+            poster="/opengraph-image.png"
+            src="/demo-30s.mp4"
+            aria-label="Hostamar AI video pipeline 30-second product demo"
+          />
+        </div>
+      </div>
     </section>
   )
 }

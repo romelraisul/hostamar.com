@@ -171,10 +171,20 @@ export default async function HomePage() {
               </div>
               <div className="bp-tile bp-w-r2">
                 <div className="bp-media" style={{ aspectRatio: '16/9' }}>
-                  <img src="/redesign/hero-bazaar-640.jpg" alt="Hostamar দিয়ে বানানো আসল ভিডিওর পোস্টার" loading="lazy" width="640" height="360" />
+                  <LazyVideo
+                    src="/demo-30s.mp4"
+                    poster="/redesign/hero-bazaar-640.jpg"
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    width={640}
+                    height={360}
+                    aria-label="লাইভ পাইপলাইন ডেমো — ব্রিফ থেকে GPU রেন্ডার"
+                  />
                   <span className="bp-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z" /></svg></span>
                 </div>
-                <div className="bp-cap"><span>আসল ভিডিও</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>আসল আউটপুট</span></div>
+                <div className="bp-cap"><span>লাইভ পাইপলাইন ডেমো</span><span className="bp-muted" style={{ fontSize: '.8rem' }}>নিজের GPU-তে রেন্ডার</span></div>
               </div>
             </div>
             <div style={{ marginTop: '1.2rem', textAlign: 'center' }}>

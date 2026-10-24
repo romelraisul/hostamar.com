@@ -72,6 +72,34 @@ export async function POST(req: NextRequest) {
   seen.add(key)
   if (seen.size > 5000) seen.clear() // ponytail: bounded
 
+  // Lead capture: /start = explicit inbound opt-in. Log + structured welcome
+  // with free test-render link and pricing. Everything else keeps AI reply.
+  if (text === '/start') {
+    try {
+      const { prisma } = await import('@/lib/prisma')
+      await prisma.seoEvent.create({
+        data: { type: 'lead', url: `telegram:${msg?.from?.username || chatId}` },
+      })
+    } catch {} // lead saved or not — reply must still go out
+    await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        parse_mode: 'HTML',
+        text: '🇧🇩 <b>Hostamar — Sovereign GPU Cloud (EU + BD)</b>\n\n'
+          + 'AI video ads · dubbing (646 languages) · music — OpenAI-compatible API.\n\n'
+          + '🎬 <b>Free test render</b> (no signup): https://openwebui.hostamar.com\n\n'
+          + 'AI Video Ads ৳2,900 · AI Dubbing ৳1,900 · AI Music ৳990\n'
+          + 'bKash / Nagad / Rocket accepted — https://hostamar.com/bkash\n\n'
+          + 'Tell me about your project and I will reply with a plan.',
+        disable_web_page_preview: true,
+      }),
+      signal: AbortSignal.timeout(15000),
+    }).catch(() => null)
+    return NextResponse.json({ ok: true, replied: true, lead: true })
+  }
+
   const reply = await aiReply(text)
   await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`, {
     method: 'POST',

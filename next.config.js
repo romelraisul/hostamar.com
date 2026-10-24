@@ -5,6 +5,7 @@
 // builder prerender bug on internal error pages). Sentry runtime reporting can
 // be re-enabled here once the build is green.
 const nextConfig = {
+  skipHtmlTrailingSlashRedirect: true, // GSC verification needs 200 at /<file>.html, not 307 to clean URL
   // Vercel: standalone output defeats Next's function bundler (every route
   // becomes its own lambda -> 528 functions > Hobby 12-function limit,
   // exceeded_serverless_functions_per_deployment). VERCEL=1 is set in every
