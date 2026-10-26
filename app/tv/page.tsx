@@ -598,6 +598,8 @@ export default function TvPage() {
                 { f: 'shorts-agent-cloud-episode-2.mp4', t: 'Agent Cloud Ep2 Short — 30s vertical (-27.2 dB)' },
                 { f: 'shorts-eu-bd-gpu-spot-programme.mp4', t: 'EU-BD GPU Spot Prog Short — 30s (-31.6 dB)' },
                 { f: 'shorts-gpu-spot-market.mp4', t: 'GPU Spot Market Short — 30s (-32.3 dB)' },
+                { f: 'focusflow-pitch-shorts.mp4', t: 'Focusflow Pitch Shorts — 22s narrated (-30.2 dB)' },
+                { f: 'receipt-reel-lab-shorts.mp4', t: 'REEL Lab Receipt Shorts — 30s narrated (-24.7 dB)' },
                 { f: 'shorts-quantum-computing.mp4', t: 'Quantum Computing Short — 30s (-27.4 dB)' },
                 { f: 'sovereign-cloud-pricing-narrated.mp4', t: 'Sovereign Pricing Narrated (-21.1 dB)' },
                 { f: 'sovereign-receipt-episode-narrated.mp4', t: 'Sovereign Episode Narrated (-23.9 dB)' },
