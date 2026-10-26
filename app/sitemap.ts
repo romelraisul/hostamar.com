@@ -101,13 +101,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch { /* blog list unavailable in build sandbox */ }
 
   // Every TV video SEOs itself: /tv/watch/{slug} entries from TvVideoSeo.
+  // Only include videos that have verified R2 files (status=live via FreeVideoSource join).
   // Prisma's sqlite provider rejects the Turso URL and the ORM path dies under
   // workerd — so Turso via @libsql/client is the first path now; Prisma stays
   // as the fallback so local dev (file: DB) still gets video entries.
   let videoEntries: MetadataRoute.Sitemap = []
   try {
     const c = getTursoEdgeClient()
-    const res = await c.execute('SELECT slug, updatedAt FROM "TvVideoSeo" ORDER BY updatedAt DESC LIMIT 1000')
+    // Join with FreeVideoSource to only get videos with actual R2 files (status='ready')
+    const res = await c.execute(`
+      SELECT tvs.slug, tvs.updatedAt
+      FROM "TvVideoSeo" tvs
+      JOIN "FreeVideoSource" fvs ON tvs."videoSourceId" = fvs.id
+      WHERE fvs.status = 'ready'
+      ORDER BY tvs.updatedAt DESC
+      LIMIT 200
+    `)
     videoEntries = res.rows.map((r) => ({
       url: `${SITE_URL}/tv/watch/${String(r.slug)}`,
       lastModified: r.updatedAt ? new Date(String(r.updatedAt)) : now,
@@ -118,8 +127,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn('[sitemap] turso path failed:', String(e1?.message || e1).slice(0, 200))
     try {
       const videos = await (prisma as any).tvVideoSeo.findMany({
+        where: { videoSource: { status: 'ready' } },
         select: { slug: true, updatedAt: true },
         orderBy: { updatedAt: 'desc' },
+        take: 200,
       })
       videoEntries = videos.map((v: { slug: string; updatedAt: Date }) => ({
         url: `${SITE_URL}/tv/watch/${v.slug}`,

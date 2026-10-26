@@ -39,6 +39,12 @@ async function modelCount(): Promise<number> {
   }
 }
 
+export const metadata = {
+  title: 'Hostamar - Sovereign GPU AI Video with bKash in Bangladesh',
+  description: 'বাংলাদেশি ব্যবসার জন্য AI ভিডিও, হোস্টিং, চ্যাট, ব্রাউজার, IDE ও গেমিং, এক সাবস্ক্রিপশনে',
+  alternates: { canonical: 'https://hostamar.com/' },
+}
+
 const homeJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Product',

@@ -19,6 +19,12 @@ const BKASH = '#E2136E'
 export const revalidate = 86400
 
 // SEO
+export const metadata = {
+  title: 'Pricing ৳990/1900/2900 - Sovereign EU+BD GPU | Hostamar',
+  description: 'বাংলাদেশি ব্যবসার জন্য AI মার্কেটিং ভিডিও + BDIX হোস্টিং — ৫০+ বাংলা টেমপ্লেট, bKash/Nagad/Rocket।',
+  alternates: { canonical: 'https://hostamar.com/pricing' },
+}
+
 const pricingJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Product',
