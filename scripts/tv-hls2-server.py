@@ -36,6 +36,18 @@ class CORS(http.server.SimpleHTTPRequestHandler):
             self.send_header("Cache-Control", LONG_TTL)
         super().end_headers()
 
+    def do_GET(self):
+        # strip /hls2/ prefix if present (tunnel routes to root, but some URLs keep it)
+        if self.path.startswith("/hls2/"):
+            self.path = self.path[len("/hls2"):]
+        super().do_GET()
+
+    def do_HEAD(self):
+        # strip /hls2/ prefix for HEAD requests too
+        if self.path.startswith("/hls2/"):
+            self.path = self.path[len("/hls2"):]
+        super().do_HEAD()
+
     def log_message(self, *a):  # keep the journal quiet
         pass
 
