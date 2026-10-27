@@ -2,7 +2,7 @@
 
 AI Video SaaS Platform — Create, collaborate, and grow with AI-powered video generation.
 
-**V19 Status (2026-10-27):** Facebook Page Token live (1452448287944012, Post 1452448287944012_122094289005535818), Infisical 340 keys (7 Facebook secrets), Bing Places in progress, Agent-S MCP healthy on Hostamar gateway only (no NVIDIA), Grounding meta/llama-3.2-11b-vision-instruct, Compression 0.25, 36 product docs updated, directories queued, Sitemap/IndexNow/Search Console pending.
+**V33 Status (2026-10-27):** Forgejo self-hosted git live port 3000 ~/forgejo/forgejo v8.0.3 Podman codeberg.org/forgejo/forgejo:8 Volume ~/forgejo:/data Postgres reuse 15432 DB forgejo User forgejo Passwd Infisical Quadlet reboot-proof systemctl active curl localhost:3000/api/healthz 200 Cloudflare Tunnel git.hostamar.com netsh portproxy 4 rules ai 11442 comfy 8188 browser 9222 git 3000 Firewall 3000 allow Edge CDP 9222 live WSL 172.17.112.1:9222 200 Gateway 11442 152 health 200 Agent-S 8765 backend_ok true B2 backup only NOT R2 daily 2AM tar.gz ~/forgejo/data → b2:hostamar-b2-forgejo snapshots 30d rclone ls B2 1+ tar.gz repositories sync lifecycle 30d log success Admin romelraisul@gmail.com org hostamar repos hostamar-platform marketing ansible terraform push main webhook https://hostamar.com/api/webhook/forgejo. Monetization V31 live bKash/Nagad/Rocket paywall B2 videos 317 mp4s Product Hunt draft Directories 300/day fleet OpenSEO 5 pillars. 36 docs V33. 5 Arcs complete.
 
 ## Stack
 
