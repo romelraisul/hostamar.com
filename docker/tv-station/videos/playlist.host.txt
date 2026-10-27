@@ -104,3 +104,4 @@ file '/home/romel/hostamar.com/public/tv/shorts-agent-cloud-episode-narrated.mp4
 file '/home/romel/hostamar.com/public/tv/sovereign-receipt-episode-narrated.mp4'
 file '/home/romel/hostamar.com/public/tv/sovereign-video-os-episode-narrated.mp4'
 file '/home/romel/hostamar.com/public/tv/trillion-market-episode-narrated.mp4'
+file '/home/romel/hostamar.com/public/tv/receipt-reel-lab-15s-narrated.mp4'

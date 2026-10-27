@@ -8,11 +8,9 @@ export async function GET() {
   const CF_CDN = 'https://cdn.hostamar.com/tv'
   // List from b2 manifest — rclone ls b2:hostamar-prod/tv/ 142 mp4s
   // For Edge runtime, use static list cached 1h, revalidate via B2 API if needed
-  const videos = [
-    // will be injected from /app/api/tv manifest — 142 entries
-  ]
+  const videos: string[] = []
   // Fallback: fetch manifest from B2 json if available
-  let videoList = videos
+  let videoList: string[] = videos
   try {
     const res = await fetch(`${B2_CDN}/manifest.json`, { next: { revalidate: 3600 } })
     if (res.ok) { const j = await res.json(); if (j.videos) videoList = j.videos }
