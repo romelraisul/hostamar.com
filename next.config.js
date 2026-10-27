@@ -115,6 +115,13 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, s-maxage=30' },
         ],
       },
+      // PC-off-safe video shelf: immutable long-term cache for edge MP4s
+      {
+        source: '/tv/(.*)\\.mp4',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
     ]
   },
   typescript: {
