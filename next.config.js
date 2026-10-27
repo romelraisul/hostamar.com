@@ -150,7 +150,7 @@ const nextConfig = {
     // Exclude the 362MB docker/tv-station/videos from serverless function traces
     // (api/tv/viral/create* routes were pulling it in, blowing past 250MB limit).
     outputFileTracingExcludes: {
-      '*': ['docker/tv-station/videos/**'],
+      '*': ['docker/tv-station/videos/**', 'public/tv/**'],
     },
   },
   // Vercel frontend calls the API through the Cloudflare Worker router
