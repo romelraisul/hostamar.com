@@ -82,7 +82,9 @@ export default function VoiceAgentClient({ mode = 'chat', className = '' }: Voic
     try {
       switch (type) {
         case 'open_url': {
-          const url = new URL(String(payload?.url || ''))
+          const raw = payload?.url
+          if (!raw || typeof raw !== 'string' || !raw.startsWith('http')) return
+          const url = new URL(raw)
           if (!ALLOWED_HOSTS.has(url.hostname)) return
           window.open(url.toString(), '_blank', 'noopener,noreferrer')
           break

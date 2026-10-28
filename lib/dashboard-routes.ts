@@ -3,6 +3,7 @@
 
 export const DASHBOARD_ROUTES: Record<string, string> = {
   'ai-video': 'https://hostamar.com/dashboard/videos',
+  'dubbing': '/dashboard/reel',
   'cloud-hosting': '/dashboard/hosting',
   'ai-chat': '/dashboard/chat',
   'ai-browser': '/dashboard/browser',

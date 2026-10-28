@@ -4,7 +4,7 @@
   "description": "Hostamar.com - Cloud Hosting + AI Video Marketing Platform",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && NEXT_PUBLIC_SKIP_DB_MIGRATE=1 NEXT_IGNORE_INCORRECT_LOCKFILE=1 NODE_ENV=production next build && npx tsx lib/support/sopGenerator.ts && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public/. .next/standalone/public && cp -r lib/tv .next/standalone/lib/",
+    "build": "prisma generate && NEXT_PUBLIC_SKIP_DB_MIGRATE=1 NEXT_IGNORE_INCORRECT_LOCKFILE=1 NODE_ENV=production next build && npx tsx lib/support/sopGenerator.ts && if [ -z \"$VERCEL\" ]; then mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r public/. .next/standalone/public && cp -r lib/tv .next/standalone/lib/; fi",
     "build:local": "prisma generate && prisma migrate deploy && NODE_ENV=production next build && npx tsx lib/support/sopGenerator.ts",
     "start": "next start -p 3000 -H 0.0.0.0",
     "lint": "next lint",
@@ -88,17 +88,22 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@types/web-push": "^3.6.4",
+    "@types/ws": "^8.18.2",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.2.5",
+    "miniflare": "5.20261023.0-beta",
     "postcss": "^8.4.35",
     "prisma": "^5.22.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
     "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
     "typescript": "^5.3.3",
     "vercel": "^54.6.1",
     "vitest": "^4.1.10",
-    "wrangler": "^4.147.0"
+    "wrangler": "4.14.0",
+    "ws": "^8.22.0",
+    "yaml": "^2.9.1"
   }
 }

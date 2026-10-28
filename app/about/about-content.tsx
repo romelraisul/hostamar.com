@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Cloud,
   Video,
+  Mic,
   MessageSquare,
   Globe,
   Code2,
@@ -44,6 +45,7 @@ const VALUES = [
 
 const PRODUCTS = [
   { icon: Video, name: 'ভিডিও', desc: 'AI মার্কেটিং ভিডিও — পণ্যের ছবি → Reels।' },
+  { icon: Mic, name: 'ডাবিং', desc: 'ইংরেজি ভিডিও → বাংলা লিপ-সিঙ্কড ডাব, ৫ মিনিটে।' },
   { icon: Cloud, name: 'হোস্টিং', desc: 'VPS + BDIX ২০ms, বাংলা cPanel, ফ্রি SSL।' },
   { icon: MessageSquare, name: 'চ্যাট', desc: 'বাংলা AI — PDF বুঝে, য-ফলা ঠিক।' },
   { icon: Globe, name: 'ব্রাউজার', desc: 'প্রাইভেট AI ব্রাউজার — ইতিহাস আমাদের কাছে নয়।' },

@@ -3,7 +3,7 @@ import Link from 'next/link'
 export const metadata = {
   title: 'Download Hostamar Node — Windows, macOS, Linux | Hostamar',
   description:
-    'Hostamar Node ডাউনলোড — Windows .msi/.exe, macOS .dmg, Linux .deb/.AppImage। ফোন + কম্পিউটার = ডাটাসেন্টার, ০ টাকায়। 6000 ক্রেডিট, ৬টি প্রোডাক্ট, ৯৩টি মডেল।',
+    'Hostamar Node ডাউনলোড — Windows .msi/.exe, macOS .dmg, Linux .deb/.AppImage। ফোন + কম্পিউটার = ডাটাসেন্টার, ০ টাকায়। 6000 ক্রেডিট, ৭টি প্রোডাক্ট, ৯৩টি মডেল।',
   keywords: ['Hostamar Node download', 'হোস্টামার নোড', 'free AI datacenter', 'Hostamar download'],
   openGraph: {
     title: 'Download Hostamar Node — 0 Taka Datacenter',
@@ -28,7 +28,7 @@ export default function DownloadPage() {
     <div className="mx-auto max-w-[1120px] px-4 sm:px-5 py-10">
       <h1 className="text-3xl font-bold tracking-tight">Download Hostamar Node</h1>
       <p className="text-sm text-zinc-600 mt-2">
-        Phone + Windows + Linux + Mac = Datacenter • 6000 credit • 6 products • 93 models • No money needed
+        Phone + Windows + Linux + Mac = Datacenter • 6000 credit • 7 products • 93 models • No money needed
       </p>
 
       <div className="mt-8 overflow-x-auto rounded-2xl border bg-white">

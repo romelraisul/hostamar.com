@@ -295,7 +295,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        {/* Nav — 6 products */}
+        {/* Nav — 7 products */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
           <div>
             <p className="px-3 pb-2 text-[11px] font-semibold tracking-widest text-[#64748B]">PRODUCTS</p>
@@ -424,7 +424,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 autoFocus
                 value={paletteQuery}
                 onChange={(e) => setPaletteQuery(e.target.value)}
-                placeholder="Jump to… (Video, Hosting, Chat, Browser, IDE, Game, Billing)"
+                placeholder="Jump to… (Video, Dubbing, Hosting, Chat, Browser, IDE, Game, Billing)"
                 className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#94A3B8]"
               />
               <span className="rounded bg-[#F1F5F9] px-1.5 py-0.5 text-xs text-[#64748B]">ESC</span>

@@ -37,7 +37,7 @@ const SECTIONS = [
     title: 'Services',
     icon: Video,
     body: 'Hostamar provides six connected products: (a) AI Video — generate marketing videos from product images/text; usage is subject to your plan limits; (b) Hosting — VPS on BDIX with 99.9% uptime target; (c) Gaming — bKash-backed tournaments with entry fees and payouts disclosed at entry; (d) Chat — Bangla AI assistant; (e) Browser — private AI browsing; (f) Dev — cloud IDE. We may modify or discontinue any product with notice.',
-    bn: 'আমরা ৬টি সার্ভিস দিই: ভিডিও, হোস্টিং, গেমিং, চ্যাট, ব্রাউজার, Dev — প্রতিটির নিজস্ব লিমিট আছে।',
+    bn: 'আমরা ৭টি সার্ভিস দিই: ভিডিও, ডাবিং, হোস্টিং, গেমিং, চ্যাট, ব্রাউজার, Dev — প্রতিটির নিজস্ব লিমিট আছে।',
   },
   {
     id: 'accounts',

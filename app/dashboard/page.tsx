@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from 'react'
 import { DASHBOARD_ROUTES } from '@/lib/dashboard-routes'
 import Link from 'next/link'
 import {
-  Video, Server, CreditCard, TrendingUp, Play, Clock, Sparkles,
+  Video, Server, CreditCard, TrendingUp, Play, Clock, Sparkles, Mic,
   MessageCircle, Globe, Code2, Gamepad2, HardDrive, Coins, ArrowRight, Command, Search, Zap, Eye, X,
 } from 'lucide-react'
 import '@/lib/i18n-dict' // pull the translation dictionary into this chunk (t() below is sync)
@@ -26,16 +26,16 @@ interface CreditRow { id: string; amount: number; type: string; description: str
 interface CreditPanel { credits: number; spent: number; earned: number; percent: number; history: CreditRow[] }
 
 const PRODUCT_ICON: Record<string, typeof Video> = {
-  'ai-video': Video, 'cloud-hosting': Server, 'ai-chat': MessageCircle,
+  'ai-video': Video, 'dubbing': Mic, 'cloud-hosting': Server, 'ai-chat': MessageCircle,
   'ai-browser': Globe, 'dev-ide': Code2, game: Gamepad2,
 }
 
 const COST_HINT: Record<string, string> = {
-  'ai-video': '100cr', 'cloud-hosting': '0cr', 'ai-chat': '1cr/msg',
+  'ai-video': '100cr', 'dubbing': '10cr/min', 'cloud-hosting': '0cr', 'ai-chat': '1cr/msg',
   'ai-browser': '5cr', 'dev-ide': '10cr/run', game: '20cr/play',
 }
 const BADGE: Record<string, string> = {
-  'ai-video': '70%', 'cloud-hosting': '20%', 'ai-chat': 'Tools',
+  'ai-video': '70%', 'dubbing': 'Live', 'cloud-hosting': '20%', 'ai-chat': 'Tools',
   'ai-browser': 'Tools', 'dev-ide': 'Tools · 93', game: 'Lab',
 }
 
@@ -265,7 +265,7 @@ export default function DashboardPage() {
           <span className="w-9 h-9 rounded-xl bg-[#0E7C3A] text-white grid place-items-center font-black">H</span>
           <div>
             <h1 className="text-xl font-bold text-[#0F172A] leading-none">
-              {locale === 'bn' ? 'ওভারভিউ • Dashboard' : locale === 'ur' ? 'جائزہ • Dashboard' : 'Dashboard • 6 products • 6000 credit'}
+              {locale === 'bn' ? 'ওভারভিউ • Dashboard' : locale === 'ur' ? 'جائزہ • Dashboard' : 'Dashboard • 7 products • 6000 credit'}
             </h1>
             <p className="text-xs text-[#64748B] mt-1">Hostamar • Video 100 • Hosting 0 • Chat 1 • Browser 5 • IDE 10 • Game 20</p>
           </div>

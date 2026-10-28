@@ -236,7 +236,7 @@ export default function GamePage() {
               <p className="bangla text-[14px] text-zinc-300 mt-1 leading-[1.6]">
                 Free browse · বিকাশ এন্ট্রি · টুর্নামেন্টে ফি স্পষ্ট থাকে।
                 <br />
-                একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট — Video + Hosting + Gaming।
+                একটি সাবস্ক্রিপশনে সব ৭টি প্রোডাক্ট — Video + Dubbing + Hosting + Gaming।
               </p>
             </div>
             <Link href="/pricing" className="bangla px-5 h-11 rounded-full bg-[#0E7C3A] text-white text-[14px] font-semibold flex items-center justify-center hover:bg-[#0c6a32] transition shrink-0">

@@ -428,7 +428,7 @@ export default function App() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="bangla text-[28px] sm:text-[32px] font-bold tracking-tight">Pricing — এক প্যাকেজে সব</h2>
-              <p className="mt-2 text-[14px] text-zinc-600 max-w-[560px]">Gaming আলাদা প্রোডাক্ট না — Hostamar এর ভেতরেই। Video, Hosting, Chat, Browser, IDE সহ এক সাবস্ক্রিপশন।</p>
+              <p className="mt-2 text-[14px] text-zinc-600 max-w-[560px]">Gaming আলাদা প্রোডাক্ট না — Hostamar এর ভেতরেই। Video, Dubbing, Hosting, Chat, Browser, IDE সহ এক সাবস্ক্রিপশন।</p>
             </div>
             <div className="text-[12px] px-3 py-1.5 rounded-full bg-white border border-zinc-200">bKash • Nagad • Monthly • Cancel anytime</div>
           </div>

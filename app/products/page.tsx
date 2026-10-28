@@ -7,7 +7,7 @@ import BazaarFooter from '@/components/home/BazaarFooter'
 export const metadata: Metadata = {
   title: 'Products - Hostamar',
   description:
-    'ছয়টি পণ্য, একটি প্ল্যাটফর্ম — AI ভিডিও, ক্লাউড হোস্টিং, AI চ্যাট, AI ব্রাউজার, গেম, Dev IDE।',
+    '৭টি প্রোডাক্ট, একটি প্ল্যাটফর্ম — AI ভিডিও, ডাবিং, ক্লাউড হোস্টিং, AI চ্যাট, AI ব্রাউজার, গেম, Dev IDE।',
 }
 
 const STATUS_BADGE: Record<string, { label: string; bg: string }> = {
@@ -28,7 +28,7 @@ export default function ProductsPage() {
       <div className="bp-page-hero">
         <div className="bp-wrap">
           <h1>পণ্যসমূহ</h1>
-          <p>ছয়টি পণ্য, একটি প্ল্যাটফর্ম — AI ভিডিও, ক্লাউড হোস্টিং, AI চ্যাট, AI ব্রাউজার, গেম, Dev IDE</p>
+                  <p>৭টি প্রোডাক্ট, একটি প্ল্যাটফর্ম — AI ভিডিও, ডাবিং, ক্লাউড হোস্টিং, AI চ্যাট, AI ব্রাউজার, গেম, Dev IDE।</p>
         </div>
       </div>
 
@@ -37,7 +37,7 @@ export default function ProductsPage() {
           <div className="bp-sec-head">
             <h2>সব পণ্য</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
-              <span className="bp-tag">70% LIVE</span>
+              <span className="bp-tag">86% LIVE</span>
               <span className="bp-muted" style={{ fontSize: '.9rem' }}>AI Video + Hosting, টাকা বানায়</span>
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function ProductsPage() {
       <div className="bp-cta-wrap">
         <div className="bp-scallop bp-scallop-flip" aria-hidden="true" />
         <div className="bp-cta-band">
-          <h2>একটি সাবস্ক্রিপশনে সব ছয়টি</h2>
+          <h2>একটি সাবস্ক্রিপশনে সব ৭টি</h2>
           <p>আলাদা টুল কেনা বন্ধ। হোস্টামার প্ল্যানে সবকিছু পাবেন, AI ভিডিও, ক্লাউড, চ্যাট, ব্রাউজার, গেম, IDE।</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '.5rem', marginBottom: '.4rem', fontSize: '.9rem' }}>
             {['মাসে ১০টা ভিডিও', '১০০ চ্যাট মেসেজ/দিন', '৫GB হোস্টিং ফ্রি', 'IDE আনলিমিটেড'].map((c) => (
