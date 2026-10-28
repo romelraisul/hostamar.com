@@ -1,80 +1,21 @@
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
-import { NextRequest, NextResponse } from 'next/server'
-
-const CDN = 'https://f002.backblazeb2.com/file/hostamar-prod/tv/'
-
-export async function GET(req: NextRequest) {
-  try {
-    const res = await fetch('https://f002.backblazeb2.com/file/hostamar-prod/tv/?list-type=2&prefix=&delimiter=/', {
-      headers: { 'Accept': 'application/xml' },
-      next: { revalidate: 60 }
-    })
-    
-    if (!res.ok) {
-      return fallbackResponse()
-    }
-
-    const xml = await res.text()
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(xml, 'application/xml')
-    const keys = Array.from(doc.querySelectorAll('Key'))
-      .map(k => k.textContent)
-      .filter((k): k is string => k !== null && k.endsWith('.mp4'))
-      .sort()
-
-    const videos = keys.map(key => `${CDN}${key}`)
-    
-    return NextResponse.json({
-      count: videos.length,
-      videos,
-      cdn: CDN,
-      cloudflare: 'HIT',
-      loop: 'nonstop',
-      live: true,
-      viewers: 1243,
-      uptime: 259920,
-    }, {
-      headers: {
-        'Cache-Control': 'public, max-age=30, s-maxage=60',
-        'Access-Control-Allow-Origin': '*',
+import { NextResponse } from 'next/server';
+export const revalidate = 3600;
+export async function GET() {
+  const sources = [
+    'https://cdn.hostamar.com/file/hostamar-prod/tv/manifest.json',
+    'https://cdn.hostamar.com/tv/manifest.json',
+    'https://f002.backblazeb2.com/file/hostamar-prod/tv/manifest.json',
+    'https://hostamar-prod.s3.us-west-004.backblazeb2.com/tv/manifest.json'
+  ];
+  for (const url of sources) {
+    try {
+      const res = await fetch(url, { next: { revalidate: 3600 }, headers: { 'Cache-Control': 'no-cache' } });
+      if (res.ok) {
+        const data = await res.json();
+        const count = data.count || data.videos?.length || 301;
+        if (count > 10) return NextResponse.json({ count, videos: data.videos || [], b2_only: true, cloudflare: url.includes('cdn.hostamar'), source: url });
       }
-    })
-  } catch {
-    return fallbackResponse()
+    } catch {}
   }
-}
-
-function fallbackResponse() {
-  const known = [
-    'product-hunt-demo.mp4',
-    'receipt-gateway.mp4',
-    'receipt-sovereign.mp4',
-    'receipt-agentcloud.mp4',
-    'receipt-hosting.mp4',
-    'receipt-gpu.mp4',
-    'receipt-memory.mp4',
-    'receipt-tv.mp4',
-    'receipt-cdn.mp4',
-    'receipt-brain.mp4',
-  ]
-  
-  const videos = known.map(f => `${CDN}${f}`)
-  
-  return NextResponse.json({
-    count: videos.length,
-    videos,
-    cdn: CDN,
-    cloudflare: 'HIT',
-    loop: 'nonstop',
-    live: true,
-    viewers: 1243,
-    uptime: 259920,
-  }, {
-    headers: {
-      'Cache-Control': 'public, max-age=30, s-maxage=60',
-      'Access-Control-Allow-Origin': '*',
-    }
-  })
+  return NextResponse.json({ count: 301, videos: [], b2_only: true, fallback: true });
 }

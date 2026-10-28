@@ -16,9 +16,9 @@ import { SSOButton } from '@/components/auth/SSOButton'
 // lib/auth-config.ts -> would 500), fake testimonial (500+ SME / 10k+ videos / Bogura
 // সেল 2x), and the 'studio.hostamar.com' redirect (doesn't exist; real is /dashboard).
 // Stats used are all real: 20ms BDIX, 99.9% uptime, 7-day trial, 12-min support,
-// 5GB hosting free, 3 videos free, 6 products.
+// 5GB hosting free, 3 videos free, 7 products.
 
-const PRODUCTS = ['Video', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming']
+const PRODUCTS = ['Video', 'Dubbing', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming']
 
 function strength(pw: string): { label: string; score: number; color: string } {
   let s = 0

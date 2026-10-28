@@ -16,7 +16,7 @@ import { SSOButton } from '@/components/auth/SSOButton'
 // (we cite 99.9%), unbuilt-feature teasers (bKash-number login, 'য-ফলা fixed' badge), and
 // 'studio.hostamar.com' redirect (doesn't exist; real is /dashboard).
 
-const PRODUCTS = ['Video', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming']
+const PRODUCTS = ['Video', 'Dubbing', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming']
 
 export default function LoginPage() {
   const router = useRouter()

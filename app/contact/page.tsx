@@ -315,7 +315,7 @@ export default function ContactPage() {
               বাংলাদেশের SME, ক্রিয়েটর ও এজেন্সিদের জন্য Hostamar, ভিডিও, হোস্টিং, চ্যাট সব এক জায়গায়।
             </p>
             <div className="bp-stamp-row" style={{ gap: '.4rem' }}>
-              {['Video', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming'].map((p) => (
+              {['Video', 'Dubbing', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming'].map((p) => (
                 <span key={p} className="bp-stamp" style={{ padding: '.22rem .7rem', fontSize: '.8rem' }}>{p}</span>
               ))}
             </div>

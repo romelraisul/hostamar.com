@@ -133,9 +133,9 @@ export default async function StorePage() {
       {/* Live catalog grid (client component, public API) */}
       <StoreCatalog />
 
-      {/* ৬ প্রোডাক্ট — প্রতিটির বিস্তারিত বাংলা ব্যাখ্যা */}
+      {/* ৭ প্রোডাক্ট — প্রতিটির বিস্তারিত বাংলা ব্যাখ্যা */}
       <div className="mt-12">
-        <div className="text-xs font-semibold tracking-widest" style={{ color: GREEN }}>৬টি ফ্ল্যাগশিপ প্রোডাক্ট — বিস্তারিত</div>
+        <div className="text-xs font-semibold tracking-widest" style={{ color: GREEN }}>৭টি ফ্ল্যাগশিপ প্রোডাক্ট — বিস্তারিত</div>
         <h2 className="text-2xl font-bold mt-2">প্রতিটি প্রোডাক্ট কী করে, কেন দরকার, কীভাবে ব্যবহার করবে</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-5">
           <div className="rounded-2xl border bg-white p-5">

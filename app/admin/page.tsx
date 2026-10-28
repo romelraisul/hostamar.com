@@ -579,7 +579,7 @@ function ModelsTab() {
 function ProductsTab() {
   return (
     <div className="space-y-4">
-      <div><h2 className="text-lg font-bold text-white">Products</h2><p className="text-xs text-zinc-500">Single source of truth · lib/products.ts · 6 products</p></div>
+      <div><h2 className="text-lg font-bold text-white">Products</h2><p className="text-xs text-zinc-500">Single source of truth · lib/products.ts · 7 products</p></div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {PRODUCTS.map(p=>(
           <div key={p.slug} className="rounded-2xl overflow-hidden bg-black border border-[#0E7C3A]/20 hover:border-[#10B981]/30 transition">

@@ -15,7 +15,7 @@ import type { Locale } from '@/lib/i18n'
 // Regenerate subsets: /usr/bin/python3 scripts/fonts/make-subsets.py.
 // The --font-hind/--font-archivo vars now live in globals.css :root.
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://hostamar.com';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL.startsWith('http')) ? process.env.NEXT_PUBLIC_SITE_URL : 'https://hostamar.com';
 
 export const metadata: Metadata = {
   ...defaultSeo,

@@ -234,7 +234,7 @@ export default async function HomePage() {
         <section className="bp-sec bp-sec-alt" id="bundle">
           <div className="bp-wrap">
             <div className="bp-sec-head">
-              <h2>একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট</h2>
+              <h2>একটি সাবস্ক্রিপশনে সব ৭টি প্রোডাক্ট</h2>
               <p>প্রতিটি প্ল্যানে AI ভিডিও + হোস্টিং + Chat + Browser + IDE একসাথে। আলাদা করে কিছু কিনতে হবে না। bKash, Nagad, Rocket সাপোর্টেড</p>
             </div>
             <div className="bp-bundle">
@@ -391,7 +391,7 @@ export default async function HomePage() {
               </div>
               <div className="bp-tile">
                 <span className="bp-tag">সব-ইন-ওয়ান</span>
-                <h3>এক সাবস্ক্রিপশন, ৬ প্রোডাক্ট</h3>
+                <h3>এক সাবস্ক্রিপশন, ৭ প্রোডাক্ট</h3>
                 <p>হোস্টিং, ভিডিও, চ্যাট, ব্রাউজার, IDE ও গেমিং — এক ড্যাশবোর্ডে, একটাই বিল।</p>
               </div>
               <div className="bp-tile">

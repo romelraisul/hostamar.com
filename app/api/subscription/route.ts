@@ -164,7 +164,7 @@ export async function GET(req: NextRequest) {
     const currentPlanName = currentSub?.plan || 'FREE'
     const currentLimits = planLimits[currentPlanName] || { videoLimit: 5, quality: '720p', watermark: true }
 
-    // Unified gate: normalize to free|starter|business so all 6 products read one plan.
+    // Unified gate: normalize to free|starter|business so all 7 products read one plan.
     const normalizedPlan = normalizePlan(currentPlanName)
     const unifiedQuota = getQuota({ plan: normalizedPlan, status: hasActiveSub ? 'active' : 'inactive' })
 

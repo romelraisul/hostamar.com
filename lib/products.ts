@@ -62,8 +62,41 @@ export const PRODUCTS: Product[] = [
     demoUrl: '/generate',
   },
   {
-    slug: 'cloud-hosting',
+    slug: 'dubbing',
     order: 2,
+    emoji: '🎙️',
+    nameBn: 'ডাবিং',
+    nameEn: 'AI Dubbing',
+    taglineBn: 'ইংরেজি ভিডিও → বাংলা ডাব করুন ৫ মিনিটে',
+    taglineEn: 'English video → lip-synced Bangla dub in 5 min',
+    description:
+      'সোর্স ভিডিও আপলোড করুন — অটো-ট্রান্সলেশন + লিপ-সিঙ্কড বাংলা ভয়েস ওভার পান, রেন্ডার হয় সুপার-ফাস্ট GPU সার্ভারে। ভয়েসবক্স + এসি-স্টেপ গুল্পানো স্ট্যাক; headless API $0.10/মিনিট। ফ্রিল্যান্সার লটারি বন্ধ।',
+    features: [
+      '৬৪৬+ ভাষা সমর্থিত ভয়েস ক্লোন',
+      'লিপ-সিঙ্ক — মুখের গতি ম্যাচ করে ডাব',
+      'বাংলা/ইংরেজি দুই দিকে ডাবিং',
+      'প্রতি সিনে ভয়েস পিক — একাধিক স্পীকার সাপোর্ট',
+      'ব্যাকগ্রাউন্ড অডিও সংরক্ষিত',
+      'headless API + bKash পেমেন্ট',
+    ],
+    gradient: 'from-[#7C3AED] via-[#A855F7] to-[#0F172A]',
+    badge: 'Live',
+    status: 'live',
+    ctaLabel: 'ডাবিং শুরু করুন',
+    ctaHref: '/signup?ref=product-dubbing',
+    ctaSecondary: { label: 'ডেমো দেখুন', href: '/video-os' },
+    comingSoon: [
+      'ট্রিম-সিঙ্ক সাবটাইটল → ডাব রেন্ডার — Q4 2026',
+      'আমার ভয়েস আপলোড করে ক্লোন — Q4 2026',
+      'ইউটিউব অটো-ডাব এক-ক্লিক — Q1 2027',
+    ],
+    competitorGap:
+      'ফিভার/আপওয়ার্কে ১৫-৫০$ ভিডিও, ২-৩ দিন টার্নআরাউন্ড — হোস্টামার ডাবিং প্রতি মিনিটে ০.১০$ এবং ৫ মিনিটে রেন্ডার।',
+    demoUrl: '/video-os',
+  },
+  {
+    slug: 'cloud-hosting',
+    order: 3,
     emoji: '☁️',
     nameBn: 'ক্লাউড হোস্টিং',
     nameEn: 'Cloud Hosting',
@@ -97,7 +130,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     slug: 'ai-chat',
-    order: 3,
+    order: 4,
     emoji: '💬',
     nameBn: 'AI চ্যাট',
     nameEn: 'AI Chat',
@@ -129,7 +162,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     slug: 'ai-browser',
-    order: 4,
+    order: 5,
     emoji: '🌐',
     nameBn: 'AI ব্রাউজার',
     nameEn: 'AI Browser',
@@ -162,7 +195,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     slug: 'game',
-    order: 5,
+    order: 6,
     emoji: '🎮',
     nameBn: 'গেম',
     nameEn: 'Gaming Platform',
@@ -195,7 +228,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     slug: 'dev-ide',
-    order: 6,
+    order: 7,
     emoji: '💻',
     nameBn: 'Dev IDE',
     nameEn: 'Code Editor in Browser',
@@ -241,6 +274,7 @@ export function getProduct(slug: string): Product | null {
 // registry slug so links stay stable even if a slug is renamed.
 export const PRODUCT_ROUTES: Record<string, string> = {
   'ai-video': '/video',
+  'dubbing': '/video-os',
   'cloud-hosting': '/hosting',
   'ai-chat': '/chat',
   'ai-browser': '/browser',

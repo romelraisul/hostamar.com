@@ -57,7 +57,7 @@ const COMPARE = [
   { f: 'BD-তে স্পিড', replit: 'ধীর (abroad)', hostamar: 'BDIX 20ms' },
   { f: 'bKash পেমেন্ট', replit: 'না', hostamar: 'হ্যাঁ' },
   { f: 'hostamar.dev deploy', replit: 'না', hostamar: 'এক ক্লিকে' },
-  { f: 'এক সাবস্ক্রিপশনে ৬ প্রোডাক্ট', replit: 'না', hostamar: 'হ্যাঁ' },
+  { f: 'এক সাবস্ক্রিপশনে ৭ প্রোডাক্ট', replit: 'না', hostamar: 'হ্যাঁ' },
 ]
 
 const USES = [
@@ -220,7 +220,7 @@ export default function IDEPage() {
               <p className="bangla text-[14px] text-zinc-300 mt-1 leading-[1.6]">
                 Free: 1GB / ২ প্রজেক্ট · Starter ৳990: unlimited + 20GB hosting + IDE।
                 <br />
-                একটি সাবস্ক্রিপশনে সব ৬টি প্রোডাক্ট।
+                একটি সাবস্ক্রিপশনে সব ৭টি প্রোডাক্ট।
               </p>
             </div>
             <Link href="/pricing" className="bangla px-5 h-11 rounded-full bg-[#2563EB] text-white text-[14px] font-semibold flex items-center justify-center hover:bg-[#1D4ED8] transition shrink-0">
