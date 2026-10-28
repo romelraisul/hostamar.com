@@ -183,10 +183,10 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       <section className="bg-[#2563EB] text-white py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="bangla text-2xl md:text-3xl font-bold mb-3">
-            এই পণ্যটি ছয়টির একটি — আলাদায় কেনা বন্ধ
+            এই পণ্যটি ৭টির একটি — আলাদায় কেনা বন্ধ
           </h2>
           <p className="bangla opacity-95 mb-6">
-            সব ছয়টি পণ্য একটি সাবস্ক্রিপশনে — মাসে ৳১,০০০ থেকে শুরু
+            সব ৭টি পণ্য একটি সাবস্ক্রিপশনে — মাসে ৳১,০০০ থেকে শুরু
           </p>
           <Link
             href="/products"
