@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
-  title: 'Hostamar TV — Live Nonstop 347 Videos • AI Video + Hosting + Agent Cloud',
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 347 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  title: 'Hostamar TV — Live Nonstop 348 Videos • AI Video + Hosting + Agent Cloud',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 348 edge-served videos, PC-off safe via Vercel+Cloudflare.',
   openGraph: {
-    title: 'Hostamar TV — Live Nonstop 347 Videos',
+    title: 'Hostamar TV — Live Nonstop 348 Videos',
     description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market.',
     url: 'https://hostamar.com/tv',
     siteName: 'Hostamar',
@@ -11,11 +11,12 @@ export const metadata: Metadata = {
     type: 'video.other',
     images: [{ url: 'https://hostamar.com/tv-poster.jpg', width: 1200, height: 630, alt: 'Hostamar TV Live' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop', description: '24/7 AI video channel: 347 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop', description: '24/7 AI video channel: 348 edge-served videos, PC-off safe.' },
 }
 const liveM3u8 = 'https://hostamar.com/api/tv/live'
 // Fallback shelf: substantial edge-served videos (PC-off-safe, Vercel+CF)
 const SHELF = [
+  { fn: 'receipt-sovereign-2-narrated.mp4', title: 'Sovereign Cloud Infra Receipt (15s)' },
   { fn: 'sovereign-video-12-pipelines-narrated.mp4', title: 'Sovereign Video OS — 12 Pipelines (4:32)' },
   { fn: 'agent-cloud-episode-narrated.mp4', title: 'Agent Cloud — Autonomous Employees (3:51)' },
   { fn: 'video-ads-ad-builder-narrated.mp4', title: 'AI Video Ad Builder — One Brief to Campaign (3:47)' },
@@ -31,7 +32,7 @@ export default function TVPage() {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "VideoObject",
     "name": "Hostamar TV Live Nonstop",
-    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 347 edge-served videos, PC-off safe via Vercel+Cloudflare.",
+    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 348 edge-served videos, PC-off safe via Vercel+Cloudflare.",
     "thumbnailUrl": "https://hostamar.com/tv-poster.jpg",
     "contentUrl": liveM3u8,
     "embedUrl": "https://hostamar.com/tv",
@@ -49,13 +50,13 @@ export default function TVPage() {
           <source src={liveM3u8} type="application/x-mpegURL" />
           <source src={fallbackMp4} type="video/mp4" />
         </video>
-        <div className="mt-4 text-sm opacity-70">Edge shelf 347 videos • Cloudflare HIT • PC-off-safe</div>
+        <div className="mt-4 text-sm opacity-70">Edge shelf 348 videos • Cloudflare HIT • PC-off-safe</div>
         <details className="mt-6 w-full">
           <summary className="cursor-pointer text-sm text-zinc-400 hover:text-white">Fallback shelf (edge-served, PC-off safe)</summary>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4 text-[13px]">
             {SHELF.map((v) => (
               <li key={v.fn} className="rounded bg-white/5 p-2 hover:bg-white/10">
-                <a href="/tv/watch/own-" + v.fn.replace('.mp4','') + '-bangla-tutorial-2026' className="text-[#4ade80] hover:underline">{v.title}</a>
+                <a href={`/tv/watch/own-${v.fn.replace('.mp4','')}-bangla-tutorial-2026`} className="text-[#4ade80] hover:underline">{v.title}</a>
               </li>
             ))}
           </ul>
