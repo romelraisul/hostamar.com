@@ -3,7 +3,7 @@ export const metadata: Metadata = { title: 'Hostamar TV — Live Nonstop 3700 Ch
 export default function TVPage() {
   const liveM3u8 = 'https://hostamar.com/api/tv/live'  // edge-shelf HLS (PC-off-safe, Vercel+CF)
   const fallbackMp4 = 'https://hostamar.com/tv/world-in-numbers.mp4'  // verified edge mp4
-  const jsonLd = { "@context": "https://schema.org", "@type": "VideoObject", "name": "Hostamar TV Live Nonstop", "description": "AI Store + 152 Models + 300 Directories/Day Auto SEO — Live Nonstop 346 videos loop", "thumbnailUrl": "https://hostamar.com/tv-poster.jpg", "contentUrl": liveM3u8, "embedUrl": "https://hostamar.com/tv", "uploadDate": new Date().toISOString(), "duration": "PT24H", "isLiveBroadcast": true }
+  const jsonLd = { "@context": "https://schema.org", "@type": "VideoObject", "name": "Hostamar TV Live Nonstop", "description": "AI Store + 152 Models + 300 Directories/Day Auto SEO — Live Nonstop 347 videos loop", "thumbnailUrl": "https://hostamar.com/tv-poster.jpg", "contentUrl": liveM3u8, "embedUrl": "https://hostamar.com/tv", "uploadDate": new Date().toISOString(), "duration": "PT24H", "isLiveBroadcast": true }
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -13,7 +13,7 @@ export default function TVPage() {
           <source src={liveM3u8} type="application/x-mpegURL" />
           <source src={fallbackMp4} type="video/mp4" />
         </video>
-        <div className="mt-4 text-sm opacity-70">Edge shelf 346 videos • Cloudflare HIT • PC-off-safe</div>
+        <div className="mt-4 text-sm opacity-70">Edge shelf 347 videos • Cloudflare HIT • PC-off-safe</div>
       </div>
     </main>
   )
