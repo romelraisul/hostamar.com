@@ -72,7 +72,7 @@ const FEATURE_FLAGS: Record<string, Record<string, boolean | 'beta'>> = {
 
 /**
  * GET /api/products
- * Returns the canonical 6-product catalog (lib/products.ts — single source of
+ * Returns the canonical 7-product catalog (lib/products.ts — single source of
  * truth used by the overview page, navbar, and /products/[slug] detail pages),
  * plus 2026 feature flags. Local route: no proxy to api.hostamar.com.
  */

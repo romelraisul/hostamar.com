@@ -1,4 +1,4 @@
-// Single source of truth for the 6 products.
+// Single source of truth for the 7 products.
 // Anything you want to render about a Product (overview page, navbar dropdown,
 // /products/[slug] detail) pulls from here.
 
@@ -286,7 +286,7 @@ export function productRoute(slug: string): string {
   return PRODUCT_ROUTES[slug] ?? '/'
 }
 
-// Nav-facing shorthand: the 6 products in display order with their live route.
+// Nav-facing shorthand: the 7 products in display order with their live route.
 export const PRODUCT_NAV = [...PRODUCTS]
   .sort((a, b) => a.order - b.order)
   .map((p) => ({

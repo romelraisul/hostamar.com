@@ -44,7 +44,7 @@ export default function ProductsPage() {
 
           <div style={{ display: 'grid', gap: '1.4rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
             {[...PRODUCTS].sort((a, b) => {
-              const order: Record<string, number> = { 'ai-video': 1, 'cloud-hosting': 2, 'ai-chat': 3, 'dev-ide': 4, 'ai-browser': 5, 'game': 6 }
+              const order: Record<string, number> = { 'ai-video': 1, 'dubbing': 2, 'cloud-hosting': 3, 'ai-chat': 4, 'ai-browser': 5, 'game': 6, 'dev-ide': 7 }
               return (order[a.slug] ?? 99) - (order[b.slug] ?? 99)
             }).map((p) => {
               const badge = STATUS_BADGE[p.status]
