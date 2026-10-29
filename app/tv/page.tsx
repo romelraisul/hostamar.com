@@ -25,6 +25,12 @@ const SHELF = [
   { fn: 'permafrost-thaw-episode-narrated.mp4', title: 'Permafrost Thaw — Climate & Compute (3:46)' },
   { fn: 'dubbing-bn-voice-tutorial-narrated.mp4', title: 'Bangla Voice Dubbing Tutorial (3:07)' },
   { fn: 'eu-bd-gpu-spot-narrated.mp4', title: 'EU-BD GPU Spot — Sovereign Cloud (3:41)' },
+  { fn: 'dns-episode-narrated.mp4', title: 'DNS — ডোমেইন নামের গল্প (3:11)' },
+  { fn: 'sovereign-video-os-episode-narrated.mp4', title: 'Sovereign Video OS Episode (3:13)' },
+  { fn: 'opencut-headless-render-narrated.mp4', title: 'OpenCut Headless Render API (2:32)' },
+  { fn: 'trillion-market-episode-v2-narrated2.mp4', title: 'Trillion Market — ট্রিলিয়ন বাজার (2:13)' },
+  { fn: 'shorts-sovereign-video-12-pipelines.mp4', title: 'Shorts — 12 Pipelines (30s)' },
+  { fn: 'sovereign-cloud-pricing-narrated.mp4', title: 'Sovereign Cloud Pricing (2:40)' },
 ]
 function pickFallback() { return 'https://hostamar.com/tv/' + SHELF[Math.floor(Math.random() * SHELF.length)].fn }
 export default function TVPage() {
