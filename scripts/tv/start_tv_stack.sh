@@ -20,10 +20,10 @@ if ! podman ps --format '{{.Names}}' | grep -qx 'hostamar-tv-rtmp'; then
   podman rm -f hostamar-tv-rtmp >/dev/null 2>&1 || true
   log "recreating hostamar-tv-rtmp container"
   podman run -d --name hostamar-tv-rtmp --restart unless-stopped \
-    -p 1935:1935 \
-    -v "$REPO/docker/tv-station/nginx.conf:/etc/nginx/nginx.conf:ro" \
+    -p 1935:1935 -p 8080:80 \
+    -v "$REPO/docker/tv-station/nginx.conf:/etc/nginx/nginx.conf.template:ro" \
     -v hls-data:/tmp/hls \
-    docker.io/alfg/nginx-rtmp:latest >/dev/null 2>&1 \
+    localhost/hostamar-rtmp:latest >/dev/null 2>&1 \
     || log "WARN: could not recreate hostamar-tv-rtmp"
 fi
 
