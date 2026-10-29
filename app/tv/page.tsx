@@ -62,7 +62,7 @@ export default function TVPage() {
           <ul className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4 text-[13px]">
             {SHELF.map((v) => (
               <li key={v.fn} className="rounded bg-white/5 p-2 hover:bg-white/10">
-                <a href={`/tv/watch/own-${v.fn.replace('.mp4','')}-bangla-tutorial-2026`} className="text-[#4ade80] hover:underline">{v.title}</a>
+                <a href={`/tv/watch/${v.fn.replace('.mp4','')}`} className="text-[#4ade80] hover:underline">{v.title}</a>
               </li>
             ))}
           </ul>
