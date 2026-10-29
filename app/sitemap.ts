@@ -107,12 +107,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const c = getTursoEdgeClient()
     const res = await c.execute(`
-      SELECT tvs.slug, tvs.updatedAt
-      FROM "TvVideoSeo" tvs
-      JOIN "FreeVideoSource" fvs ON tvs."videoSourceId" = fvs.id
-      ORDER BY tvs.updatedAt DESC
-      LIMIT 200
-    `)
+          SELECT tvs.slug, tvs.updatedAt
+          FROM "TvVideoSeo" tvs
+          JOIN "FreeVideoSource" fvs ON tvs."videoSourceId" = fvs.id
+          ORDER BY tvs.updatedAt DESC
+          LIMIT 500
+        `)
     videoEntries = res.rows.map((r) => ({
       url: `${SITE_URL}/tv/watch/${String(r.slug)}`,
       lastModified: r.updatedAt ? new Date(String(r.updatedAt)) : now,
@@ -123,11 +123,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn('[sitemap] turso path failed:', String(e1?.message || e1).slice(0, 200))
     try {
       const videos = await (prisma as any).tvVideoSeo.findMany({
-        where: { videoSource: {} }, // FreeVideoSource has no status column
-        select: { slug: true, updatedAt: true },
-        orderBy: { updatedAt: 'desc' },
-        take: 200,
-      })
+              where: { videoSource: {} }, // FreeVideoSource has no status column
+              select: { slug: true, updatedAt: true },
+              orderBy: { updatedAt: 'desc' },
+              take: 500,
+            })
       videoEntries = videos.map((v: { slug: string; updatedAt: Date }) => ({
         url: `${SITE_URL}/tv/watch/${v.slug}`,
         lastModified: v.updatedAt || now,
