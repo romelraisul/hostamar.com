@@ -1,17 +1,17 @@
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
-  title: 'Hostamar TV — Live Nonstop 352 Videos • AI Video + Hosting + Agent Cloud',
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 352 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  title: 'Hostamar TV — Live Nonstop 354 Videos • AI Video + Hosting + Agent Cloud',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 354 edge-served videos, PC-off safe via Vercel+Cloudflare.',
   openGraph: {
-    title: 'Hostamar TV — Live Nonstop 352 Videos',
-    description: '24/7 AI video channel: 352 edge-served videos, PC-off safe.',
+    title: 'Hostamar TV — Live Nonstop 354 Videos',
+    description: '24/7 AI video channel: 354 edge-served videos, PC-off safe.',
     url: 'https://hostamar.com/tv',
     siteName: 'Hostamar',
     locale: 'bn_BD',
     type: 'video.other',
     images: [{ url: 'https://hostamar.com/tv-poster.jpg', width: 1200, height: 630, alt: 'Hostamar TV Live' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop', description: '24/7 AI video channel: 352 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 354', description: '24/7 AI video channel: 354 edge-served videos, PC-off safe.' },
 }
 const liveM3u8 = 'https://hostamar.com/api/tv/live'
 // Fallback shelf: substantial edge-served videos (PC-off-safe, Vercel+CF)
@@ -34,6 +34,8 @@ const SHELF = [
   { fn: 'sovereign-cloud-pricing-narrated.mp4', title: 'Sovereign Cloud Pricing (2:40)' },
   { fn: 'receipt-hosting.mp4', title: 'BDIX Hosting Receipt (15s)' },
   { fn: 'receipt-agentcloud-49.mp4', title: 'Agent Cloud Receipt (15s)' },
+  { fn: 'receipt-prices-narrated.mp4', title: 'Pricing Receipt — ২৯০০/১৯০০/৯৯০ BDT (15s)' },
+  { fn: 'receipt-privacy-narrated.mp4', title: 'Compliance & Audit Receipt — সেকিউরিটি জিরো খরচে (15s)' },
 ]
 function pickFallback() { return 'https://hostamar.com/tv/' + SHELF[Math.floor(Math.random() * SHELF.length)].fn }
 export default function TVPage() {

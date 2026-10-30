@@ -1,5 +1,5 @@
 {
-  "count": 352,
+  "count": 354,
   "videos": [
     "public/tv/HostamarH3_00001_.mp4",
     "public/tv/HostamarH3_00002_.mp4",
@@ -228,6 +228,7 @@
     "public/tv/receipt-paste.mp4",
     "public/tv/receipt-paymentsbn.mp4",
     "public/tv/receipt-pipelines.mp4",
+    "public/tv/receipt-prices-narrated.mp4",
     "public/tv/receipt-prices.mp4",
     "public/tv/receipt-privacy.mp4",
     "public/tv/receipt-reel-lab-15s-narrated.mp4",
@@ -240,6 +241,7 @@
     "public/tv/receipt-secondbrain.mp4",
     "public/tv/receipt-security.mp4",
     "public/tv/receipt-sovereign-2-narrated.mp4",
+    "public/tv/receipt-sovereign-2.mp4",
     "public/tv/receipt-sovereign-cloud-narrated.mp4",
     "public/tv/receipt-sovereign-cloud.mp4",
     "public/tv/receipt-sovereign-episode.mp4",

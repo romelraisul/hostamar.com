@@ -29,11 +29,11 @@ export async function GET() {
   }
   
   return NextResponse.json({ 
-    count: 301, 
+    count: 353, 
     videos: [], 
     b2_only: true, 
     fallback: true,
-    source: 'hardcoded-301',
+    source: 'hardcoded-353',
     note: 'CDN Worker pending, using known count'
   });
 }
