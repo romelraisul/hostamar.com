@@ -1,22 +1,22 @@
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
-  title: 'Hostamar TV — Live Nonstop 351 Videos • AI Video + Hosting + Agent Cloud',
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 351 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  title: 'Hostamar TV — Live Nonstop 352 Videos • AI Video + Hosting + Agent Cloud',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 352 edge-served videos, PC-off safe via Vercel+Cloudflare.',
   openGraph: {
-    title: 'Hostamar TV — Live Nonstop 351 Videos',
-    description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market.',
+    title: 'Hostamar TV — Live Nonstop 352 Videos',
+    description: '24/7 AI video channel: 352 edge-served videos, PC-off safe.',
     url: 'https://hostamar.com/tv',
     siteName: 'Hostamar',
     locale: 'bn_BD',
     type: 'video.other',
     images: [{ url: 'https://hostamar.com/tv-poster.jpg', width: 1200, height: 630, alt: 'Hostamar TV Live' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop', description: '24/7 AI video channel: 351 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop', description: '24/7 AI video channel: 352 edge-served videos, PC-off safe.' },
 }
 const liveM3u8 = 'https://hostamar.com/api/tv/live'
 // Fallback shelf: substantial edge-served videos (PC-off-safe, Vercel+CF)
 const SHELF = [
-  { fn: 'hostamar-shot3-short-reels-v2.mp4', title: 'Hostamar Shot 3 — Short Reels (5s)' },
+  { fn: 'receipt-trillion-market.mp4', title: 'Trillion Market Receipt (15s)' },
   { fn: 'receipt-sovereign-2-narrated.mp4', title: 'Sovereign Cloud Infra Receipt (15s)' },
   { fn: 'sovereign-video-12-pipelines-narrated.mp4', title: 'Sovereign Video OS — 12 Pipelines (4:32)' },
   { fn: 'agent-cloud-episode-narrated.mp4', title: 'Agent Cloud — Autonomous Employees (3:51)' },
@@ -32,8 +32,8 @@ const SHELF = [
   { fn: 'trillion-market-episode-v2-narrated2.mp4', title: 'Trillion Market — ট্রিলিয়ন বাজার (2:13)' },
   { fn: 'shorts-sovereign-video-12-pipelines.mp4', title: 'Shorts — 12 Pipelines (30s)' },
   { fn: 'sovereign-cloud-pricing-narrated.mp4', title: 'Sovereign Cloud Pricing (2:40)' },
-  { fn: 'day1-square-1080x1080.mp4', title: 'Hostamar Day 1 — Square Launch (Bengali narrated)' },
-  { fn: 'day1-vertical-1080x1920.mp4', title: 'Hostamar Day 1 — Vertical Launch (Bengali narrated)' },
+  { fn: 'receipt-hosting.mp4', title: 'BDIX Hosting Receipt (15s)' },
+  { fn: 'receipt-agentcloud-49.mp4', title: 'Agent Cloud Receipt (15s)' },
 ]
 function pickFallback() { return 'https://hostamar.com/tv/' + SHELF[Math.floor(Math.random() * SHELF.length)].fn }
 export default function TVPage() {
@@ -41,7 +41,7 @@ export default function TVPage() {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "VideoObject",
     "name": "Hostamar TV Live Nonstop",
-    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 351 edge-served videos, PC-off safe via Vercel+Cloudflare.",
+    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 352 edge-served videos, PC-off safe via Vercel+Cloudflare.",
     "thumbnailUrl": "https://hostamar.com/tv-poster.jpg",
     "contentUrl": liveM3u8,
     "embedUrl": "https://hostamar.com/tv",
@@ -59,7 +59,7 @@ export default function TVPage() {
           <source src={liveM3u8} type="application/x-mpegURL" />
           <source src={fallbackMp4} type="video/mp4" />
         </video>
-        <div className="mt-4 text-sm opacity-70">Edge shelf 351 videos • Cloudflare HIT • PC-off-safe</div>
+        <div className="mt-4 text-sm opacity-70">Edge shelf 352 videos • Cloudflare HIT • PC-off-safe</div>
         <details className="mt-6 w-full">
           <summary className="cursor-pointer text-sm text-zinc-400 hover:text-white">Fallback shelf (edge-served, PC-off safe)</summary>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4 text-[13px]">
