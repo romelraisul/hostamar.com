@@ -37,6 +37,7 @@ const SHELF = [
   { fn: 'receipt-prices-narrated.mp4', title: 'Pricing Receipt — ২৯০০/১৯০০/৯৯০ BDT (15s)' },
   { fn: 'receipt-privacy-narrated.mp4', title: 'Compliance & Audit Receipt — সেকিউরিটি জিরো খরচে (15s)' },
   { fn: 'receipt-compliance-audit-narrated.mp4', title: 'Compliance Audit Receipt — সেকিউরিটি অডিট (15s)' },
+  { fn: 'receipt-agent-cloud-infra-narrated.mp4', title: 'Agent Cloud Infra Receipt (15s)' },
 ]
 function pickFallback() { return 'https://hostamar.com/tv/' + SHELF[Math.floor(Math.random() * SHELF.length)].fn }
 export default function TVPage() {
@@ -44,7 +45,7 @@ export default function TVPage() {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "VideoObject",
     "name": "Hostamar TV Live Nonstop",
-    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 355 edge-served videos, PC-off safe via Vercel+Cloudflare.",
+    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 356 edge-served videos, PC-off safe via Vercel+Cloudflare.",
     "thumbnailUrl": "https://hostamar.com/tv-poster.jpg",
     "contentUrl": liveM3u8,
     "embedUrl": "https://hostamar.com/tv",
