@@ -1,0 +1,120 @@
+{
+  "version": "40",
+  "timestamp": "2026-10-27T15:00:00+06:00",
+  "gateway": {
+    "url": "https://hostamar.com/api/v1",
+    "worker_model": "minimax/minimax-m3:free",
+    "ground_model": "llama-3.2-11b-vision-instruct"
+  },
+  "models": {
+    "total": 152,
+    "categories": [
+      "text-generation",
+      "text-to-image",
+      "text-to-video",
+      "text-to-audio",
+      "image-to-text",
+      "image-to-video",
+      "video-to-text",
+      "code-generation",
+      "embedding",
+      "reranking"
+    ],
+    "worker": "minimax/minimax-m3:free",
+    "ground": "llama-3.2-11b-vision-instruct",
+    "edge_tools": 53,
+    "renders": 168
+  },
+  "b2_buckets": [
+    "hostamar-prod",
+    "hostamar-b2-forgejo",
+    "hostamar-b2-webcmd-memory",
+    "hostamar-b2-kv-migration",
+    "hostamar-b2-indexnow-cache",
+    "hostamar-tv",
+    "hostamar-videos"
+  ],
+  "b2_lifecycle_days": 1,
+  "b2_free_tier": {
+    "storage_gb": 10,
+    "download_gb": 1,
+    "class_b_ops": 2500,
+    "class_c_ops": 2500,
+    "current_usage_gb": 1.7,
+    "alert_threshold_gb": 9
+  },
+  "crons": [
+    {"name": "directory-batch-1", "schedule": "0 2 * * *", "profiles": "hostamar,ai-store,browser-pro,video-os", "count": 75},
+    {"name": "directory-batch-2", "schedule": "0 8 * * *", "profiles": "tv,agent-cloud,gateway,site", "count": 75},
+    {"name": "directory-batch-3", "schedule": "0 14 * * *", "profiles": "hostamar,ai-store,browser-pro,video-os", "count": 75},
+    {"name": "directory-batch-4", "schedule": "0 20 * * *", "profiles": "tv,agent-cloud,gateway,site", "count": 75},
+    {"name": "forgejo-backup", "schedule": "0 2 * * *", "retention_days": 3},
+    {"name": "webcmd-backup", "schedule": "30 2 * * *", "retention_days": 30},
+    {"name": "b2-quota-guard", "schedule": "0 3 * * *", "alert_gb": 9},
+    {"name": "fb-token-refresh", "schedule": "0 0 1 * *", "description": "Monthly System User Token → 60-day Page Tokens"},
+    {"name": "fb-auto-post", "schedule": "0 * * * *", "description": "Every Hour FB Page posts: 24/day rotation 6 types (TV, Directory, AI Store, ComfyUI, Paywall, Product Hunt)"},
+    {"name": "tv-loop-checker", "schedule": "*/30 * * * *", "description": "TV frontend health check every 30min, triggers Vercel deploy if down"}
+  ],
+  "infrastructure": {
+    "podman_containers": [
+      {"name": "hostamar-postgres", "port": 15432},
+      {"name": "hostamar-redis", "port": 6379},
+      {"name": "webcmd", "port": 3001, "health": 200},
+      {"name": "forgejo", "port": 3000, "health": 200}
+    ],
+    "gateway_port": 11442,
+    "webcmd_port": 3001,
+    "webcmd_profiles": 8,
+    "webcmd_token_saved_pct": 90,
+    "agent_s_port": 8765,
+    "edge_cdp_port": 9222,
+    "netsh_rules": 4,
+    "cloudflare_tunnels": ["git.hostamar.com", "ai.hostamar.com", "comfy.hostamar.com", "browser.hostamar.com", "hostamar.com"],
+    "fb_page_id": "1452448287944012",
+    "fb_app_id": "1868338244158403",
+    "fb_business_id": "1473155911339550",
+    "fb_scopes": ["pages_show_list", "pages_manage_posts", "pages_read_engagement", "pages_manage_metadata", "publish_video"],
+    "tv_frontend": "https://hostamar.com/tv",
+    "tv_api": "https://hostamar.com/api/tv",
+    "tv_b2_cdn": "https://f002.backblazeb2.com/file/hostamar-prod/tv/",
+    "tv_video_count": 310,
+    "comfyui_port": 8188,
+    "comfyui_vram": "INT8_50%"
+  },
+  "products": [
+    "gateway",
+    "video-os",
+    "site",
+    "agent-cloud",
+    "ai-store",
+    "tv"
+  ],
+  "docs_per_product": 6,
+  "total_docs": 36,
+  "readme_files": 3,
+  "v21_arcs": [
+    "Foundations: 8 value categories, 176->53 models",
+    "Evaluation: Leaderboard 3 metrics, Policy Check <0.7",
+    "Adaptation: PromptAnatomy, RAG BM25+vector Agent, LoRA INT8 last resort",
+    "Fuel: 100 gold prompts, LRU 1000, KV 500, batch 4, TTFT/TPOT, ComfyUI INT8 50%",
+    "Ship It: Feedback flywheel 👍/👎 -> eval dataset -> leaderboard moat"
+  ],
+  "features": {
+    "kv_migration": "complete",
+    "kv_operations_pct": 0,
+    "b2_only": true,
+    "legacy_storage_disabled": true,
+    "forgejo_webhook": "https://hostamar.com/api/webhook/forgejo",
+    "fb_page_auto_post": "every_hour_nonstop_24_per_day",
+    "fb_live_video_api": "customized",
+    "fb_system_user_token": "never_expires",
+    "fb_token_refresh_cron": "monthly_1st",
+    "hostamar_tv": "always_nonstop",
+    "gbp_video_ready": true,
+    "bing_places_live": true,
+    "search_console_validated": true,
+    "product_hunt_ready": true,
+    "paywall_live": true,
+    "comfyui_b2_sync": true
+  }
+}
