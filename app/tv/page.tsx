@@ -41,6 +41,20 @@ const SHELF = [
   { fn: 'receipt-sovereign-infra-narrated.mp4', title: 'Sovereign Infra Receipt (15s)' },
   { fn: 'receipt-om12-pipelines-narrated.mp4', title: 'OM12 Pipelines Receipt (60s)' },
   { fn: 'receipt-sovereign-video-2.mp4', title: 'Sovereign Video OS Receipt 2 (15s)' },
+  { fn: 'receipt-store.mp4', title: 'AI Store Receipt — 106 Services (15s)' },
+  { fn: 'receipt-reel-studio.mp4', title: 'Reel Studio Receipt — Script to Monetize (15s)' },
+  { fn: 'receipt-ai-video-ads.mp4', title: 'AI Video Ads Receipt — One Brief to Campaign (15s)' },
+  { fn: 'sovereign-video-os-script-to-monetizat.mp4', title: 'Sovereign Video OS — Script to Monetize (60s)' },
+  { fn: 'receipt-reel-lab-15s-narrated.mp4', title: 'Reel Lab 15s Receipt (15s)' },
+  { fn: 'sovereign-receipt-episode-narrated.mp4', title: 'Sovereign Receipt Episode (77s)' },
+  { fn: 'build-log-008-narrated.mp4', title: 'Build Log 008 — Deploy Chains That Lie (2:08)' },
+  { fn: 'agent-cloud-memory-narrated.mp4', title: 'Agent Cloud — Memory & Context Graph (2:47)' },
+  { fn: 'agent-autonomous-employee-narrated.mp4', title: 'Agent Cloud — Autonomous Employees (3:31)' },
+  { fn: 'gps-episode-narrated.mp4', title: 'GPS Episode — Location Tracking (3:25)' },
+  { fn: 'https-tls-episode-narrated.mp4', title: 'HTTPS/TLS Episode — Secure Connections (3:17)' },
+  { fn: 'cdn-edge-episode-narrated.mp4', title: 'CDN Edge Episode — Bangladesh Compute (3:13)' },
+  { fn: 'bangla-llm-episode-narrated.mp4', title: 'Bangla LLM Episode — 5000cr Training (2:51)' },
+  { fn: 'dubbing-bn-episode-narrated.mp4', title: 'Bangla Dubbing Episode (3:07)' },
 ]
 function pickFallback() { return 'https://hostamar.com/tv/' + SHELF[Math.floor(Math.random() * SHELF.length)].fn }
 export default function TVPage() {
