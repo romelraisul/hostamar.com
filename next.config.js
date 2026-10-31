@@ -6,12 +6,8 @@
 // be re-enabled here once the build is green.
 const nextConfig = {
   skipHtmlTrailingSlashRedirect: true, // GSC verification needs 200 at /<file>.html, not 307 to clean URL
-  // Vercel: standalone output defeats Next's function bundler (every route
-  // becomes its own lambda -> 528 functions > Hobby 12-function limit,
-  // exceeded_serverless_functions_per_deployment). VERCEL=1 is set in every
-  // Vercel build env; local builds keep standalone for hostamar-next.service.
-  // FORGE 2026-09-29: unconditional 'standalone' = the EXACT recipe of the only Ready prod build (mxq46aqfd 09-28 01:49: single function, 381 routes, serves hostamar.com). The VERCEL=1 gate was dead code (builder always injects VERCEL=1) -> 381 individual lambdas > Hobby 12-function cap -> every deploy refused. ponytail: single fat lambda is the known ceiling; split when Pro.
-  output: process.env.VERCEL === '1' ? undefined : 'standalone',
+  // FORGE 2026-09-29: unconditional 'standalone' = the EXACT recipe of the only Ready prod build (mxq46aqfd 09-28 01:49: single function, 381 routes, serves hostamar.com). Serverless (output: undefined) fails to serve public/tv/*.mp4 at the edge — standalone bundles them into the single function deployment.
+  output: 'standalone',
   typescript: {
     ignoreBuildErrors: true,
   },
