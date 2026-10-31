@@ -43,6 +43,7 @@ const SHELF = [
   { fn: 'receipt-sovereign-video-2-narrated.mp4', title: 'Sovereign Video OS Receipt 2 (15s)' },
   { fn: 'receipt-store.mp4', title: 'AI Store Receipt — 106 Services (15s)' },
   { fn: 'receipt-gadget-lounge-narrated.mp4', title: 'Gadget Lounge Receipt — AI Gadgets (15s)' },
+  { fn: 'receipt-gadget-lounge-narrated-new.mp4', title: 'Gadget Lounge Receipt — New Narrated (15s)' },
   { fn: 'receipt-reel-studio.mp4', title: 'Reel Studio Receipt — Script to Monetize (15s)' },
   { fn: 'receipt-ai-video-ads.mp4', title: 'AI Video Ads Receipt — One Brief to Campaign (15s)' },
   { fn: 'sovereign-video-os-script-to-monetizat.mp4', title: 'Sovereign Video OS — Script to Monetize (60s)' },
