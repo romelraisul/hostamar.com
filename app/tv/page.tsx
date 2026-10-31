@@ -1,17 +1,17 @@
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
-  title: 'Hostamar TV — Live Nonstop 360 Videos • AI Video + Hosting + Agent Cloud',
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 360 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  title: 'Hostamar TV — Live Nonstop 361 Videos • AI Video + Hosting + Agent Cloud',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 361 edge-served videos, PC-off safe via Vercel+Cloudflare.',
   openGraph: {
-    title: 'Hostamar TV — Live Nonstop 360 Videos',
-    description: '24/7 AI video channel: 360 edge-served videos, PC-off safe.',
+    title: 'Hostamar TV — Live Nonstop 361 Videos',
+    description: '24/7 AI video channel: 361 edge-served videos, PC-off safe.',
     url: 'https://hostamar.com/tv',
     siteName: 'Hostamar',
     locale: 'bn_BD',
     type: 'video.other',
     images: [{ url: 'https://hostamar.com/tv-poster.jpg', width: 1200, height: 630, alt: 'Hostamar TV Live' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 360', description: '24/7 AI video channel: 360 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 361', description: '24/7 AI video channel: 361 edge-served videos, PC-off safe.' },
 }
 const liveM3u8 = 'https://hostamar.com/api/tv/live'
 // Fallback shelf: substantial edge-served videos (PC-off-safe, Vercel+CF)
@@ -63,7 +63,7 @@ export default function TVPage() {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "VideoObject",
     "name": "Hostamar TV Live Nonstop",
-    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 360 edge-served videos, PC-off safe via Vercel+Cloudflare.",
+    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 361 edge-served videos, PC-off safe via Vercel+Cloudflare.",
     "thumbnailUrl": "https://hostamar.com/tv-poster.jpg",
     "contentUrl": liveM3u8,
     "embedUrl": "https://hostamar.com/tv",
@@ -81,7 +81,7 @@ export default function TVPage() {
           <source src={liveM3u8} type="application/x-mpegURL" />
           <source src={fallbackMp4} type="video/mp4" />
         </video>
-        <div className="mt-4 text-sm opacity-70">Edge shelf 360 videos • Cloudflare HIT • PC-off-safe</div>
+        <div className="mt-4 text-sm opacity-70">Edge shelf 361 videos • Cloudflare HIT • PC-off-safe</div>
         <details className="mt-6 w-full">
           <summary className="cursor-pointer text-sm text-zinc-400 hover:text-white">Fallback shelf (edge-served, PC-off safe)</summary>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4 text-[13px]">
