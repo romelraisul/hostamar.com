@@ -46,6 +46,8 @@ public/videos/cmt*.jpg
 .env.local.bak-v25build
 
 # TV renders — mirror .gitignore: ship public/tv/*.mp4 to the edge (PC-off survival)
+!public/
+!public/tv/
 !public/tv/*.mp4
 public/tv/cc0_*.mp4
 public/tv/clean_cc0_*.mp4
