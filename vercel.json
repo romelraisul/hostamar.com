@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma generate && next build && npx tsx lib/support/sopGenerator.ts && mkdir -p .next/standalone/public && cp -r public/. .next/standalone/public && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static && cp -r lib/tv .next/standalone/lib/",
+  "buildCommand": "npm run build",
   "headers": [
     { "source": "/api/tv", "headers": [{ "key": "Cache-Control", "value": "public, max-age=10, s-maxage=10, stale-while-revalidate=30" }, { "key": "CDN-Cache-Control", "value": "public, max-age=10" }, { "key": "Vercel-CDN-Cache-Control", "value": "public, max-age=10" }] },
     { "source": "/api/tv/live", "headers": [{ "key": "Cache-Control", "value": "public, max-age=5, s-maxage=5" }] }
