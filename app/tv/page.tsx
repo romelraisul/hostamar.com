@@ -1,23 +1,21 @@
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
-  title: 'Hostamar TV — Live Nonstop 361 Videos • AI Video + Hosting + Agent Cloud',
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 361 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  title: 'Hostamar TV — Live Nonstop 362 Videos • AI Video + Hosting + Agent Cloud',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 362 edge-served videos, PC-off safe via Vercel+Cloudflare.',
   openGraph: {
-    title: 'Hostamar TV — Live Nonstop 361 Videos',
-    description: '24/7 AI video channel: 361 edge-served videos, PC-off safe.',
+    title: 'Hostamar TV — Live Nonstop 362 Videos',
+    description: '24/7 AI video channel: 362 edge-served videos, PC-off safe.',
     url: 'https://hostamar.com/tv',
     siteName: 'Hostamar',
     locale: 'bn_BD',
     type: 'video.other',
     images: [{ url: 'https://hostamar.com/tv-poster.jpg', width: 1200, height: 630, alt: 'Hostamar TV Live' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 361', description: '24/7 AI video channel: 361 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 362', description: '24/7 AI video channel: 362 edge-served videos, PC-off safe.' },
 }
 const liveM3u8 = 'https://hostamar.com/api/tv/live'
 // Fallback shelf: substantial edge-served videos (PC-off-safe, Vercel+CF)
 const SHELF = [
-  { fn: 'receipt-trillion-market.mp4', title: 'Trillion Market Receipt (15s)' },
-  { fn: 'receipt-sovereign-2-narrated.mp4', title: 'Sovereign Cloud Infra Receipt (15s)' },
   { fn: 'sovereign-video-12-pipelines-narrated.mp4', title: 'Sovereign Video OS — 12 Pipelines (4:32)' },
   { fn: 'agent-cloud-episode-narrated.mp4', title: 'Agent Cloud — Autonomous Employees (3:51)' },
   { fn: 'video-ads-ad-builder-narrated.mp4', title: 'AI Video Ad Builder — One Brief to Campaign (3:47)' },
@@ -57,6 +55,25 @@ const SHELF = [
   { fn: 'cdn-edge-episode-narrated.mp4', title: 'CDN Edge Episode — Bangladesh Compute (3:13)' },
   { fn: 'bangla-llm-episode-narrated.mp4', title: 'Bangla LLM Episode — 5000cr Training (2:51)' },
   { fn: 'dubbing-bn-episode-narrated.mp4', title: 'Bangla Dubbing Episode (3:07)' },
+  { fn: 'receipt-eubd-gpu-narrated.mp4', title: 'EU-BD GPU Receipt (15s)' },
+  { fn: 'receipt-cron-fleet.mp4', title: 'Cron Fleet Receipt (15s)' },
+  { fn: 'shorts-https-tls-episode.mp4', title: 'Shorts — HTTPS/TLS (30s)' },
+  { fn: 'receipt-eubdcloud.mp4', title: 'EU-BD Cloud Receipt (15s)' },
+  { fn: 'twelve-pipelines-episode-narrated.mp4', title: '12 Pipelines Episode (2:32)' },
+  { fn: 'gps-episode-narrated-v2.mp4', title: 'GPS Episode v2 (3:25)' },
+  { fn: 'agent-autonomous-employee-narrated.mp4', title: 'Agent Cloud — Autonomous Employees (3:31)' },
+  { fn: 'shorts-build-log-005.mp4', title: 'Shorts — Build Log 005 (30s)' },
+  { fn: 'agent-cloud-episode-2-narrated.mp4', title: 'Agent Cloud Episode 2 (3:51)' },
+  { fn: 'sovereign-receipt-episode-narrated.mp4', title: 'Sovereign Receipt Episode (77s)' },
+  { fn: 'build-log-006-narrated.mp4', title: 'Build Log 006 — Deploy Chains That Lie (2:08)' },
+  { fn: 'receipt-sovereign-episode.mp4', title: 'Sovereign Receipt Episode (15s)' },
+  { fn: 'agent-cloud-memory-narrated.mp4', title: 'Agent Cloud — Memory & Context Graph (2:47)' },
+  { fn: 'video-ads-ad-builder-narrated.mp4', title: 'AI Video Ad Builder — One Brief to Campaign (3:47)' },
+  { fn: 'vertical-forest-episode-narrated.mp4', title: 'Vertical Forest Episode (3:13)' },
+  { fn: 'vertical-forest-episode.mp4', title: 'Vertical Forest Episode (3:13)' },
+  { fn: 'world-in-numbers.mp4', title: 'World In Numbers (2:13)' },
+  { fn: 'shorts-agent-cloud-episode-narrated2.mp4', title: 'Shorts — Agent Cloud Episode (30s)' },
+  { fn: 'ad-bkash-15s.mp4', title: 'bKash 15s Ad (15s)' },
 ]
 function pickFallback() { return 'https://hostamar.com/tv/' + SHELF[Math.floor(Math.random() * SHELF.length)].fn }
 export default function TVPage() {
@@ -64,7 +81,7 @@ export default function TVPage() {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "VideoObject",
     "name": "Hostamar TV Live Nonstop",
-    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 361 edge-served videos, PC-off safe via Vercel+Cloudflare.",
+    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 362 edge-served videos, PC-off safe via Vercel+Cloudflare.",
     "thumbnailUrl": "https://hostamar.com/tv-poster.jpg",
     "contentUrl": liveM3u8,
     "embedUrl": "https://hostamar.com/tv",
@@ -82,7 +99,7 @@ export default function TVPage() {
           <source src={liveM3u8} type="application/x-mpegURL" />
           <source src={fallbackMp4} type="video/mp4" />
         </video>
-        <div className="mt-4 text-sm opacity-70">Edge shelf 361 videos • Cloudflare HIT • PC-off-safe</div>
+        <div className="mt-4 text-sm opacity-70">Edge shelf 362 videos • Cloudflare HIT • PC-off-safe</div>
         <details className="mt-6 w-full">
           <summary className="cursor-pointer text-sm text-zinc-400 hover:text-white">Fallback shelf (edge-served, PC-off safe)</summary>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4 text-[13px]">
