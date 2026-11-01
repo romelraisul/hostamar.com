@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 362', description: '24/7 AI video channel: 362 edge-served videos, PC-off safe.' },
 }
 const liveM3u8 = 'https://hostamar.com/api/tv/live'
+// SEO slug for Own product videos (matches template_seo in scripts/tv/seo_generate.py)
+function seoSlug(filename: string) {
+  const base = filename.replace('.mp4', '').toLowerCase()
+  const sanitized = base.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  return `own-${sanitized}-bangla-tutorial-2026`
+}
 // Fallback shelf: substantial edge-served videos (PC-off-safe, Vercel+CF)
 const SHELF = [
   { fn: 'sovereign-video-12-pipelines-narrated.mp4', title: 'Sovereign Video OS — 12 Pipelines (4:32)' },
@@ -98,7 +104,7 @@ export default function TVPage() {
           <ul className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-4 text-[13px]">
             {SHELF.map((v) => (
               <li key={v.fn} className="rounded bg-white/5 p-2 hover:bg-white/10">
-                <a href={`/tv/watch/${v.fn.replace('.mp4','')}`} className="text-[#4ade80] hover:underline">{v.title}</a>
+                <a href={`/tv/watch/${seoSlug(v.fn)}`} className="text-[#4ade80] hover:underline">{v.title}</a>
               </li>
             ))}
           </ul>
