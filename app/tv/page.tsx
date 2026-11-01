@@ -117,6 +117,8 @@ const SHELF = [
   { fn: 'shorts-sovereign-receipt-narrated2.mp4', title: 'Shorts — Sovereign Receipt 2 (30s)' },
   { fn: 'sovereign-receipt-episode-narrated2.mp4', title: 'Sovereign Receipt Episode 2 (25s)' },
   { fn: 'sovereign-video-os-script-to-monetizat-narrated.mp4', title: 'Sovereign Video OS — Script to Monetize Narrated (6:12)' },
+  { fn: 'sovereign-video-os-narrated.mp4', title: 'Sovereign Video OS — Script to Money (112s, নেরেশনসহ)' },
+  { fn: 'sovereign-video-os-shorts.mp4', title: 'Sovereign Video OS Short — ৩০s ভার্টিকেল (নேரেশনসহ)' },
   { fn: 'submarine-cables-episode-narrated.mp4', title: 'Submarine Cables Episode — Global Links (4:04)' },
   { fn: 'trillion-market-episode-narrated.mp4', title: 'Trillion Market — tricks' },
 
