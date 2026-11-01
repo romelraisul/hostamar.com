@@ -65,7 +65,7 @@ export async function GET() {
         'CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600, stale-if-error=3600',
       }
     })
-    res.headers.delete('vary')
+    res.headers.set('Vary', 'Accept, Accept-Encoding')
     return res
   } catch (e: any) {
     if (fallbackBase) {
@@ -79,7 +79,7 @@ export async function GET() {
             'CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600, stale-if-error=3600',
           }
         })
-        res.headers.delete('vary')
+        res.headers.set('Vary', 'Accept, Accept-Encoding')
         return res
       } catch {
         return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
