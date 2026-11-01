@@ -1,0 +1,30 @@
+name = "hostamar-f005-cdn"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[build]
+command = "npx esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --external:@libsql/isomorphic-ws --external:node:sqlite"
+
+[vars]
+B2_BUCKET_NAME = "hostamar-prod"
+B2_ENDPOINT = "https://s3.us-east-005.backblazeb2.com"
+B2_PUBLIC_URL = "https://f005.hostamar.com/file/hostamar-prod"
+B2_REGION = "us-east-005"
+F005_CDN_URL = "https://hostamar.com"
+
+[[routes]]
+pattern = "hostamar.com/models.json"
+zone_name = "hostamar.com"
+
+[[routes]]
+pattern = "hostamar.com/api/tv*"
+zone_name = "hostamar.com"
+
+[[routes]]
+pattern = "hostamar.com/tv"
+zone_name = "hostamar.com"
+
+[[routes]]
+pattern = "f005.hostamar.com/*"
+zone_name = "hostamar.com"
