@@ -132,7 +132,7 @@ export default function CloudDashboard() {
         >
           <div className="flex flex-wrap items-center gap-4">
             <span
-              className={`inline-block h-4 w-4 rounded-full ${status?.pcOn ? 'bg-[#0E7C3A] animate-pulse' : 'bg-red-500'}`}
+              className={`inline-block h-4 w-4 rounded-full ${status?.pcOn ? 'bg-[#0E7C3A] animate-pulse text-white' : 'bg-red-500'}`}
             />
             <div className="flex-1">
               <div className="text-lg font-bold text-[#1B3B2F]">
