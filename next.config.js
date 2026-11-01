@@ -115,11 +115,16 @@ const nextConfig = {
       // Cache-Control: s-maxage=300 + CDN-Cache-Control, but Next.js RSC vary headers
       // (RSC, Next-Router-State-Tree, Next-Router-Prefetch) suppressed edge HITs.
       // This rule overrides Vary at the edge so CF actually caches the JSON.
+      // FORGE 2026-11-01 (2nd): route.ts deletes 'vary' but Next.js re-adds RSC vary
+      // during serialization; explicitly set Vary: Accept, Accept-Encoding here to
+      // override the RSC vary headers so Cloudflare caches a single copy per
+      // Accept/Encoding combo (standard for JSON APIs).
       {
         source: '/api/store/products',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' },
           { key: 'CDN-Cache-Control', value: 'max-age=300, stale-while-revalidate=600, stale-if-error=3600' },
+          { key: 'Vary', value: 'Accept, Accept-Encoding' },
         ],
       },
       // PC-off-safe video shelf: immutable long-term cache for edge MP4s
