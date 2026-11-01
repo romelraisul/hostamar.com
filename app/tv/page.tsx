@@ -108,6 +108,7 @@ const SHELF = [
   { fn: 'quantum-computing-narrated.mp4', title: 'Quantum Computing Episode — Beyond Classical (2:48)' },
   { fn: 'receipt-mrr-30d-narrated.mp4', title: 'MRR 30d Receipt — Revenue Tracker (15s)' },
   { fn: 'receipt-paste-narrated.mp4', title: 'Paste Receipt — Instant Deploy (15s)' },
+  { fn: 'receipt-agent-cloud-narrated.mp4', title: 'AI Agent Cloud Receipt — $49/mo 24/7 Autonomous (60s)' },
   { fn: 'receipt-privacy-narrated.mp4', title: 'Privacy Receipt — Data Residency (15s)' },
   { fn: 'receipt-sovereign-cloud-narrated.mp4', title: 'Sovereign Cloud Receipt (15s)' },
   { fn: 'receipt-store-narrated.mp4', title: 'AI Store Receipt — Narrated (15s)' },
