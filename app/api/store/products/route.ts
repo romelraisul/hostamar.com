@@ -59,24 +59,28 @@ export async function GET() {
   try {
     const data = await tryFetch(primaryBase)
     const products = mapProducts(data)
-    return NextResponse.json({ count: data.count ?? products.length, products }, {
+    const res = NextResponse.json({ count: data.count ?? products.length, products }, {
       headers: {
         'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600',
         'CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600, stale-if-error=3600',
       }
     })
+    res.headers.delete('vary')
+    return res
   } catch (e: any) {
     if (fallbackBase) {
       console.warn('[store/products] bridge failed, falling back to store.hostamar.com:', e?.message?.slice(0, 120))
       try {
         const data = await tryFetch(fallbackBase)
         const products = mapProducts(data)
-        return NextResponse.json({ count: data.count ?? products.length, products }, {
+        const res = NextResponse.json({ count: data.count ?? products.length, products }, {
           headers: {
             'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600',
             'CDN-Cache-Control': 'max-age=300, stale-while-revalidate=600, stale-if-error=3600',
           }
         })
+        res.headers.delete('vary')
+        return res
       } catch {
         return NextResponse.json({ error: 'catalog unavailable' }, { status: 502 })
       }
