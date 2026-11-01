@@ -75,8 +75,8 @@ export default function PricingPage() {
         <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '.8rem' }}>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0E7C3A]/10 px-3 py-1 text-xs font-medium text-[#0E7C3A]">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0E7C3A] opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0E7C3A]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0E7C3A] opacity-60 text-white" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0E7C3A] text-white" />
             </span>
             Binance P2P: 1 USDT ≈ {toBn(rate.toFixed(2))} BDT — not bank rate
           </span>

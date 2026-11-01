@@ -244,7 +244,7 @@ export default function ReferralPage() {
               {/* Progress Bar */}
               <div className="w-full h-3 rounded-full bg-zinc-100 overflow-hidden mb-4">
                 <div
-                  className="h-full rounded-full transition-all duration-1000 bg-[#0E7C3A]"
+                  className="h-full rounded-full transition-all duration-1000 bg-[#0E7C3A] text-white"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
