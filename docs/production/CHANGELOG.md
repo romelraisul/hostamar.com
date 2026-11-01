@@ -9,10 +9,16 @@ crash-looping). See INCIDENTS.md + RUNBOOK.md for the durable procedure.
 
 **Infisical restored.** Infisical was down: the docker hostamar-postgres container had
 taken host port 5432 (and an encryption-key-label mismatch — e3044 vs d66cc — proved the
-wrong DB was being consulted). Restored on the podman stack: **postgres-15432:15432** as
-its DB (redis-infisical + postgres-15432 started first, then infisical), health confirmed
-on 127.0.0.1:8089. Secrets unchanged; env mirror still at
-/home/romel/automation/infisical.env (chmod 600).
+wrong DB was being consulted). The first restore attempt landed on postgres-15432 (EMPTY
+decoy schema); the real data volume was **postgres-infisical** (host port **15433**,
+~773 tables). Final stack: redis-infisical + postgres-infisical :15433 → infisical on
+hostamar-network :8089, health 200. DB had zero app rows, so the env mirror at
+/home/romel/automation/infisical.env (chmod 600) WAS the SSOT: full v0.167 recovery
+(signup → OTP brute from redis tokenHash → complete-account → select-organization →
+import 171 secrets env=prod → re-lock allowSignUp=false, signup now 403). Key facts:
+org `hostamar` = e4408ffd-c8a8-4a7e-af71-6e902d553b16, project `hostamar` =
+23fc7fdf-b48e-4599-bd38-f079a698255f; ENCRYPTION_KEY/JWT_AUTH_SECRET now persisted in
+the mirror so the instance can always be rebuilt.
 
 **Phone QR gateway corrected.** URL is now the Windows LAN IP **192.168.10.70:18789**
 (via Windows portproxy 0.0.0.0:18789 → 127.0.0.1:18789, relying on WSL localhostForwarding).
