@@ -1,0 +1,9 @@
+--- a/node_modules/.pnpm/@libsql+hrana-client@0.7.0_bufferutil@4.1.0_utf-8-validate@5.0.10/node_modules/@libsql/hrana-client/lib-esm/index.js
++++ b/node_modules/.pnpm/@libsql+hrana-client@0.7.0_bufferutil@4.1.0_utf-8-validate@5.0.10/node_modules/@libsql/hrana-client/lib-esm/index.js
+@@ -18,7 +18,7 @@
+ import { WebSocketUnsupportedError } from "./errors.js";
+ import { HttpClient } from "./http/client.js";
+ import { WsClient } from "./ws/client.js";
+ export { fetch, Request, Headers } from "@libsql/isomorphic-fetch";
+-e2.exports = require("@libsql/isomorphic-ws");
++e2.exports = { WebSocket: (await import("@libsql/isomorphic-ws")).WebSocket };

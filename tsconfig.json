@@ -41,10 +41,12 @@
     "docker/tv-station/hls-archive",
     "docker/tv-station/hls2",
     "cloudflare-worker",
+    "workers",
     "node_modules",
     "camofox",
     "scripts",
     "apps",
     "packages",
-    "tests"]
+    "tests"
+  ]
 }
