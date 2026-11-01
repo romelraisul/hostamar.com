@@ -67,7 +67,7 @@ const SHELF = [
   { fn: 'receipt-om12-pipelines-narrated.mp4', title: 'OM12 Pipelines Receipt (60s)' },
   { fn: 'receipt-sovereign-video-2-narrated.mp4', title: 'Sovereign Video OS Receipt 2 (15s)' },
   { fn: 'receipt-store.mp4', title: 'AI Store Receipt — 106 Services (15s)' },
-  { fn: 'receipt-gadget-lounge-narrated.mp4', title: 'Gadget Lounge Receipt — AI Gadgets (15s)' },  { fn: 'receipt-gadget-lounge-narrated-new.mp4', title: 'Gadget Lounge Receipt — AI Gadgets New (15s)' },  { fn: 'receipt-reel-studio.mp4', title: 'Reel Studio Receipt — Script to Monetize (15s)' },
+  { fn: 'receipt-gadget-lounge-narrated.mp4', title: 'Gadget Lounge Receipt — AI Gadgets (15s)' },  { fn: 'receipt-gadget-lounge-narrated-new.mp4', title: 'Gadget Lounge Receipt — AI Gadgets New (15s)' },  { fn: 'receipt-gadget-lounge-new-narrated.mp4', title: 'Gadget Lounge Receipt — AI Gadgets New Narrated (15s)' },  { fn: 'receipt-gadget-lounge-narrated-new2.mp4', title: 'Gadget Lounge Receipt — AI Gadgets New Narrated 2 (15s)' },  { fn: 'receipt-reel-studio.mp4', title: 'Reel Studio Receipt — Script to Monetize (15s)' },
   { fn: 'receipt-ai-video-ads.mp4', title: 'AI Video Ads Receipt — One Brief to Campaign (15s)' },
   { fn: 'sovereign-video-os-script-to-monetizat.mp4', title: 'Sovereign Video OS — Script to Monetize (60s)' },
   { fn: 'receipt-reel-lab-15s-narrated.mp4', title: 'Reel Lab 15s Receipt (15s)' },
