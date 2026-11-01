@@ -2,15 +2,15 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
 
-  title: 'Hostamar TV — Live Nonstop 364 Videos • AI Video + Hosting + Agent Cloud',
+  title: 'Hostamar TV — Live Nonstop 368 Videos • AI Video + Hosting + Agent Cloud',
 
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 364 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 368 edge-served videos, PC-off safe via Vercel+Cloudflare.',
 
   openGraph: {
 
-    title: 'Hostamar TV — Live Nonstop 364 Videos',
+    title: 'Hostamar TV — Live Nonstop 368 Videos',
 
-    description: '24/7 AI video channel: 364 edge-served videos, PC-off safe.',
+    description: '24/7 AI video channel: 368 edge-served videos, PC-off safe.',
 
     url: 'https://hostamar.com/tv',
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
   },
 
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 364', description: '24/7 AI video channel: 364 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 368', description: '24/7 AI video channel: 368 edge-served videos, PC-off safe.' },
 
 }
 
@@ -79,7 +79,7 @@ const SHELF = [
   { fn: 'https-tls-episode-narrated.mp4', title: 'HTTPS/TLS Episode — Secure Connections (3:17)' },
   { fn: 'cdn-edge-episode-narrated.mp4', title: 'CDN Edge Episode — Bangladesh Compute (3:13)' },
   { fn: 'bangla-llm-episode-narrated.mp4', title: 'Bangla LLM — বড় AI বাংলা বোঝে না (2:51)' },
-  { fn: 'demo-30s.mp4', title: 'Hostamar Demo — 30s Overview (30s)' },
+  { fn: 'dream-job-email.mp4', title: 'Dream Job Email — Script to Monetize (15s)' },
   { fn: 'dubbing-bn-episode-narrated.mp4', title: 'Bangla Dubbing Episode (3:07)' },
   { fn: 'receipt-eubd-gpu-narrated.mp4', title: 'EU-BD GPU Receipt (15s)' },  { fn: 'shorts-https-tls-episode.mp4', title: 'Shorts — HTTPS/TLS (30s)' },
   { fn: 'receipt-eubdcloud.mp4', title: 'EU-BD Cloud Receipt (15s)' },
@@ -108,7 +108,7 @@ const SHELF = [
   { fn: 'quantum-computing-narrated.mp4', title: 'Quantum Computing Episode — Beyond Classical (2:48)' },
   { fn: 'receipt-mrr-30d-narrated.mp4', title: 'MRR 30d Receipt — Revenue Tracker (15s)' },
   { fn: 'receipt-paste-narrated.mp4', title: 'Paste Receipt — Instant Deploy (15s)' },
-  { fn: 'receipt-agent-cloud-narrated.mp4', title: 'AI Agent Cloud Receipt — $49/mo 24/7 Autonomous (60s)' },
+  { fn: 'context-graph-episode.mp4', title: 'Context Graph Episode — Memory That Never Forgets (2:52)' },
   { fn: 'receipt-privacy-narrated.mp4', title: 'Privacy Receipt — Data Residency (15s)' },
   { fn: 'receipt-sovereign-cloud-narrated.mp4', title: 'Sovereign Cloud Receipt (15s)' },
   { fn: 'receipt-store-narrated.mp4', title: 'AI Store Receipt — Narrated (15s)' },
@@ -118,8 +118,8 @@ const SHELF = [
   { fn: 'shorts-sovereign-receipt-narrated2.mp4', title: 'Shorts — Sovereign Receipt 2 (30s)' },
   { fn: 'sovereign-receipt-episode-narrated2.mp4', title: 'Sovereign Receipt Episode 2 (25s)' },
   { fn: 'sovereign-video-os-script-to-monetizat-narrated.mp4', title: 'Sovereign Video OS — Script to Monetize Narrated (6:12)' },
-  { fn: 'sovereign-video-os-narrated.mp4', title: 'Sovereign Video OS — Script to Money (112s, নেরেশনসহ)' },
-  { fn: 'sovereign-video-os-shorts.mp4', title: 'Sovereign Video OS Short — ৩০s ভার্টিকেল (নேரেশনসহ)' },
+  { fn: 'opencut-headless-render-narrated-narrated.mp4', title: 'OpenCut Render — Script to Monetize (4:15)' },
+  { fn: 'receipt-evaluation.mp4', title: 'Evaluation Receipt — Data Residency (15s)' },
   { fn: 'submarine-cables-episode-narrated.mp4', title: 'Submarine Cables Episode — Global Links (4:04)' },
   { fn: 'trillion-market-episode-narrated.mp4', title: 'Trillion Market — tricks' },
 
@@ -137,7 +137,7 @@ export default function TVPage() {
 
     "name": "Hostamar TV Live Nonstop",
 
-    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 363 edge-served videos, PC-off safe via Vercel+Cloudflare.",
+    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 368 edge-served videos, PC-off safe via Vercel+Cloudflare.",
 
     "thumbnailUrl": "https://hostamar.com/tv-poster.jpg",
 
