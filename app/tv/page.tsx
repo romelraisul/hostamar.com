@@ -2,15 +2,15 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
 
-  title: 'Hostamar TV — Live Nonstop 363 Videos • AI Video + Hosting + Agent Cloud',
+  title: 'Hostamar TV — Live Nonstop 364 Videos • AI Video + Hosting + Agent Cloud',
 
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 363 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 364 edge-served videos, PC-off safe via Vercel+Cloudflare.',
 
   openGraph: {
 
-    title: 'Hostamar TV — Live Nonstop 363 Videos',
+    title: 'Hostamar TV — Live Nonstop 364 Videos',
 
-    description: '24/7 AI video channel: 363 edge-served videos, PC-off safe.',
+    description: '24/7 AI video channel: 364 edge-served videos, PC-off safe.',
 
     url: 'https://hostamar.com/tv',
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
   },
 
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 362', description: '24/7 AI video channel: 362 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 364', description: '24/7 AI video channel: 364 edge-served videos, PC-off safe.' },
 
 }
 
@@ -79,6 +79,7 @@ const SHELF = [
   { fn: 'https-tls-episode-narrated.mp4', title: 'HTTPS/TLS Episode — Secure Connections (3:17)' },
   { fn: 'cdn-edge-episode-narrated.mp4', title: 'CDN Edge Episode — Bangladesh Compute (3:13)' },
   { fn: 'bangla-llm-episode-narrated.mp4', title: 'Bangla LLM — বড় AI বাংলা বোঝে না (2:51)' },
+  { fn: 'demo-30s.mp4', title: 'Hostamar Demo — 30s Overview (30s)' },
   { fn: 'dubbing-bn-episode-narrated.mp4', title: 'Bangla Dubbing Episode (3:07)' },
   { fn: 'receipt-eubd-gpu-narrated.mp4', title: 'EU-BD GPU Receipt (15s)' },  { fn: 'shorts-https-tls-episode.mp4', title: 'Shorts — HTTPS/TLS (30s)' },
   { fn: 'receipt-eubdcloud.mp4', title: 'EU-BD Cloud Receipt (15s)' },
