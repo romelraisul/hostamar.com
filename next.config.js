@@ -111,6 +111,17 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, s-maxage=30' },
         ],
       },
+      // FORGE 2026-11-01: explicit edge cache for catalog — route already returns
+      // Cache-Control: s-maxage=300 + CDN-Cache-Control, but Next.js RSC vary headers
+      // (RSC, Next-Router-State-Tree, Next-Router-Prefetch) suppressed edge HITs.
+      // This rule overrides Vary at the edge so CF actually caches the JSON.
+      {
+        source: '/api/store/products',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=60, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600' },
+          { key: 'CDN-Cache-Control', value: 'max-age=300, stale-while-revalidate=600, stale-if-error=3600' },
+        ],
+      },
       // PC-off-safe video shelf: immutable long-term cache for edge MP4s
       {
         source: '/tv/(.*)\\.mp4',
@@ -249,6 +260,8 @@ const nextConfig = {
       'stream': false,
       'net': false,
       'worker_threads': false,
+      '@valkey/valkey-glide': false,
+      'node:sqlite': false,
     }
     // typeorm + protobufjs use dynamic require() for optional drivers; webpack
     // can't statically analyze those, producing "Critical dependency" warnings.
