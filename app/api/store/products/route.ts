@@ -3,7 +3,6 @@
 // cold function + bridge hop that made 2/3 prod loads take ~20s.
 // CDN cache (s-maxage=300) absorbs all traffic; no Worker CPU/memory for edge cache.
 export const revalidate = 300
-export const dynamic = 'force-dynamic' // FORGE 2026-10-18: caches.* is Workers-only; static gen crashes
 
 // ============================================================================
 // GET /api/store/products — public Medusa catalog bridge (FORGE, 2026-09-14).
