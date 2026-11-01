@@ -2,15 +2,15 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
 
-  title: 'Hostamar TV — Live Nonstop 368 Videos • AI Video + Hosting + Agent Cloud',
+  title: 'Hostamar TV — Live Nonstop 369 Videos • AI Video + Hosting + Agent Cloud',
 
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 368 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 369 edge-served videos, PC-off safe via Vercel+Cloudflare.',
 
   openGraph: {
 
-    title: 'Hostamar TV — Live Nonstop 368 Videos',
+    title: 'Hostamar TV — Live Nonstop 369 Videos',
 
-    description: '24/7 AI video channel: 368 edge-served videos, PC-off safe.',
+    description: '24/7 AI video channel: 369 edge-served videos, PC-off safe.',
 
     url: 'https://hostamar.com/tv',
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
   },
 
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 368', description: '24/7 AI video channel: 368 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 369', description: '24/7 AI video channel: 369 edge-served videos, PC-off safe.' },
 
 }
 
@@ -137,7 +137,7 @@ export default function TVPage() {
 
     "name": "Hostamar TV Live Nonstop",
 
-    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 368 edge-served videos, PC-off safe via Vercel+Cloudflare.",
+    "description": "24/7 AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot. 369 edge-served videos, PC-off safe via Vercel+Cloudflare.",
 
     "thumbnailUrl": "https://hostamar.com/tv-poster.jpg",
 
