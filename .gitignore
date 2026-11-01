@@ -110,6 +110,10 @@ logs/
 .env.*.bak
 .env*.bak.*
 *.env.bak
+.env.b2
+/home/romel/automation/infisical.env
+.open-next/
+workers/f005-cdn/.dev.vars
 
 # Local TURN/TLS certs (populated by scripts/rotate-turn-cert.sh) — gitignored.
 certs/

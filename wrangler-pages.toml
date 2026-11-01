@@ -69,6 +69,10 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 html_handling = "none"
 
+[build]
+command = "npm run worker:build"
+external = ["node:sqlite", "@libsql/isomorphic-ws"]
+
 [vars]
 # B2 S3-compatible incremental cache target (creds stay in worker secrets:
 # B2_ACCOUNT_ID / B2_APPLICATION_KEY). Endpoint+bucket are the key's actual
@@ -98,3 +102,7 @@ DECISION_API_URL = "https://decisions.hostamar.com"  # /api/decision route (same
 
 [observability.logs]
 enabled = true
+
+
+
+
