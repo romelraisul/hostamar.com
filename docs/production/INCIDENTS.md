@@ -20,13 +20,17 @@
   had **stolen host port 5432**, so Infisical's DB connection landed on the wrong
   instance; (b) an **encryption-key-label mismatch (e3044 vs d66cc)** proved the wrong
   database was being consulted — the service was looking at a DB that didn't hold its
-  keys rather than the podman postgres-15432 instance.
+  keys rather than the podman postgres-infisical instance.
 - **Fix:** restored Infisical on the podman stack — start **redis-infisical**, then
-  **postgres-15432** (host port 15432), then **infisical**; health confirmed on
-  127.0.0.1:8089.
-- **Prevention:** docker hostamar-postgres owns 5432; podman postgres-15432 owns 15432.
-  They are different instances with different payloads — never "unify" them by pointing
-  Infisical at 5432.
+  **postgres-infisical** (host port **15433** — the REAL data volume, ~773 tables;
+  postgres-15432 :15432 holds an EMPTY infisical schema, a decoy), then **infisical**
+  on hostamar-network :8089; health confirmed 200. DB was empty of app rows, so the
+  secrets mirror was the SSOT: v0.167 API recovery re-created the admin (signup → OTP
+  brute → complete-account) and bulk-imported 171 secrets, then re-locked signup.
+- **Prevention:** docker hostamar-postgres owns 5432; podman postgres-infisical owns
+  15433 (real data); postgres-15432 owns 15432 (empty decoy). They are different
+  instances with different payloads — never "unify" them by pointing Infisical at 5432,
+  and never import keys against the 15432 decoy.
 
 ## 3. teldrive crash loop
 
