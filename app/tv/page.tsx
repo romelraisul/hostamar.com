@@ -2,15 +2,15 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
 
-  title: 'Hostamar TV — Live Nonstop 369 Videos • AI Video + Hosting + Agent Cloud',
+  title: 'Hostamar TV — Live Nonstop 371 Videos • AI Video + Hosting + Agent Cloud',
 
-  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 369 edge-served videos, PC-off safe via Vercel+Cloudflare.',
+  description: '24/7 live AI video channel: Sovereign Video OS, Agent Cloud, BDIX Hosting, EU-BD GPU spot market. 371 edge-served videos, PC-off safe via Vercel+Cloudflare.',
 
   openGraph: {
 
-    title: 'Hostamar TV — Live Nonstop 369 Videos',
+    title: 'Hostamar TV — Live Nonstop 371 Videos',
 
-    description: '24/7 AI video channel: 369 edge-served videos, PC-off safe.',
+    description: '24/7 AI video channel: 371 edge-served videos, PC-off safe.',
 
     url: 'https://hostamar.com/tv',
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
   },
 
-  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 369', description: '24/7 AI video channel: 369 edge-served videos, PC-off safe.' },
+  twitter: { card: 'summary_large_image', title: 'Hostamar TV — Live Nonstop 371', description: '24/7 AI video channel: 371 edge-served videos, PC-off safe.' },
 
 }
 
@@ -123,6 +123,7 @@ const SHELF = [
   { fn: 'sovereign-video-os-script-to-monetizat-narrated.mp4', title: 'Sovereign Video OS — Script to Monetize Narrated (6:12)' },
   { fn: 'opencut-headless-render-narrated-narrated.mp4', title: 'OpenCut Render — Script to Monetize (4:15)' },
   { fn: 'receipt-evaluation.mp4', title: 'Evaluation Receipt — Data Residency (15s)' },
+  { fn: 'receipt-evaluation-narrated.mp4', title: 'Evaluation Receipt — Eval Harness (15s)' },
   { fn: 'submarine-cables-episode-narrated.mp4', title: 'Submarine Cables Episode — Global Links (4:04)' },
   { fn: 'trillion-market-episode-narrated.mp4', title: 'Trillion Market — tricks' },
 
