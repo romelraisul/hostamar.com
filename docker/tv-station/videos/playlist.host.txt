@@ -110,3 +110,5 @@ file '/home/romel/hostamar.com/public/tv/sovereign-video-12-pipelines-narrated.m
 file '/home/romel/hostamar.com/public/tv/bangla-llm-episode-narrated.mp4'
 file '/home/romel/hostamar.com/public/tv/receipt-agent-cloud-narrated.mp4'
 file '/home/romel/hostamar.com/public/tv/receipt-gadget-lounge-new-narrated.mp4'
+file '/home/romel/hostamar.com/public/tv/receipt-evaluation-narrated.mp4'
+file '/home/romel/hostamar.com/public/tv/receipt-zerocost-studio-narrated.mp4'
