@@ -31,10 +31,11 @@ import { waitUntil } from '@vercel/functions'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
+// Fallback publishable key (public, safe to embed) — used if MEDUSA_PK env is missing/empty in Vercel
+const FALLBACK_PK = 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'
 
 async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
-  const pk = process.env.MEDUSA_PK
-  if (!pk) throw new Error('MEDUSA_PK not set')
+  const pk = process.env.MEDUSA_PK?.trim() || FALLBACK_PK
 
   // FORGE 2026-09-30: Same-zone worker not deployed (CLOUDFLARE_API_TOKEN lacks Workers:Edit scope).
   // Workers.dev bridge egress is NOT challenged by Cloudflare WAF.
