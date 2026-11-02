@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     // If running locally (has /home/romel writable), also try immediate creation
     try {
       const { createViralVideo } = await import('@/lib/tv/viral/creator')
-      const result = await createViralVideo(trendId)
+      const result = await createViralVideo(trendId!)
       await prisma.tvCommand.update({ where: { id: cmd.id }, data: { status: 'DONE', executedAt: new Date() } })
       return NextResponse.json({ ok: true, queued: false, ...result, commandId: cmd.id })
     } catch (localErr: any) {
