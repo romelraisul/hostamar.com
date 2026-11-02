@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       where: { id: { in: rows.map((r) => r.channelId) } },
       select: { id: true, name: true, url: true, logo: true, category: true, country: true, views: true },
     })
-    const byId = new Map(channels.map((c) => [c.id, c]))
+    const byId: Map<string, typeof channels[0]> = new Map(channels.map((c) => [c.id, c]))
 
     const items = rows
       .map((r) => {
