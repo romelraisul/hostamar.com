@@ -105,6 +105,7 @@ const SHELF = [
   { fn: 'context-graph-episode-narrated.mp4', title: 'Context Graph Episode — Memory That Never Forgets (2:52)' },
   { fn: 'edge-compute-bangladesh-narrated.mp4', title: 'Edge Compute Bangladesh — Local-First Cloud (3:00)' },
   { fn: 'eu-bd-gpu-spot-narrated-full.mp4', title: 'EU-BD GPU Spot — Sovereign Cloud (3:42)' },
+  { fn: 'hydrogen-economy-narrated.mp4', title: 'Hydrogen Economy — Clean Energy Missing Link (2:32)' },
   { fn: 'eu-bd-gpu-spot-programme-narrated.mp4', title: 'EU-BD GPU Spot Programme (2:45)' },
   { fn: 'hostamar-grand-reveal-narrated.mp4', title: 'Hostamar Grand Reveal — Vision Unveiled (10:45)' },
   { fn: 'opencut-headless-render-api-narrated.mp4', title: 'OpenCut Headless Render API (4:15)' },
