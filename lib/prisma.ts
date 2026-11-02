@@ -8,7 +8,9 @@ import './dns-bootstrap'
 // is swallowed (dashboard counts rendered as 0). The /wasm entry uses
 // runtime/wasm.js: no fs anywhere, query compiler compiled to WASM, driver-adapter
 // based. Import it explicitly so no bundler condition resolution can pick library.js.
-import { PrismaClient } from '@prisma/client/wasm'
+// FORCE: On Vercel (Node.js serverless), use regular PrismaClient which bundles
+// the query engine natively. WASM variant has cold-start issues on Vercel's
+// function splitting (wasm file not bundled per-function).
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
 // ponytail: keep the fetch-only /web client for the ADAPTER — @libsql/client's
 // node entry pulls node:sqlite/ws/fs and dies on workerd. (This is NOT the cause
@@ -17,10 +19,10 @@ import { createClient as createWebClient } from '@libsql/client/web'
 import { env } from '@/lib/env'
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
+  prisma: any
 }
 
-function createPrismaClient(): PrismaClient {
+function createPrismaClient(): any {
   // ponytail: Cloudflare Workers only set TURSO_DATABASE_URL/TURSO_AUTH_TOKEN,
   // never DATABASE_URL. Fall back so the Worker can reach Turso without a
   // second secret. Upgrade path: set DATABASE_URL explicitly and this is a no-op.
@@ -33,7 +35,15 @@ function createPrismaClient(): PrismaClient {
   if (!url) {
     throw new Error('DATABASE_URL not configured — Prisma client cannot be created')
   }
-  
+
+  // FORCE: On Vercel (Node.js serverless), use regular PrismaClient which bundles
+  // the query engine natively. WASM variant has cold-start issues on Vercel's
+  // function splitting (wasm file not bundled per-function).
+  const isVercel = !!process.env.VERCEL
+  const PrismaClient = isVercel
+    ? require('@prisma/client').PrismaClient
+    : require('@prisma/client/wasm').PrismaClient
+
   // ponytail: schema is sqlite (Turso/libsql). All paths use PrismaLibSQL.
   // postgresql:// URLs (local dev) are redirected to a local file DB so the
   // same sqlite schema works everywhere. Upgrade path: point local dev at
@@ -61,10 +71,10 @@ function createPrismaClient(): PrismaClient {
 // ponytail: truly lazy — no throw on import, only on first actual method call.
 // Vercel build-time imports this module without DATABASE_URL; checkout route
 // checks hasDb at runtime and only calls prisma if DB is configured.
-let prismaInstance: PrismaClient | null = null
+let prismaInstance: any = null
 let prismaInitError: Error | null = null
 
-function getPrisma(): PrismaClient {
+function getPrisma(): any {
   if (prismaInitError) throw prismaInitError
   if (!prismaInstance) {
     try {
@@ -163,7 +173,7 @@ function wrapDelegate(delegate: object): object {
 // deadlock the callback's own queries, so it stays unwrapped (no admin route uses it).
 const UNSERIALIZED = new Set(['$transaction', '$connect', '$disconnect', '$on', '$extends'])
 
-export const prisma = new Proxy({} as PrismaClient, {
+export const prisma = new Proxy({} as any, {
   get(_target, prop, receiver) {
     if (prop === 'then') return undefined // avoid Promise-like coercion
     const client = getPrisma()
@@ -176,7 +186,7 @@ export const prisma = new Proxy({} as PrismaClient, {
     if (value && typeof value === 'object') return wrapDelegate(value)
     return value
   },
-}) as PrismaClient
+}) as any
 
 if (env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 

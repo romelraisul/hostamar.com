@@ -89,7 +89,7 @@ async function loadMetaByPath(paths: string[]): Promise<Map<string, NowPlaying>>
   const out = new Map<string, NowPlaying>()
   if (!paths.length) return out
   try {
-    const rows = await prisma.$queryRawUnsafe<any[]>(
+    const rows = await prisma.$queryRawUnsafe(
       `SELECT "banglaPath", "titleBn", "title", "gender", "voiceUsed"
        FROM "OpenSourceVideo" WHERE "banglaPath" IN (${paths.map((_, i) => `$${i + 1}`).join(',')})`,
       ...paths,
@@ -166,7 +166,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
   try {
     if (localPaths.length) {
       const basenames = localPaths.map((u) => u.split('/').pop() as string)
-      const extra = await prisma.$queryRawUnsafe<any[]>(
+      const extra = await prisma.$queryRawUnsafe(
         `SELECT "banglaPath", "titleBn", "title", "gender", "voiceUsed"
          FROM "OpenSourceVideo"
          WHERE ${basenames.map((_, i) => `"banglaPath" LIKE $${i + 1}`).join(' OR ')}`,
@@ -207,7 +207,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
   // Enrich viral flags from TvVideoStats
   try {
     const vstats = await prisma.tvVideoStats.findMany({ where: { playlistItemId: { in: items.map(i => i.id) } } })
-    const vmap = new Map(vstats.map(s => [s.playlistItemId, s]))
+    const vmap: Map<string, typeof vstats[0]> = new Map(vstats.map(s => [s.playlistItemId, s]))
     for (let i = 0; i < rota.length; i++) {
       const vs = vmap.get(items[i].id)
       if (vs) { rota[i].isViral = vs.isViral; rota[i].viralScore = vs.viralScore }
@@ -236,7 +236,7 @@ export async function computeNowPlaying(channelId: string): Promise<NowPlaying> 
   try {
     const m = current.url.match(/\/([a-z0-9]{20,})_(?:free|viral)_bn\.mp4$/)
     if (m) {
-      const seo = await prisma.$queryRawUnsafe<{ slug: string }[]>(
+      const seo = await prisma.$queryRawUnsafe(
         'SELECT slug FROM "TvVideoSeo" WHERE "videoSourceId" = $1 LIMIT 1', m[1],
       )
       slug = seo?.[0]?.slug ?? null

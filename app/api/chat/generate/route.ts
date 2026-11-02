@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
               controller.close()
             }
           })
-          return new Response(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Conversation-Id': activeConversationId } })
+          return new Response(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Conversation-Id': activeConversationId || '' } })
         }
       } catch {}
     }
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
-        'X-Conversation-Id': activeConversationId,
+        'X-Conversation-Id': activeConversationId || '',
       },
     })
   } catch (error: any) {

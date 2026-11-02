@@ -212,7 +212,7 @@ export async function createViralVideo(viralTrendId: string): Promise<CreateResu
   // Regenerate playlist.host.txt
   const allItems = await prisma.tvPlaylistItem.findMany({ where: { channelId: channel.id }, orderBy: { position: 'asc' } })
   const stats = await prisma.tvVideoStats.findMany({ where: { playlistItemId: { in: allItems.map(i => i.id) } } })
-  const weightMap = new Map(stats.map(s => [s.playlistItemId, s.playWeight]))
+  const weightMap: Map<string, number> = new Map(stats.map(s => [s.playlistItemId, s.playWeight]))
   const lines: string[] = []
   for (const it of allItems) {
     const w = weightMap.get(it.id) || 1

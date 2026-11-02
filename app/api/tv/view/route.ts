@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       if (ch) {
         const all = await prisma.tvPlaylistItem.findMany({ where: { channelId: ch.id }, orderBy: { position: 'asc' } })
         const allStats = await prisma.tvVideoStats.findMany({ where: { playlistItemId: { in: all.map(a => a.id) } } })
-        const wmap = new Map(allStats.map(s => [s.playlistItemId, s.playWeight]))
+        const wmap: Map<string, number> = new Map(allStats.map(s => [s.playlistItemId, s.playWeight]))
         const lines: string[] = []
         for (const it of all) {
           const w = wmap.get(it.id) || 1
