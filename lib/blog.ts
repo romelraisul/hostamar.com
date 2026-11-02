@@ -610,6 +610,23 @@ export const POSTS: Post[] = [
     ],
   },
 
+  {
+    slug: 'building-a-gpu-service-from-bogra-a-practical-guide',
+    title: 'Building a GPU service from Bogra — a practical guide',
+    excerpt: 'Building a GPU service from Bogra — a practical guide',
+    category: 'আপডেট',
+    readTime: '1 মিনিট',
+    date: '২০২৬-১১-০২',
+    views: 0,
+    tags: ['AI', 'ভিডিও', 'GPU'],
+    icon: '🔧',
+    badge: 'Behind Scenes',
+    author: 'Raisul Mahmud Romel Mohammad',
+    body: [
+      'bKash পেমেন্ট: আমাদের পার্সোনাল নাম্বার 01822417463 তে Send Money করুন। Plans: Starter ৳990 (6000cr) / Pro ৳1,900 (13000cr) / Business ৳2,900 (30000cr) — 1cr = 1TK। তারপর TrxID টি https://hostamar.com/dashboard/payment এ সাবমিট করুন — আমরা ৫ মিনিটে Approve করব।',
+    ],
+  },
+
 ]
 
 export function formatViews(n: number): string {

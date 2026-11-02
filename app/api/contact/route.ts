@@ -170,12 +170,12 @@ export async function POST(req: NextRequest) {
       telegramNotify('ops', summary),
     ])
 
-    // (3) Clear success state for the visitor.
+    // (3) Clear success state for the visitor with pricing + next step.
     return NextResponse.json({
       ok: true,
       id,
       stored: persisted,
-      message: 'আপনার মেসেজ পৌঁছে গেছে — বাংলাদেশ টিম দেখছে।',
+      message: 'আপনার মেসেজ পৌঁছে গেছে — বাংলাদেশ টিম ৫ মিনিটের মধ্যে যোগাযোগ করবে। মূল্য: স্টার্টার ৳২৯০০/মাস, গ্রোথ ৳১৯০০/মাস, বিজনেস ৳৯৯০/মাস।',
     })
   } catch (err) {
     // eslint-disable-next-line no-console
