@@ -16,6 +16,8 @@ export const revalidate = 300
 import { NextResponse } from 'next/server'
 
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
+// Fallback publishable key (public, safe to embed) — used if MEDUSA_PK env is missing/empty in Vercel
+const FALLBACK_PK = 'pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad'
 
 // FORGE 2026-10-20: prod MEDUSA_URL == 'https://store.hostamar.com'. The old
 // fallbackBase was IDENTICAL to primaryBase — the fallback was dead code and any
@@ -30,8 +32,7 @@ const primaryBase = 'https://hostamar-medusa-bridge.romelraisul.workers.dev'
 const fallbackBase = bridgeUrl || 'https://store.hostamar.com'
 
 async function tryFetch(base: string) {
-  const pk = process.env.MEDUSA_PK
-  if (!pk) throw new Error('MEDUSA_PK not set')
+  const pk = process.env.MEDUSA_PK?.trim() || FALLBACK_PK
   const res = await fetch(`${base}/store/products?limit=250&region_id=${REGION}&fields=id,title,variants.id,variants.calculated_price.calculated_amount`, {
     headers: { 'x-publishable-api-key': pk, 'user-agent': 'HostamarStorefront/1.0 (Vercel SSR)' },
     signal: AbortSignal.timeout(15_000),
