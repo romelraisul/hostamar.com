@@ -51,8 +51,8 @@ function createPrismaClient(): any {
   let cleanUrl: string
   let authToken: string
   if (url.startsWith('libsql://') || url.startsWith('file:')) {
-    cleanUrl = url.split('?')[0]
-    authToken = url.split('authToken=')[1] || ''
+    cleanUrl = url.split('?')[0].replace(/^libsql:\/\//, 'https://')
+    authToken = url.split('authToken=')[1] || (process.env.TURSO_AUTH_TOKEN || '')
   } else if (url.startsWith('postgresql://') || url.startsWith('postgres://')) {
     cleanUrl = 'file:/home/romel/hostamar-local.db'
     authToken = ''
