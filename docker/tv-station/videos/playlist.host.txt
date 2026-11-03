@@ -118,3 +118,4 @@ file '/home/romel/hostamar.com/public/tv/receipt-eu-bd-gpu-spot-market-narrated.
 file '/home/romel/hostamar.com/public/tv/agent-cloud-49-episode-narrated-v2.mp4'
 file '/home/romel/hostamar.com/public/tv/agent-cloud-49-episode-shorts-v2.mp4'
 file '/home/romel/hostamar.com/public/tv/agent-cloud-49-episode-narrated.mp4'
+file '/home/romel/hostamar.com/public/tv/sovereign-cloud-pricing-narrated.mp4'
