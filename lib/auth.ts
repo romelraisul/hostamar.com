@@ -1,35 +1,28 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-config'
-import prisma from '@/lib/prisma'
 import type { NextRequest } from 'next/server'
-// Single implementation lives in lib/auth-utils (node:crypto HS256, no
-// module-scope jsonwebtoken/bcryptjs) — see the cold-init note there.
+import { createClient } from '@libsql/client/web'
 import { signToken, comparePassword, verifyToken as verifyTokenBase } from '@/lib/auth-utils'
 
 export { signToken, comparePassword }
 
-// verifyToken carries an optional orgId claim (tenant cache from PR d).
 export interface VerifyPayload {
   id: string
   email: string
   name: string
   role?: string
   orgId?: string
+  ssoProvider?: string
+  ssoEnforcedTenant?: string
 }
 
-export function verifyToken(token: string): VerifyPayload | null {
-  return verifyTokenBase(token) as VerifyPayload | null
+export function verifyToken(token: unknown): VerifyPayload | null {
+  return verifyTokenBase(token)
 }
 
-// Re-sign a verified payload with a resolved orgId (call once per session, cache in JWT).
 export function signTokenWithOrg(
   payload: VerifyPayload,
   orgId: string
 ): string {
-  return signToken(
-    { id: payload.id, email: payload.email, name: payload.name, role: payload.role },
-    { orgId }
-  )
+  return signToken(payload, { orgId })
 }
 
 type AuthUser = {
@@ -41,66 +34,42 @@ type AuthUser = {
   customer: any
 }
 
+function getTursoClient() {
+  const url = (process.env.TURSO_DATABASE_URL || '').replace(/^libsql:\/\//, 'https://')
+  const authToken = process.env.TURSO_AUTH_TOKEN || ''
+  if (!url) throw new Error('TURSO_DATABASE_URL not configured')
+  return createClient({ url, authToken })
+}
+
+function getString(row: any, key: string): string {
+  const val = row[key]
+  return val === null || val === undefined ? '' : String(val)
+}
+
+function getPhone(row: any): string | null {
+  const val = row['phone']
+  return val === null || val === undefined ? null : String(val)
+}
+
 async function findCustomerById(id: string) {
-  try {
-    return await prisma.customer.findUnique({ where: { id } })
-  } catch (error) {
-    const message = String((error as any)?.message || '')
-    if (message.includes('customerId')) {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT id, email, name, phone, "role"
-        FROM "Customer"
-        WHERE id = ${id}
-        LIMIT 1;
-      `
-      return rows[0] || null
-    }
-    throw error
-  }
+  const client = getTursoClient()
+  const result = await client.execute({
+    sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE id = ? LIMIT 1',
+    args: [id],
+  })
+  return result.rows[0] || null
 }
 
 async function findCustomerByEmail(email: string) {
-  try {
-    return await prisma.customer.findUnique({ where: { email } })
-  } catch (error) {
-    const message = String((error as any)?.message || '')
-    if (message.includes('customerId')) {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT id, email, name, phone, "role"
-        FROM "Customer"
-        WHERE email = ${email}
-        LIMIT 1;
-      `
-      return rows[0] || null
-    }
-    throw error
-  }
+  const client = getTursoClient()
+  const result = await client.execute({
+    sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE email = ? LIMIT 1',
+    args: [email],
+  })
+  return result.rows[0] || null
 }
 
 export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
-  let candidate: AuthUser | null = null
-
-  const session = await getServerSession(authOptions)
-  if (session?.user?.email) {
-    const customer = await findCustomerByEmail(session.user.email)
-    if (customer) {
-      candidate = {
-        id: customer.id,
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone ?? undefined,
-        role: (customer.role || 'customer').toLowerCase(),
-        customer,
-      }
-      return candidate
-    }
-  }
-
-  // FIX (v5): when called from a server component PAGE (no req passed), read
-  // the auth_token cookie via next/headers cookies(). Before this, JWT-cookie
-  // users (login via /api/auth/login) had no NextAuth session → getAuthUser
-  // returned null → every /dashboard page redirected to /login. This is the
-  // root cause of the chat/game/ide → /login bug report.
   let requestRef: NextRequest | null = req ?? null
   if (!requestRef) {
     try {
@@ -108,13 +77,12 @@ export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
       const cookieStore = await cookies()
       const cookieToken = cookieStore.get('auth_token')?.value
       if (cookieToken) {
-        // Minimal NextRequest-shaped shim carrying only the cookie getter
         requestRef = {
           headers: { get: (_: string) => '' },
           cookies: { get: (name: string) => (name === 'auth_token' ? { value: cookieToken } : undefined) },
         } as unknown as NextRequest
       }
-    } catch { /* cookies() unavailable in this context — fall through */ }
+    } catch { /* fall through */ }
   }
 
   if (requestRef) {
@@ -123,9 +91,6 @@ export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
     if (!token) {
       token = requestRef.cookies.get('auth_token')?.value || ''
     }
-    // Customer API keys (from /api/keys, sha256-hashed at rest): resolve the
-    // Customer so every /api/v1/* route bills the key owner (1cr=1TK).
-    // Must run BEFORE verifyToken — a raw ApiKey is not a JWT.
     if (authHeader.startsWith('Bearer hk_live_')) {
       const { validateApiKey } = await import('./apikey')
       const apiKey = await validateApiKey(authHeader.slice(7).trim()).catch(() => null)
@@ -144,32 +109,29 @@ export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
       if (payload?.id) {
         const customer = await findCustomerById(payload.id)
         if (customer) {
-          candidate = {
-            id: customer.id,
-            name: customer.name,
-            email: customer.email,
-            phone: customer.phone ?? undefined,
-            role: (customer.role || payload.role || 'customer').toLowerCase(),
+          return {
+            id: getString(customer, 'id'),
+            name: getString(customer, 'name'),
+            email: getString(customer, 'email'),
+            phone: getPhone(customer),
+            role: (getString(customer, 'role') || payload.role || 'customer').toLowerCase(),
             customer,
           }
-          return candidate
         }
       }
     }
-
-    // x-user-* headers NOT trusted — must verify JWT. Removed header forgery path.
   }
 
   return null
 }
 
-export async function requireAdmin(req?: NextRequest) {
+export async function requireAdmin(req: NextRequest): Promise<AuthUser> {
   const user = await getAuthUser(req)
   if (!user) {
-    throw new Error('Unauthorized', { cause: { status: 401 } })
+    throw new Error('UNAUTHORIZED', { cause: { status: 401 } })
   }
-  if (user.role !== 'admin' && user.role !== 'superadmin') {
-    throw new Error('Forbidden', { cause: { status: 403 } })
+  if (user.role !== 'admin' && user.role !== 'ADMIN' && user.role !== 'superadmin') {
+    throw new Error('FORBIDDEN: admin only', { cause: { status: 403 } })
   }
   return user
 }

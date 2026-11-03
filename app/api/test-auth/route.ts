@@ -1,0 +1,15 @@
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-config'
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions)
+    return NextResponse.json({ ok: true, session })
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e?.message || 'error', stack: e?.stack }, { status: 500 })
+  }
+}

@@ -1,8 +1,9 @@
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth-utils'
-import { prisma } from '@/lib/prisma'
+import { findCustomerById } from '@/lib/auth-db'
 
 const BACKEND_URL = process.env.API_BACKEND_URL || 'https://api.hostamar.com'
 
@@ -28,9 +29,7 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      const user = await prisma.customer.findUnique({
-        where: { id: payload.id }
-      })
+      const user = await findCustomerById(payload.id)
       if (!user) {
         return NextResponse.json(
           { error: 'User not found' },

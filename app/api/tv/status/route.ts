@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge'
 
 import { NextResponse } from 'next/server'
 import { getTursoEdgeClient } from '@/lib/turso-edge'
@@ -7,7 +6,7 @@ import { getTursoEdgeClient } from '@/lib/turso-edge'
 /**
  * GET /api/tv/status (public)
  * Returns live status for the dashboard + /tv public page.
- * Edge-compatible: no Prisma, no fs, uses Turso edge client + fetch.
+ * Uses Turso edge client via HTTP (works in Node.js runtime on Cloudflare).
  */
 export async function GET() {
   try {
@@ -54,7 +53,7 @@ export async function GET() {
       }
     }
 
-    // Resolve HLS config (edge-compatible)
+    // Resolve HLS config
     const rtmpUrl = process.env.TV_RTMP_URL || 'rtmp://localhost:1935/live/tv'
     const channelName = process.env.TV_CHANNEL_NAME || 'Hostamar TV'
     const autoGenerate = process.env.TV_AUTO_GENERATE_ENABLED === 'true'

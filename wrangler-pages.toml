@@ -84,12 +84,14 @@ B2_CACHE_BUCKET = "hostamar-prod"
 # (fleet/loop.mjs -> FleetReport); pc.alive = newest report younger than this many seconds.
 HOSTAMAR_PC_MAX_AGE_S = "1200"
 TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
-TURSO_AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhIjoiNzMzZjJjYjgtNzAwZS00OTVhLTg4ZjctZDU0YzM1MzI5YWJlIiwiaWF0IjoxNzg5MTUwNjQwLCJleHAiOjE4MjA2ODY2NDB9.vYhXx7QZ4qJ5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q"
+TURSO_AUTH_TOKEN = "eyJhbG...LrCQ"
 B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
 NEXTAUTH_URL = "https://hostamar.com"
+NEXTAUTH_SECRET = "hostamar-docker-local-dev-secret-2026"
 NEXT_PUBLIC_SITE_URL = "https://hostamar.com"
 TV_HLS_URL = "https://tv.hostamar.com/hls/live/tv/index.m3u8"
+TV_AGENT_SECRET = "686dc8917e2d30103bc67b1c931adedd239e5a69a6274d9b"
 # Paid embedding models 402 on this $0 OpenRouter account; the route retries
 # once on this free model instead of failing the caller.
 OPENROUTER_EMBED_FALLBACK = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
@@ -103,7 +105,3 @@ DECISION_API_URL = "https://decisions.hostamar.com"  # /api/decision route (same
 
 [observability.logs]
 enabled = true
-
-
-
-
