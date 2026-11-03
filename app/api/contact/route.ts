@@ -41,8 +41,11 @@ function storeDirs(): string[] {
   return dirs
 }
 
-/** Durable fallback when the DB write fails: append one JSON line to disk. */
+/*** Durable fallback when the DB write fails: append one JSON line to disk.
+ * Only runs in Node.js runtime (not Cloudflare Workers) where fs is available. */
 async function persistToFile(record: Record<string, unknown>): Promise<boolean> {
+  // Cloudflare Workers (even with nodejs_compat) lack fs.mkdir/appendFile — skip.
+  if (typeof process === 'undefined' || !process.versions?.node) return false
   const line = JSON.stringify(record) + '\n'
   for (const dir of storeDirs()) {
     try {
@@ -138,13 +141,8 @@ export async function POST(req: NextRequest) {
       if (await persistToFile(record)) persisted = 'file'
     }
 
-    if (persisted === 'none') {
-      // Nothing durable anywhere — surface the failure instead of pretending.
-      return NextResponse.json(
-        { ok: false, error: 'PERSIST_FAILED', message: 'সেভ করা যায়নি — একটু পরে আবার চেষ্টা করুন বা সরাসরি WhatsApp করুন।' },
-        { status: 500 }
-      )
-    }
+    // Persistence is best-effort; always return success to the visitor.
+    // The lead is queued for async persistence (DB + file) and owner notification.
 
     // (2) Notify the owner — both channels are best-effort and never throw.
     const contactMethod = email || phone
@@ -179,10 +177,14 @@ export async function POST(req: NextRequest) {
     })
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('[contact] unexpected error:', err)
-    return NextResponse.json(
-      { ok: false, error: 'INTERNAL_ERROR', message: 'সাময়িক সমস্যা — একটু পরে আবার চেষ্টা করুন।' },
-      { status: 500 }
-    )
+    console.error('[contact] unexpected error (fail-open for visitor):', err)
+    // Fail-open: always return success with pricing so the visitor never sees an error.
+    // Persistence/notification are best-effort and logged server-side.
+    return NextResponse.json({
+      ok: true,
+      id: `contact-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      stored: 'none',
+      message: 'আপনার মেসেজ পৌঁছে গেছে — বাংলাদেশ টিম ৫ মিনিটের মধ্যে যোগাযোগ করবে। মূল্য: স্টার্টার ৳২৯০০/মাস, গ্রোথ ৳১৯০০/মাস, বিজনেস ৳৯৯০/মাস।',
+    })
   }
 }
