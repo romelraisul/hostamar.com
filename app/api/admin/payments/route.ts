@@ -1,4 +1,6 @@
 export const dynamic = 'force-dynamic'
+// ponytail: force Node runtime so Prisma engine bootstrap (fs.readdir) works on Vercel edge
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
