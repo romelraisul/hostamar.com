@@ -1,25 +1,15 @@
 'use client'
-
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Eye, EyeOff, Check, Loader2, ShieldCheck, X } from 'lucide-react'
-import { SSOButton } from '@/components/auth/SSOButton'
-
-// Real auth flow preserved: POST /api/auth/login -> /dashboard (same endpoint the new
-// /signup auto-login uses). Forgot-password modal calls the REAL /api/auth/forgot-password
-// which sends a RESET LINK (not an OTP — the preview's "OTP sent" is factually wrong;
-// endpoint returns {success, message:'If the email exists, a reset link has been sent.'}).
-// REJECTED from preview: Google/Facebook login (no OAuth providers in lib/auth-config.ts
-// -> would 500), fake pre-login "আপনার শেষ ভিডিও: Eid Offer" personalized card (user isn't
-// authenticated yet — impossible), '500+ active now' + testimonial (fabricated), '99.98%'
-// (we cite 99.9%), unbuilt-feature teasers (bKash-number login, 'য-ফলা fixed' badge), and
-// 'studio.hostamar.com' redirect (doesn't exist; real is /dashboard).
+import { ArrowLeft, Eye, EyeOff, Loader2, AlertTriangle, Check, ShieldCheck, X } from 'lucide-react'
 
 const PRODUCTS = ['Video', 'Dubbing', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming']
 
 export default function LoginPage() {
   const router = useRouter()
+  const sp = useSearchParams()
+  const urlError = sp.get('error')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -35,6 +25,15 @@ export default function LoginPage() {
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   const formValid = emailValid && password.length > 0
+
+  // Handle URL error params (e.g., sso_callback_failed)
+  if (urlError && !error) {
+    if (urlError === 'sso_callback_failed' || urlError.includes('sso')) {
+      setError('Google/OAuth login not configured — use email/password (custom JWT active)')
+    } else {
+      setError(urlError.replace(/_/g, ' '))
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,9 +51,6 @@ export default function LoginPage() {
         setLoading(false)
         return
       }
-      // SECURITY: cookie is now set SERVER-side by /api/auth/login (HttpOnly,
-      // Secure, SameSite=Strict) — nothing to do here. Token in JSON is for
-      // Bearer/CLI use only, never persisted to localStorage.
       router.push(data.user?.role === 'admin' || data.user?.role === 'superadmin' ? '/admin' : '/dashboard')
       router.refresh()
     } catch {
@@ -73,7 +69,6 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),
       })
-      // Endpoint always returns the same safe message (reset link, not OTP).
       setForgotMsg('যদি এই ইমেইলে একাউন্ট থাকে, রিসেট লিংক পাঠানো হয়েছে।')
     } catch {
       setForgotMsg('অনুরোধ পাঠাতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।')
@@ -94,9 +89,12 @@ export default function LoginPage() {
           <h1 className="text-[28px] font-bold">Welcome back</h1>
           <p className="bangla text-[14px] text-zinc-600 mt-2 leading-[1.6]">আবার স্বাগতম! আপনার ভিডিও, হোস্টিং, গেম সব রেডি।</p>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-600 px-4 py-3 rounded-lg mt-5 text-[13.5px]">{error}</div>
-          )}
+          {(error || urlError) && (
+                      <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg mt-5 text-[13.5px] flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        <span>{error || (urlError === 'sso_callback_failed' ? 'Google login disabled — use email/password (NextAuth stubbed, custom JWT active)' : urlError?.replace(/_/g, ' '))}</span>
+                      </div>
+                    )}
 
           <form onSubmit={handleSubmit} className="space-y-4 mt-6">
             <div>
@@ -135,14 +133,10 @@ export default function LoginPage() {
               {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> লগইন হচ্ছে...</> : 'লগইন করুন →'}
             </button>
 
-            <div className="flex items-center gap-3 my-1">
-              <div className="h-px bg-zinc-200 flex-1" />
-              <span className="text-[12px] text-zinc-400">অথবা</span>
-              <div className="h-px bg-zinc-200 flex-1" />
-            </div>
-            <div className="mt-4">
-              <SSOButton mode="login" />
-            </div>
+            <p className="text-center text-[13px] text-zinc-500">
+              Custom JWT via Turso edge — no NextAuth OAuth
+            </p>
+
             <p className="text-center text-[13px] text-zinc-500">
               Don&apos;t have account? <a href="/signup" className="text-[#0E7C3A] font-medium hover:underline">Create free account</a>
             </p>
