@@ -1,4 +1,9 @@
 export const dynamic = 'force-dynamic'
+// ponytail: Vercel's default runtime is edge (workerd), where `fs.readdir` is
+// not implemented. ensureSchema → Prisma's engine bootstrap calls readdir and
+// throws "[unenv] fs.readdir is not implemented yet!" → INTERNAL_ERROR on every
+// POST. Force Node.js runtime so fs works (same guard as contact route).
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'

@@ -1,4 +1,6 @@
 export const dynamic = 'force-dynamic'
+// ponytail: same fs.readdir trap as sms-webhook — force Node runtime.
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
