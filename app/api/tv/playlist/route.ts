@@ -1,5 +1,4 @@
 export const dynamic = 'force-dynamic'
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getTursoEdgeClient } from '@/lib/turso-edge'
 
@@ -10,140 +9,75 @@ import { getTursoEdgeClient } from '@/lib/turso-edge'
 /**
  * GET /api/tv/playlist  (public)
  * Returns the ordered playlist for the channel (used by /tv player + streamer).
+ * Supports ?format=json for JSON, default returns M3U.
+ * Supports ?limit=N to cap items (default 374).
  */
 export async function GET(req: NextRequest) {
-  // Try Turso first (production)
   try {
-    const db = getTursoEdgeClient()
-    return await fetchPlaylistFromTurso(db)
-  } catch (err) {
-    console.log('[tv/playlist] Turso unavailable, trying local fallback:', err)
-  }
+    const url = new URL(req.url)
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '374', 10), 374)
+    const wantJson = url.searchParams.get('format') === 'json' || req.headers.get('accept')?.includes('application/json')
 
-  // Local fallback: try to read from local SQLite (dev.db)
-  try {
-    return await fetchPlaylistFromLocal()
-  } catch (err) {
-    console.error('[tv/playlist] local fallback failed:', err)
-  }
-
-  // Last resort: return mock playlist so /tv never blank
-  return NextResponse.json({
-    ok: true,
-    channelId: 'local',
-    channelName: 'Hostamar TV (local)',
-    isLive: false,
-    count: 3,
-    items: [
-      { id: '1', title: 'Hostamar AI Video Demo', url: 'https://f005.backblazeb2.com/file/hostamar-prod/tv/HostamarH3_00001_.mp4', source: 'b2', position: 0, videoId: '1' },
-      { id: '2', title: 'Hostamar Platform Overview', url: 'https://f005.backblazeb2.com/file/hostamar-prod/tv/HostamarH3_00002_.mp4', source: 'b2', position: 1, videoId: '2' },
-      { id: '3', title: 'AI Video Generation Tutorial', url: 'https://f005.backblazeb2.com/file/hostamar-prod/tv/HostamarH3_00003_.mp4', source: 'b2', position: 2, videoId: '3' },
-    ],
-  })
-}
-
-async function fetchPlaylistFromTurso(db: ReturnType<typeof getTursoEdgeClient>) {
-  const chanRes = await db.execute(
-    'SELECT "id", "name", "isLive" FROM "TvChannel" ORDER BY "createdAt" ASC LIMIT 1'
-  )
-  if (!chanRes.rows.length) {
-    return NextResponse.json({ ok: true, error: 'NO_CHANNEL', count: 0, items: [] })
-  }
-  const channel = chanRes.rows[0] as unknown as { id: string; name: string; isLive: number | boolean }
-  const channelId = channel.id
-
-  const res = await db.execute({
-    sql: 'SELECT "id", "title", "url", "source", "position", "videoId" FROM "TvPlaylistItem" WHERE "channelId" = ? AND "played" = false ORDER BY "position" ASC LIMIT 200',
-    args: [channelId],
-  })
-  let items = res.rows.map((r) => ({ ...(r as Record<string, unknown>) })) as Array<{
-    id: string
-    title: string
-    url: string
-    source: string
-    position: number
-    videoId: string | null
-  }>
-
-  if (items.length === 0) {
+    // Try Turso first (production)
+    let videos: any[] = []
     try {
-      const vidRes = await db.execute(
-        'SELECT "id", "title", "prompt", "url", "videoUrl", "createdAt" FROM "Video" ORDER BY "createdAt" DESC LIMIT 12'
-      )
-      items = vidRes.rows
-        .map((r) => ({ ...(r as Record<string, unknown>) }))
-        .filter((v) => String(v.url || v.videoUrl || '').includes('hostamar.com'))
-        .map((v, idx) => ({
-          id: String(v.id),
-          title: String(v.title || String(v.prompt || '').slice(0, 60) || `Video ${idx + 1}`),
-          url: String(v.url || v.videoUrl || ''),
-          source: 'generated',
-          position: idx,
-          videoId: String(v.id),
-        }))
-    } catch {}
-  }
-
-  return NextResponse.json({
-    ok: true,
-    channelId,
-    channelName: channel.name,
-    isLive: Boolean(channel.isLive),
-    count: items.length,
-    items: items.map((i) => ({
-      id: i.id,
-      title: i.title,
-      url: i.url,
-      source: i.source,
-      position: i.position,
-      videoId: i.videoId,
-    })),
-  })
-}
-
-async function fetchPlaylistFromLocal() {
-  // Dynamic import to avoid bundling better-sqlite3 in edge runtime
-  const Database = (await import('better-sqlite3')).default
-  const path = await import('path')
-  const { fileURLToPath } = await import('url')
-  const __filename = fileURLToPath(import.meta.url)
-  const __dirname = path.dirname(__filename)
-  const dbPath = path.resolve(__dirname, '../../prisma/dev.db')
-
-  const db = new Database(dbPath, { readonly: true })
-
-  try {
-    // Check if TV tables exist
-    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'Tv%'").all()
-    if (tables.length === 0) {
-      throw new Error('TV tables not found in local DB')
+      const db = getTursoEdgeClient()
+      const res = await db.execute({
+        sql: 'SELECT "id", "title", "url", "thumbnail", "duration", "createdAt" FROM "Video" WHERE "status" = ? ORDER BY "createdAt" DESC LIMIT ?',
+        args: ['published', limit]
+      })
+      videos = res.rows.map((r: any) => ({
+        id: String(r.id),
+        title: String(r.title || 'Untitled'),
+        url: String(r.url || ''),
+        thumbnail: r.thumbnail ? String(r.thumbnail) : null,
+        duration: r.duration ? Number(r.duration) : null,
+      })).filter((v: any) => v.url && v.url.includes('hostamar'))
+    } catch (err) {
+      console.log('[tv/playlist] Turso unavailable, trying B2 manifest:', err)
     }
 
-    const channel = db.prepare('SELECT id, name, isLive FROM TvChannel ORDER BY createdAt ASC LIMIT 1').get() as { id: string; name: string; isLive: number } | undefined
-    if (!channel) {
-      throw new Error('No channel in local DB')
+    // Fallback: B2 manifest (tv.json from f005)
+    if (videos.length === 0) {
+      try {
+        const r = await fetch('https://f005.hostamar.com/file/hostamar-prod/tv.json', { next: { revalidate: 60 }, cache: 'no-store' })
+        if (r.ok) {
+          const j = await r.json() as any
+          const manifestVideos = Array.isArray(j) ? j : (j.videos || [])
+          videos = manifestVideos
+            .slice(0, limit)
+            .map((v: any, idx: number) => ({
+              id: String(v.id || v.videoId || idx),
+              title: String(v.title || v.fn || `Video ${idx + 1}`),
+              url: String(v.url || `https://f005.hostamar.com/file/hostamar-prod/${v.fn || ''}`),
+              thumbnail: v.thumbnail ? String(v.thumbnail) : null,
+              duration: v.duration ? Number(v.duration) : null,
+            }))
+            .filter((v: any) => v.url && v.url.includes('hostamar'))
+        }
+      } catch (err) {
+        console.log('[tv/playlist] B2 manifest fallback failed:', err)
+      }
     }
 
-    const items = db.prepare(
-      'SELECT id, title, url, source, position, videoId FROM TvPlaylistItem WHERE channelId = ? AND played = 0 ORDER BY position ASC LIMIT 200'
-    ).all(channel.id) as Array<{ id: string; title: string; url: string; source: string; position: number; videoId: string | null }>
+    // Last resort: return mock so /tv never blank
+    if (videos.length === 0) {
+      videos = [
+        { id: '1', title: 'Hostamar AI Video Demo', url: 'https://f005.hostamar.com/file/hostamar-prod/tv/HostamarH3_00001_.mp4', thumbnail: null, duration: null },
+        { id: '2', title: 'Hostamar Platform Overview', url: 'https://f005.hostamar.com/file/hostamar-prod/tv/HostamarH3_00002_.mp4', thumbnail: null, duration: null },
+        { id: '3', title: 'AI Video Generation Tutorial', url: 'https://f005.hostamar.com/file/hostamar-prod/tv/HostamarH3_00003_.mp4', thumbnail: null, duration: null },
+      ]
+    }
 
-    return NextResponse.json({
-      ok: true,
-      channelId: channel.id,
-      channelName: channel.name,
-      isLive: Boolean(channel.isLive),
-      count: items.length,
-      items: items.map((i) => ({
-        id: i.id,
-        title: i.title,
-        url: i.url,
-        source: i.source,
-        position: i.position,
-        videoId: i.videoId,
-      })),
-    })
-  } finally {
-    db.close()
+    if (wantJson) {
+      return NextResponse.json({ ok: true, count: videos.length, source: 'b2-live-private', b2_only: true, videos }, { status: 200 })
+    }
+
+    // M3U format for HLS players
+    const m3u = ['#EXTM3U', ...videos.map((v: any, i: number) => `#EXTINF:-1 tvg-logo="${v.thumbnail || ''}" group-title="Hostamar TV",${v.title || `Video ${i + 1}`}\n${v.url}`)].join('\n')
+    return new NextResponse(m3u, { status: 200, headers: { 'Content-Type': 'application/x-mpegURL', 'Cache-Control': 'public, max-age=60' } })
+  } catch (e: any) {
+    console.error('[tv/playlist] error:', e)
+    return NextResponse.json({ ok: true, count: 1, source: 'fallback', videos: [] }, { status: 200 })
   }
 }
