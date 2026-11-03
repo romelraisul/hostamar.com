@@ -627,6 +627,23 @@ export const POSTS: Post[] = [
     ],
   },
 
+  {
+    slug: 'why-we-started-in-bogra-not-dhaka-a-practical-guide',
+    title: 'Why we started in Bogra, not Dhaka — a practical guide',
+    excerpt: 'Why we started in Bogra, not Dhaka — a practical guide',
+    category: 'আপডেট',
+    readTime: '1 মিনিট',
+    date: '২০২৬-১১-০৩',
+    views: 0,
+    tags: ['AI', 'ভিডিও', 'GPU'],
+    icon: '🚀',
+    badge: 'Startup Journey Bogra->Global',
+    author: 'Raisul Mahmud Romel Mohammad',
+    body: [
+      'bKash পেমেন্ট: আমাদের পার্সোনাল নাম্বার 01822417463 তে Send Money করুন। Plans: Starter ৳990 (6000cr) / Pro ৳1,900 (13000cr) / Business ৳2,900 (30000cr) — 1cr = 1TK। তারপর TrxID টি https://hostamar.com/dashboard/payment এ সাবমিট করুন — আমরা ৫ মিনিটে Approve করব।',
+    ],
+  },
+
 ]
 
 export function formatViews(n: number): string {

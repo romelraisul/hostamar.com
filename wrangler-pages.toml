@@ -84,6 +84,7 @@ B2_CACHE_BUCKET = "hostamar-prod"
 # (fleet/loop.mjs -> FleetReport); pc.alive = newest report younger than this many seconds.
 HOSTAMAR_PC_MAX_AGE_S = "1200"
 TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
+TURSO_AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhIjoiNzMzZjJjYjgtNzAwZS00OTVhLTg4ZjctZDU0YzM1MzI5YWJlIiwiaWF0IjoxNzg5MTUwNjQwLCJleHAiOjE4MjA2ODY2NDB9.vYhXx7QZ4qJ5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q"
 B2_BUCKET_NAME = "hostamar-videos"
 B2_ENDPOINT = "https://f002.backblazeb2.com"
 NEXTAUTH_URL = "https://hostamar.com"
