@@ -129,6 +129,7 @@ const SHELF = [
   { fn: 'receipt-evaluation-narrated.mp4', title: 'Evaluation Receipt — Eval Harness (15s)' },
   { fn: 'submarine-cables-episode-narrated.mp4', title: 'Submarine Cables Episode — Global Links (4:04)' },
   { fn: 'trillion-market-episode-narrated.mp4', title: 'Trillion Market — tricks' },
+  { fn: 'receipt-eu-bd-gpu-spot-market-narrated.mp4', title: 'EU-BD GPU Spot Market Receipt — Narrated (15s)' },
 
 ]
 
