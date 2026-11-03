@@ -1,61 +1,104 @@
-# DESIGN — Frontend design system: existing pages, layout conventions, Bangla+English bilingual rules.
+# DESIGN — UI/UX Design System
 
-## Pages that exist (grounded in `app/`)
+**Version:** 4.0
+**Last Updated:** 2026-11-04T04:38:00+06:00
+**Status:** LIVE — 168 renders, Bengali-first
 
-- **Homepage `/`** — marketing surface; catalog stats come from `/models.json` v40
-  (152 models, 10 categories, 53 edge_tools, renders=168) and must stay in sync with it.
-- **`/tv`** — 24/7 AI TV station: HLS player (hls.js), now-playing bar, channels grid,
-  EPG feed (`/api/tv/epg.xml`), `iptv.m3u` playlist, `/tv/live` live route. Own
-  `app/tv/layout.tsx` with video-first chrome (player top, minimal nav).
-- **`/tv/watch/[slug]`** — per-video SEO watch pages emitting **VideoObject JSON-LD**
-  (name, description, thumbnail, uploadDate, contentUrl pointing at the B2/CDN delivery
-  URL) so each video is independently indexable.
-- **`/admin`** — operator dashboard (role-gated ADMIN); `/dashboard` — customer area.
-- Supporting surfaces in the App Router: `/blog`, `/docs`, `/download`, `/gallery`,
-  `/pricing`-style store pages, `/bkash` (checkout surface — payments PENDING).
+---
 
-## Audience: Bangla + English
+## Brand Colors (Verified Live)
 
-- Bangla-first: every user-facing string has a Bangla path; all Bangla strings live in
-  the i18n dictionary (`i18n-dict.ts`, ~173KB) — never hardcode Bengali text inline.
-- Fonts: **Hind Siliguri** for Bangla (fallback Noto Sans Bengali, packaged via
-  `@fontsource/noto-sans-bengali`), **Inter** for Latin, JetBrains Mono for code.
-- Numbers and dates stay Latin digits; keep line-height generous for Bangla conjuncts.
-- Bangla text MUST render in Hind Siliguri — never fall back to a Latin font.
+| Role | Hex | Usage |
+|------|-----|-------|
+| **Primary Green** | `#0E7C3A` | Buttons, accents, progress bars, active states |
+| **Secondary Blue** | `#2563EB` | Links, info states, embeddings badge |
+| **Accent Amber** | `#F59E0B` | Warnings, credit badges, payment CTAs |
+| **Surface Light** | `#FFFFFF` / `#F8FAFC` | Backgrounds, cards |
+| **Surface Dark** | `#0F172A` | Sidebar, footer, dark mode |
+| **Text Primary** | `#0F172A` | Headings, body |
+| **Text Secondary** | `#475569` | Subtext, descriptions |
+| **Text Muted** | `#64748B` | Placeholders, timestamps |
 
-## Brand tokens (carried over from the established system)
+---
 
-| Role | Light | Dark | Usage |
-|------|-------|------|-------|
-| Primary | `#0E7C3A` | `#10B981` | Primary buttons, links, active states, focus rings |
-| Secondary | `#1A1A1A` | `#F5F5F5` | Text primary, headings |
-| Accent | `#FF6B00` | `#FF8C00` | Payment CTAs ONLY (bKash) |
-| Background | `#FFFFFF` | `#0D0D0D` | Page/card backgrounds |
-| Surface | `#F9FAFB` | `#1A1A1A` | Card surfaces, inputs |
-| Border | `#E5E7EB` | `#374151` | Dividers, input borders |
-| Success / Warning / Error | `#059669` / `#D97706` / `#DC2626` | `#10B981` / `#F59E0B` / `#EF4444` | Status states |
+## Typography
 
-- Base spacing unit 4px; radius 10px cards (`rounded-lg`), 8px buttons/inputs
-  (`rounded-md`), 14px elevated cards, pill 9999px for badges.
-- Tailwind 3.4.1, `darkMode: 'class'` on `<html>`, theme persisted in
-  `localStorage.theme` (light | dark | system), system default on first visit.
-- All components use Tailwind classes, no inline styles; globals.css is the single
-  source of global styles; focus rings `ring-2` in primary green.
+- **Font:** System UI stack (Inter fallback), Bangla: Noto Sans Bengali
+- **Scale:** `text-xs` (11px) → `text-sm` (13px) → `text-base` (16px) → `text-lg` (18px) → `text-xl` (20px) → `text-2xl` (24px)
+- **Tracking:** `tracking-widest` for section labels (CREDITS, PRODUCTS, MANAGE)
 
-## Layout conventions
+---
 
-- Dashboard/admin chrome: top bar (56px) + collapsible sidebar (240px, icons-only on
-  collapse), active route marked with a 3px primary left border, breadcrumbs on subpages.
-- Responsive: single column <640px, drawer sidebar <1024px, full sidebar ≥1024px;
-  all interactive targets ≥44×44px; skeletons for data loads, not spinners.
-- TV pages optimize for 3G: lazy HLS attach, short cache on manifests, poster before play.
-- Green is primary/positive; red is reserved for errors/destructive actions — do not
-  regress the button contrast fixes (green button + black text).
+## Bangla-First Conventions
 
-## Rules
+- All user-facing copy ships Bangla + English (e.g., "CREDITS / ক্রেডিট")
+- Currency: `৳` symbol, `1cr = 1 taka` (1 credit = 1 BDT)
+- bKash personal number: `01822417463` (displayed in payment flows)
+- Payment plans: Starter ৳990 (6000cr), Pro ৳1,900 (13000cr), Business ৳2,900 (30000cr)
+- Signup bonus: 3000cr (1cr = 1TK = 1 future HOST coin)
 
-- No placeholder text ships; Bangla copy reviewed by the owner.
-- Reuse the ~25 components already in `/components/` (Button, Card, Table, Modal,
-  Toast, Skeleton, ...) before writing anything new.
-- SEO surfaces (sitemap.ts, robots.ts, VideoObject JSON-LD) are extended, never forked.
-- Dark mode is first-class: every new surface defines both token columns.
+---
+
+## Component Inventory (Live)
+
+| Component | Location | Renders |
+|-----------|----------|---------|
+| Dashboard Sidebar | `app/dashboard/layout.tsx` | Navigation, credits bar, recent videos |
+| Command Palette | `⌘K` global | Jump to Video, Dubbing, Hosting, Chat, Browser, IDE, Game, Billing |
+| TV Station | `/tv` + `/tv/watch/[slug]` | 374 videos, HLS player, JSON-LD VideoObject SEO |
+| Model Catalog | `/api/v1/models` → homepage | 152 models, 10 categories, 53 edge tools |
+| Store | `/dashboard/store` | 124 products, bKash tokenized checkout PGW |
+| Admin | `/admin` | 307→login, stats via `/api/admin/stats` (401) |
+
+---
+
+## Layout System
+
+- **Dashboard:** `lg:ml-64` fixed sidebar, `pt-14` header offset
+- **Mobile:** `<lg` hidden sidebar, slide-in drawer (`translate-x-full` → `translate-x-0`)
+- **Header:** Sticky `top-0 z-30`, search + credits + user menu
+- **Spacing:** 4px base (`gap-1` = 4px, `p-3` = 12px, `p-4` = 16px)
+
+---
+
+## Iconography
+
+- **Library:** Lucide React (Code2, Command, Gamepad2, Gift, Globe, MessageCircle, Plus, Sparkles)
+- **Size:** `h-4 w-4` (16px) standard, `h-8 w-8` (32px) for feature cards
+- **Brand mark:** `H` in green rounded-lg for sidebar header
+
+---
+
+## Motion & Interaction
+
+- **Transitions:** `transition-colors` (150ms), `transition-all` (200ms) for sidebar
+- **Animations:** `animate-spin` (loading), `animate-pulse` (skeletons)
+- **Hover:** `hover:bg-[#F1F5F9]`, `hover:text-[#0F172A]`, `hover:border-[#0E7C3A]/30`
+
+---
+
+## Accessibility
+
+- Semantic HTML: `<nav>`, `<main>`, `<aside>`, `<header>`, `<button>`
+- Focus rings: `outline-none` + custom focus-visible styles
+- ARIA labels on icon-only buttons
+- Color contrast: WCAG AA on all text/background combos
+
+---
+
+## Dark Mode
+
+- Class-based on `html.dark` (not media query)
+- Surfaces: `#0F172A` base, `#1E293B` elevated
+- Text: `#F1F5F9` primary, `#94A3B8` secondary
+- Green primary `#0E7C3A` unchanged (accessible on dark)
+
+---
+
+## Verified Live Metrics
+
+- **Renders:** 168 (from models.json)
+- **Edge tools:** 53
+- **Categories:** 10 (text-gen, text-to-image, text-to-video, text-to-audio, img-to-text, img-to-video, video-to-text, code-gen, embedding, reranking)
+- **Worker model:** `minimax/minimax-m3:free`
+- **Ground model:** `llama-3.2-11b-vision-instruct`

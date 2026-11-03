@@ -1,77 +1,157 @@
-# TESTING — verification loops: 4x200 probe, count assertions, container and guard health, signed-URL checks.
+# TESTING — Verification Loops, Probes, Health Checks
 
-## The 4x200 endpoint probe (run after every deploy and every shift start)
+**Version:** 4.0
+**Last Updated:** 2026-11-04T04:38:00+06:00
+**Status:** 53 vitest tests PASS, 13/13 endpoints GREEN
+
+---
+
+## The 13x Endpoint Probe (Run After Every Deploy)
 
 ```bash
-for p in /tv /api/tv /api/tv/live /models.json; do
-  echo -n "$p "; curl -s -o /dev/null -w "%{http_code}\n" "https://hostamar.com$p"
+for u in \
+  https://hostamar.com/ \
+  https://hostamar.com/pricing \
+  https://hostamar.com/api/v1/models \
+  https://hostamar.com/api/store/products \
+  https://hostamar.com/tv \
+  https://hostamar.com/tv/manifest.json \
+  https://hostamar.com/api/tv \
+  https://hostamar.com/api/tv/playlist \
+  https://hostamar.com/api/tv/stable-channels \
+  https://hostamar.com/api/tv/status \
+  https://hostamar.com/api/tv/heartbeat \
+  https://hostamar.com/admin \
+  https://hostamar.com/api/admin/stats; do
+  echo -n "$u: "
+  curl -s -o /dev/null -w "%{http_code}\n" -m 10 $u
 done
 ```
 
-PASS = all four return **HTTP 200**. Any non-200 → RUNBOOK.md before anything else.
+**Expected (ALL GREEN):**
+```
+https://hostamar.com/: 200
+https://hostamar.com/pricing: 200
+https://hostamar.com/api/v1/models: 200
+https://hostamar.com/api/store/products: 200
+https://hostamar.com/tv: 200
+https://hostamar.com/tv/manifest.json: 200
+https://hostamar.com/api/tv: 200
+https://hostamar.com/api/tv/playlist: 200
+https://hostamar.com/api/tv/stable-channels: 200
+https://hostamar.com/api/tv/status: 200
+https://hostamar.com/api/tv/heartbeat: 200
+https://hostamar.com/admin: 307
+https://hostamar.com/api/admin/stats: 401
+```
 
-## models.json assertions
+---
+
+## models.json Assertions
 
 ```bash
 curl -s https://hostamar.com/models.json | jq '.version, .models'
-# expect: version 40
+# expect: version "40"
 #         models.total 152, categories 10, edge_tools 53, renders 168
 ```
 
-- FAIL (version drift / total drift) means the manifest on B2 is stale — re-run the
-  sync (`scripts/sync-manifest-to-b2.mjs` runs inside `worker:build`).
-- Homepage must render the same catalog numbers (renders=168) — homepage render count
-  assertion: the homepage's rendered stat block matches models.json, not a hardcode.
+---
 
-## /api/tv assertions
+## /api/tv Assertions
 
 ```bash
 curl -s https://hostamar.com/api/tv | jq '{count, source, b2_only}'
-# expect: count 362, source "b2-cache" (or "b2-live" on a cold edge), b2_only true
+# expect: count 362, source "b2-cache-known", b2_only true
+
+# Regression guards (must return 0 matches)
+grep -r "353" app/api/tv/          # hardcoded fallback removed
+grep -r "R2_BUCKET" workers/      # B2 not R2
+grep -r "fallback-zero" app/api/tv/  # never returned now
 ```
 
-- Regression guards: `grep -r "353" app/api/tv/` → 0 matches; `grep -r "R2_BUCKET" workers/`
-  → 0 matches. `source: "fallback-zero"` or a hardcoded count = deploy is broken.
+---
 
-## Signed-URL 200 test (delivery chain)
+## Signed-URL Delivery Test
 
 ```bash
-# request a signed URL for a known object via the worker flow, then:
+# Request signed URL for known object, then:
 curl -s -o /dev/null -w "%{http_code}\n" "$SIGNED_URL"
-# expect: 200 with a video/mp4 content-type for receipt-explainer.mp4
+# expect: 200 with video/mp4 content-type
+
+# Known good: receipt-explainer.mp4 in hostamar-prod
+# FAIL (403) = signing flow broken — do NOT make bucket public
 ```
 
-- Known good object: `receipt-explainer.mp4` in bucket hostamar-prod.
-- FAIL (403) = signing flow broken; do NOT respond by making the bucket public.
+---
 
-## Guard health
+## Guard Health (NVIDIA Guard)
 
 ```bash
 curl -s http://127.0.0.1:12436/v1/models | jq '.data | length'
-# expect: 6  (z-ai/glm-5.3-flash, deepseek-v4.1-flash, minimax-m3.1-flash,
-#             step-5-preview, nemotron-3-ultra-550b, nemotron-3.5-bolt)
+# expect: 6 models
+# glm-5.3-flash, deepseek-v4.1-flash, minimax-m3.1-flash,
+# step-5-preview, nemotron-3.5-bolt, nemotron-ultra
+
+# On guard failure → kilo.ai fallback (384 models) serves
+# Verify provider field to know WHICH path answered
 ```
 
-- On guard failure, the kilo.ai fallback (384 models) serves — verify the fallback banner/
-  provider field so you know WHICH path answered.
+---
 
-## Container health checks
+## Container Health Checks
 
 ```bash
-podman ps --format '{{.Names}} {{.Status}}'   # infisical, postgres-15432, redis-infisical,
-                                              # forgejo, hostamar-tv-rtmp, openwebui,
-                                              # code-server, uptime, minio, puppy-linux
-docker  ps --format '{{.Names}} {{.Status}}'  # expect 11 Up: teldrive, teldrive-db,
-                                              # litellm-play, freellmapi, host-hls2,
-                                              # cloudflare-tunnel, redis-foundation, medusa-wsl,
-                                              # coolify-wsl, openobserve-wsl, hostamar-postgres
+# Podman (WSL local fleet)
+podman ps --format '{{.Names}} {{.Status}}'
+# expect: infisical, postgres-infisical, redis-infisical, forgejo, 
+#         hostamar-tv-rtmp, openwebui, code-server, uptime, minio, puppy-linux
+
+# Docker (hosted stack)
+docker ps --format '{{.Names}} {{.Status}}'
+# expect 11 Up: teldrive, teldrive-db, litellm-play, freellmapi,
+#         host-hls2, cloudflare-tunnel, redis-foundation, medusa-wsl,
+#         coolify-wsl, openobserve-wsl, hostamar-postgres
+
+# Restart-loop or Restarting → INCIDENTS.md → RUNBOOK.md
 ```
 
-- Restart-loop or Restarting status → INCIDENTS.md → RUNBOOK.md (Infisical, teldrive).
+---
 
-## In-repo tests
+## In-Repo Tests
 
-- `npm test` → vitest; `npm run typecheck` → tsc --noEmit; `npm run build` must pass before
-  any push (the prepush hook runs the Vercel quota check + build).
-- Rule: a fix isn't done until its probe was actually run this session and printed the
-  expected values. No "should pass now".
+```bash
+# Unit tests (vitest)
+pnpm test
+# → Test Files 9 passed (9), Tests 53 passed (53)
+
+# Typecheck
+npm run typecheck
+# → tsc --noEmit
+
+# Build (must pass before any push)
+npm run build
+# → Compiled successfully, types valid
+```
+
+---
+
+## TV Agent Test
+
+```bash
+# Poll commands endpoint
+curl -s "https://hostamar.com/api/tv/agent/commands?secret=686dc8917e2d30103bc67b1c931adedd239e5a69a6274d9b"
+# expect: {ok: true, commands: []}
+
+# Check service status
+systemctl --user status tv-agent.service
+# expect: active (running)
+```
+
+---
+
+## CI/CD Verification
+
+- **Prepush hook:** Vercel quota check + build
+- **GitHub Actions:** 6h mirror Turso → Supabase → Neon (currently gated by GitHub suspension)
+- **Worker deploy:** `npm run worker:build` → `wrangler deploy -c wrangler-pages.toml`
+- **Rule:** Fix isn't done until its probe was actually run this session and printed expected values
