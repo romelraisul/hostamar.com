@@ -130,6 +130,8 @@ const SHELF = [
   { fn: 'submarine-cables-episode-narrated.mp4', title: 'Submarine Cables Episode — Global Links (4:04)' },
   { fn: 'trillion-market-episode-narrated.mp4', title: 'Trillion Market — tricks' },
   { fn: 'receipt-eu-bd-gpu-spot-market-narrated.mp4', title: 'EU-BD GPU Spot Market Receipt — Narrated (15s)' },
+  { fn: 'agent-cloud-49-episode-narrated-v2.mp4', title: 'Agent Cloud — ৪৯ ডলার মাসে পূর্ণ পর্ব (3:19, নেরেশনসহ)' },
+  { fn: 'agent-cloud-49-episode-shorts-v2.mp4', title: 'Shorts — Agent Cloud ৪৯ ডলার (30s ভার্টিকেল)' },
 
 ]
 
