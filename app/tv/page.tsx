@@ -46,6 +46,7 @@ function seoSlug(filename: string) {
 
 const SHELF = [
 
+  { fn: 'eu-bd-gpu-spot-market-narrated.mp4', title: 'EU-BD GPU Spot Market — Sovereign Cloud (2:57)' },
   { fn: 'sovereign-video-12-pipelines-narrated.mp4', title: 'Sovereign Video OS — 12 Pipelines (4:32)' },
   { fn: 'agent-cloud-episode-narrated.mp4', title: 'Agent Cloud — Autonomous Employees (3:51)' },
   { fn: 'video-ads-ad-builder-narrated.mp4', title: 'AI Video Ad Builder — One Brief to Campaign (3:47)' },
