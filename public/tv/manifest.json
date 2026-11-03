@@ -1,5 +1,5 @@
 {
-  "count": 372,
+  "count": 374,
   "videos": [
     "public/tv/hydrogen-economy-narrated.mp4",
     "public/tv/receipt-evaluation-narrated.mp4",
@@ -142,6 +142,7 @@
     "public/tv/eu-bd-gpu-spot-programme.mp4",
     "public/tv/eu-bd-gpu-spot-shorts.mp4",
     "public/tv/eu-bd-gpu-spot.mp4",
+    "public/tv/eu-bd-gpu-spot-market-narrated.mp4",
     "public/tv/focusflow-pitch-shorts.mp4",
     "public/tv/focusflow-pitch.mp4",
     "public/tv/globalization-cinematic.mp4",
@@ -177,6 +178,7 @@
     "public/tv/receipt-agent-cloud-narrated.mp4",
     "public/tv/receipt-agent-cloud-pricing.mp4",
     "public/tv/receipt-agent-fleet.mp4",
+    "public/tv/receipt-agent-memory-narrated.mp4",
     "public/tv/receipt-agentcloud-49-narrated.mp4",
     "public/tv/receipt-agentcloud-49.mp4",
     "public/tv/receipt-agentcloud-fleet.mp4",
