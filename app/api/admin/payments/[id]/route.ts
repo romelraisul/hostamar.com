@@ -6,6 +6,8 @@ import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
+// ponytail: force Node runtime so Prisma engine bootstrap (fs.readdir) works on Vercel edge
+export const runtime = 'nodejs'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
