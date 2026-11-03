@@ -1,103 +1,246 @@
-# DATABASE — hostamar.com
+# DATABASE — Schema, Clients, and Mirror Chain
 
-## Context
+**Version:** 4.0
+**Last Updated:** 2026-11-04T04:38:00+06:00
+**Status:** LIVE — Turso primary, 773 tables Infisical DB
 
-hostamar.com uses Prisma 5.22.0 over Turso/libsql (SQLite provider, `driverAdapters` preview feature). The schema is 1802 lines and lives at `prisma/schema.prisma`. Local dev uses WSL Podman Postgres; production uses Neon (AI video product DB) with `@neondatabase/serverless` over 443 (port 5432 blocked). Libsql (SQLite) is the Workers runtime DB.
+---
 
-**P4 Status: CLOSED** — `/models.json` 404 fixed (was @libsql/isomorphic-ws esbuild bug).
-**P5 Status: IN PROGRESS** — f005 CDN Worker uses B2 for manifests, libSQL for live TV count.
+## Database Architecture
 
-## Task
-
-Document Prisma tables, PK/FK relations, ER diagram, RLS strategy, and libsql vs Postgres trade-offs.
-
-## Includes
-
-### Core Tables (from schema.prisma)
-
-| Table | PK | FK | Purpose |
-|-------|-----|-----|---------|
-| User | id | — | Auth identity (NextAuth) |
-| Account | id | userId | NextAuth provider accounts |
-| Session | id | userId | Session tokens |
-| Video | id | uploaderId | Hostamar TV videos |
-| Model | id | — | AI model catalog (models.json sync) |
-| Order | id | userId | bKash/Nagad/Rocket/Stripe orders |
-| OrderItem | id | orderId, productId | Line items |
-| Product | id | creatorId | AI Store product |
-| ChatSession | id | userId | Kai9000 AI chat |
-| ChatMessage | id | sessionId | Chat history |
-| Credits | id | userId | Credit balance (prepaid) |
-| CreditTransaction | id | creditsId | Credit ledger |
-| AffiliateReferral | id | referrerId, referredId | Affiliate tracking |
-| WebhookEvent | id | — | bKash/Nagad webhooks (idempotency) |
-| Deployment | id | userId | VPS deployment records |
-
-### PK/FK Relations
-
-- `User 1:N Account` (userId)
-- `User 1:N Session` (userId)
-- `User 1:N Video` (uploaderId)
-- `Order 1:N OrderItem` (orderId)
-- `Product 1:N OrderItem` (productId)
-- `ChatSession 1:N ChatMessage` (sessionId)
-- `Credits 1:N CreditTransaction` (creditsId)
-- `User 1:N AffiliateReferral` (referrerId + referredId)
-
-### ER Diagram (Mermaid)
-
-```mermaid
-erDiagram
-    User ||--o{ Account : owns
-    User ||--o{ Session : owns
-    User ||--o{ Video : uploads
-    User ||--o{ Order : places
-    User ||--o{ ChatSession : starts
-    User ||--o{ Credits : has
-    User ||--o{ AffiliateReferral : refers
-    User }|--|| AffiliateReferral : is_referred_by
-    Order ||--o{ OrderItem : contains
-    Product ||--o{ OrderItem : appears_in
-    Credits ||--o{ CreditTransaction : transacts
-    ChatSession ||--o{ ChatMessage : contains
-    Model ||--o{ Video : generates
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        TURSO (Primary)                          │
+│  libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io        │
+│  @libsql/client/web (HTTPS/Hrana over 443)                      │
+│  getTursoEdgeClient() → fetch-only, works on workerd + Node     │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ 6h mirror (GitHub Actions)
+           ┌───────────────┼───────────────┐
+           ▼               ▼               ▼
+      ┌─────────┐    ┌──────────┐    ┌────────┐
+      │ SUPABASE│    │   NEON   │    │  LOCAL │
+      │  Postgres│    │ serverless│    │ Podman │
+      │  (mirror)│    │  @neondb/ │    │postgres│
+      └─────────┘    │ serverless│    │:15432  │
+                     │ over 443  │    │(decoy) │
+                     └──────────┘    └────────┘
+                                          │
+                                   ┌──────┴──────┐
+                                   ▼             ▼
+                              ┌────────┐    ┌─────────────┐
+                              │Infisical│    │   Other     │
+                              │  (real) │    │  services   │
+                              │ :15433  │    │ (forgejo,   │
+                              │ 773 tbls│    │  medusa,    │
+                              └────────┘    │  teldrive)  │
+                                            └─────────────┘
 ```
 
-### RLS (Row-Level Security)
+---
 
-- Auth layer enforces RLS via `session.userId` match on every query.
-- No SQL-level RLS (SQLite doesn't support it). Application-level only.
-- Prisma middleware rejects any query where `userId` doesn't match `session.userId`.
-- Admin routes bypass RLS via `role: 'ADMIN'` check in session.
+## Turso (Production Primary)
 
-### libsql vs Postgres
+- **Client:** `@libsql/client/web` (v0.14.0) — fetch-only, HTTPS/Hrana
+- **Edge Client:** `getTursoEdgeClient()` in `lib/turso-edge.ts`
+  - Singleton pattern
+  - Converts `libsql://` → `https://` (avoids WebSocket CPU trap on workerd)
+  - Uses `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN` from env
+- **Why not Prisma on edge:** Prisma 5.22 `fs.readdir` on `/lib` → unenv throws → 1102 Worker CPU limit
+- **Local Dev:** Prisma 5.22.0 + `@prisma/adapter-libsql` over `@libsql/client`
 
-| Aspect | libsql (Workers / local) | Postgres (Neon / Podman) |
-|--------|--------------------------|--------------------------|
-| Provider | `sqlite` + `@libsql/client/web` | `postgresql` + `@neondatabase/serverless` |
-| Where | Cloudflare Workers, WSL dev | Production AI video DB, local Podman |
-| Connection | HTTPS/fetch (libsql://) | TCP/SSL over 443 (port 5432 blocked) |
-| Prisma adapter | `@prisma/adapter-libsql` | `@prisma/adapter-neon` |
-| Migration | `prisma migrate dev` (local PG) | `prisma migrate deploy` (Neon) |
-| Engine | WASM binary in `node_modules/.prisma` | Node.js native via serverless driver |
+---
 
-### P5 f005 Integration
+## Prisma Schema (Key Models)
 
-- **Manifest sync**: `scripts/sync-manifest-to-b2.mjs` queries libSQL for live TV count
-- **Query**: `SELECT COUNT(*) as count FROM Video WHERE status = 'published'`
-- **Connection**: Uses `HOSTAMAR_DATABASE_URL` from Infisical (libsql:// with authToken)
-- **AuthToken extraction**: Handles quoted URLs from Infisical export (`\"libsql://...?authToken=...\"`)
-- **Fallback**: Returns 353 if DB unavailable (placeholder from B2 tv.json)
+```prisma
+// prisma/schema.prisma (excerpt)
+model Customer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?  // bcrypt hash
+  role      String   @default("customer")
+  phone     String?
+  credits   Int      @default(3000)
+  ssoProvider String?
+  ssoEnforcedTenant String?
+  mfaSecret String?
+  mfaEnabled Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([email])
+}
 
-## Rules
+model Video {
+  id          String   @id @default(cuid())
+  title       String
+  url         String
+  thumbnail   String?
+  duration    Int?
+  category    String?
+  source      String   @default("b2")
+  b2Key       String?
+  views       Int      @default(0)
+  status      String   @default("published")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([status])
+  @@index([category])
+}
 
-- Never hardcode connection strings — read from Infisical/env (replaced with [REDACTED]).
-- `prisma migrate dev` uses local Podman Postgres, never production Neon directly.
-- Libsql schema changes applied via `prisma migrate dev` then synced to libsql endpoint.
-- **B2 not R2**: All manifests and video assets on Backblaze B2 (f005/us-east-005), NOT Cloudflare R2
-- **Infisical secrets**: ALL secrets in `/home/romel/automation/infisical.env` — NEVER commit
-- **4x200 Probe**: `/tv`, `/api/tv`, `/api/tv/live`, `/models.json` must all return 200 with `cf-ray`, no `x-vercel`
+model TvChannel {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  logo        String?
+  category    String?
+  country     String?
+  views       Int      @default(0)
+  isLive      Boolean  @default(false)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  @@index([country, status])
+}
 
-## Output
+model TvCommand {
+  id          String   @id @default(cuid())
+  action      String   // START_WEBSITE, START_ALL, STOP, RELOAD_PLAYLIST, GENERATE_VIDEO
+  payload     String?  // JSON
+  status      String   @default("PENDING") // PENDING, EXECUTING, COMPLETED, FAILED
+  createdAt   DateTime @default(now())
+  executedAt  DateTime?
+  @@index([status])
+}
 
-This document. Read before touching `prisma/schema.prisma` or any DB query.
+model Order {
+  id            String   @id @default(cuid())
+  customerId    String
+  productId     String
+  amount        Int      // credits
+  status        String   @default("pending")
+  paymentMethod String?  // bkash, nagad, rocket
+  transactionId String?
+  createdAt     DateTime @default(now())
+  @@index([customerId, status])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String   @unique
+  amount        Int
+  method        String
+  status        String   @default("pending")
+  transactionId String?
+  gatewayData   Json?
+  createdAt     DateTime @default(now())
+}
+```
+
+---
+
+## Edge Route Pattern (All TV/Admin Routes)
+
+```typescript
+// lib/turso-edge.ts
+import { createClient } from '@libsql/client/web'
+
+let _client: ReturnType<typeof createClient> | null = null
+
+export function getTursoEdgeClient() {
+  if (_client) return _client
+  const raw = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL?.split('?')[0]
+  const authToken = process.env.TURSO_AUTH_TOKEN || process.env.DATABASE_URL?.split('authToken=')[1]?.split('&')[0]
+  if (!raw) throw new Error('TURSO_DATABASE_URL / DATABASE_URL not configured')
+  const url = raw.replace(/^libsql:\/\//, 'https://')  // HTTPS = Hrana over fetch
+  _client = createClient({ url, authToken })
+  return _client
+}
+```
+
+**Usage in routes:**
+```typescript
+import { getTursoEdgeClient } from '@/lib/turso-edge'
+
+export async function GET() {
+  const db = getTursoEdgeClient()
+  const res = await db.execute({
+    sql: 'SELECT COUNT(*) as cnt FROM "Video" WHERE status = ?',
+    args: ['published']
+  })
+  // ...
+}
+```
+
+---
+
+## Infisical Database (Self-Hosted)
+
+- **Container:** `infisical` (podman) on port 8089
+- **Real DB:** `postgres-infisical` on port 15433 (bridge network, 773 tables, 171 secrets)
+- **Decoy DB:** `hostamar-postgres` on port 15432 (empty infisical schema)
+- **Secrets Mirror:** `/home/romel/automation/infisical.env` (chmod 600, 175 keys including ENCRYPTION_KEY, JWT_AUTH_SECRET)
+- **Restore Order:** redis-infisical → postgres-infisical → infisical
+
+---
+
+## Local Podman Databases
+
+| Container | Port | Database | Purpose |
+|-----------|------|----------|---------|
+| postgres-infisical | 15433 | infisical | **Real** Infisical data (773 tables) |
+| hostamar-postgres | 15432 | infisical (empty) | Decoy — port owned by docker hostamar-postgres |
+| redis-infisical | 6379 | - | Infisical cache/sessions |
+| redis-foundation | 6380 | - | Shared cache for fleet |
+| forgejo | 3000 | forgejo | Git mirror (SQLite file) |
+
+---
+
+## Neon (Serverless Fallback)
+
+- **Client:** `@neondatabase/serverless` (fetch over 443)
+- **Why not 5432:** DPI blocks port 5432 in Bangladesh
+- **URL:** `NEON_DATABASE_URL` in Infisical (format: `postgresql://...`)
+- **Usage:** AI video product DB, mirror target
+
+---
+
+## Mirror Chain (6h Schedule)
+
+```yaml
+# .github/workflows/mirror-turso.yml (conceptual)
+# Currently GATED by GitHub suspension (appeal #4892433)
+Turso → Supabase → Neon
+  │
+  └─ pg_dump / COPY / Prisma migrate deploy
+```
+
+---
+
+## Connection Strings (Env Vars)
+
+| Var | Value | Notes |
+|-----|-------|-------|
+| `TURSO_DATABASE_URL` | `libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io` | Primary |
+| `TURSO_AUTH_TOKEN` | `eyJhbG...` | JWT token |
+| `DATABASE_URL` | `postgresql://...` | Neon (Prisma local) |
+| `INFISICAL_DATABASE_URL` | `postgresql://postgres:***@host.containers.internal:15433/infisical` | Real Infisical DB |
+
+---
+
+## Verification Commands
+
+```bash
+# Turso edge client test
+node -e "
+const { createClient } = require('@libsql/client/web');
+const db = createClient({ url: 'https://hostamar-db-romelraisul.aws-us-east-1.turso.io', authToken: '...' });
+db.execute('SELECT 1').then(r => console.log('Turso OK:', r.rows));
+"
+
+# Infisical DB check
+podman exec postgres-infisical psql -U postgres -d infisical -c "\dt" | wc -l  # expect 773
+
+# Prisma generate (local)
+npx prisma generate --schema=prisma/schema.prisma
+```
