@@ -109,9 +109,12 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Fallback: try to match a store-order Transaction (bkash_personal) ---
+    // Match by phone since gatewayTrxId is null at checkout time.
+    // The transaction stores buyer's phone in cardType; SMS has senderNumber.
+    // Amount tolerance (±1 Tk) is checked after the query.
     const txn = await prisma.transaction.findFirst({
       where: {
-        gatewayTrxId: parsed.trxId,
+        cardType: parsed.senderNumber,
         status: { in: ['pending', 'pending_verification'] },
         gateway: 'bkash_personal',
       },
