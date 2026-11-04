@@ -27,6 +27,7 @@ EDGE = os.path.join(REPO, 'public/tv')
 SOURCES = [
     '/home/romel/OpenMontage/projects/programmes',
     '/home/romel/ComfyUI/output/video',
+    '/home/romel/scratch/video',   # own assemble.py renders (build-log episodes)
 ]
 
 # third-party patterns must never ship to our edge (same guard as .gitignore)
