@@ -193,6 +193,63 @@ async function handleTVManifestFileRequest(env: Env, request: Request, cache?: C
 	return new Response(data, { status: res.status, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=60", "X-Source": "nextjs-proxy" } });
 }
 
+async function handleTVVideoRequest(env: Env, request: Request, cache?: Cache): Promise<Response> {
+	const url = new URL(request.url);
+	const pathname = url.pathname;
+	// Match /tv/*.mp4
+	const mp4Match = pathname.match(/^\/tv\/(.+\.mp4)$/);
+	if (!mp4Match) {
+		return new Response(JSON.stringify({ error: "Not found", path: pathname }), { status: 404, headers: { "Content-Type": "application/json", "X-f005-Worker": "true" } });
+	}
+	const key = `public/tv/${mp4Match[1]}`;
+
+	const s3 = new S3Client({
+		endpoint: env.B2_ENDPOINT,
+		region: env.B2_REGION,
+		credentials: {
+			accessKeyId: env.B2_APPLICATION_KEY_ID,
+			secretAccessKey: env.B2_APPLICATION_KEY,
+		},
+	});
+	const cmd = new GetObjectCommand({ Bucket: env.B2_BUCKET_NAME, Key: key });
+	const signedUrl = await getSignedUrl(s3, cmd, { expiresIn: 3600 });
+
+	const cacheKey = new Request(`https://internal/b2/video/${key}`, { method: "GET" });
+	if (cache) {
+		const cached = await cache.match(cacheKey);
+		if (cached) {
+			const headers = new Headers(cached.headers);
+			headers.set("X-Source", "b2-cache");
+			headers.set("X-f005-Worker", "true");
+			return new Response(cached.body, { status: cached.status, headers });
+		}
+	}
+
+	const res = await fetch(signedUrl, { cf: { cacheTtl: 3600 } });
+	if (!res.ok) {
+		console.warn(`[f005] B2 video fetch returned ${res.status} for ${key}`);
+		// Fallback to Next.js
+		const nextjsUrl = new URL(pathname, env.F005_CDN_URL || "https://hostamar.com");
+		const fallbackRes = await fetch(nextjsUrl, { cf: { cacheTtl: 60 } });
+		if (fallbackRes.ok) {
+			const headers = new Headers(fallbackRes.headers);
+			headers.set("X-Source", "nextjs-fallback");
+			headers.set("X-f005-Worker", "true");
+			return new Response(fallbackRes.body, { status: fallbackRes.status, headers });
+		}
+		return new Response(JSON.stringify({ error: "Video not found", key }), { status: 404, headers: { "Content-Type": "application/json", "X-f005-Worker": "true" } });
+	}
+
+	const headers = new Headers(res.headers);
+	headers.set("X-Source", "b2-live");
+	headers.set("X-f005-Worker", "true");
+	headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+	const response = new Response(res.body, { status: res.status, headers });
+	if (cache) await cache.put(cacheKey, response.clone());
+	return response;
+}
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		try {
@@ -201,13 +258,14 @@ export default {
 			try { cache = (caches as any).default; } catch {}
 
 			if (url.pathname === "/models.json") return handleModelsRequest(env, request, cache);
-					if (url.pathname === "/api/tv") return handleTVRequest(env, request, cache);
-					if (url.pathname === "/api/tv/manifest") return handleTVManifestRequest(env, request, cache);
-					if (url.pathname === "/api/tv/live") return handleTVLiveRequest(env, request, cache);
-					if (url.pathname === "/tv/manifest.json") return handleTVManifestFileRequest(env, request, cache);
-					if (url.pathname === "/tv") return handleTVPageRequest(env, request, cache);
+							if (url.pathname === "/api/tv") return handleTVRequest(env, request, cache);
+							if (url.pathname === "/api/tv/manifest") return handleTVManifestRequest(env, request, cache);
+							if (url.pathname === "/api/tv/live") return handleTVLiveRequest(env, request, cache);
+							if (url.pathname === "/tv/manifest.json") return handleTVManifestFileRequest(env, request, cache);
+							if (url.pathname === "/tv") return handleTVPageRequest(env, request, cache);
+							if (url.pathname.endsWith(".mp4") && url.pathname.startsWith("/tv/")) return handleTVVideoRequest(env, request, cache);
 
-			return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), { status: 404, headers: { "Content-Type": "application/json", "X-f005-Worker": "true" } });
+							return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), { status: 404, headers: { "Content-Type": "application/json", "X-f005-Worker": "true" } });
 		} catch (e) {
 			return new Response(JSON.stringify({ error: String(e), stack: (e as Error).stack }), { status: 500, headers: { "Content-Type": "application/json" } });
 		}
