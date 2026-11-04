@@ -11,7 +11,7 @@
 | `redis-foundation` | 6379 | Up | Podman, Infisical's Redis |
 | `infisical-wsl` | 8089 | Up | Podman, secret store (127.0.0.1:8089) |
 | `forgejo` | 3000 | Up | Podman, git.hostamar.com (SQLite) |
-| `teldrive` | 8091 | Up | Docker, file manager |
+| `teldrive` | 8091 | Up | Docker, file manager (fixed: DB connection retry on startup) |
 | `hostamar-tv-rtmp` | 1935, 8080 | Up | Docker, nginx-rtmp + HLS |
 | `hostamar-openwebui` | 3003 | Up | Docker, Ollama UI |
 | `hostamar-code-server` | 8443 | Up | Docker, VS Code browser |
@@ -55,7 +55,18 @@ ingress:
   - service: http_status:404
 ```
 
-**4 QUIC connections** verified in logs.
+**hostamar-api-primary** (`/home/romel/.cloudflared/hostamar-api-primary-config.yml`):
+```yaml
+tunnel: b9839ba7-bdab-4591-8eeb-d8de95a9ee80
+credentials-file: /home/romel/.cloudflared/b9839ba7-bdab-4591-8eeb-d8de95a9ee80.json
+origincert: /home/romel/.cloudflared/cert.pem
+ingress:
+  - hostname: api-primary.hostamar.com
+    service: http://localhost:12436
+  - service: http_status:404
+```
+
+**4 QUIC connections** (hostamar-primary) + **4 QUIC connections** (hostamar-api-primary) verified in logs.
 
 ## Verification Commands
 

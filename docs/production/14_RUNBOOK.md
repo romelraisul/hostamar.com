@@ -123,7 +123,105 @@ git remote add codeberg git@codeberg.org:romelraisul/hostamar.com.git
 git push codeberg main
 ```
 
-## 15. Full Deploy + Verify (After ANY Recovery)
+## 15. teldrive DB Connection Retry Loop
+
+**Symptom:** teldrive container restarting, logs show "lookup teldrive-db on 127.0.0.11:53: no such host" then "connection refused" then "database system is starting up"
+
+**Root Cause:** teldrive starts before teldrive-db is ready on the shared `teldrive-net` network
+
+**Fix:** teldrive config has retry logic (max_retries=5, 500ms intervals). Container now stays Up after ~30s.
+
+**Verify:**
+```bash
+docker ps | grep teldrive  # Should show Up, not Restarting
+curl -s http://localhost:8091/health  # Returns HTML (200)
+```
+
+## 16. API Tunnel (api.hostamar.com) Creation
+
+**Symptom:** `api.hostamar.com/health` returns 404, no tunnel for api-primary
+
+**Fix:**
+```bash
+# 1. Create tunnel
+cloudflared tunnel create hostamar-api-primary
+
+# 2. Create config
+cat > /home/romel/.cloudflared/hostamar-api-primary-config.yml << 'EOF'
+tunnel: <tunnel-id>
+credentials-file: /home/romel/.cloudflared/<tunnel-id>.json
+origincert: /home/romel/.cloudflared/cert.pem
+ingress:
+  - hostname: api-primary.hostamar.com
+    service: http://localhost:12436
+  - service: http_status:404
+EOF
+
+# 3. Route DNS (use --overwrite-dns if record exists)
+cloudflared tunnel route dns --overwrite-dns hostamar-api-primary api-primary.hostamar.com
+
+# 4. Start tunnel (systemd or background)
+cloudflared tunnel --config /home/romel/.cloudflared/hostamar-api-primary-config.yml run &
+
+# 5. Verify
+curl -s https://api-primary.hostamar.com/v1/models | jq '.data | length'
+# Expected: 5
+```
+
+## 17. B2 Video Sync (374 videos)
+
+**Symptom:** Manifest has 374 videos, B2 bucket has ~70
+
+**Fix:**
+```bash
+# Authorize B2 CLI
+export B2_APPLICATION_KEY_ID="005B2_KEY_ID_PLACEHOLDER0000000001"
+export B2_APPLICATION_KEY="K005En5I2K9MzTzLR3itLtU5DBgBZvc"
+b2 authorize-account
+
+# Sync local public/tv to B2 tv/
+b2 sync /home/romel/hostamar.com/public/tv/ b2://hostamar-prod/tv/ --replace-newer --no-progress
+
+# Sync manifests
+cd /home/romel/hostamar.com
+source /home/romel/automation/infisical.env
+node scripts/sync-manifest-to-b2.mjs
+
+# Verify
+b2 ls b2://hostamar-prod/tv/ --recursive | wc -l
+# Expected: ~400 (374 videos + manifests)
+curl -I https://hostamar.com/tv/HostamarH3_00001_.mp4 | grep -E "HTTP|content-type|x-source"
+# Expected: 200 video/mp4, x-source: b2-live
+```
+
+## 18. Payment Flow Test (Revenue Unblock)
+
+**Prerequisites:** Auth token (login first), test TrxID
+
+```bash
+# 1. Login to get auth cookie
+curl -c /tmp/cookies.txt -X POST https://hostamar.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@hostamar.com","password":"password123"}'
+
+# 2. Test verify-trx (creates pending_verification transaction)
+curl -b /tmp/cookies.txt -X POST https://hostamar.com/api/billing/verify-trx \
+  -H "Content-Type: application/json" \
+  -d '{"trxId": "TEST123456", "plan": "starter", "amount": 990}'
+# Expected: {"ok":true,"status":"pending_verification","credits":6000}
+
+# 3. Admin approve (requires admin auth)
+curl -b /tmp/admin_cookies.txt -X POST https://hostamar.com/api/admin/payments/approve/txn_123 \
+  -H "Content-Type: application/json" \
+  -d '{"planOverride": "starter"}'
+# Expected: {"success":true,"creditsAdded":6000}
+
+# 4. Verify bridge worker (bypasses CPU limit)
+curl -H "x-publishable-api-key: pk_8aab3cc7de63feb0ce7315d1f679f86494bb5776bae47b25070f4b732349a6ad" \
+  https://hostamar-medusa-bridge.romelraisul.workers.dev/store/products?limit=1
+```
+
+## 19. Full Deploy + Verify (After ANY Recovery)
 
 ```bash
 # 1. Clean Hermes limits
