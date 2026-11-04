@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
-import { getTursoEdgeClient } from '@/lib/turso-edge'
+import { TV_PLAYLIST, TV_PLAYLIST_COUNT } from '@/lib/tv-playlist'
 
 // ponytail: workerd cannot load Prisma 5.22's engine init (fs.readdir -> unenv
 // throws -> every query swallowed as 500). Read Turso directly via the fetch-only
@@ -11,63 +11,15 @@ import { getTursoEdgeClient } from '@/lib/turso-edge'
  * Returns the ordered playlist for the channel (used by /tv player + streamer).
  * Supports ?format=json for JSON, default returns M3U.
  * Supports ?limit=N to cap items (default 374).
+ * Data is embedded at build time from manifest.json via generate-tv-playlist.mjs
  */
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url)
-    const limit = Math.min(parseInt(url.searchParams.get('limit') || '374', 10), 374)
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || String(TV_PLAYLIST_COUNT), 10), TV_PLAYLIST_COUNT)
     const wantJson = url.searchParams.get('format') === 'json' || req.headers.get('accept')?.includes('application/json')
 
-    // Try Turso first (production)
-    let videos: any[] = []
-    try {
-      const db = getTursoEdgeClient()
-      const res = await db.execute({
-        sql: 'SELECT "id", "title", "url", "thumbnail", "duration", "createdAt" FROM "Video" WHERE "status" = ? ORDER BY "createdAt" DESC LIMIT ?',
-        args: ['published', limit]
-      })
-      videos = res.rows.map((r: any) => ({
-        id: String(r.id),
-        title: String(r.title || 'Untitled'),
-        url: String(r.url || ''),
-        thumbnail: r.thumbnail ? String(r.thumbnail) : null,
-        duration: r.duration ? Number(r.duration) : null,
-      })).filter((v: any) => v.url && v.url.includes('hostamar'))
-    } catch (err) {
-      console.log('[tv/playlist] Turso unavailable, trying B2 manifest:', err)
-    }
-
-    // Fallback: B2 manifest (tv.json from f005)
-    if (videos.length === 0) {
-      try {
-        const r = await fetch('https://f005.hostamar.com/file/hostamar-prod/tv.json', { next: { revalidate: 60 }, cache: 'no-store' })
-        if (r.ok) {
-          const j = await r.json() as any
-          const manifestVideos = Array.isArray(j) ? j : (j.videos || [])
-          videos = manifestVideos
-            .slice(0, limit)
-            .map((v: any, idx: number) => ({
-              id: String(v.id || v.videoId || idx),
-              title: String(v.title || v.fn || `Video ${idx + 1}`),
-              url: String(v.url || `https://f005.hostamar.com/file/hostamar-prod/${v.fn || ''}`),
-              thumbnail: v.thumbnail ? String(v.thumbnail) : null,
-              duration: v.duration ? Number(v.duration) : null,
-            }))
-            .filter((v: any) => v.url && v.url.includes('hostamar'))
-        }
-      } catch (err) {
-        console.log('[tv/playlist] B2 manifest fallback failed:', err)
-      }
-    }
-
-    // Last resort: return mock so /tv never blank
-    if (videos.length === 0) {
-      videos = [
-        { id: '1', title: 'Hostamar AI Video Demo', url: 'https://f005.hostamar.com/file/hostamar-prod/tv/HostamarH3_00001_.mp4', thumbnail: null, duration: null },
-        { id: '2', title: 'Hostamar Platform Overview', url: 'https://f005.hostamar.com/file/hostamar-prod/tv/HostamarH3_00002_.mp4', thumbnail: null, duration: null },
-        { id: '3', title: 'AI Video Generation Tutorial', url: 'https://f005.hostamar.com/file/hostamar-prod/tv/HostamarH3_00003_.mp4', thumbnail: null, duration: null },
-      ]
-    }
+    const videos = TV_PLAYLIST.slice(0, limit)
 
     if (wantJson) {
       return NextResponse.json({ ok: true, count: videos.length, source: 'b2-live-private', b2_only: true, videos }, { status: 200 })

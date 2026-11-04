@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Sync manifests to Backblaze B2 bucket for f005 CDN Worker
- * Uploads models.json and live tv.json with real count from DB
+ * Uploads models.json and full tv/manifest.json with video list
  */
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
@@ -17,8 +17,8 @@ const ROOT = path.resolve(__dirname, "..");
 // B2 S3-compatible API uses: accessKeyId = applicationKeyId, secretAccessKey = applicationKey
 const B2_APPLICATION_KEY_ID = process.env.B2_APPLICATION_KEY_ID || process.env.B2_KEY_ID || process.env.B2_ACCOUNT_ID;
 const B2_APPLICATION_KEY = process.env.B2_APPLICATION_KEY;
-// Use hostamar-manifests bucket (private, manifests only)
-const B2_BUCKET_NAME = process.env.B2_BUCKET_NAME || "hostamar-manifests";
+// Use hostamar-prod bucket (same as f005 worker)
+const B2_BUCKET_NAME = process.env.B2_BUCKET_NAME || "hostamar-prod";
 const B2_ENDPOINT = process.env.B2_ENDPOINT || "https://s3.us-east-005.backblazeb2.com";
 const B2_REGION = process.env.B2_REGION || "us-east-005";
 
@@ -54,7 +54,7 @@ async function getLiveTVCount() {
     const libsqlToken = process.env.TURSO_AUTH_TOKEN || process.env.LIBSQL_TOKEN;
 
     // Strip surrounding quotes (single, double, or escaped) that may come from infisical export
-    libsqlUrl = libsqlUrl.replace(/^[\"']+|[\"']+$/g, '').replace(/^\\\\\"+|\\\\\"+$/g, '');
+    libsqlUrl = libsqlUrl.replace(/^["']+|["']+$/g, '').replace(/^\\\\"+|\\\\"+$/g, '');
 
     if (!libsqlUrl) {
             console.warn("[sync-manifest] No libsql credentials, using live count 362");
@@ -67,7 +67,7 @@ async function getLiveTVCount() {
         if (libsqlUrl.includes("authToken=")) {
             const match = libsqlUrl.match(/authToken=([^&]+)/);
             if (match) token = match[1];
-            url = libsqlUrl.split("?")[0].replace(/^[\"']+|[\"']+$/g, '').replace(/^\\\\\"+|\\\\\"+$/g, '');
+            url = libsqlUrl.split("?")[0].replace(/^["']+|["']+$/g, '').replace(/^\\\\"+|\\\\"+$/g, '');
         }
 
         if (!token) {
@@ -97,7 +97,7 @@ async function main() {
     if (fs.existsSync(modelsPath)) {
         const content = fs.readFileSync(modelsPath, "utf-8");
         await uploadToB2("models.json", content, "application/json");
-        console.log("[sync-manifest] models.json: 4491 bytes, v40, 152 models");
+        console.log("[sync-manifest] models.json: uploaded");
     } else {
         console.warn("[sync-manifest] models.json not found at .open-next/assets/models.json");
         const publicModels = path.join(ROOT, "public", "models.json");
@@ -107,17 +107,27 @@ async function main() {
         }
     }
 
-    // 2. Generate and upload tv.json with live count
-    const liveCount = await getLiveTVCount();
-    const tvManifest = {
-        count: liveCount,
-        videos: [],
-        b2_only: true,
-        source: "b2-live",
-        lastUpdated: new Date().toISOString()
-    };
-    await uploadToB2("tv.json", JSON.stringify(tvManifest, null, 2), "application/json");
-    console.log(`[sync-manifest] tv.json: count=${liveCount}, source=b2-live`);
+    // 2. Upload full tv/manifest.json from build output
+    const manifestPath = path.join(ROOT, ".next", "standalone", "public", "tv", "manifest.json");
+    if (fs.existsSync(manifestPath)) {
+        const content = fs.readFileSync(manifestPath, "utf-8");
+        await uploadToB2("tv/manifest.json", content, "application/json");
+        const manifest = JSON.parse(content);
+        console.log(`[sync-manifest] tv/manifest.json: count=${manifest.count}, ${manifest.videos?.length || 0} videos`);
+    } else {
+        console.warn("[sync-manifest] tv/manifest.json not found at .next/standalone/public/tv/manifest.json");
+        // Fallback: generate tv.json with count only
+        const liveCount = await getLiveTVCount();
+        const tvManifest = {
+            count: liveCount,
+            videos: [],
+            b2_only: true,
+            source: "b2-live",
+            lastUpdated: new Date().toISOString()
+        };
+        await uploadToB2("tv.json", JSON.stringify(tvManifest, null, 2), "application/json");
+        console.log(`[sync-manifest] tv.json (fallback): count=${liveCount}`);
+    }
 
     console.log("[sync-manifest] Sync complete!");
 }
