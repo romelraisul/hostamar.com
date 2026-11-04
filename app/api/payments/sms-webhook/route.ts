@@ -112,12 +112,16 @@ export async function POST(req: NextRequest) {
     // Match by phone since gatewayTrxId is null at checkout time.
     // The transaction stores buyer's phone in cardType; SMS has senderNumber.
     // Amount tolerance (±1 Tk) is checked after the query.
+    // FORGE 2026-11-04: findFirst without orderBy returns an arbitrary row —
+    // with 234+ pending orders per phone, the SMS can match a stale one from
+    // weeks ago instead of the buyer's just-placed order. Newest first.
     const txn = await prisma.transaction.findFirst({
       where: {
         cardType: parsed.senderNumber,
         status: { in: ['pending', 'pending_verification'] },
         gateway: 'bkash_personal',
       },
+      orderBy: { createdAt: 'desc' },
       include: { customer: { select: { id: true, email: true, name: true } } },
     })
 
