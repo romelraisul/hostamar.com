@@ -193,6 +193,16 @@ async function handleTVManifestFileRequest(env: Env, request: Request, cache?: C
 	return new Response(data, { status: res.status, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=60", "X-Source": "nextjs-proxy" } });
 }
 
+async function handleTVWatchRequest(env: Env, request: Request, cache?: Cache): Promise<Response> {
+	const url = new URL(request.url);
+	// Use browser.hostamar.com (via hostamar-local tunnel to localhost:3011) to avoid f005 worker route loop
+	const pagesOrigin = "https://browser.hostamar.com";
+	const nextjsUrl = new URL(url.pathname + url.search, pagesOrigin);
+	const res = await fetch(nextjsUrl, { cf: { cacheTtl: 3600 } });
+	const html = await res.text();
+	return new Response(html, { status: res.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600", "X-Source": "browser-tunnel", "X-f005-Worker": "true" } });
+}
+
 async function handleTVVideoRequest(env: Env, request: Request, cache?: Cache): Promise<Response> {
 	const url = new URL(request.url);
 	const pathname = url.pathname;
@@ -258,14 +268,15 @@ export default {
 			try { cache = (caches as any).default; } catch {}
 
 			if (url.pathname === "/models.json") return handleModelsRequest(env, request, cache);
-							if (url.pathname === "/api/tv") return handleTVRequest(env, request, cache);
-							if (url.pathname === "/api/tv/manifest") return handleTVManifestRequest(env, request, cache);
-							if (url.pathname === "/api/tv/live") return handleTVLiveRequest(env, request, cache);
-							if (url.pathname === "/tv/manifest.json") return handleTVManifestFileRequest(env, request, cache);
-							if (url.pathname === "/tv") return handleTVPageRequest(env, request, cache);
-							if (url.pathname.endsWith(".mp4") && url.pathname.startsWith("/tv/")) return handleTVVideoRequest(env, request, cache);
+						if (url.pathname === "/api/tv") return handleTVRequest(env, request, cache);
+						if (url.pathname === "/api/tv/manifest") return handleTVManifestRequest(env, request, cache);
+						if (url.pathname === "/api/tv/live") return handleTVLiveRequest(env, request, cache);
+						if (url.pathname === "/tv/manifest.json") return handleTVManifestFileRequest(env, request, cache);
+						if (url.pathname === "/tv") return handleTVPageRequest(env, request, cache);
+						if (url.pathname.startsWith("/tv/watch/")) return handleTVWatchRequest(env, request, cache);
+						if (url.pathname.endsWith(".mp4") && url.pathname.startsWith("/tv/")) return handleTVVideoRequest(env, request, cache);
 
-							return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), { status: 404, headers: { "Content-Type": "application/json", "X-f005-Worker": "true" } });
+						return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), { status: 404, headers: { "Content-Type": "application/json", "X-f005-Worker": "true" } });
 		} catch (e) {
 			return new Response(JSON.stringify({ error: String(e), stack: (e as Error).stack }), { status: 500, headers: { "Content-Type": "application/json" } });
 		}
