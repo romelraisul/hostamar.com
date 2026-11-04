@@ -19,7 +19,7 @@ enabled = true
 
 # Apex CNAME stays pointed at Vercel as an untouched fallback.
 # Rollback = uncomment the routes and redeploy.
-# ROUTES DISABLED 2026-10-19: hostamar.com 503 ~100% of probes since ~21:00
+# 2026-10-19: hostamar.com 503 ~100% of probes since ~21:00
 # (CF error 1102 "Worker exceeded resource limits", free 10ms CPU cap).
 # Traffic now falls through to Vercel origin (hostamar-build.vercel.app 200).
 # 2026-10-19: hostamar.com AND www.hostamar.com attached as Worker CUSTOM
@@ -36,9 +36,10 @@ enabled = true
 # only functional on custom domains — before this attach the adapter's colo
 # front silently no-opped.
 # Rollback = remove the custom domains in the dash; routes keep the site up.
+# 2026-11-04: RE-ENABLED routes for /tv/watch/* pages (Vercel deploy blocked)
 routes = [
-  # { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
-  # { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
+  { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
+  { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
 ]
 
 # KV: read-mostly catalogs. Same account namespace the ai-gateway worker already

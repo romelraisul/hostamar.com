@@ -16,6 +16,8 @@ export default function TVPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const errorCountRef = useRef(0)
+  const maxRetries = 1
 
   // Fetch playlist on mount
   useEffect(() => {
@@ -39,7 +41,8 @@ export default function TVPage() {
             const manifestVideos = data.videos.map((fn: string, idx: number) => ({
               id: String(idx),
               title: fn.replace('.mp4', '').replace(/[_-]/g, ' '),
-              url: `https://f005.hostamar.com/file/hostamar-prod/${fn}`,
+              // Use worker route /tv/key.mp4 which signs and streams
+              url: `https://hostamar.com/tv/${fn}`,
               thumbnail: null,
               duration: null,
             }))
@@ -57,15 +60,40 @@ export default function TVPage() {
   const handleEnded = useCallback(() => {
     if (videos.length > 0) {
       setCurrentIndex((prev) => (prev + 1) % videos.length)
+      errorCountRef.current = 0
     }
   }, [videos.length])
 
-  // Handle video error -> skip to next
-  const handleError = useCallback(() => {
+  // Handle video error -> retry same video with fresh signed URL, then skip
+  const handleError = useCallback(async (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const videoEl = e.currentTarget
+    const err = videoEl.error
+    console.error('[TV] Video error:', err?.code, err?.message, 'at index', currentIndex, 'retry', errorCountRef.current)
+    
+    if (errorCountRef.current < maxRetries) {
+      errorCountRef.current++
+      // Fetch fresh playlist to get new signed URL for same video
+      try {
+        const res = await fetch('/api/tv/playlist?format=json&limit=374', { cache: 'no-store' })
+        const data = await res.json()
+        if (data.videos && data.videos[currentIndex]) {
+          const newUrl = data.videos[currentIndex].url
+          console.log('[TV] Retrying with fresh signed URL:', newUrl)
+          videoEl.src = newUrl
+          videoEl.load()
+          await videoEl.play()
+          return
+        }
+      } catch {}
+    }
+    
+    // Max retries reached -> skip to next
+    console.log('[TV] Max retries reached, advancing to next video')
+    errorCountRef.current = 0
     if (videos.length > 0) {
       setCurrentIndex((prev) => (prev + 1) % videos.length)
     }
-  }, [videos.length])
+  }, [currentIndex, videos.length])
 
   // Play next video when index changes
   useEffect(() => {
@@ -135,6 +163,7 @@ export default function TVPage() {
             playsInline
             controls
             preload="metadata"
+            crossOrigin="anonymous"
             poster="/tv-poster.jpg"
             className="w-full h-full object-contain"
             onEnded={handleEnded}

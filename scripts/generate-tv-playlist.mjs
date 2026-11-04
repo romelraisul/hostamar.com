@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Generate TV playlist data at build time from manifest
- * Creates lib/tv-playlist.ts with video list for playlist route
+ * Generate TV playlist KEYS at build time from manifest
+ * Creates lib/tv-playlist.ts with video keys for playlist route
+ * Runtime route signs URLs via f005 worker /tv/key.mp4
  */
 
 import fs from "fs";
@@ -23,29 +24,18 @@ if (!fs.existsSync(manifestPath)) {
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
 const videos = manifest.videos || [];
 
-const playlistData = videos.map((fn, idx) => ({
-    id: String(idx + 1),
-    title: fn.replace('.mp4', '').replace(/[_-]/g, ' '),
-    url: `https://f005.hostamar.com/file/hostamar-prod/${fn}`,
-    thumbnail: null,
-    duration: null,
-}));
+// Emit keys only (relative paths like "public/tv/video.mp4")
+// Runtime route prepends /tv/ and worker signs
+const keys = videos.map((fn) => fn.replace(/^public\/tv\//, ''));
 
 const content = `// Auto-generated at build time - DO NOT EDIT MANUALLY
 // Generated from .next/standalone/public/tv/manifest.json
+// Runtime route signs URLs via f005 worker /tv/key.mp4
 
-export interface TVPlaylistVideo {
-  id: string;
-  title: string;
-  url: string;
-  thumbnail: string | null;
-  duration: number | null;
-}
+export const TV_PLAYLIST_KEYS: string[] = ${JSON.stringify(keys, null, 2)};
 
-export const TV_PLAYLIST: TVPlaylistVideo[] = ${JSON.stringify(playlistData, null, 2)};
-
-export const TV_PLAYLIST_COUNT = ${playlistData.length};
+export const TV_PLAYLIST_COUNT = ${keys.length};
 `;
 
 fs.writeFileSync(outputPath, content);
-console.log(`[generate-tv-playlist] Generated ${outputPath} with ${playlistData.length} videos`);
+console.log(`[generate-tv-playlist] Generated ${outputPath} with ${keys.length} keys`);
