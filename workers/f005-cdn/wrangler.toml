@@ -22,5 +22,17 @@ pattern = "hostamar.com/tv"
 zone_name = "hostamar.com"
 
 [[routes]]
+pattern = "hostamar.com/api/tv"
+zone_name = "hostamar.com"
+
+[[routes]]
+pattern = "hostamar.com/api/tv/manifest"
+zone_name = "hostamar.com"
+
+[[routes]]
+pattern = "hostamar.com/api/tv/live"
+zone_name = "hostamar.com"
+
+[[routes]]
 pattern = "f005.hostamar.com/*"
 zone_name = "hostamar.com"

@@ -89,7 +89,7 @@ async function fetchFromB2<T>(env: Env, key: string, fallback: T, cache?: Cache)
 	}
 
 	// Fallback to Next.js for /api/tv
-	if (key === "tv.json") {
+	if (key === "tv.json" || key === "tv/manifest.json") {
 		try {
 			const nextjsUrl = new URL("/tv/manifest.json", env.F005_CDN_URL || "https://hostamar.com");
 			const res = await fetch(nextjsUrl, { next: { revalidate: 60 }, cache: "no-store" });
@@ -142,6 +142,31 @@ async function handleTVRequest(env: Env, request: Request, cache?: Cache): Promi
 	});
 }
 
+async function handleTVManifestRequest(env: Env, request: Request, cache?: Cache): Promise<Response> {
+	const { data: manifest, source } = await fetchFromB2<TVManifest>(env, "tv/manifest.json", { count: 0, videos: [], b2_only: true, source: "fallback-empty", lastUpdated: new Date().toISOString() }, cache);
+
+	if (source === "fallback-b2-miss" || manifest.count === 0) {
+		try {
+			const nextjsUrl = new URL("/tv/manifest.json", env.F005_CDN_URL || "https://hostamar.com");
+			const res = await fetch(nextjsUrl, { next: { revalidate: 60 }, cache: "no-store" });
+			if (res.ok) {
+				const data = await res.json();
+				const count = data.count || data.videos?.length || 0;
+				if (count >= 100) {
+					return new Response(JSON.stringify({ ...data, source: "nextjs-live" }), { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=60", "X-Source": "nextjs-live" } });
+				}
+			}
+		} catch (e) {
+			console.warn("[f005] Next.js fallback failed:", e);
+		}
+	}
+
+	return new Response(JSON.stringify({ ...manifest, source }), {
+		status: 200,
+		headers: { "Content-Type": "application/json", "Cache-Control": `public, max-age=${CACHE_TTL}`, "X-Source": source, "X-f005-Worker": "true" }
+	});
+}
+
 async function handleTVLiveRequest(env: Env, request: Request, cache?: Cache): Promise<Response> {
 	const { data: manifest, source } = await fetchFromB2<TVManifest>(env, "live.json", { count: 0, videos: [], b2_only: true, source: "fallback-empty", lastUpdated: new Date().toISOString() }, cache);
 
@@ -161,6 +186,13 @@ async function handleTVPageRequest(env: Env, request: Request, cache?: Cache): P
 	return new Response(html, { status: res.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=60", "X-Source": "nextjs-proxy" } });
 }
 
+async function handleTVManifestFileRequest(env: Env, request: Request, cache?: Cache): Promise<Response> {
+	const nextjsUrl = new URL("/tv/manifest.json", env.F005_CDN_URL || "https://hostamar.com");
+	const res = await fetch(nextjsUrl, { cf: { cacheTtl: 60 } });
+	const data = await res.text();
+	return new Response(data, { status: res.status, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=60", "X-Source": "nextjs-proxy" } });
+}
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		try {
@@ -170,7 +202,9 @@ export default {
 
 			if (url.pathname === "/models.json") return handleModelsRequest(env, request, cache);
 					if (url.pathname === "/api/tv") return handleTVRequest(env, request, cache);
+					if (url.pathname === "/api/tv/manifest") return handleTVManifestRequest(env, request, cache);
 					if (url.pathname === "/api/tv/live") return handleTVLiveRequest(env, request, cache);
+					if (url.pathname === "/tv/manifest.json") return handleTVManifestFileRequest(env, request, cache);
 					if (url.pathname === "/tv") return handleTVPageRequest(env, request, cache);
 
 			return new Response(JSON.stringify({ error: "Not found", path: url.pathname }), { status: 404, headers: { "Content-Type": "application/json", "X-f005-Worker": "true" } });
