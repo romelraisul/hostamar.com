@@ -1,6 +1,6 @@
-# Production docs index — hostamar.com; 16 docs, one line of purpose each.
+# Production docs index — hostamar.com; 17 docs, one line of purpose each.
 
-## The 16 docs (2026-11-04 verified)
+## The 17 docs (2026-11-04 verified)
 
 | # | Doc | Purpose |
 |---|-----|---------|
@@ -21,6 +21,7 @@
 | 14 | [14_RUNBOOK.md](14_RUNBOOK.md) | 19 common fixes: browser tool, file limit, state.db, TV 403, login SSO, AlwaysData, Codeberg, teldrive, api tunnel, B2 sync, payment flow, full deploy. |
 | 15 | [15_PAYMENT_FLOW.md](15_PAYMENT_FLOW.md) | bKash Send Money end-to-end: pricing → checkout → TrxID verify → admin approve → credits. CPU limit on checkout. |
 | 16 | [16_API_TUNNEL.md](16_API_TUNNEL.md) | api-primary tunnel (b9839ba7) to nvidia-guard:12436, api-router worker, Bot Fight Mode on /v1/models. |
+| 17 | [17_CLOUDFLARE_API_AUDIT.md](17_CLOUDFLARE_API_AUDIT.md) | Full CF API audit: 3 tokens, 47 DNS, 15 workers, 13 tunnels, WAF skip rule, Bot Fight Mode bypass, 15/15 endpoints green. |
 
 ## Verified live facts these docs are grounded on
 
@@ -32,9 +33,10 @@
 - GitHub push BLOCKED (appeal #4892433) — Forgejo `git.hostamar.com` is the live git host.
 - nvidia-guard :12436: 5 live models, concurrency 6, fallback chain verified.
 - TV pipeline: 374 videos, runtime-signed URLs, player retry-once-then-advance.
-- B2 tv/ bucket: 400+ files synced, signed URLs working.
+- B2 tv/ bucket: 408 files synced, signed URLs working.
 - teldrive: Up (fixed DB connection retry), port 8091.
 - Payment flow: infrastructure complete, checkout CPU limit on free tier.
+- Cloudflare: 3 API tokens, WAF skip rule active, 15/15 endpoints 200, Bot Fight Mode bypassed.
 
 ## Legacy docs still present (untouched)
 
@@ -42,28 +44,29 @@
 FEATURE_DEVELOPMENT.md, INTEGRATIONS.md, MCP_CONNECTION.md, P4_VERIFICATION.md, PLAN.md,
 SETUP.md, TESTING_QA.md, ACCESS.md, API.md, API_SPEC.md, ARCHITECTURE.md, BRAND_GUIDELINES.md,
 BUSINESS_MODEL.md, CHANGELOG.md, COSTS.md, DATA.md, DESIGN.md, DEPLOYMENT.md, INCIDENTS.md,
-OPERATIONS.md, ROADMAP.md, RUNBOOK.md, SECURITY.md, TV_PIPELINE.md` remain from earlier work — consult them for agent roster / auth / DB-schema detail; the 00-16 kit above is the operational source of truth.
+OPERATIONS.md, ROADMAP.md, RUNBOOK.md, SECURITY.md, TV_PIPELINE.md` remain from earlier work — consult them for agent roster / auth / DB-schema detail; the 00-17 kit above is the operational source of truth.
 
 ## Verification commands
 
 ```bash
 # Count docs
 ls -1 /home/romel/hostamar.com/docs/production/0*.md /home/romel/hostamar.com/docs/production/1*.md | wc -l
-# Expected: 16
+# Expected: 17
 
 # 4x200 probe
 for p in /tv /api/tv /api/tv/live /models.json; do
   echo -n "$p "; curl -s -o /dev/null -w "%{http_code}\n" "https://hostamar.com$p"
 done
 
-# 13/13 endpoints
+# 15/15 endpoints (13 + 2 API)
 for u in https://hostamar.com/ https://hostamar.com/login https://hostamar.com/pricing \
   https://hostamar.com/api/v1/models https://hostamar.com/api/store/products \
   https://hostamar.com/tv https://hostamar.com/tv/manifest.json \
   https://hostamar.com/api/tv https://hostamar.com/api/tv/playlist \
   https://hostamar.com/api/tv/stable-channels https://hostamar.com/api/tv/status \
   https://hostamar.com/api/tv/heartbeat https://hostamar.com/admin \
-  https://hostamar.com/api/admin/stats https://hostamar.com/models.json; do
+  https://hostamar.com/api/admin/stats https://hostamar.com/models.json \
+  https://api.hostamar.com/v1/models https://api-primary.hostamar.com/v1/models; do
   echo -n "$u: "; curl -s -o /dev/null -w "%{http_code}\n" -m 10 "$u"
 done
 
