@@ -34,7 +34,7 @@ const response = await fetch(
   {
     method: 'PUT',
     headers: {
-      'Authorization': 'Bearer PLACEHOLDER_CF_TOKEN',
+      'Authorization': 'Bearer ' + (process.env.CLOUDFLARE_WORKERS_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN),
       'Content-Type': `multipart/form-data; boundary=${boundary}`
     },
     body
