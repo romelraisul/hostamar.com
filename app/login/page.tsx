@@ -29,7 +29,7 @@ export default function LoginPage() {
   // Handle URL error params (e.g., sso_callback_failed)
   if (urlError && !error) {
     if (urlError === 'sso_callback_failed' || urlError.includes('sso')) {
-      setError('Google/OAuth login not configured — use email/password (custom JWT active)')
+      setError('Google SSO callback failed — try again or use email login. Check tunnel b9839ba7 + callback URL.')
     } else {
       setError(urlError.replace(/_/g, ' '))
     }
@@ -92,7 +92,7 @@ export default function LoginPage() {
           {(error || urlError) && (
                       <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg mt-5 text-[13.5px] flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                        <span>{error || (urlError === 'sso_callback_failed' ? 'Google login disabled — use email/password (NextAuth stubbed, custom JWT active)' : urlError?.replace(/_/g, ' '))}</span>
+                        <span>{error || (urlError === 'sso_callback_failed' ? 'Google SSO callback failed — try again or use email login. Check tunnel b9839ba7 + callback URL.' : urlError?.replace(/_/g, ' '))}</span>
                       </div>
                     )}
 
@@ -133,8 +133,17 @@ export default function LoginPage() {
               {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> লগইন হচ্ছে...</> : 'লগইন করুন →'}
             </button>
 
-            <p className="text-center text-[13px] text-zinc-500">
-              Custom JWT via Turso edge — no NextAuth OAuth
+            <div className="my-4 flex items-center gap-2">
+              <div className="h-px flex-1 bg-zinc-200" />
+              <span className="text-sm text-zinc-500">অথবা</span>
+              <div className="h-px flex-1 bg-zinc-200" />
+            </div>
+            <button onClick={() => window.location.href='/api/auth/google'} className="w-full flex items-center justify-center gap-2 border border-zinc-300 rounded-xl py-3 hover:bg-zinc-50 transition text-[14px]">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" /> Continue with Google — SSO
+            </button>
+
+            <p className="text-center text-[13px] text-zinc-500 mt-4">
+              Custom JWT via Turso edge + Google SSO
             </p>
 
             <p className="text-center text-[13px] text-zinc-500">
