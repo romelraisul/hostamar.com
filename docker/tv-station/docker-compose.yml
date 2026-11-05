@@ -17,6 +17,8 @@ services:
     image: alfg/nginx-rtmp:latest
     container_name: hostamar-tv-rtmp
     restart: unless-stopped
+    logging:
+      driver: "none"
     ports:
       - "1935:1935"   # RTMP ingest: rtmp://localhost:1935/live/tv
       - "8080:8080"   # HLS playback: http://localhost:8080/hls/live/tv/index.m3u8
@@ -32,6 +34,8 @@ services:
     image: linuxserver/ffmpeg:latest
     container_name: hostamar-tv-streamer
     restart: unless-stopped
+    logging:
+      driver: "none"
     depends_on:
       - rtmp
     environment:

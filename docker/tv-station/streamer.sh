@@ -54,7 +54,7 @@ start_stream() {
   fi
 
   echo "[tv-streamer] streaming $COUNT items to destinations"
-  ffmpeg -re -stream_loop -1 -f concat -safe 0 -i "$PLAYLIST_DIR/playlist.txt" \
+  ffmpeg -loglevel error -re -stream_loop -1 -f concat -safe 0 -i "$PLAYLIST_DIR/playlist.txt" \
     -c:v libx264 -preset veryfast -b:v 2500k -maxrate 2500k -bufsize 5000k \
     -pix_fmt yuv420p -g 50 -c:a aac -b:a 128k -ar 44100 \
     $ARGS &

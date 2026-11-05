@@ -34,7 +34,7 @@ const response = await fetch(
   {
     method: 'PUT',
     headers: {
-      'Authorization': 'Bearer CF_TOKEN_PLACEHOLDER',
+      'Authorization': 'Bearer PLACEHOLDER_CF_TOKEN',
       'Content-Type': `multipart/form-data; boundary=${boundary}`
     },
     body
