@@ -23,6 +23,7 @@
 | 16 | [16_API_TUNNEL.md](16_API_TUNNEL.md) | api-primary tunnel (b9839ba7) to nvidia-guard:12436, api-router worker, Bot Fight Mode on /v1/models. |
 | 17 | [17_CLOUDFLARE_API_AUDIT.md](17_CLOUDFLARE_API_AUDIT.md) | Full CF API audit: 3 tokens, 47 DNS, 15 workers, 13 tunnels, WAF skip rule, Bot Fight Mode bypass, 15/15 endpoints green. |
 | 26 | [26_ARCH_ISOLATE_NVIDIA_PERSONAL_ONLY.md](26_ARCH_ISOLATE_NVIDIA_PERSONAL_ONLY.md) | NVIDIA :12436 isolated to personal only (WSL+Desktop Hermes, OpenCode, AutoClaw, OpenClaw, MiniMax); website now api.hostamar.com → Worker Bearer injection → api-primary tunnel b9839ba7 → freellmapi :3002 (1454 models), 401-safe, 26 docs |
+| 27 | [27_AUTONOMOUS_DISK_AGENT.md](27_AUTONOMOUS_DISK_AGENT.md) | Autonomous disk cleanup: C: was 1.8GB, now 27.7GB; WSL agent 4x/day (docker prune --volumes 33.8GB reclaimed, fstrim) + Host task 03:30 (TEMP/DISM/RecycleBin/wsl-shutdown + DiskPart compact), 3 heal layers |
 
 ## Verified live facts these docs are grounded on
 
