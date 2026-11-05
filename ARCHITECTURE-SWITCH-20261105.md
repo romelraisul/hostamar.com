@@ -1,3 +1,10 @@
+> **SUPERSEDED 2026-11-05**: the switch described here is now LIVE — the
+> api-router Worker injects the bearer key server-side, so the public tunnel
+> serves freellmapi :3002 (1454 models) with no key exposure. Current state is
+> documented in docs/production/26_ARCH_ISOLATE_NVIDIA_PERSONAL_ONLY.md.
+> The narrative below is kept as the record of the first attempt and its revert.
+
+
 # Architecture Switch — Website API vs Personal Tools (2026-11-05)
 
 ## Goal
