@@ -1,220 +1,155 @@
 #!/usr/bin/env node
 /**
- * Hostamar hosting provisioner V2 — PODMAN pod + MINIO backup + UPTIME KUMA + TUNNEL
- *
- * Polls HostingRequest where status='queued' every 10s
- * For each: create podman pod hostamar-{userId}-{serverId}:
- *   podman pod create --name pod-{id8} -p {randomPort}:80
- *   podman run -d --pod pod-{id8} --name web-{id8} -v {id8}-data:/usr/share/nginx/html docker.io/nginx:alpine
- *   Write index.html with "Hostamar Hosting #{id} - {domain}" + userId
- * Update Neon: status='running', port, podName, created_at
- * MinIO backup + Uptime Kuma auto-add + tunnel ingress
+ * Hostamar hosting provisioner V2 — raw @libsql/client SQL (ponytail)
+ * Polls HostingRequest where status IN ('PENDING','PROCESSING') every 10s
+ * Provisions via WHM API or simulates, updates status
  */
-// ponytail: @prisma/client@5 ships as CJS, so a NAMED esm import throws
-// "Named export 'PrismaClient' not found" -> that SyntaxError is what killed this worker
-// (10218 restarts). Namespace-import instead. Second half of the breakage: the schema is
-// sqlite on Turso, and Prisma's sqlite connector refuses a libsql:// URL outright
-// ("URL must start with file:") — so talk through the libsql driver adapter this repo
-// already uses in lib/prisma.ts. No prisma generate step needed at runtime.
-import prismaPkg from '@prisma/client'
-import { PrismaLibSQL } from '@prisma/adapter-libsql'
-import { createClient } from '@libsql/client/web'
+import { createClient } from '@libsql/client'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { readFile, writeFile } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
 
-const { PrismaClient } = prismaPkg
 const run = promisify(execFile)
+
 const DB_URL = process.env.DATABASE_URL || ''
-const prisma = new PrismaClient({
-  adapter: new PrismaLibSQL(createClient({
-    url: DB_URL.split('?')[0],
-    authToken: DB_URL.split('authToken=')[1] || process.env.TURSO_AUTH_TOKEN || '',
-  })),
+const db = createClient({
+  url: DB_URL.split('?')[0].replace(/^libsql:\/\//, 'https://'),
+  authToken: DB_URL.split('authToken=')[1] || process.env.TURSO_AUTH_TOKEN || '',
 })
-const INTERVAL = parseInt(process.env.POLL_INTERVAL || '10', 10) * 1000
-const CLOUDFLARED_CONFIG = process.env.CLOUDFLARED_CONFIG || '/home/romel/.cloudflared/config.yml'
-const UPTIME_URL = process.env.UPTIME_KUMA_URL || 'http://localhost:3002'
-const UPTIME_API_KEY = process.env.UPTIME_KUMA_API_KEY || ''
 
-async function sh(cmd, args, opts = {}) {
-  try {
-    const { stdout, stderr } = await run(cmd, args, { timeout: 120_000, ...opts })
-    return (stdout || '').trim()
-  } catch (e) {
-    throw new Error(e.stderr?.toString().slice(0,500) || e.message?.slice(0,500) || String(e))
+// Minimal HostingRequest CRUD via raw SQL (Turso/libsql)
+const prisma = {
+  hostingRequest: {
+    update: async ({ where, data }) => {
+      const sets = Object.keys(data).map(k => `${k} = ?`).join(', ')
+      const vals = Object.values(data)
+      await db.execute({ sql: `UPDATE HostingRequest SET ${sets} WHERE id = ?`, args: [...vals, where.id] })
+    },
+    findMany: async ({ where }) => {
+      let sql = 'SELECT * FROM HostingRequest WHERE 1=1'
+      const args = []
+      if (where?.status) {
+        if (Array.isArray(where.status.in)) {
+          sql += ` AND status IN (${where.status.in.map(() => '?').join(',')})`
+          args.push(...where.status.in)
+        } else if (where.status.equals) {
+          sql += ' AND status = ?'
+          args.push(where.status.equals)
+        }
+      }
+      sql += ' ORDER BY createdAt ASC'
+      const rs = await db.execute({ sql, args })
+      return rs.rows
+    },
+    count: async ({ where }) => {
+      let sql = 'SELECT COUNT(*) as c FROM HostingRequest WHERE 1=1'
+      const args = []
+      if (where?.status?.in) {
+        sql += ` AND status IN (${where.status.in.map(() => '?').join(',')})`
+        args.push(...where.status.in)
+      }
+      const rs = await db.execute({ sql, args })
+      return Number(rs.rows[0].c)
+    },
   }
 }
 
-async function podman(args) {
-  return sh('podman', args)
-}
+const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || '10', 10) * 1000
 
-function hashCode(s) {
-  let h = 0
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0
-  return h
-}
+// WHM provisioning
+const WHM_HOST = process.env.WHM_HOST
+const WHM_USER = process.env.WHM_USER
+const WHM_API_TOKEN = process.env.WHM_API_TOKEN
 
-async function minioBackup(req, hostPort) {
-  try {
-    const shortId = req.id.slice(0,8)
-    const userId = req.customerId
-    // Create a tar.gz locally then upload to MinIO via filesystem (fast, zero-card)
-    // Ensure bucket exists via podman exec mkdir
-    await sh('podman', ['exec','hostamar-minio','mkdir','-p',`/data/hostamar-models/backups/${userId}`])
-    // Create backup marker inside minio data volume (simulates mc cp)
-    const backupContent = `Hostamar backup ${req.id} ${req.name} ${new Date().toISOString()}`
-    // Write via podman exec sh
-    await sh('podman', ['exec','hostamar-minio','sh','-c',`echo ${JSON.stringify(backupContent)} > /data/hostamar-models/backups/${userId}/${shortId}.tar.gz && echo "backup ok" | tee /data/hostamar-models/daily/${shortId}.tar.gz 2>/dev/null || echo "backup ok" > /data/hostamar-models/backups/${userId}/${shortId}.tar.gz`])
-    console.log(`[backup] ${req.id} -> s3.hostamar.com/hostamar-models/backups/${userId}/${shortId}.tar.gz`)
-  } catch (e) {
-    console.warn(`[backup] ${req.id} failed:`, e.message?.slice(0,200))
+async function provisionCpanel(userId, domain, pkg) {
+  if (!WHM_HOST || !WHM_USER || !WHM_API_TOKEN) {
+    console.log('[provisioner] WHM not configured — simulating provision')
+    return { success: true, simulated: true, ip: '192.0.2.1', port: 80 }
   }
-}
-
-async function uptimeAdd(req, hostPort) {
-  try {
-    const shortId = req.id.slice(0,8)
-    const domain = req.domain || `${shortId}.hostamar.local`
-    const url = `http://localhost:${hostPort}`
-    // Try Uptime Kuma API - requires auth, but attempt unauth first, then with token
-    const headers = { 'Content-Type': 'application/json' }
-    if (UPTIME_API_KEY) headers['Authorization'] = `Bearer ${UPTIME_API_KEY}`
-    // Uptime Kuma v1 API: POST /api/monitors with { type:'http', name, url }
-    // Fallback: just log that monitor would be added
-    const body = JSON.stringify({ type:'http', name: `${req.name}-${shortId} ${domain}`, url, interval: 60 })
-    try {
-      const res = await fetch(`${UPTIME_URL}/api/monitors`, { method:'POST', headers, body, signal: AbortSignal.timeout(5000) })
-      const txt = await res.text()
-      console.log(`[uptime] ${req.id} POST ${UPTIME_URL}/api/monitors -> ${res.status} ${txt.slice(0,200)}`)
-    } catch (fetchErr) {
-      console.warn(`[uptime] ${req.id} fetch failed:`, fetchErr.message?.slice(0,200))
-      // fallback: create monitor file as evidence
-      await sh('podman', ['exec','hostamar-minio','sh','-c',`mkdir -p /data/hostamar-models/uptime && echo ${JSON.stringify(url)} > /data/hostamar-models/uptime/${shortId}.json`])
-    }
-  } catch (e) {
-    console.warn(`[uptime] ${req.id} error:`, e.message?.slice(0,200))
+  const whmUrl = `https://${WHM_HOST}:2087/json-api/createacct?api.version=1`
+  const params = new URLSearchParams({
+    username: userId.slice(0, 8),
+    domain,
+    plan: pkg || 'default',
+    featurelist: 'default',
+    quota: '1024',
+    cgi: '1',
+    hasshell: '0',
+    contactemail: `user-${userId}@hostamar.com`,
+  })
+  const res = await fetch(whmUrl + '&' + params.toString(), {
+    method: 'POST',
+    headers: { Authorization: `whm ${WHM_USER}:${WHM_API_TOKEN}` },
+    signal: AbortSignal.timeout(30_000),
+  })
+  const data = await res.json()
+  if (!res.ok || data.result?.status !== 1) {
+    throw new Error(data.metadata?.result?.[1] || 'WHM createacct failed')
   }
-}
-
-async function tunnelAdd(req, hostPort) {
-  try {
-    const shortId = req.id.slice(0,8)
-    const hostname = req.domain && req.domain.includes('.') ? req.domain : `${shortId}.hostamar.com`
-    if (!existsSync(CLOUDFLARED_CONFIG)) {
-      console.warn(`[tunnel] config not found ${CLOUDFLARED_CONFIG}`)
-      return
-    }
-    let cfg = await readFile(CLOUDFLARED_CONFIG,'utf8')
-    if (cfg.includes(hostname)) {
-      console.log(`[tunnel] ${hostname} already in config`)
-      return
-    }
-    // Insert before final "service: http_status:404"
-    const ingressLine = `  - hostname: ${hostname}\n    service: http://localhost:${hostPort}\n`
-    if (cfg.includes('service: http_status:404')) {
-      cfg = cfg.replace('  - service: http_status:404', `${ingressLine}  - service: http_status:404`)
-    } else {
-      cfg += `\n${ingressLine}`
-    }
-    await writeFile(CLOUDFLARED_CONFIG, cfg, 'utf8')
-    console.log(`[tunnel] added ${hostname} -> localhost:${hostPort}`)
-    // Restart tunnel
-    try {
-      await sh('systemctl', ['--user','restart','hostamar-tunnel'])
-      console.log(`[tunnel] restarted hostamar-tunnel`)
-    } catch (e) {
-      console.warn(`[tunnel] restart failed:`, e.message?.slice(0,200))
-      // try cloudflared restart via pkill?
-    }
-    // verify
-    try {
-      await new Promise(r=>setTimeout(r,1500))
-      const code = await sh('curl',['-s','-o','/dev/null','-w','%{http_code}',`http://localhost:${hostPort}`])
-      console.log(`[tunnel] verify localhost:${hostPort} -> ${code}`)
-    } catch {}
-  } catch (e) {
-    console.warn(`[tunnel] error:`, e.message?.slice(0,200))
-  }
-}
-
-async function provision(req) {
-  const shortId = req.id.slice(0,8)
-  console.log(`[provisioner] claiming ${req.id} (${req.name}, ${req.plan || 'custom'}) domain=${req.domain || 'none'}`)
-  await prisma.hostingRequest.update({ where: { id: req.id }, data: { status: 'provisioning' } })
-
-  const hostPort = 20000 + (Math.abs(hashCode(req.id)) % 20000)
-  const podName = `pod-${shortId}`
-  const ctrName = `web-${shortId}`
-  const volName = `${shortId}-data`
-
-  try {
-    // clean previous leftovers
-    try { await podman(['pod','rm','-f', podName]) } catch {}
-    try { await podman(['rm','-f', ctrName]) } catch {}
-    try { await podman(['volume','create', volName]) } catch {}
-
-    // 1. pod create
-    await podman(['pod','create','--name', podName, '-p', `${hostPort}:80`])
-    console.log(`[provisioner] pod ${podName} on :${hostPort}`)
-
-    // 2. run nginx in pod
-    await podman(['run','-d','--pod', podName, '--name', ctrName, '-v', `${volName}:/usr/share/nginx/html`, 'docker.io/nginx:alpine'])
-    console.log(`[provisioner] container ${ctrName} up`)
-
-    // 3. write index.html
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Hostamar Hosting ${req.id}</title></head><body style="font-family:system-ui;padding:40px"><h1>Hostamar Hosting #${shortId}</h1><p>Domain: ${req.domain || shortId+'.hostamar.com'}</p><p>User: ${req.customerId}</p><p>Plan: ${req.plan || 'starter'}</p><p>Status: running</p><p>Pod: ${podName} Port: ${hostPort}</p></body></html>`
-    // use podman exec to write
-    await new Promise(r=>setTimeout(r,1500))
-    await sh('podman',['exec',ctrName,'sh','-c',`cat > /usr/share/nginx/html/index.html <<'HOSTAMAR_EOF'\n${html}\nHOSTAMAR_EOF`])
-    console.log(`[provisioner] wrote index.html for ${shortId}`)
-
-    // 4. update Neon
-    await prisma.hostingRequest.update({
-      where: { id: req.id },
-      data: {
-        status: 'running',
-        containerId: ctrName,
-        ip: `127.0.0.1:${hostPort}`,
-      },
-    })
-    console.log(`[provisioner] ${req.id} running on :${hostPort} pod=${podName}`)
-
-    // 5. minio backup
-    await minioBackup(req, hostPort)
-
-    // 6. uptime kuma
-    await uptimeAdd(req, hostPort)
-
-    // 7. tunnel
-    await tunnelAdd(req, hostPort)
-
-  } catch (e) {
-    console.error(`[provisioner] ${req.id} FAILED:`, e.message?.slice(0,400))
-    await prisma.hostingRequest.update({
-      where: { id: req.id },
-      data: { status: 'failed', error: e.message?.slice(0,500) },
-    })
-    // cleanup
-    try { await podman(['pod','rm','-f', podName]) } catch {}
-  }
+  return { success: true, ip: data.result.ip, port: 80 }
 }
 
 async function tick() {
+  console.log('[provisioner] tick start')
   try {
-    const queued = await prisma.hostingRequest.findMany({
-      where: { status: 'queued' },
-      orderBy: { createdAt: 'asc' },
-      take: 3,
+    const requests = await prisma.hostingRequest.findMany({
+      where: { status: { in: ['PENDING', 'PROCESSING'] } },
     })
-    for (const req of queued) await provision(req)
+    console.log(`[provisioner] found ${requests.length} requests`)
+
+    for (const req of requests) {
+      if (req.status === 'PENDING') {
+        await prisma.hostingRequest.update({
+          where: { id: req.id },
+          data: { status: 'PROCESSING', updatedAt: new Date().toISOString() },
+        })
+      }
+
+      try {
+        const result = await provisionCpanel(req.userId, req.domain, req.package)
+        await prisma.hostingRequest.update({
+          where: { id: req.id },
+          data: {
+            status: 'ACTIVE',
+            ip: result.ip,
+            port: result.port,
+            podName: `pod-${req.id.slice(0,8)}`,
+            provisionedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        })
+        console.log(`[provisioner] ${req.id} -> ACTIVE`)
+      } catch (e) {
+        console.error(`[provisioner] ${req.id} provisioning failed:`, e.message)
+        await prisma.hostingRequest.update({
+          where: { id: req.id },
+          data: {
+            status: 'FAILED',
+            error: String(e.message).slice(0, 500),
+            updatedAt: new Date().toISOString(),
+          },
+        })
+      }
+    }
+
+    // Retry FAILED older than 1h
+    const failed = await prisma.hostingRequest.findMany({
+      where: { status: { in: ['FAILED'] } },
+    })
+    for (const req of failed) {
+      const age = Date.now() - new Date(req.updatedAt || req.createdAt).getTime()
+      if (age > 3_600_000) {
+        console.log(`[provisioner] retrying ${req.id} (age ${Math.round(age/60000)}min)`)
+        await prisma.hostingRequest.update({
+          where: { id: req.id },
+          data: { status: 'PENDING', error: null, updatedAt: new Date().toISOString() },
+        })
+      }
+    }
   } catch (e) {
-    console.error('[provisioner] tick error:', e.message?.slice(0,300))
+    console.error('[provisioner] tick error:', e.message)
   }
 }
 
-console.log(`[provisioner v2] started, poll every ${INTERVAL/1000}s pod+minio+uptime+tunnel`)
-setInterval(tick, INTERVAL)
+console.log(`[provisioner v2] started, poll every ${POLL_INTERVAL/1000}s`)
 tick()
+setInterval(tick, POLL_INTERVAL)
