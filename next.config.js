@@ -6,8 +6,8 @@
 // be re-enabled here once the build is green.
 const nextConfig = {
   skipHtmlTrailingSlashRedirect: true, // GSC verification needs 200 at /<file>.html, not 307 to clean URL
-  // FORGE 2026-09-29: unconditional 'standalone' = the EXACT recipe of the only Ready prod build (mxq46aqfd 09-28 01:49: single function, 381 routes, serves hostamar.com). Serverless (output: undefined) fails to serve public/tv/*.mp4 at the edge — standalone bundles them into the single function deployment.
-  output: 'standalone',
+  // CLOUDFLARE PAGES: use next-on-pages (SSR via Worker), not standalone
+  // output: 'standalone' removed — next-on-pages handles Worker conversion
   typescript: {
     ignoreBuildErrors: true,
   },

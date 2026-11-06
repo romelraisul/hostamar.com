@@ -1,0 +1,49 @@
+# Cloudflare Pages deployment for Next.js via OpenNext
+# This deploys the OpenNext build output to Cloudflare Pages
+name = "hostamar"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static assets from OpenNext build
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+html_handling = "auto"
+
+# Worker script from OpenNext build
+main = ".open-next/worker.js"
+
+# KV namespaces for catalog caching
+[[kv_namespaces]]
+binding = "HOSTAMAR_CATALOG"
+id = "7ce14c69f70d48449dd50edd4be3dca3"
+
+# B2 cache configuration
+[vars]
+B2_S3_ENDPOINT = "https://s3.us-east-005.backblazeb2.com"
+B2_S3_REGION = "us-east-005"
+B2_CACHE_BUCKET = "hostamar-prod"
+B2_BUCKET_NAME = "hostamar-videos"
+B2_ENDPOINT = "https://f002.backblazeb2.com"
+NEXTAUTH_URL = "https://hostamar.com"
+NEXTAUTH_SECRET = "hostamar-docker-local-dev-secret-2026"
+NEXT_PUBLIC_SITE_URL = "https://hostamar.com"
+TV_HLS_URL = "https://tv.hostamar.com/hls/live/tv/index.m3u8"
+TV_AGENT_SECRET = "686dc8917e2d30103bc67b1c931adedd239e5a69a6274d9b"
+OPENROUTER_EMBED_FALLBACK = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
+EMBEDDINGS_URL = "https://embeddings.hostamar.com/v1/embeddings"
+DECISIONS_URL = "https://decisions.hostamar.com"
+DECISION_API_URL = "https://decisions.hostamar.com"
+HOSTAMAR_PC_MAX_AGE_S = "1200"
+TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
+TURSO_AUTH_TOKEN = "eyJhbG...LrCQ"
+
+# Custom domain routes (will be configured in dashboard)
+# routes = [
+#   { pattern = "hostamar.com/*", zone_name = "hostamar.com" },
+#   { pattern = "www.hostamar.com/*", zone_name = "hostamar.com" }
+# ]
+
+[observability.logs]
+enabled = true
