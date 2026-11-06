@@ -1,2 +1,8 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
-export default defineCloudflareConfig();
+
+const cloudflareConfig = defineCloudflareConfig();
+
+export default {
+  ...cloudflareConfig,
+  edgeExternals: [...(cloudflareConfig.edgeExternals || []), "@libsql/isomorphic-ws"],
+};
