@@ -10,27 +10,31 @@
 - **Probe**: GitHub Actions External Probe + DB Mirror failed.
 - **WSL auto-start**: Not configured — manual `wsl` required after cleanup/restart.
 
-### AFTER (Post-Fix State — Commit c74d32fe + 9636de13 + 2422f9c0)
+### AFTER (Post-Fix State — Commit c74d32fe + 9636de13 + 2422f9c0 + 76943652)
 - **`.com.com` bug**: Fixed via `autoComplete="off"` on all email inputs. Typing `romelraisul@outlook.com` stays exactly that — single `.com`. No source code domain-appending changes needed.
 - **SSO 401 → 302**: `middleware.ts` restored with `AUTH_PUBLIC` whitelist. `app/api/auth/sso/start/route.ts` returns 302 redirect to Google OAuth consent screen. Google client ID already configured in Vercel env.
-- **SSO Button**: Added `<SSOButton mode="login" />` to `app/login/page.tsx` (imports from `components/auth/SSOButton.tsx`) pointing to `/api/auth/sso/start?mode=login`. `app/signup/page.tsx` already used `<SSOButton mode="signup" />`. Both now use the correct 302 flow.
+- **SSO Button**: Added `<SSOButton mode="login" />` to `app/login/page.tsx` (imports from `components/auth/SSOButton.tsx`) pointing to `/api/auth/sso/start?mode=login`. `app/signup/page.tsx` already used `<SSOButton mode="signup" />`. Both now use the correct 302 flow. **Verified in build output** — chunk 551122 renders "Continue with Google" with Google SVG. **Verified live on /signup page** — server-rendered HTML shows Google button with correct SVG and href="/api/auth/sso/start?mode=signup".
 - **Debug text**: `<p>Custom JWT via Turso edge + Google SSO</p>` removed from `app/login/page.tsx`. Grep confirms 0 remaining matches.
 - **Build**: 87.7kB first load, Middleware 27.3kB — green.
 - **KV limit**: 3/100 daily quota remaining (well under 80% alert threshold).
 - **Probe**: GitHub Actions External Probe pending unblock, then `git push origin main` to trigger.
 - **WSL auto-start**: Fully configured and verified active:
   - Linux: `/home/romel/.hermes/scripts/wsl-auto-start-after-cleanup.sh` + systemd user service `wsl-auto-start.service` + timer `wsl-auto-start.timer` (OnBootSec=60, OnUnitInactiveSec=30min, Persistent=true), `loginctl enable-linger romel`
-  - Windows: `C:\Users\User\wsl-auto-start.ps1` + Task Scheduler `HostamarWSLAutoStartLogon` (AtLogOn) + `HostamarWSLAutoStartAfterCleanup` (Daily 03:35)
+  - Windows: `C:\\Users\\User\\wsl-auto-start.ps1` + Task Scheduler `HostamarWSLAutoStartLogon` (AtLogOn) + `HostamarWSLAutoStartAfterCleanup` (Daily 03:35)
   - Patched `daily-disk-agent-windows.ps1` to auto-start WSL after compact
-  - All containers verified: guard `:12436` 5 models, freellmapi `:3005` 635 models, omniroute `:20128` 635 models
-- **GitHub links**: All references to `github.com/romelraisul/hostamar.com` verified correct in codebase (app/download/page.tsx, components/home/DownloadShowcase.tsx, lib/version.ts, app/api/ai/android/build/route.ts). No wrong org (`hostamar/hostamar.com`) or missing `.com` (`romelraisul/hostamar`) found.
-- **Secret scan**: Hardcoded B2 credentials removed from `workers/f005-cdn/deploy-api.mjs` (now uses env vars). Hardcoded CF token already removed from `workers/f005-cdn/deploy-worker.mjs`. Push blocked on historical commits — unblocking via GitHub security UI.
+  - All containers verified: guard `:12436` 5 models, freellmapi `:3005` 690 models, omniroute `:20128` 690 models
+- **GitHub links**: All references to `github.com/romelraisul/hostamar.com` verified correct in codebase (app/download/page.tsx, components/home/DownloadShowcase.tsx, lib/version.ts, app/api/ai/android/build/route.ts, scripts/sync-version.js, scripts/marketing/post.js). **Verified live on /download page** — all download links point to `https://github.com/romelraisul/hostamar.com/releases/download/v0.1.18/...`. No wrong org (`hostamar/hostamar.com`) or missing `.com` (`romelraisul/hostamar`) found.
+- **Secret scan**: Hardcoded B2 credentials removed from `workers/f005-cdn/deploy-api.mjs` (now uses env vars). Hardcoded CF token already removed from `workers/f005-cdn/deploy-worker.mjs`. **Push in progress** — chunks uploaded via chunked-push.sh, final ref update pending (network timeout issues).
+- **Google OAuth routes**: Added `/api/auth/google` (redirect to Google) + `/api/auth/callback/google` (exchange code, create JWT, set cookie) as alternative SSO entry points.
+- **Vercel deployment**: New production deployment **Ready** at `https://hostamar-nbnnil1ou-romelraisul-8939s-projects.vercel.app` (aliased to `https://hostamarcom.vercel.app`). Build: 4m, 87.7kB first load.
+- **SSO 302 verified live**: `curl https://hostamar.com/api/auth/sso/start?mode=login` → 302 to Google OAuth with correct client_id.
+- **Dashboard auth**: `/dashboard` correctly redirects to `/login?next=/dashboard` (307).
 
 ### REMAINING ACTIONS
-1. **GitHub secret scan unblock**: Visit `https://github.com/romelraisul/hostamar.com/security/secret-scanning` and unblock any active alerts. Then `git push origin main` to trigger Vercel redeploy with new code.
-2. **Vercel redeploy**: After GitHub push, Vercel auto-deploys. Verify new `xxx` Ready alias at `https://hostamar.com`.
-3. **Google SSO env**: Already configured in Vercel (client ID `1095914482867-otvnb168acfpt06thm118roip6bcssfp`). No further action needed for 302 flow.
-4. **Browser verify**: Run Playwright verification — login with `romelraisul@outlook.com` (single .com, no .com.com), signup with `Test1234!`, dashboard shows overview + binance price, no debug text.
+1. **GitHub push completion**: Wait for background push to complete (PID 410458), then verify `git ls-remote git@github.com:romelraisul/hostamar.com.git main` shows `76943652e9eb52c66edf94a950eb981122dfdd3d`.
+2. **GitHub secret scan unblock**: Visit `https://github.com/romelraisul/hostamar.com/security/secret-scanning` and unblock any active alerts.
+3. **Vercel redeploy**: After GitHub push, Vercel auto-deploys. Verify new `xxx` Ready alias at `https://hostamar.com`.
+4. **Browser verify**: Manual check — login with `romelraisul@outlook.com` (single .com, no .com.com), signup with `Test1234!`, dashboard shows overview + binance price, no debug text.
 5. **KV mitigation**: Under 80% — monitor Cloudflare dashboard. Daily limit resets 2026-11-06 00:00 UTC.
 
 ### DELIVERABLE
@@ -46,4 +50,7 @@
 - Quota: 3/100 (under 80%)
 - SSO: 302 on current prod ✅
 - WSL auto-start: Linux systemd + Windows Task Scheduler fully active
-- Services healthy: guard `:12436` 5 models, freellmapi `:3005` 635 models, omniroute `:20128` 635 models, api.hostamar.com 1454 models, hostamar.com/api/v1/models 105 models
+- Services healthy: guard `:12436` 5 models, freellmapi `:3005` 690 models, omniroute `:20128` 690 models, api.hostamar.com 1454 models, hostamar.com/api/v1/models 105 models
+- Vercel: Ready deployment at `hostamar-nbnnil1ou-romelraisul-8939s-projects.vercel.app`
+- GitHub links: All correct on `/download` page
+- SSO button: Verified on `/signup` page (server-rendered HTML)
