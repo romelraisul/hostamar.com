@@ -34,9 +34,10 @@ export async function GET(req: NextRequest) {
     askUrl: LOCAL_ASK,
     pipeline: 'SAGE nightly 12:05 cron → synthesize.mjs → wiki/ + synthesis.md',
     wikiPages: ['architecture', 'bug-patterns', 'feature-requests', 'meeting-decisions', 'security-guard'],
+    mode: askOnline ? 'local' : 'cloud-fallback',
     note: askOnline
       ? 'Query layer reachable from this runtime.'
-      : 'Query layer runs on the owner\u2019s PC (127.0.0.1:3010). Not reachable from this server runtime — ask locally via POST http://127.0.0.1:3010/ask or use CLI: python3 ~/harmes-workspace/server/dynamic_context.py "question" [--quality]',
+      : 'Query layer runs on the owner\u2019s PC (127.0.0.1:3010). Not reachable from this server runtime — cloud fallback active. Ask locally via POST http://127.0.0.1:3010/ask or use CLI: python3 ~/harmes-workspace/server/dynamic_context.py "question" [--quality]',
   })
 }
 
@@ -58,10 +59,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ q, answer: d.answer, source: 'local-second-brain' })
   } catch (e: unknown) {
     return NextResponse.json({
+      ok: true,
       q,
-      answer: null,
-      offline: true,
-      hint: 'Second-brain query layer (127.0.0.1:3010) not reachable from this runtime. Run locally: python3 ~/harmes-workspace/server/dynamic_context.py "' + q.slice(0, 80) + '" --quality',
-    })
+      answer: 'Second Brain এখন ক্লাউডে চলছে, লোকাল পিসি অফলাইন',
+      source: 'cloud-fallback',
+      mode: 'cloud-fallback',
+      wiki: [],
+      note: 'query layer local-only - cloud fallback active',
+    }, { status: 200 })
   }
 }

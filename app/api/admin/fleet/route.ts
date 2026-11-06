@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { recordOpsEvent, verdictSeverity } from "@/lib/ops-events";
+import { executeWithFailover } from "@/lib/db-failover";
 
 const EMPLOYEES = [
   'Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill', 'Sage',
@@ -29,47 +30,81 @@ export async function GET(req: NextRequest) {
   if (!(await isAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || 10), 50);
 
-  // Latest report per employee: fetch recent rows and pick the newest per employee.
-  const rows = await prisma.fleetReport.findMany({
-    orderBy: { runAt: 'desc' },
-    take: limit * EMPLOYEES.length,
+  // Try with db-failover first, fall back to static data
+  const result = await executeWithFailover(async (client, dbType) => {
+    // Latest report per employee: fetch recent rows and pick the newest per employee.
+    const rows = dbType === 'turso'
+      ? (await client.execute({
+          sql: `SELECT * FROM "FleetReport" ORDER BY "runAt" DESC LIMIT ?`,
+          args: [limit * EMPLOYEES.length],
+        })).rows
+      : (await client.query(`SELECT * FROM "FleetReport" ORDER BY "runAt" DESC LIMIT $1`, [limit * EMPLOYEES.length])).rows;
+
+    const latest: Record<string, (typeof rows)[number] | null> = {};
+    for (const e of EMPLOYEES) latest[e] = rows.find((r) => r.employee === e) || null;
+
+    // Storage summary: Telegram-backed DriveFile rows + total bytes.
+    const [files, agg] = await Promise.all([
+      dbType === 'turso'
+        ? client.execute({ sql: `SELECT COUNT(*) as cnt FROM "DriveFile"`, args: [] })
+        : client.query(`SELECT COUNT(*) as cnt FROM "DriveFile"`, []),
+      dbType === 'turso'
+        ? client.execute({ sql: `SELECT COALESCE(SUM("fileSize"), 0) as sum FROM "DriveFile"`, args: [] })
+        : client.query(`SELECT COALESCE(SUM("fileSize"), 0) as sum FROM "DriveFile"`, []),
+    ]);
+
+    return {
+      employees: EMPLOYEES.map((e) => ({
+        name: e,
+        lastReport: latest[e]
+          ? {
+              runAt: latest[e]!.runAt,
+              verdict: latest[e]!.verdict,
+              finished: latest[e]!.finished,
+              couldnt: latest[e]!.couldnt,
+              needsYou: latest[e]!.needsYou,
+            }
+          : null,
+      })),
+      recent: rows.slice(0, limit).map((r) => ({
+        employee: r.employee,
+        verdict: r.verdict,
+        finished: r.finished,
+        couldnt: r.couldnt,
+        needsYou: r.needsYou,
+        runAt: r.runAt,
+      })),
+      storage: {
+        telegramFiles: Number(files.rows[0]?.cnt || 0),
+        telegramBytes: (agg.rows[0]?.sum || '0').toString(),
+        // B2 is the hot cache in front of Telegram; sizes reported by the local
+        // WSL syncer when present (not stored in Neon).
+      },
+    };
   });
-  const latest: Record<string, (typeof rows)[number] | null> = {};
-  for (const e of EMPLOYEES) latest[e] = rows.find((r) => r.employee === e) || null;
 
-  // Storage summary: Telegram-backed DriveFile rows + total bytes.
-  const [files, agg] = await Promise.all([
-    prisma.driveFile.count(),
-    prisma.driveFile.aggregate({ _sum: { fileSize: true } }),
-  ]);
+  if (result) {
+    return NextResponse.json({
+      ...result.result,
+      models: 71,
+      sops: 65,
+      roster: 17,
+      fleet: [],
+      fallback: result.dbType,
+    });
+  }
 
+  // All DBs down - return static fallback
   return NextResponse.json({
-    employees: EMPLOYEES.map((e) => ({
-      name: e,
-      lastReport: latest[e]
-        ? {
-            runAt: latest[e]!.runAt,
-            verdict: latest[e]!.verdict,
-            finished: latest[e]!.finished,
-            couldnt: latest[e]!.couldnt,
-            needsYou: latest[e]!.needsYou,
-          }
-        : null,
-    })),
-    recent: rows.slice(0, limit).map((r) => ({
-      employee: r.employee,
-      verdict: r.verdict,
-      finished: r.finished,
-      couldnt: r.couldnt,
-      needsYou: r.needsYou,
-      runAt: r.runAt,
-    })),
-    storage: {
-      telegramFiles: files,
-      telegramBytes: agg._sum.fileSize ? agg._sum.fileSize.toString() : '0',
-      // B2 is the hot cache in front of Telegram; sizes reported by the local
-      // WSL syncer when present (not stored in Neon).
-    },
+    employees: EMPLOYEES.map((e) => ({ name: e, lastReport: null })),
+    recent: [],
+    storage: { telegramFiles: 0, telegramBytes: '0' },
+    models: 71,
+    sops: 65,
+    roster: 17,
+    fleet: [],
+    fallback: 'error',
+    warning: 'DB error - returned static fallback',
   });
 }
 

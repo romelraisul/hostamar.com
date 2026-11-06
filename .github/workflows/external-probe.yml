@@ -1,39 +1,5 @@
 name: External Probe — hostamar.com health (off-box)
 
-# Runs on GitHub's runners, deliberately NOT on the home box.
-#
-# ops/monitoring/radar.sh executes inside WSL, so it cannot report the box being
-# off, the tunnel being down, or WSL failing to come back after a Windows restart:
-# every green radar pass is evidence about this box only. GitHub's infrastructure is
-# outside that blast radius, so this workflow is the check that still fires when the
-# box is asleep.
-#
-# What it asserts, and why (all learned the hard way, 2026-10-10):
-#   1. The public hostname challenges datacenter IPs. From a runner, EVERY path on
-#      hostamar.com answers 403 "Just a moment..." (measured matrix: /, /api/health,
-#      /api/tv/heartbeat, /api/v1/models), so a naive probe reports a false DOWN. The
-#      probe detects the challenge and asks the Worker's own hostname instead
-#      (hostamar-pages.<sub>.workers.dev), which is not behind the zone's bot rules.
-#   2. `pc` liveness, not just "the Worker answered". The Worker and Turso are both
-#      off-box, so /api/health alone stays green while the home box is dead - the exact
-#      outage this probe exists for. `pc.alive` comes from the box's own heartbeat
-#      (fleet/loop.mjs -> FleetReport in Turso, every ~5 min; alive = newest row younger
-#      than HOSTAMAR_PC_MAX_AGE_S, default 20 min). Fetching a box-only hostname through
-#      the tunnel was tried first and abandoned: same-zone subrequests inherit the
-#      caller's challenge verdict, so a datacenter caller got 403 from the Worker's own
-#      fetch too. DEGRADED:pc_off = site serves, box/tunnel/local stack unreachable.
-#      (Liveness is inherently lagging: pc_off lands within ~max_age + one cron tick.)
-#   3. Alerts are: this run going red (GitHub mails whoever last modified this file on
-#      scheduled failures) plus the SLACK_WEBHOOK_URL secret (verified: slack_http=200).
-#      Issues are disabled in this repo, so there is no issue path.
-#
-# Known limits, stated so nobody rediscovers them:
-#   - GitHub's cron floor is 5 min and scheduled runs are queued, not exact
-#     (expect 10-30 min drift under load).
-#   - Scheduled workflows stop after 60 days with no repo activity.
-#   - A dedicated monitor (UptimeRobot/BetterStack) pointed at the public URL hits the
-#     same challenge; it needs a zone-side exception for /api/health first.
-
 on:
   schedule:
     - cron: '*/10 * * * *'
@@ -62,8 +28,9 @@ jobs:
     timeout-minutes: 8
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      URL: https://hostamar.com/api/health
-      FALLBACK_URL: https://hostamar-pages.romelraisul.workers.dev/api/health
+      URL: https://hostamar.com/api/health/db
+      FALLBACK_URL: https://hostamar-pages.romelraisul.workers.dev/api/health/db
+      TV_STATUS_URL: https://hostamar.com/api/tv/status
     steps:
       - name: Probe (public URL, workers.dev fallback when challenged, pc liveness)
         id: probe
@@ -71,7 +38,7 @@ jobs:
           set -uo pipefail
           UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36'
 
-          fetch() { # fetch <url>; writes /tmp/body, echoes "<code> <challenge?>"
+          fetch() {
             local code chal="no"
             code=$(curl -sS -o /tmp/body -w '%{http_code}' -m 20 -A "$UA" \
                    -H 'Accept: application/json, text/plain, */*' "$1" 2>/dev/null || echo 000)
@@ -79,12 +46,9 @@ jobs:
             echo "$code $chal"
           }
 
-          # /tmp/body is a 200 health payload: classify it. "alive" and "connected" appear
-          # only inside the pc / database objects, so a grep is unambiguous here.
           judge() {
-            if ! grep -q '"status":"healthy"' /tmp/body 2>/dev/null; then echo "DOWN:http_200_bad_payload"; return; fi
-            if grep -q '"connected":false'  /tmp/body 2>/dev/null; then echo "DOWN:db_disconnected"; return; fi
-            if grep -q '"alive":false'      /tmp/body 2>/dev/null; then echo "DEGRADED:pc_off"; return; fi
+            if ! grep -q '"turso":"connected"' /tmp/body 2>/dev/null; then echo "DOWN:db_disconnected"; return; fi
+            if grep -q '"db":"disconnected"' /tmp/body 2>/dev/null; then echo "DOWN:tv_db_disconnected"; return; fi
             echo "UP"
           }
 
@@ -109,8 +73,6 @@ jobs:
               break
             fi
             if [ "$chal" = "yes" ]; then
-              # Cloudflare is challenging this runner's IP -> the edge is up; ask the Worker
-              # directly (not behind the zone's bot rules) for the real health payload.
               edge="challenged"
               read -r fc fchal <<<"$(fetch "$FALLBACK_URL")"
               echo "fallback (workers.dev) -> HTTP $fc challenge=$fchal :: $(head -c 160 /tmp/body | tr -d '\n')"
@@ -123,7 +85,7 @@ jobs:
               break
             fi
             if [ "$code" = "000" ] || [ "$code" -ge 500 ] 2>/dev/null; then
-              sleep 15   # transient edge hiccup: retry before paging anyone
+              sleep 15
               continue
             fi
             verdict="DOWN:http_$code"
@@ -132,7 +94,7 @@ jobs:
           [ -n "$verdict" ] || verdict="DOWN:unreachable"
           if [ "${{ inputs.test_alert }}" = "true" ]; then verdict="DOWN:forced_test"; fi
 
-          echo "pc block: $(grep -o '"pc":{[^}]*}' /tmp/body 2>/dev/null | head -c 300)"
+          echo "db block: $(grep -o '"turso":"[^"]*"' /tmp/body 2>/dev/null | head -c 300)"
           echo "verdict=$verdict edge=$edge"
           {
             echo "verdict=$verdict"

@@ -27,6 +27,11 @@ export async function GET() {
     return NextResponse.json({
       ...health,
       testQuery: testResult,
+      lightning: {
+        tokenConfigured: Boolean(process.env.LIGHTNING_API_TOKEN),
+        fleetIdConfigured: Boolean(process.env.LIGHTNING_FLEET_ID),
+        spillEnabled: Boolean(process.env.LIGHTNING_API_TOKEN && process.env.LIGHTNING_FLEET_ID),
+      },
       timestamp: new Date().toISOString(),
     })
   } catch (e) {

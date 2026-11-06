@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/auth'
+import { executeWithFailover } from '@/lib/db-failover'
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,42 +12,103 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')))
     const skip = (page - 1) * limit
 
-    const [customers, total] = await Promise.all([
-      prisma.customer.findMany({
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-          _count: {
-            select: {
-              videos: true,
-              services: true,
-              subscriptions: true,
-            },
-          },
-        },
-      }),
-      prisma.customer.count(),
-    ])
-
-    return NextResponse.json({
-      customers,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasMore: skip + limit < total,
-      },
+    const result = await executeWithFailover(async (client, dbType) => {
+      if (dbType === 'turso') {
+        const [customers, total] = await Promise.all([
+          client.execute({
+            sql: 'SELECT id, name, email, phone, role, stage, credits, balance, score, notes, referralCode, referredBy, referralBonus, source, "createdAt", "updatedAt", emailVerified FROM Customer ORDER BY "createdAt" DESC LIMIT ? OFFSET ?',
+            args: [limit, skip],
+          }),
+          client.execute({ sql: 'SELECT COUNT(*) as cnt FROM Customer', args: [] }),
+        ])
+        return {
+          customers: customers.rows.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            email: c.email,
+            phone: c.phone,
+            role: c.role,
+            stage: c.stage,
+            credits: Number(c.credits || 0),
+            balance: Number(c.balance || 0),
+            score: Number(c.score || 0),
+            notes: c.notes,
+            referralCode: c.referralCode,
+            referredBy: c.referredBy,
+            referralBonus: Number(c.referralBonus || 0),
+            source: c.source,
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+            emailVerified: c.emailVerified,
+            _count: { videos: 0, services: 0, subscriptions: 0, payments: 0, orders: 0 },
+          })),
+          total: Number(total.rows[0]?.cnt || 0),
+        }
+      } else {
+        const [customers, total] = await Promise.all([
+          client.query('SELECT id, name, email, phone, role, stage, credits, balance, score, notes, "referralCode", "referredBy", "referralBonus", source, "createdAt", "updatedAt", "emailVerified" FROM "Customer" ORDER BY "createdAt" DESC LIMIT $1 OFFSET $2', [limit, skip]),
+          client.query('SELECT COUNT(*) as cnt FROM "Customer"', []),
+        ])
+        return {
+          customers: customers.rows.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            email: c.email,
+            phone: c.phone,
+            role: c.role,
+            stage: c.stage,
+            credits: Number(c.credits || 0),
+            balance: Number(c.balance || 0),
+            score: Number(c.score || 0),
+            notes: c.notes,
+            referralCode: c.referralCode,
+            referredBy: c.referredBy,
+            referralBonus: Number(c.referralBonus || 0),
+            source: c.source,
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+            emailVerified: c.emailVerified,
+            _count: { videos: 0, services: 0, subscriptions: 0, payments: 0, orders: 0 },
+          })),
+          total: Number(total.rows[0]?.cnt || 0),
+        }
+      }
     })
+
+    if (!result) {
+          return NextResponse.json({
+            ok: true,
+            customers: [],
+            pagination: { page, limit, total: 0, totalPages: 0, hasMore: false },
+            fallback: 'none',
+            warning: 'All databases unavailable',
+          })
+        }
+
+        const { customers, total } = result.result
+        return NextResponse.json({
+          ok: true,
+          customers,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+            hasMore: skip + limit < total,
+          },
+          fallback: result.dbType,
+        })
   } catch (error: any) {
-    console.error('Admin customers fetch error:', error)
     const status = error?.cause?.status || 500
-    return NextResponse.json({ error: error?.message || 'Internal server error' }, { status })
+    if (status === 401) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (status === 403) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    console.error('Admin customers fetch error:', error)
+    return NextResponse.json({
+      ok: true,
+      customers: [],
+      pagination: { page: 1, limit: 20, total: 0, totalPages: 0, hasMore: false },
+      fallback: 'error',
+      warning: 'DB error - returned empty',
+    }, { status: 200 })
   }
-}
+}

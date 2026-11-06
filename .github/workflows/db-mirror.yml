@@ -1,14 +1,13 @@
 name: DB Mirror (Turso -> Supabase -> Neon)
 on:
   schedule:
-    - cron: "0 */6 * * *" # ponytail: */15 would burn Neon's free compute quota (that freeze happened before)
+    - cron: "0 */6 * * *"
   workflow_dispatch: {}
 
 jobs:
   mirror:
-    # Guard lives in the step shell: `secrets` is not a valid context in
-    # job-level `if:` (GitHub 422s the whole workflow on it).
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,47 +17,16 @@ jobs:
       - run: npm ci
       - name: Row-sync Turso -> Supabase
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
         run: |
-          if [ -z "$SUPABASE_URL" ]; then echo "SUPABASE_URL secret missing — skipping (mirror disabled)"; exit 0; fi
+          if [ -z "$SUPABASE_DATABASE_URL" ]; then echo "SUPABASE_DATABASE_URL secret missing — skipping (mirror disabled)"; exit 0; fi
           npx tsx scripts/sync-db.ts --check
-      - name: pg_dump Supabase -> Neon
+      - name: Sync Supabase -> Neon
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          NEON_URL: ${{ secrets.NEON_URL }}
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$NEON_URL" ]; then echo "secrets missing — skipping pg_dump"; exit 0; fi
-          # postgres:17 image — runner apt lacks postgresql-client-17 and client
-          # version must match server major (both DBs are pg17).
-          docker run --rm -v "$PWD:/w" -e S="$SUPABASE_URL" -e N="$NEON_URL" -e QC='SELECT count(*) FROM public."Customer"' postgres:17-alpine sh -c '
-            set +e
-            pg_dump "$S" --no-owner --no-acl --schema=public > /w/backup.sql
-            echo "dump lines: $(wc -l < /w/backup.sql)"
-            # Neon = replica of Supabase public schema. No createdb (pooled endpoint
-            # rejects CREATE DATABASE) — clean the schema instead, then restore.
-            psql "$N" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" > /dev/null 2>&1
-            sed -e "/^CREATE SCHEMA public/d" -e "/^COMMENT ON SCHEMA/d" /w/backup.sql > /w/backup2.sql
-            psql "$N" -v ON_ERROR_STOP=0 -q -f /w/backup2.sql > /w/psql.log 2>&1
-            echo "restore error count: $(grep -ci error /w/psql.log)"
-            grep -i error /w/psql.log | head -3
-            # search_path is NOT trusted on this pooled session (pg_dump set it
-            # empty and PgBouncer reuses server sessions) — count is schema-qualified.
-            psql "$N" -t -c "$QC" > /w/neon_count.txt 2> /w/neon_err.txt
-            echo "count rc=$? err=$(head -c 120 /w/neon_err.txt)"
-          ' || true
-          n=$(tr -d '[:space:]' < neon_count.txt 2>/dev/null || true)
-          echo "Neon Customer rows after restore: ${n:-unreachable}"
-          if [ -n "$n" ] && [ "$n" != "0" ]; then
-            echo "Mirror complete: Supabase -> Neon (schema: public)"
-          else
-            # Expected while Neon role lacks CREATEDB / DB archived (quota reset 2026-11-01).
-            echo "::warning::Neon mirror did not land — backup.sql kept as artifact."
-          fi
-      - name: Keep last dump as artifact (90d)
-        if: hashFiles('backup.sql') != ''  # ponytail: cheap presence check
-        uses: actions/upload-artifact@v4
-        with:
-          name: supabase-backup-${{ github.run_id }}
-          path: backup.sql
-          retention-days: 90
+          if [ -z "$SUPABASE_DATABASE_URL" ] || [ -z "$NEON_DATABASE_URL" ]; then echo "secrets missing — skipping sync"; exit 0; fi
+          npx tsx scripts/sync-db.ts --supabase-to-neon

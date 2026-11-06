@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getAuthUser } from '@/lib/get-auth-user'
 import { env } from '@/lib/env'
 
 export const dynamic = "force-dynamic";
@@ -24,48 +22,15 @@ const GATEWAY_URL = (env.AI_GATEWAY_URL || 'https://ai.hostamar.com').replace(/\
 // GET /api/gateway/models — list Hostamar AI models from the gateway.
 export async function GET(req: NextRequest) {
   try {
-    const user = await getAuthUser(req)
-    if (!user) {
+    // Simple auth check - check for auth_token cookie
+    const authToken = req.cookies.get('auth_token')?.value
+    if (!authToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Use the user's first active API key to authenticate to the gateway.
-    const key = await prisma.apiKey.findFirst({
-      where: { customerId: user.id, isActive: true },
-      orderBy: { createdAt: 'desc' },
-    })
-    let live: any[] | null = null
-    if (key) {
-      try {
-        const res = await fetch(`${GATEWAY_URL}/v1/models`, {
-          headers: { Authorization: `Bearer ${key.key}` },
-          cache: 'no-store',
-          signal: AbortSignal.timeout(3000),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          if (Array.isArray(data?.data)) live = data.data
-        }
-      } catch {
-        live = null
-      }
-    }
-
-    const source = live ? 'live' : 'static'
-    let data = live ?? STATIC_MODELS
-    // Enrich with context window info from the always-on 95 list so customers
-    // can choose big-context vs small-context models in the dashboard picker.
-    try {
-      const { CONTEXT_MAP, formatContext } = await import('@/lib/gateway/95-models')
-      data = data.map((m: any) => {
-        const cl = CONTEXT_MAP[m.id]
-        return cl
-          ? { ...m, display_name: `${m.id} [${formatContext(cl)}]`, context_length: cl, context: formatContext(cl) }
-          : m
-      })
-    } catch { /* enrichment is best-effort */ }
+    // Return static models immediately - no Prisma, no tier checks on edge
     return NextResponse.json(
-      { source, data, gatewayUrl: GATEWAY_URL, hasKey: !!key },
+      { source: 'static', data: STATIC_MODELS, gatewayUrl: GATEWAY_URL, hasKey: false, tiers: { up: 0, total: 0 }, tierStatuses: [], degraded: true },
       { headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' } }
     )
   } catch (error) {
