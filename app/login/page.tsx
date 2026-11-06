@@ -142,10 +142,6 @@ export default function LoginPage() {
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" /> Continue with Google — SSO
             </button>
 
-            <p className="text-center text-[13px] text-zinc-500 mt-4">
-              Custom JWT via Turso edge + Google SSO
-            </p>
-
             <p className="text-center text-[13px] text-zinc-500">
               Don&apos;t have account? <a href="/signup" className="text-[#0E7C3A] font-medium hover:underline">Create free account</a>
             </p>
