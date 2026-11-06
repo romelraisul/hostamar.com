@@ -4,6 +4,7 @@ import type { Transporter } from 'nodemailer'
 import fs from 'node:fs'
 import path from 'node:path'
 import { env } from '@/lib/env'
+import { normalizeEmail } from '@/lib/normalize-email'
 
 const SMTP_HOST = env.SMTP_HOST
 const SMTP_PORT = parseInt(env.SMTP_PORT || '587')
@@ -366,3 +367,6 @@ export async function sendBetaInviteEmail(to: string, name: string, inviteCode: 
 
     return sendMail(to, `Your Hostamar Beta Invite: ${inviteCode}`, enhancedHtml)
   }
+
+// Re-export normalizeEmail for single-source imports across auth routes
+export { normalizeEmail } from '@/lib/normalize-email'
