@@ -13,22 +13,19 @@ const COMPANY_LINKS = [
   { href: '/contact', bn: 'যোগাযোগ', en: 'Contact' },
 ]
 
-// V36.15: AI Store + Labs added to footer ecosystem column
-const STORE_LINKS = [
-  { href: '/store', bn: 'AI Store — ১০৬+ সার্ভিস', en: 'AI Store — 106+ services', desc: 'সব AI সার্ভিস এক জায়গায় — ১cr=1TK' },
-  { href: '/coinlab', bn: 'CoinLab BD — ক্রিপ্টো রিসার্চ', en: 'CoinLab BD — crypto research', desc: 'বাংলায় ক্রিপ্টো রিসার্চ, ৭-সেকশন টেমপ্লেট' },
-  { href: '/labs', bn: 'Labs — AI Desk ও টোকেন সেফটি', en: 'Labs — AI Desk & token safety', desc: 'স্ক্যাম থেকে বাঁচুন, BTC মনিটর, পেপার ট্রেডিং' },
-  { href: '/download', bn: 'ডাউনলোড — Hostamar Node', en: 'Download — Hostamar Node', desc: 'ফোন + কম্পিউটার = ডাটাসেন্টার' },
+const DOCS_LINKS = [
+  { href: '/docs', bn: 'ডকুমেন্টেশন ৬০৭ সার্ভিস · ৫১০ মডেল · Orca ADE · ৬cr=1TK=1COIN', en: 'Documentation 607 services · 510 models · Orca ADE · 6cr=1TK=1COIN', desc: '' },
+  { href: '/bangla-llm', bn: 'বাংলা LLM ট্রেনিং — 5000cr', en: 'Bangla LLM Training — 5000cr', desc: 'নিজের মডেল, QLoRA RTX 5060 8GB, api.hostamar.com/v1 & deploy' },
+  { href: '/docs/bn', bn: 'বাংলা ডকস', en: 'Bangla Docs', desc: 'সম্পূর্ণ ডকুমেন্টেশন বাংলায়' },
+  { href: '/docs/sops', bn: '৬৩ SOP স্টোর', en: '63 SOPs', desc: 'সাহায্য সার্ভিস গাইড, hk_live curl' },
+  { href: '/api/v1/models', bn: 'API / মডেল তালিকা 120 models — OpenAI compatible', en: 'API / Models 120 models — OpenAI compatible', desc: '' },
 ]
 
-// V17: Docs column — the user-facing documentation hub (EN + বাংলা) +
-// public API surfaces. 106 services · 120 models · Orca ADE guide.
-const DOCS_LINKS = [
-  { href: '/docs', bn: 'ডকুমেন্টেশন', en: 'Documentation', desc: '১০৬ সার্ভিস · ১২০ মডেল · Orca ADE · ১cr=1TK=1COIN' },
-  { href: '/bangla-llm', bn: 'বাংলা LLM ট্রেনিং — 5000cr', en: 'Bangla LLM Training — 5000cr', desc: 'নিজের মডেল, QLoRA RTX 5060 8GB, api.hostamar.com/v1 এ deploy' },
-  { href: '/docs/bn', bn: 'বাংলা ডকস', en: 'Bangla Docs', desc: 'সম্পূর্ণ ডকুমেন্টেশন বাংলায়' },
-  { href: '/docs/sops', bn: '৬৩ SOP স্টোর', en: '63 SOPs', desc: 'সার্চযোগ্য সার্ভিস গাইড, hk_live curl' },
-  { href: '/api/v1/models', bn: 'API / মডেল তালিকা', en: 'API / Models', desc: '120 models — OpenAI compatible' },
+const ECOSYSTEM_LINKS = [
+  { href: '/store', bn: 'AI Store — ৬০৮+ সার্ভিস', en: 'AI Store — 608+ services', desc: 'সব AI সার্ভিস এক জায়গায় — ৬cr=1TK' },
+  { href: '/coinlab', bn: 'CoinLab BD — ক্রিপ্টো রিসার্চ', en: 'CoinLab BD — crypto research', desc: 'বাংলা ক্রিপ্টো রিসার্চ, ৭-সেকশন ড্যাশবোর্ড' },
+  { href: '/labs', bn: 'Labs — AI Desk ও টোকেন সেফটি', en: 'Labs — AI Desk & token safety', desc: 'ক্যাশ থেকে ব্রীফন, BTC মনিটর, পেপার ট্রেডিং' },
+  { href: '/download', bn: 'ডাউনলোড — Hostamar Node', en: 'Download — Hostamar Node', desc: 'ফোন + কম্পিউটার = ডাটাসেন্টার' },
 ]
 
 const LEGAL_LINKS = [
@@ -72,23 +69,23 @@ export default function AppFooter() {
             </div>
           </div>
 
-          {/* Column 2: Products (all 6) */}
+          {/* Column 2: Products (all 7) */}
           <div>
             <div className="mb-3 text-[13px] font-semibold text-zinc-900">
               {isBn ? 'পণ্যসমূহ' : 'Products'}
             </div>
             <ul className="space-y-2.5 text-[13px] text-zinc-500">
-              {PRODUCT_NAV.map((p) => (
-                <li key={p.slug}>
-                  <Link href={p.route} className="hover:text-zinc-900">
-                    {isBn ? p.nameBn : p.nameEn}
-                  </Link>
-                </li>
-              ))}
+              <li><Link href="/video" className="hover:text-zinc-900">AI ভিডিও</Link></li>
+              <li><Link href="/video-os" className="hover:text-zinc-900">ডাবিং</Link></li>
+              <li><Link href="/hosting" className="hover:text-zinc-900">ক্লাউড হোস্টিং</Link></li>
+              <li><Link href="/chat" className="hover:text-zinc-900">AI চ্যাট</Link></li>
+              <li><Link href="/browser" className="hover:text-zinc-900">AI ব্রাউজার</Link></li>
+              <li><Link href="/game" className="hover:text-zinc-900">গেম</Link></li>
+              <li><Link href="/ide" className="hover:text-zinc-900">Dev IDE</Link></li>
             </ul>
           </div>
 
-          {/* Column 3: Docs (V17) */}
+          {/* Column 3: Docs */}
           <div>
             <div className="mb-3 text-[13px] font-semibold text-zinc-900">
               📚 {isBn ? 'ডকস' : 'Docs'}
@@ -99,7 +96,7 @@ export default function AppFooter() {
                   <Link href={l.href} className="hover:text-zinc-900">
                     {isBn ? l.bn : l.en}
                   </Link>
-                  <p className="mt-0.5 text-[11px] leading-snug text-zinc-400">{l.desc}</p>
+                  {l.desc && <p className="mt-0.5 text-[11px] leading-snug text-zinc-400">{l.desc}</p>}
                 </li>
               ))}
             </ul>
@@ -121,13 +118,13 @@ export default function AppFooter() {
             </ul>
           </div>
 
-          {/* Column 5: Store + Ecosystem (V36.15) */}
+          {/* Column 5: Share & Ecosystem */}
           <div>
             <div className="mb-3 text-[13px] font-semibold text-zinc-900">
-              🛍️ {isBn ? 'স্টোর ও ইকোসিস্টেম' : 'Store & Ecosystem'}
+              {isBn ? 'শেয়ার ও ইকোসিস্টেম' : 'Share & Ecosystem'}
             </div>
             <ul className="space-y-2.5 text-[13px] text-zinc-500">
-              {STORE_LINKS.map((l) => (
+              {ECOSYSTEM_LINKS.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="hover:text-zinc-900">
                     {isBn ? l.bn : l.en}
@@ -168,7 +165,7 @@ export default function AppFooter() {
                 {isBn ? '৭ দিনের মানি-ব্যাক' : '7-day money-back'}
               </span>
               <span className="rounded-full border border-zinc-200 px-2 py-0.5">
-                {isBn ? 'ম্যানুয়াল সেন্ড মানি' : 'Manual send-money'}
+                {isBn ? 'ম্যানুয়াল সেট জানি' : 'Manual send-money'}
               </span>
             </div>
           </div>
@@ -178,10 +175,13 @@ export default function AppFooter() {
         <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-zinc-100 pt-6 text-[12px] text-zinc-500 sm:flex-row">
           <span>© {year} Hostamar. All rights reserved.</span>
           <span className="flex items-center gap-1.5">
-            📚 <Link href="/docs" className="hover:text-zinc-900">ডকস</Link> · ১০৬ সার্ভিস · ১২০ মডেল · Orca ADE · ১cr=1TK=1COIN · ৬০০০ বোনাস · bKash 01822417463
+            📚 <Link href="/docs" className="hover:text-zinc-900">ডকস</Link> · ৬০৬ সার্ভিস · ৫১০ মডেল · Orca ADE · ৬cr=1TK=1COIN · ৬০০০ টোকেন · bKash 01822417463
           </span>
           <span className="flex items-center gap-1.5">
             Made for Bangladesh 🇧🇩
+            <span className="ml-2 inline-flex items-center justify-center rounded-full w-8 h-8 bg-[#3B82F6]/10 text-[#3B82F6]">
+              💬
+            </span>
           </span>
         </div>
       </div>
