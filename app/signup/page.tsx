@@ -204,6 +204,7 @@ export default function SignupPage() {
                 className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A] transition"
                 placeholder="ইমেইল ঠিকানা"
                 disabled={loading}
+                autoComplete="off"
               />
               {email.length > 0 && !emailValid && <p className="text-[12px] text-red-600 mt-1">সঠিক ইমেইল দিন।</p>}
             </div>

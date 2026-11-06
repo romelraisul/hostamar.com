@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Eye, EyeOff, Loader2, AlertTriangle, Check, ShieldCheck, X } from 'lucide-react'
+import { SSOButton } from '@/components/auth/SSOButton'
 
 const PRODUCTS = ['Video', 'Dubbing', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming']
 
@@ -102,6 +103,7 @@ export default function LoginPage() {
                 type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
                 className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A] transition"
                 placeholder="ইমেইল ঠিকানা" disabled={loading}
+                autoComplete="off"
               />
               {email.length > 0 && !emailValid && <p className="text-[12px] text-red-600 mt-1">সঠিক ইমেইল দিন।</p>}
             </div>
@@ -138,9 +140,7 @@ export default function LoginPage() {
               <span className="text-sm text-zinc-500">অথবা</span>
               <div className="h-px flex-1 bg-zinc-200" />
             </div>
-            <button onClick={() => window.location.href='/api/auth/google'} className="w-full flex items-center justify-center gap-2 border border-zinc-300 rounded-xl py-3 hover:bg-zinc-50 transition text-[14px]">
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" /> Continue with Google — SSO
-            </button>
+            <SSOButton mode="login" />
 
             <p className="text-center text-[13px] text-zinc-500">
               Don&apos;t have account? <a href="/signup" className="text-[#0E7C3A] font-medium hover:underline">Create free account</a>
@@ -208,6 +208,7 @@ export default function LoginPage() {
                   type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required
                   className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A]"
                   placeholder="ইমেইল ঠিকানা" disabled={forgotLoading}
+                  autoComplete="off"
                 />
                 <button type="submit" disabled={forgotLoading} className="w-full bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:bg-zinc-300 text-white font-semibold py-2.5 rounded-xl text-[14px] flex items-center justify-center gap-2">
                   {forgotLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> পাঠানো হচ্ছে...</> : 'রিসেট লিংক পাঠান'}
