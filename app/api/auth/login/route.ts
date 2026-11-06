@@ -36,15 +36,17 @@ export async function POST(request: NextRequest) {
       const body = await request.json()
       const { email, password } = body
 
+      const normalizedEmail = email?.trim?.().toLowerCase?.().replace(/\.com\.com+$/, '.com').replace(/\.com\.com\.com+$/, '.com').replace(/\s+/g, '') || ''
+
       const pwErr = validatePassword(password)
-      if (!email || !validateEmail(email)) {
+      if (!normalizedEmail || !validateEmail(normalizedEmail)) {
         return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
       }
       if (pwErr) {
         return NextResponse.json({ error: pwErr }, { status: 400 })
       }
 
-      const customer = await prisma.customer.findUnique({ where: { email: email.toLowerCase() } })
+      const customer = await prisma.customer.findUnique({ where: { email: normalizedEmail } })
       if (!customer) {
         return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
       }

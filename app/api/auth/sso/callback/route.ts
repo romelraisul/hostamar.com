@@ -23,9 +23,18 @@ function htmlRedirect(url: string, cookie?: { name: string; value: string }) {
   return res;
 }
 
-// cuid-compatible id (Prisma cuid shape: c + base36 ts + random)
 function cuid(): string {
   return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+
+function normalizeEmail(email: string): string {
+  if (!email) return ''
+  return email
+    .trim()
+    .toLowerCase()
+    .replace(/\.com\.com+$/, '.com')
+    .replace(/\.com\.com\.com+$/, '.com')
+    .replace(/\s+/g, '')
 }
 
 export async function GET(req: NextRequest) {
@@ -91,15 +100,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/login?error=sso_no_email`, 302);
     }
 
+    // Normalize email to fix .com.com issue
+    const normalizedEmail = normalizeEmail(email)
+
     // 3) Lookup in DB — must exist, otherwise create as customer (SSO JIT provisioning)
-    // ponytail: Prisma's create path probes fs.readdir on Workers (unenv throws →
-    // sso_callback_failed) — same disease as the Drive routes. Raw @libsql/client
-    // via getTursoEdgeClient is fetch-only and workerd-safe. health + drive/list
-    // already use it. Upgrade path: fs-free Prisma client engine.
+    // Use getTursoEdgeClient which works on Workers
     const db = getTursoEdgeClient();
     const found = await db.execute({
       sql: "SELECT id, email, name, role FROM Customer WHERE email = ? LIMIT 1",
-      args: [email],
+      args: [normalizedEmail],
     });
     let customer = found.rows[0]
       ? {
@@ -118,16 +127,16 @@ export async function GET(req: NextRequest) {
         args: [
           id,
           id,
-          email,
-          googleUser.name || email.split("@")[0],
+          normalizedEmail,
+          googleUser.name || normalizedEmail.split("@")[0],
           `sso_${Date.now()}_${Math.random().toString(36).slice(2)}`,
           new Date().toISOString(),
         ],
       });
       customer = {
         id,
-        email,
-        name: googleUser.name || email.split("@")[0],
+        email: normalizedEmail,
+        name: googleUser.name || normalizedEmail.split("@")[0],
         role: "customer",
       };
     }
@@ -136,7 +145,7 @@ export async function GET(req: NextRequest) {
     const token = signToken({
       id: customer.id,
       email: customer.email,
-      name: customer.name || googleUser.name || email,
+      name: customer.name || googleUser.name || normalizedEmail,
       role: customer.role || "customer",
     });
 
@@ -145,6 +154,7 @@ export async function GET(req: NextRequest) {
     return htmlRedirect(dest, { name: "auth_token", value: token });
   } catch (err) {
     console.error("SSO callback error:", err);
-    return NextResponse.redirect(`${baseUrl}/login?error=sso_callback_failed`, 302);
+    // Friendly error, no tunnel ID or callback URL exposed
+    return NextResponse.redirect(`${baseUrl}/login?error=sso_failed_friendly`, 302);
   }
 }

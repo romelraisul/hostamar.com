@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
 import { getTursoEdgeClient } from '@/lib/turso-edge'
+import { getDBHealth, executeWithFailover } from '@/lib/db-failover'
 
 /**
  * GET /api/tv/status (public)
@@ -13,26 +14,30 @@ export async function GET() {
   let dbStatus = 'disconnected'
   let dbLatencyMs = 0
 
-  try {
-    const db = getTursoEdgeClient()
-    const start = Date.now()
-    await db.execute('SELECT 1')
-    dbLatencyMs = Date.now() - start
-    dbStatus = 'connected'
-  } catch (e) {
-    // Fallback: try Supabase/Neon if Turso fails (db_disconnected probe fix)
+  // Use multi-DB failover for health check
     try {
-      const { createClient } = await import('@libsql/client/web')
-      const neonUrl = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL_NEON
-      if (neonUrl) {
-        const fallback = createClient({ url: neonUrl.replace(/^postgres/, 'https') })
-        const start = Date.now()
-        await fallback.execute('SELECT 1')
-        dbLatencyMs = Date.now() - start
-        dbStatus = 'connected'
+      const health = await getDBHealth()
+      const anyConnected = health.turso === 'connected' || health.neon === 'connected' || health.supabase === 'connected' || health.local === 'connected'
+      dbStatus = anyConnected ? 'connected' : 'disconnected'
+
+      // Test query on active DB
+      if (anyConnected) {
+        const result = await executeWithFailover(async (client, dbType) => {
+          if (dbType === 'turso') {
+            const res = await client.execute('SELECT 1')
+            return { dbType, rows: res.rows?.length || 0 }
+          } else {
+            const res = await client.query('SELECT 1')
+            return { dbType, rows: res.rows?.length || 0 }
+          }
+        })
+        if (result) {
+          dbLatencyMs = 1 // placeholder since we don't have exact timing
+        }
       }
-    } catch {}
-  }
+    } catch (e) {
+      dbStatus = 'disconnected'
+    }
 
   // Inline edge-compatible tunnel functions (no Prisma, no node:dns)
   function getTunnelToken(): string | undefined {

@@ -1,0 +1,12 @@
+{
+  "loginEmail": "romelraisul@outlook.com",
+  "debugTextPresent": true,
+  "ssoStatus": 200,
+  "ssoFinalUrl": "https://accounts.google.com/v3/signin/identifier?opparams=%253F&dsh=S138109629%3A1793933215277709&access_type=online&client_id=1095914482867-otvnb168acfpt06thm118roip6bcssfp.apps.googleusercontent.com&o2v=2&prompt=select_account&redirect_uri=https%3A%2F%2Fhostamar.com%2Fapi%2Fauth%2Fsso%2Fcallback&response_type=code&scope=openid+email+profile&service=lso&state=eyJtb2RlIjoibG9naW4iLCJ0cyI6MTc5MzkzMzIxNDYyN30&flowName=GeneralOAuthLite&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Flegacy%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAMbfXcCapNXYH_p33_v9_bg7j_qHPYojObhBuuGCLT2KWom7MflHBOo9bC3KpgvItn-YkOZVhhjc9dxfjofhsNU0gjf7vzstTUBRRZ-neWvLOMUf2Oi2Dx6WBa7PbYQe_CqVJawuLEyVEGkx7eq4kOoNSQ3b2kWqng-iCJ7rSpx9PVGHbx4XJU-4rkch10PxqbW6WfW7MyfLT4_hYrSfcJUE2hqHl0lY9gPd0ZwUr_J9v-ywjpXTKrOEsTMzTGfbOVXwX5U6dOEM4QmwL6aAVpBZMYB0qvVt8q3znwGuuClvx6QQhHSo_z_hWu0JjDyi8Vy-uFaOq-zU3CD8nNVGEAu0sMAzg1mFzCTkXzDKA7saJOE4KwBZJjQSpXMiKUjJTPfGEoOPijs8B56Hb1uu4YrhoP_pykw2fp51CFUX2ZoJEqOY67rmSm6tMoqkuFkNiC8vhse2XKq-c4up0vJEt_Y1X9Lag%26flowName%3DGeneralOAuthFlow%26as%3DS138109629%253A1793933215277709%26client_id%3D1095914482867-otvnb168acfpt06thm118roip6bcssfp.apps.googleusercontent.com%23&app_domain=https%3A%2F%2Fhostamar.com&rart=ANgoxcclN9X4r3BgJ54z6bW3wMtM1BA37z65L6iS3VxF0gEGYRJS3CMm_U83UDLZHCRSDrOo4vJ_nXxxxO_dEAXgJSF_X94xPP8GW4qMhmev0zhWY5dHyvU",
+  "signupEmail": "browser-test-1793933216553@hostamar.com",
+  "signupRedirect": "https://hostamar.com/signup",
+  "dashboardHasOverview": false,
+  "dashboardDebug": true,
+  "loginRedirect": "https://hostamar.com/login",
+  "authCookie": "MISSING"
+}

@@ -11,7 +11,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}))
     const { name, email, password } = body
 
-    if (!name || !email || !password) {
+    const normalizedEmail = email?.trim?.().toLowerCase?.().replace(/\.com\.com+$/, '.com').replace(/\.com\.com\.com+$/, '.com').replace(/\s+/g, '') || ''
+
+    if (!name || !normalizedEmail || !password) {
       return NextResponse.json({ error: 'সকল ফিল্ড পূরণ করুন' }, { status: 400 })
     }
 
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check existing user
-    const existing = await prisma.customer.findUnique({ where: { email } })
+    const existing = await prisma.customer.findUnique({ where: { email: normalizedEmail } })
     if (existing) {
       return NextResponse.json({ error: 'এই ইমেইল ইতিমধ্যে ব্যবহৃত হয়েছে' }, { status: 409 })
     }
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
     const customer = await prisma.customer.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         password: hashedPassword,
         credits: WELCOME_CREDITS,
         creditTransactions: {

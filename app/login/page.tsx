@@ -1,9 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Eye, EyeOff, Loader2, AlertTriangle, Check, ShieldCheck, X } from 'lucide-react'
 import { SSOButton } from '@/components/auth/SSOButton'
+import { normalizeEmail } from '@/lib/normalize-email'
 
 const PRODUCTS = ['Video', 'Dubbing', 'Hosting', 'Chat', 'Browser', 'IDE', 'Gaming']
 
@@ -27,14 +28,24 @@ export default function LoginPage() {
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   const formValid = emailValid && password.length > 0
 
-  // Handle URL error params (e.g., sso_callback_failed)
-  if (urlError && !error) {
-    if (urlError === 'sso_callback_failed' || urlError.includes('sso')) {
-      setError('Google SSO callback failed — try again or use email login. Check tunnel b9839ba7 + callback URL.')
-    } else {
-      setError(urlError.replace(/_/g, ' '))
-    }
+  // Normalize email on change and blur
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(normalizeEmail(e.target.value))
   }
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setEmail(normalizeEmail(e.target.value))
+  }
+
+  // Handle URL error params (e.g., sso_callback_failed)
+  useEffect(() => {
+    if (urlError && !error) {
+      if (urlError === 'sso_callback_failed' || urlError.includes('sso')) {
+        setError('গুগল লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন অথবা ইমেইল দিয়ে লগইন করুন।')
+      } else {
+        setError(urlError.replace(/_/g, ' '))
+      }
+    }
+  }, [urlError, error])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,17 +104,21 @@ export default function LoginPage() {
           {(error || urlError) && (
                       <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg mt-5 text-[13.5px] flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                        <span>{error || (urlError === 'sso_callback_failed' ? 'Google SSO callback failed — try again or use email login. Check tunnel b9839ba7 + callback URL.' : urlError?.replace(/_/g, ' '))}</span>
+                        <span>{error || (urlError === 'sso_callback_failed' ? 'গুগল লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন অথবা ইমেইল দিয়ে লগইন করুন।' : urlError?.replace(/_/g, ' '))}</span>
                       </div>
                     )}
 
           <form onSubmit={handleSubmit} className="space-y-4 mt-6">
             <div>
               <input
-                type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                type="email" value={email} onChange={handleEmailChange} onBlur={handleEmailBlur} required
                 className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A] transition"
                 placeholder="ইমেইল ঠিকানা" disabled={loading}
                 autoComplete="off"
+                name="hostamar-email-login"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
               />
               {email.length > 0 && !emailValid && <p className="text-[12px] text-red-600 mt-1">সঠিক ইমেইল দিন।</p>}
             </div>
@@ -205,10 +220,14 @@ export default function LoginPage() {
               <form onSubmit={handleForgot} className="space-y-3">
                 <p className="bangla text-[13px] text-zinc-600">আপনার ইমেইল দিন — রিসেট লিংক পাঠানো হবে।</p>
                 <input
-                  type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required
+                  type="email" value={forgotEmail} onChange={(e) => setForgotEmail(normalizeEmail(e.target.value))} required
                   className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A]"
                   placeholder="ইমেইল ঠিকানা" disabled={forgotLoading}
                   autoComplete="off"
+                  name="hostamar-email-forgot"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
                 />
                 <button type="submit" disabled={forgotLoading} className="w-full bg-[#0E7C3A] hover:bg-[#0c6a32] disabled:bg-zinc-300 text-white font-semibold py-2.5 rounded-xl text-[14px] flex items-center justify-center gap-2">
                   {forgotLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> পাঠানো হচ্ছে...</> : 'রিসেট লিংক পাঠান'}

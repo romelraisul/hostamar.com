@@ -39,6 +39,8 @@ HOSTAMAR_PC_MAX_AGE_S = "1200"
 TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
 TURSO_AUTH_TOKEN = "eyJhbG...LrCQ"
 NEON_DATABASE_URL = "postgresql://neondb_owner:***@ep-spring-frog-aoikue4i-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+SUPABASE_DATABASE_URL = "postgresql://postgres.eviipjtymitvghmnozlj:PVh9IF36PgWEn8mK@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+LOCAL_DATABASE_URL = "postgresql://postgres:postgres@host.docker.internal:5432/hostamar?sslmode=disable"
 
 [observability.logs]
 enabled = true

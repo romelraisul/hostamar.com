@@ -8,6 +8,7 @@ import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { ArrowLeft, Eye, EyeOff, Check, X, Loader2 } from 'lucide-react'
 import { SSOButton } from '@/components/auth/SSOButton'
+import { normalizeEmail } from '@/lib/normalize-email'
 
 // NOTE: real auth flow preserved exactly — POST /api/auth/signup -> /api/auth/login
 // -> NextAuth credentials sync -> /dashboard. Route has no OTP/emailVerified gating
@@ -46,6 +47,14 @@ export default function SignupPage() {
   const [hydrated, setHydrated] = useState(false)
 
   const [error, setError] = useState('')
+
+  // Normalize email on change and blur
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(normalizeEmail(e.target.value))
+  }
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setEmail(normalizeEmail(e.target.value))
+  }
 
   // Capture ?ref=CODE from the URL (affiliate link) and pre-fill refCode
   useEffect(() => {
@@ -200,11 +209,15 @@ export default function SignupPage() {
             </div>
             <div>
               <input
-                type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                type="email" value={email} onChange={handleEmailChange} onBlur={handleEmailBlur} required
                 className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-xl text-[14px] focus:outline-none focus:border-[#0E7C3A] transition"
                 placeholder="ইমেইল ঠিকানা"
                 disabled={loading}
                 autoComplete="off"
+                name="hostamar-email-signup"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
               />
               {email.length > 0 && !emailValid && <p className="text-[12px] text-red-600 mt-1">সঠিক ইমেইল দিন।</p>}
             </div>
