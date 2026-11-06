@@ -1,0 +1,8 @@
+[Unit]
+Description=WSL Auto-Start Timer After Boot
+[Timer]
+OnBootSec=60
+OnUnitInactiveSec=30min
+Persistent=true
+[Install]
+WantedBy=timers.target

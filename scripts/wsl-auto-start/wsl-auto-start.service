@@ -1,0 +1,8 @@
+[Unit]
+Description=WSL Auto-Start After Cleanup/Restart
+After=default.target
+[Service]
+Type=oneshot
+ExecStart=/home/romel/.hermes/scripts/wsl-auto-start-after-cleanup.sh
+[Install]
+WantedBy=default.target
