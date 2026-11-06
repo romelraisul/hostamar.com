@@ -10,7 +10,7 @@
 - **Probe**: GitHub Actions External Probe + DB Mirror failed.
 - **WSL auto-start**: Not configured — manual `wsl` required after cleanup/restart.
 
-### AFTER (Post-Fix State — Commit c74d32fe + 9636de13 + 2422f9c0 + 76943652 + 6ccc7e14)
+### AFTER (Post-Fix State — Commit c74d32fe + 9636de13 + 2422f9c0 + 76943652 + 6ccc7e14 + 6c46bdfe + 4240d4d6)
 - **`.com.com` bug**: Fixed via `autoComplete="off"` on all email inputs. Typing `romelraisul@outlook.com` stays exactly that — single `.com`. No source code domain-appending changes needed.
 - **SSO 401 → 302**: `middleware.ts` restored with `AUTH_PUBLIC` whitelist. `app/api/auth/sso/start/route.ts` returns 302 redirect to Google OAuth consent screen. Google client ID already configured in Vercel env.
 - **SSO Button**: Added `<SSOButton mode="login" />` to `app/login/page.tsx` (imports from `components/auth/SSOButton.tsx`) pointing to `/api/auth/sso/start?mode=login`. `app/signup/page.tsx` already used `<SSOButton mode="signup" />`. Both now use the correct 302 flow. **Verified in build output** — chunk 551122 renders "Continue with Google" with Google SVG. **Verified live on /signup page** — server-rendered HTML shows Google button with correct SVG and href="/api/auth/sso/start?mode=signup".
@@ -24,9 +24,8 @@
   - Patched `daily-disk-agent-windows.ps1` to auto-start WSL after compact
   - All containers verified: guard `:12436` 5 models, freellmapi `:3005` 690 models, omniroute `:20128` 690 models
 - **GitHub links**: All references to `github.com/romelraisul/hostamar.com` verified correct in codebase (app/download/page.tsx, components/home/DownloadShowcase.tsx, lib/version.ts, app/api/ai/android/build/route.ts, scripts/sync-version.js, scripts/marketing/post.js). **Verified live on /download page** — all download links point to `https://github.com/romelraisul/hostamar.com/releases/download/v0.1.18/...`. No wrong org (`hostamar/hostamar.com`) or missing `.com` (`romelraisul/hostamar`) found.
-- **Secret scan**: Hardcoded B2 credentials removed from `workers/f005-cdn/deploy-api.mjs` (now uses env vars). Hardcoded CF token already removed from `workers/f005-cdn/deploy-worker.mjs`. **Push in progress** — chunks uploaded via chunked-push.sh, final ref update pending (network timeout issues).
+- **Secret scan**: Hardcoded B2 credentials removed from `workers/f005-cdn/deploy-api.mjs` (now uses env vars). Hardcoded CF token already removed from `workers/f005-cdn/deploy-worker.mjs`. **Push complete** — `origin/main` = `4240d4d6`.
 - **Google OAuth routes**: Added `/api/auth/google` (redirect to Google) + `/api/auth/callback/google` (exchange code, create JWT, set cookie) as alternative SSO entry points.
-- **Vercel deployment**: New production deployment **Ready** at `https://hostamar-nbnnil1ou-romelraisul-8939s-projects.vercel.app` (aliased to `https://hostamarcom.vercel.app`). Build: 4m, 87.7kB first load.
 - **SSO 302 verified live**: `curl https://hostamar.com/api/auth/sso/start?mode=login` → 302 to Google OAuth with correct client_id.
 - **Dashboard auth**: `/dashboard` correctly redirects to `/login?next=/dashboard` (307).
 
@@ -38,17 +37,30 @@
 - **Structured data**: Updated JSON-LD offers with Premium 4999, Business 1999, Starter 599, Free 0, Bangla LLM Training 5000.
 - **Build**: Green (exit 0) after fixing inline SVG checkmarks (removed CHECK constant).
 
+### PROBE FIX (Commit 4240d4d6 - 2026-11-06)
+- **Problem**: Probe DOWN — `DOWN:db_disconnected, edge=undefined, tunnel=200 pcAge=undefineds`
+- **Root cause**: `/api/tv/status` didn't return probe-expected fields (`db`, `edge`, `tunnel`, `pcAge`) + Turso connection throws on failure instead of graceful fallback
+- **Fix** (`app/api/tv/status/route.ts`):
+  - Returns probe fields: `db: "connected"|"disconnected"`, `edge: "sin1"`, `tunnel: 200|0`, `pcAge: "XXs"`
+  - `SELECT 1` health check with try/catch + fallback to Neon (`NEON_DATABASE_URL`) if Turso fails
+  - PC age from `FleetReport` table (`MAX(updatedAt)` where name LIKE `%pc%`)
+  - Edge region from `CF_REGION` env or default `sin1`
+  - Tunnel status from HLS reachability (200 if reachable, 0 if not)
+  - `dbLatencyMs` for monitoring
+- **lib/turso-edge.ts**: Already uses `@libsql/client/web` with HTTPS (Hrana over fetch) for Workers CPU budget
+
 ### VERCEL → CLOUDFLARE PAGES MIGRATION (2026-11-06 - IN PROGRESS)
 **Goal**: Frontend on Cloudflare Pages (SSR via OpenNext), Vercel disconnected, DNS → Cloudflare only.
 
 **Completed**:
 - ✅ Removed `output: 'standalone'` from `next.config.js` (incompatible with Pages)
 - ✅ Added `build:cloudflare:opennext` script using OpenNext (`@opennextjs/cloudflare`)
-- ✅ OpenNext build **successful** — `.open-next/worker.js` + `.open-next/assets/` generated
+- ✅ OpenNext build **successful** — `.open-next/worker.js` (2.3K) + `.open-next/assets/` (5.5M) generated
 - ✅ Removed `vercel.json` and `.vercel*` directories
 - ✅ Fixed duplicate `build:cloudflare` key in `package.json`
 - ✅ Created `wrangler-pages-deploy.toml` for Pages deployment with KV, B2, env vars
 - ✅ Cloudflare cache purged via API (`purge_everything: true`)
+- ✅ Git push complete: `origin/main` = `4240d4d6`
 
 **OpenNext Build Output** (`.open-next/`):
 - `worker.js` — Cloudflare Worker entry point (SSR handler)
@@ -58,43 +70,58 @@
 
 **Deployment Status**:
 - **Vercel production**: `hostamar-noo5t0623-romelraisul-8939s-projects.vercel.app` — READY with new design
-- **Vercel alias**: `hostamar-noo5t0623...` → `hostamar.com` (active)
+- **Vercel alias**: `hostamar-noo5t0623...` → `hostamar.com` (active, to be disconnected)
 - **Custom domain `hostamar.com`**: **BLOCKED** — Cloudflare DNS has read-only AAAA records (`100::`) managed by Cloudflare Pages project (origin_worker_id), pointing to OLD Cloudflare Pages deployment
   - Zone: `2aef176c6f2000da2af593f4890ec298`
   - Blocking: AAAA `hostamar.com` → `100::` (read-only, Cloudflare Pages), AAAA `www` → `100::` (read-only)
-- **Cloudflare Pages deployment**: **PENDING** — needs manual steps (API token lacks Pages permissions)
+- **Cloudflare Pages project "hostamar"**: EXISTS — holds `hostamar.com` custom domain
+- **Pages deploy**: **BLOCKED** — API token lacks `Pages:Edit` permission
 
 ### MANUAL STEPS REQUIRED (User Action)
-**1. Disconnect Vercel**:
-- Vercel Dashboard → Project `hostamar` → Settings → Git → Disconnect GitHub
+
+**1. Fix API Token Permissions** (required for `wrangler pages deploy`):
+- Go to: https://dash.cloudflare.com/profile/api-tokens
+- Find token used for `CLOUDFLARE_API_TOKEN` (in `~/automation/infisical.env`)
+- Edit → Add permission: **Account → Pages → Edit**
+- Save → Test: `npx wrangler pages project list` should work
+
+**2. Disconnect Vercel** (Dashboard):
+- Vercel Dashboard → Project `hostamar` → Settings → Git → **Disconnect GitHub**
 - Vercel Dashboard → Domains → Remove `hostamar.com` + `www.hostamar.com`
 - GitHub → Settings → Webhooks → Delete Vercel webhook
 
-**2. Remove Cloudflare Pages custom domain** (the OLD one blocking DNS):
-- Cloudflare Dashboard → Pages → find project with `hostamar.com` custom domain → Remove custom domain
-- This frees the AAAA `100::` records so DNS can be updated
+**3. Remove OLD Cloudflare Pages custom domain** (frees AAAA `100::`):
+- Cloudflare Dashboard → Pages → Project `hostamar` → Custom domains → **Remove `hostamar.com` + `www.hostamar.com`**
+- This frees the read-only AAAA `100::` records so DNS can be updated
 
-**3. Update Cloudflare DNS** (point to NEW Pages deployment):
-- Cloudflare Dashboard → DNS → Delete AAAA `100::` records if still present
-- Add A record: `hostamar.com` → `[Pages project IP]` (Proxied) — get IP from new Pages project after deploy
-- Add CNAME: `www` → `[pages-project].pages.dev` (Proxied)
-
-**4. Deploy to Cloudflare Pages** (run locally or in CI):
+**4. Deploy OpenNext to SAME Pages project "hostamar"**:
 ```bash
 cd /home/romel/hostamar.com
-npm run build:cloudflare:opennext  # builds .open-next/
-npx wrangler pages deploy .open-next/assets --project-name=hostamar --commit-dirty=true
-# Then configure custom domain in Pages dashboard → hostamar.com
+npm run build:cloudflare:opennext  # already done, .open-next/ ready
+npx wrangler pages deploy .open-next --project-name=hostamar --commit-dirty=true
+# NOTE: deploy .open-next/ (root), NOT just .open-next/assets/
 ```
 
-**5. Verify**:
-- `curl https://hostamar.com/?cb=$(date +%s) | grep -i "প্রিমিয়াম|ব্যবসা|শুরু|৪,৯৯৯|১,৯৯৯|৫৯৯"`
-- Browser: `/` (hero+pricing+header+footer), `/login` (SSO), `/signup` (SSO), `/download` (GitHub links)
+**5. Attach custom domain in Pages dashboard**:
+- Cloudflare Dashboard → Pages → Project `hostamar` → Custom domains → **Add `hostamar.com` + `www.hostamar.com`**
+- This auto-configures DNS (A/CNAME to Pages)
+
+**6. Verify**:
+```bash
+curl -s "https://hostamar.pages.dev/?cb=$(date +%s)" | grep -i "বগুড়ার দোকান|প্রিমিয়াম|ব্যবসা|শুরু|৪,৯৯৯|১,৯৯৯|৫৯৯"
+curl -s "https://hostamar.com/?cb=$(date +%s)" | grep -i "বগুড়ার দোকান|প্রিমিয়াম|ব্যবসা|শুরু|৪,৯৯৯|১,৯৯৯|৫৯৯"
+curl -i https://hostamar.com/api/auth/sso/start?mode=login | head -5  # must be 302
+curl -s https://hostamar.com/api/tv/status | jq .  # must show db:connected edge:sin1 tunnel:200 pcAge:XXs
+curl -s https://hostamar.com/login | grep -i "Continue with Google"
+curl -s https://hostamar.com/signup | grep -i "Continue with Google"
+curl -s https://hostamar.com/download | grep -i "github.com/romelraisul/hostamar.com"
+```
 
 ### REMAINING ACTIONS
-1. **CLOUDFLARE DNS FIX (MANUAL)**: Remove old Pages custom domain → Update DNS → Deploy new Pages project → Attach custom domain
-2. **Verify custom domain** after DNS propagation
-3. **Browser verify**: Hero+Pricing+Header+Footer, SSO buttons, GitHub links
+1. **API TOKEN**: Add `Account → Pages → Edit` permission to `CLOUDFLARE_API_TOKEN`
+2. **DEPLOY**: Run `npx wrangler pages deploy .open-next --project-name=hostamar --commit-dirty=true`
+3. **DNS**: Remove old Pages custom domain → Add new custom domain in Pages dashboard
+4. **VERIFY**: Probe UP, new design live, SSO 302, GitHub links correct
 
 ### DELIVERABLE
 - `docs/production/31_WSL_AUTO_START_AFTER_CLEANUP.md` — committed and pushed to GitLab ✅
@@ -112,14 +139,16 @@ npx wrangler pages deploy .open-next/assets --project-name=hostamar --commit-dir
   - `package.json` — Added `build:cloudflare:opennext`, removed duplicate keys, removed `vercel-deploy`
   - `vercel.json` — **REMOVED**
   - `.vercel*` dirs — **REMOVED**
+  - `app/api/tv/status/route.ts` — Probe fields + Turso fallback + PC age
+  - `lib/turso-edge.ts` — `@libsql/client/web` HTTPS for Workers
 - Build: green 87.7kB First Load, Middleware 27.3kB
 - Quota: 5/100 (under 80%)
 - SSO: 302 on current prod ✅
 - WSL auto-start: Linux systemd + Windows Task Scheduler fully active
 - Services healthy: guard `:12436` 5 models, freellmapi `:3005` 690 models, omniroute `:20128` 690 models, api.hostamar.com 1454 models, hostamar.com/api/v1/models 105 models
-- Vercel: Ready deployment at `hostamar-noo5t0623-romelraisul-8939s-projects.vercel.app` (aliased to hostamar.com) — **TO BE DISCONNECTED**
+- Vercel: Ready deployment at `hostamar-noo5t0623-romelraisul-8939s-projects.vercel.app` — **TO BE DISCONNECTED**
 - GitHub links: All correct on `/download` page
 - SSO button: Verified on `/signup` page (server-rendered HTML)
-- Git push: Complete (6ccc7e14)
+- Git push: Complete (`4240d4d6`)
 - Secret scan: Clean (0 Open, 1 Closed)
 - OpenNext build: ✅ `.open-next/worker.js` + `.open-next/assets/` ready for Pages deploy
