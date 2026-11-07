@@ -343,7 +343,9 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const take = Math.min(Number(url.searchParams.get('take') || 50), 100)
   const res = await getHistory(user.id, take)
-  return NextResponse.json({ history: res.result?.history || [], fallback: res.dbType })
+  const history = res?.result?.history || []
+  const fallback = res?.dbType || 'none'
+  return NextResponse.json({ history, fallback })
 }
 
 export async function POST(req: NextRequest) {
