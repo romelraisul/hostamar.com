@@ -23,7 +23,7 @@
     "make": "make",
     "prepush": "bash scripts/check-vercel-quota.sh && npm run build",
     "check:vercel-quota": "bash scripts/check-vercel-quota.sh",
-    "worker:build": "node scripts/build_opennext.mjs",
+    "worker:build": "bash scripts/build_opennext.sh",
     "worker:deploy": "node scripts/populate-b2.mjs && env -u CLOUDFLARE_API_TOKEN wrangler deploy -c wrangler-pages.toml",
     "deploy:guarded": "bash scripts/deploy-guarded.sh"
   },
