@@ -207,7 +207,7 @@ export default async function HomePage() {
               <div className="bp-tile bp-w-r1">
                 <div className="bp-media" style={{ aspectRatio: '16/9' }}>
                   <LazyVideo
-                    src={`${process.env.NEXT_PUBLIC_TV_CDN ?? ''}/tv/shorts-agent-autonomous-employee.mp4`}
+                    src="/tv/shorts-agent-autonomous-employee.mp4"
                     poster="/redesign/hero-bazaar-640.jpg"
                     autoPlay
                     muted
