@@ -2,7 +2,7 @@
 // (fs.readdir on /lib -> unenv throws). Direct @libsql/client/web is fetch-only
 // and works on both Workers and Node. Use this on Workers; keep Prisma for Vercel.
 
-let _client: ReturnType<typeof import('@libsql/client/web').then(m => m.createClient)> | null = null
+let _client: any = null
 
 export async function getTursoEdgeClient() {
   if (_client) return _client
