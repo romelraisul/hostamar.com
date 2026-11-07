@@ -27,9 +27,13 @@ export const dynamic = 'force-dynamic'
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { waitUntil } from '@vercel/functions'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { PAYMENT_PLANS, planCredits } from '@/lib/pricing'
+
+// waitUntil polyfill: Cloudflare Workers provides global waitUntil; Vercel removed
+const waitUntil = (p: Promise<unknown>) => {
+  try { (globalThis as any).waitUntil?.(p) } catch { /* no-op */ }
+}
 
 const REGION = 'reg_01M27QBX4C3XKZFWCQD47CM2EJ'
 // Fallback publishable key (public, safe to embed) — used if MEDUSA_PK env is missing/empty in Vercel

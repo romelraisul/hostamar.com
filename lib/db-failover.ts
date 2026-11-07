@@ -1,5 +1,4 @@
 import { Pool } from '@neondatabase/serverless'
-import { createPool } from '@vercel/postgres'
 
 export type DBType = 'turso' | 'neon' | 'supabase' | 'local'
 
