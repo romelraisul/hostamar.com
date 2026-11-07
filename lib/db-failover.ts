@@ -4,12 +4,13 @@ import { createPool } from '@vercel/postgres'
 export type DBType = 'turso' | 'neon' | 'supabase' | 'local'
 
 export interface DBHealth {
-  turso: 'connected' | 'disconnected'
-  neon: 'connected' | 'disconnected'
-  supabase: 'connected' | 'disconnected'
-  local: 'connected' | 'disconnected'
+  turso: 'connected' | 'disconnected' | 'error'
+  neon: 'connected' | 'disconnected' | 'error'
+  supabase: 'connected' | 'disconnected' | 'error'
+  local: 'connected' | 'disconnected' | 'skipped' | 'error'
   active: DBType
   syncedAt: string
+  errors?: Record<string, string>
 }
 
 interface DBClients {
@@ -59,59 +60,73 @@ function getLocalClient() {
   return clients.local
 }
 
-async function checkTurso(): Promise<boolean> {
+const IS_CLOUDFLARE_EDGE =
+  typeof (globalThis as any).CF === 'object' ||
+  typeof (globalThis as any).REQUEST_ID === 'string' ||
+  typeof (globalThis as any).caches !== 'undefined'
+
+function isLocalSkipped(): boolean {
+  return IS_CLOUDFLARE_EDGE
+}
+
+async function checkTurso(): Promise<{ ok: boolean; error?: string }> {
   try {
     const client = await getTursoClient()
-    if (!client) return false
-    const result = await Promise.race([
+    if (!client) return { ok: false, error: 'no client (TURSO_DATABASE_URL missing)' }
+    await Promise.race([
       client.execute('SELECT 1'),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout 3s')), 3000)),
     ])
-    return !!result
-  } catch {
-    return false
+    return { ok: true }
+  } catch (e: any) {
+    console.error('[DB Failover] turso check failed:', e?.message || String(e))
+    return { ok: false, error: e?.message || String(e) }
   }
 }
 
-async function checkNeon(): Promise<boolean> {
+async function checkNeon(): Promise<{ ok: boolean; error?: string }> {
   try {
     const client = getNeonClient()
-    if (!client) return false
-    const result = await Promise.race([
+    if (!client) return { ok: false, error: 'no client (NEON_DATABASE_URL missing)' }
+    await Promise.race([
       client.query('SELECT 1'),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout 3s')), 3000)),
     ])
-    return !!result
-  } catch {
-    return false
+    return { ok: true }
+  } catch (e: any) {
+    console.error('[DB Failover] neon check failed:', e?.message || String(e))
+    return { ok: false, error: e?.message || String(e) }
   }
 }
 
-async function checkSupabase(): Promise<boolean> {
+async function checkSupabase(): Promise<{ ok: boolean; error?: string }> {
   try {
     const client = getSupabaseClient()
-    if (!client) return false
-    const result = await Promise.race([
+    if (!client) return { ok: false, error: 'no client (SUPABASE_DATABASE_URL missing)' }
+    await Promise.race([
       client.query('SELECT 1'),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout 3s')), 3000)),
     ])
-    return !!result
-  } catch {
-    return false
+    return { ok: true }
+  } catch (e: any) {
+    console.error('[DB Failover] supabase check failed:', e?.message || String(e))
+    return { ok: false, error: e?.message || String(e) }
   }
 }
 
-async function checkLocal(): Promise<boolean> {
+async function checkLocal(): Promise<{ ok: boolean; error?: string; skipped?: boolean }> {
+  if (isLocalSkipped()) return { ok: false, skipped: true }
   try {
     const client = getLocalClient()
-    if (!client) return false
-    const result = await Promise.race([
+    if (!client) return { ok: false, error: 'no client (LOCAL_DATABASE_URL missing)' }
+    await Promise.race([
       client.query('SELECT 1'),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout 3s')), 3000)),
     ])
-    return !!result
-  } catch {
-    return false
+    return { ok: true }
+  } catch (e: any) {
+    console.error('[DB Failover] local check failed:', e?.message || String(e))
+    return { ok: false, error: e?.message || String(e) }
   }
 }
 
@@ -128,19 +143,26 @@ export async function getDBHealth(): Promise<DBHealth> {
     checkLocal(),
   ])
 
+  const errors: Record<string, string> = {}
+  if (!turso.ok && turso.error) errors.turso = turso.error
+  if (!neon.ok && neon.error) errors.neon = neon.error
+  if (!supabase.ok && supabase.error) errors.supabase = supabase.error
+  if (!local.ok && local.error) errors.local = local.error
+
   let active: DBType = 'turso'
-  if (turso) active = 'turso'
-  else if (neon) active = 'neon'
-  else if (supabase) active = 'supabase'
-  else if (local) active = 'local'
+  if (turso.ok) active = 'turso'
+  else if (neon.ok) active = 'neon'
+  else if (supabase.ok) active = 'supabase'
+  else if (local.ok) active = 'local'
 
   cachedHealth = {
-    turso: turso ? 'connected' : 'disconnected',
-    neon: neon ? 'connected' : 'disconnected',
-    supabase: supabase ? 'connected' : 'disconnected',
-    local: local ? 'connected' : 'disconnected',
+    turso: turso.ok ? 'connected' : 'error',
+    neon: neon.ok ? 'connected' : 'error',
+    supabase: supabase.ok ? 'connected' : 'error',
+    local: local.skipped ? 'skipped' : (local.ok ? 'connected' : 'error'),
     active,
     syncedAt: new Date().toISOString(),
+    errors,
   }
   lastHealthCheck = now
   return cachedHealth
