@@ -1,5 +1,5 @@
 // ============================================================================
-// lib/ops-lanes.ts — the 16 AI employee lanes + their display metadata.
+// lib/ops-lanes.ts — the 19 AI employee lanes + their display metadata.
 // Single source of truth for the Ops Center lane grid (role + schedule) and
 // for the /api/ops/control-sync lane allowlist consumed by the WSL Hermes job.
 // Names MUST stay in sync with EMPLOYEES in app/api/admin/fleet/route.ts.
@@ -9,6 +9,12 @@ export const OPS_EMPLOYEES = [
   'Atlas', 'Echo', 'Reel', 'Bazaar', 'Quill', 'Sage',
   'Nova', 'Forge', 'Pulse', 'Orion', 'Vertex', 'Harbor', 'Ledger', 'Scout',
   'Warden', 'Oracle',
+  // consolidated fleet heartbeat card
+  'Fleet-Heartbeat',
+  // V71: TV Station Operator — owns the 24/7 live channel + edge shelf
+  'Channel',
+  // V72: Account Safety Officer — owns suspension/termination prevention
+  'Guard',
 ] as const
 
 export type OpsEmployee = (typeof OPS_EMPLOYEES)[number]
@@ -30,6 +36,9 @@ export const LANE_META: Record<string, { role: string; schedule: string }> = {
   Scout:  { role: 'Lead Research',          schedule: '*/30 * * * *' },
   Warden: { role: 'Security & Triage',      schedule: '*/10 * * * *' },
   Oracle: { role: 'Forecasting',            schedule: '0 7 * * *' },
+  'Fleet-Heartbeat': { role: 'GPU & Gateway Health', schedule: '*/5 * * * *' },
+  Channel: { role: 'TV Station Operator',   schedule: '0 * * * *' },
+  Guard:  { role: 'Account Safety Officer', schedule: '0 9 * * *' },
 }
 
 export function isOpsEmployee(name: string): name is OpsEmployee {

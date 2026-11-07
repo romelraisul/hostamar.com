@@ -21,7 +21,15 @@ const EMPLOYEES = [
 
 const BRAIN_MODELS_URL = process.env.BRAIN_MODELS_URL || 'http://localhost:4000/v1/models';
 
+// Single source of truth for model count - cached for 30s
+let modelCountCache: { count: number; at: number } | null = null;
+const MODEL_COUNT_CACHE_MS = 30000;
+
 async function fetchModelCount(): Promise<number> {
+  const now = Date.now();
+  if (modelCountCache && now - modelCountCache.at < MODEL_COUNT_CACHE_MS) {
+    return modelCountCache.count;
+  }
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
@@ -29,12 +37,22 @@ async function fetchModelCount(): Promise<number> {
     clearTimeout(timeout);
     if (res.ok) {
       const data = await res.json();
-      return Array.isArray(data.data) ? data.data.length : 71;
+      const count = Array.isArray(data.data) ? data.data.length : 71;
+      modelCountCache = { count, at: now };
+      return count;
     }
   } catch {
     // fall through to default
   }
   return 71; // fallback
+}
+
+// Promise.race wrapper with timeout
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
 }
 
 function corsHeaders() {
@@ -57,32 +75,52 @@ async function isAdmin(req: NextRequest): Promise<boolean> {
 }
 
 export async function GET(req: NextRequest) {
+  const startTime = Date.now();
   if (!(await isAdmin(req))) return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() });
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || 10), 50);
 
-  const modelCount = await fetchModelCount();
+  // Fetch model count in parallel with DB query
+  const modelCountPromise = fetchModelCount();
 
   // Try with db-failover first, fall back to static data
-  const result = await executeWithFailover(async (client, dbType) => {
+  const dbPromise = executeWithFailover(async (client, dbType) => {
     // Latest report per employee: fetch recent rows and pick the newest per employee.
     const rows = dbType === 'turso'
-      ? (await client.execute({
-          sql: `SELECT * FROM "FleetReport" ORDER BY "runAt" DESC LIMIT ?`,
-          args: [limit * EMPLOYEES.length],
-        })).rows
-      : (await client.query(`SELECT * FROM "FleetReport" ORDER BY "runAt" DESC LIMIT $1`, [limit * EMPLOYEES.length])).rows;
+      ? (await Promise.race([
+          client.execute({
+            sql: `SELECT * FROM "FleetReport" ORDER BY "runAt" DESC LIMIT ?`,
+            args: [limit * EMPLOYEES.length],
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('turso timeout')), 5000)),
+        ])) as any
+      : (await Promise.race([
+          client.query(`SELECT * FROM "FleetReport" ORDER BY "runAt" DESC LIMIT $1`, [limit * EMPLOYEES.length]),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('pg timeout')), 5000)),
+        ])) as any;
 
-    const latest: Record<string, (typeof rows)[number] | null> = {};
-    for (const e of EMPLOYEES) latest[e] = rows.find((r) => r.employee === e) || null;
+    const latest: Record<string, (typeof rows.rows)[number] | null> = {};
+    for (const e of EMPLOYEES) latest[e] = rows.rows.find((r) => r.employee === e) || null;
 
     // Storage summary: Telegram-backed DriveFile rows + total bytes.
     const [files, agg] = await Promise.all([
       dbType === 'turso'
-        ? client.execute({ sql: `SELECT COUNT(*) as cnt FROM "DriveFile"`, args: [] })
-        : client.query(`SELECT COUNT(*) as cnt FROM "DriveFile"`, []),
+        ? Promise.race([
+            client.execute({ sql: `SELECT COUNT(*) as cnt FROM "DriveFile"`, args: [] }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('turso timeout')), 3000)),
+          ])
+        : Promise.race([
+            client.query(`SELECT COUNT(*) as cnt FROM "DriveFile"`, []),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('pg timeout')), 3000)),
+          ]),
       dbType === 'turso'
-        ? client.execute({ sql: `SELECT COALESCE(SUM("fileSize"), 0) as sum FROM "DriveFile"`, args: [] })
-        : client.query(`SELECT COALESCE(SUM("fileSize"), 0) as sum FROM "DriveFile"`, []),
+        ? Promise.race([
+            client.execute({ sql: `SELECT COALESCE(SUM("fileSize"), 0) as sum FROM "DriveFile"`, args: [] }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('turso timeout')), 3000)),
+          ])
+        : Promise.race([
+            client.query(`SELECT COALESCE(SUM("fileSize"), 0) as sum FROM "DriveFile"`, []),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('pg timeout')), 3000)),
+          ]),
     ]);
 
     return {
@@ -99,7 +137,7 @@ export async function GET(req: NextRequest) {
           : null,
         hasReport: !!latest[e],
       })),
-      recent: rows.slice(0, limit).map((r) => ({
+      recent: rows.rows.slice(0, limit).map((r) => ({
         employee: r.employee,
         verdict: r.verdict,
         finished: r.finished,
@@ -108,24 +146,33 @@ export async function GET(req: NextRequest) {
         runAt: r.runAt,
       })),
       storage: {
-        telegramFiles: Number(files.rows[0]?.cnt || 0),
-        telegramBytes: (agg.rows[0]?.sum || '0').toString(),
+        telegramFiles: Number(files.rows?.[0]?.cnt || 0),
+        telegramBytes: (agg.rows?.[0]?.sum || '0').toString(),
       },
     };
   });
 
-  if (result) {
+  // Race DB query against 8s timeout, then fall back
+  const [modelCount, dbResult] = await Promise.all([
+    modelCountPromise,
+    withTimeout(dbPromise, 8000, null),
+  ]);
+
+  const elapsed = Date.now() - startTime;
+
+  if (dbResult) {
     return NextResponse.json({
-      ...result.result,
+      ...dbResult.result,
       models: modelCount,
       sops: 65,
       roster: EMPLOYEES.length,
       fleet: [],
-      fallback: result.dbType,
+      fallback: dbResult.dbType,
+      responseTimeMs: elapsed,
     }, { headers: corsHeaders() });
   }
 
-  // All DBs down - return static fallback
+  // All DBs down or timeout - return static fallback with model count
   return NextResponse.json({
     employees: EMPLOYEES.map((e) => ({ name: e, lastReport: null, hasReport: false })),
     recent: [],
@@ -134,8 +181,9 @@ export async function GET(req: NextRequest) {
     sops: 65,
     roster: EMPLOYEES.length,
     fleet: [],
-    fallback: 'error',
-    warning: 'DB error - returned static fallback',
+    fallback: 'timeout',
+    warning: `DB timeout/error after ${elapsed}ms - returned static fallback`,
+    responseTimeMs: elapsed,
   }, { headers: corsHeaders() });
 }
 
