@@ -191,7 +191,8 @@ export async function POST(req: NextRequest) {
   console.log('[fleet] POST called with url:', req.url);
   // Employees run on the local PC (Hermes cron) and report through the site.
   // Two accepted auth paths: admin cookie OR FLEET_REPORT_SECRET bearer.
-  const secret = (process.env.FLEET_REPORT_SECRET || '').trim();
+  // Fallback to NEXTAUTH_SECRET if FLEET_REPORT_SECRET not set (for Cloudflare Worker env).
+  const secret = ((process.env.FLEET_REPORT_SECRET || process.env.NEXTAUTH_SECRET || '') as string).trim();
   const auth = req.headers.get('authorization') || '';
   const viaSecret = !!secret && auth === `Bearer ${secret}`;
   console.log('[fleet] FLEET_REPORT_SECRET present?', !!secret);
