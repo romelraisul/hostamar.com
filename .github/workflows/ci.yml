@@ -39,3 +39,10 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
           SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          # Dummy values for AI status endpoint during build
+          AI_GATEWAY_URL: 'https://ai.hostamar.com'
+          COMFYUI_PUBLIC_URL: 'https://comfy.hostamar.com'
+          KILOCODE_API_KEY: 'dummy'
+          NVIDIA_API_KEY: 'dummy'
+          TOKENROUTER_API_KEY: 'dummy'
+          OPENCODE_ZEN_API_KEY: 'dummy'
