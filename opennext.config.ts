@@ -1,9 +1,10 @@
-import type { OpenNextConfig } from '@opennextjs/cloudflare/node_modules/@opennextjs/aws/types/open-next.js'
+// @ts-ignore
 import { defineCloudflareConfig } from '@opennextjs/cloudflare'
 
 const cloudflareConfig = defineCloudflareConfig({})
 
-const config: OpenNextConfig = {
+// @ts-ignore
+const config = {
   ...cloudflareConfig,
   edgeExternals: ['@libsql/isomorphic-ws', '@libsql/client', '@libsql/hrana-client'],
 }
