@@ -12,10 +12,6 @@ import './dns-bootstrap'
 // the query engine natively. WASM variant has cold-start issues on Vercel's
 // function splitting (wasm file not bundled per-function).
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
-// ponytail: keep the fetch-only /web client for the ADAPTER — @libsql/client's
-// node entry pulls node:sqlite/ws/fs and dies on workerd. (This is NOT the cause
-// of "[unenv] fs.readdir" — that came from Prisma's own node runtime, see import above.)
-import { createClient as createWebClient } from '@libsql/client/web'
 import { env } from '@/lib/env'
 
 const globalForPrisma = globalThis as unknown as {
@@ -25,13 +21,17 @@ const globalForPrisma = globalThis as unknown as {
 // Build mode detection — during CI build, database may not be accessible
 const isBuildMode = process.env.NEXT_PUBLIC_SKIP_DB_MIGRATE === '1' || process.env.BUILD_MODE === 'true'
 
-function createPrismaClient(): any {
+async function createPrismaClient(): Promise<any> {
   // During build mode, return a mock client that doesn't connect to DB
   if (isBuildMode) {
     console.log('[build] Prisma: returning mock client')
     return createMockPrismaClient()
   }
 
+  // ponytail: keep the fetch-only /web client for the ADAPTER — @libsql/client's
+  // node entry pulls node:sqlite/ws/fs and dies on workerd. (This is NOT the cause
+  // of "[unenv] fs.readdir" — that came from Prisma's own node runtime, see import above.)
+  const { createClient: createWebClient } = await import('@libsql/client/web')
   // ponytail: Cloudflare Workers only set TURSO_DATABASE_URL/TURSO_AUTH_TOKEN,
   // never DATABASE_URL. Fall back so the Worker can reach Turso without a
   // second secret. Upgrade path: set DATABASE_URL explicitly and this is a no-op.
@@ -118,11 +118,11 @@ function createMockPrismaClient(): any {
 let prismaInstance: any = null
 let prismaInitError: Error | null = null
 
-function getPrisma(): any {
+async function getPrisma(): Promise<any> {
   if (prismaInitError) throw prismaInitError
   if (!prismaInstance) {
     try {
-      prismaInstance = createPrismaClient()
+      prismaInstance = await createPrismaClient()
     } catch (e) {
       prismaInitError = e as Error
       throw prismaInitError
