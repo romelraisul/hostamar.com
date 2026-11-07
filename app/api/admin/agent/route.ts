@@ -23,6 +23,13 @@ function withTimeout<T>(p: Promise<T>, ms: number, fb: T): Promise<T> {
   return Promise.race([p, new Promise<T>(r => setTimeout(() => r(fb), ms))])
 }
 
+async function fetchBrainModelCount(): Promise<number> {
+  try {
+    const res = await withTimeout(fetch('http://localhost:4000/v1/models').then(r => r.json().catch(() => ({ data: [] }))).catch(() => ({ data: [] })), 5000, { data: [] })
+    return res.data?.length || 0
+  } catch { return 0 }
+}
+
 async function persistChat(msgs: { role: string; content: string }[], userId: string) {
   const res = await executeWithFailover(async (client, dbType) => {
     const vals = msgs.slice(-10).map(m => {
@@ -119,7 +126,7 @@ async function runHealth() {
     health: { ...health, responseTimeMs: Date.now() - start },
     db: db ? { active: db.active, turso: db.turso, neon: db.neon, supabase: db.supabase, local: db.local, errors: db.errors } : { active: 'none' },
     pc: { up: pcVpsUp, model: bestModel },
-    brain: { models: await withTimeout(fetch('http://localhost:4000/v1/models').then(r => r.json().catch(() => ({ data: [] }))).catch(() => ({ data: [] })), data: [] }).then(r => r.data?.length || 0),
+    brain: { models: await fetchBrainModelCount() },
   }
 }
 
@@ -369,8 +376,9 @@ export async function POST(req: NextRequest) {
     })
   } catch (e: any) {
     // Never 500 — always 200 with Bangla fallback
+    const msg = e?.message || 'অজানা ত্রুটি'
     return NextResponse.json({
-      text: `⚠️ অস্থায়ী সমস্যা: ${e?.message || 'অজানা ত্রুটি'।} আমি এখনও সাহায্য করতে পারি — আবার লিখুন।`,
+      text: '⚠️ অস্থায়ী সমস্যা: ' + msg + '. আমি এখনও সাহায্য করতে পারি — আবার লিখুন।',
       status: { ok: false, error: e?.message, fallback: true },
     }, { status: 200 })
   }
