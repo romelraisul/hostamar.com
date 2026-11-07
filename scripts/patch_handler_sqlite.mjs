@@ -11,3 +11,15 @@ const after = content.match(/require\("node:sqlite"\)/g)?.length || 0;
 
 fs.writeFileSync(handlerPath, content);
 console.log(`Patched handler.mjs: replaced ${before} occurrences of require("node:sqlite") with ({})`);
+
+// Also copy @libsql/isomorphic-ws to the correct location in .open-next
+const srcDir = '/home/romel/hostamar.com/node_modules/@libsql/isomorphic-ws';
+const destDir = '/home/romel/hostamar.com/.open-next/server-functions/default/node_modules/@libsql/client/node_modules/@libsql/isomorphic-ws';
+
+if (fs.existsSync(srcDir)) {
+  fs.mkdirSync(path.dirname(destDir), { recursive: true });
+  fs.cpSync(srcDir, destDir, { recursive: true });
+  console.log(`Copied @libsql/isomorphic-ws to ${destDir}`);
+} else {
+  console.warn(`Source directory not found: ${srcDir}`);
+}
