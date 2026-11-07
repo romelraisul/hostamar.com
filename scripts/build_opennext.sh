@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_ROOT="/home/romel/hostamar.com"
+# Use current working directory (GitHub Actions uses /home/runner/work/...)
+PROJECT_ROOT="$(pwd)"
 ISOMORPHIC_WS_SRC="$PROJECT_ROOT/node_modules/@libsql/isomorphic-ws"
 
 # Pre-copy isomorphic-ws to where hrana-client expects it
@@ -21,7 +22,6 @@ for TARGET_DIR in "${TARGET_DIRS[@]}"; do
 done
 
 echo "Building Next.js app..."
-cd "$PROJECT_ROOT"
 npm run build
 
 echo "Running OpenNext build (skip Next.js build)..."
