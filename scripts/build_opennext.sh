@@ -21,8 +21,11 @@ for TARGET_DIR in "${TARGET_DIRS[@]}"; do
   fi
 done
 
-echo "Building Next.js app..."
-npm run build
+echo "Running Prisma generate..."
+npx prisma generate
+
+echo "Building Next.js app (full build for OpenNext)..."
+NEXT_PUBLIC_SKIP_DB_MIGRATE=1 NEXT_IGNORE_INCORRECT_LOCKFILE=1 NODE_ENV=production npx next build
 
 echo "Running OpenNext build (skip Next.js build)..."
 npx opennextjs-cloudflare build --skipNextBuild --dangerouslyUseUnsupportedNextVersion
