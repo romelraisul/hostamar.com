@@ -59,10 +59,10 @@ export async function GET(req: NextRequest) {
       const rows = dbType === 'turso'
         ? (await client.execute(query as any)) as any
         : (await client.query(query.text, query.values)) as any
-      return { history: (rows.rows || []).reverse() }
+      return { history: (rows.rows || []).reverse(), dbType }
     }),
     5000,
-    { history: [] }
+    { result: { history: [] }, dbType: 'none' as any }
   )
 
   return NextResponse.json({ history: result?.result?.history || [], fallback: result?.dbType || 'none' })
