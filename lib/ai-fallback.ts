@@ -168,33 +168,91 @@ function looksLikeCot(t: string): boolean {
   };
 
   // V47: OmniRoute local — your PC as VPS (Cloudflare Tunnel hostamar-local -> :20128)
-  // Zero cost: self-healed verified-good model, only works when WSL is running.
-  const OMNI_URL = 'https://omni.hostamar.com/v1';
-  const omniCall = (capMs?: number) => async (): Promise<Res> => {
-    const bestModel = process.env.OMNI_BEST_MODEL || 'nvidia/meta/llama-3.2-11b-vision-instruct';
-    const r = await fetch(`${OMNI_URL}/chat/completions`, {
-      method: 'POST',
-      signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer sk-hostamar-wsl-2026' },
-      body: JSON.stringify({ model: bestModel, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
-    });
-    if (!r.ok) throw new Error(`omni ${r.status}`);
-    const j: any = await r.json();
-    const rawChoice = j.choices?.[0];
-    if (rawChoice?.message?.tool_calls?.length) {
-      return {
-        text: '',
-        model: bestModel,
-        provider: 'hostamar-pc-vps',
-        message: rawChoice.message,
-        finish_reason: rawChoice.finish_reason || 'tool_calls',
-      };
-    }
-    const choice = rawChoice?.message;
-    const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
-    if (!rawTxt) throw new Error('empty');
-    return { text: rawTxt, model: bestModel, provider: 'hostamar-pc-vps' };
-  };
+    // Zero cost: self-healed verified-good model, only works when WSL is running.
+    const OMNI_URL = 'https://omni.hostamar.com/v1';
+    const omniCall = (capMs?: number) => async (): Promise<Res> => {
+      const bestModel = process.env.OMNI_BEST_MODEL || 'nvidia/meta/llama-3.2-11b-vision-instruct';
+      const r = await fetch(`${OMNI_URL}/chat/completions`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer «redacted:sk-…»' },
+        body: JSON.stringify({ model: bestModel, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
+      });
+      if (!r.ok) throw new Error(`omni ${r.status}`);
+      const j: any = await r.json();
+      const rawChoice = j.choices?.[0];
+      if (rawChoice?.message?.tool_calls?.length) {
+        return {
+          text: '',
+          model: bestModel,
+          provider: 'hostamar-pc-vps',
+          message: rawChoice.message,
+          finish_reason: rawChoice.finish_reason || 'tool_calls',
+        };
+      }
+      const choice = rawChoice?.message;
+      const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
+      if (!rawTxt) throw new Error('empty');
+      return { text: rawTxt, model: bestModel, provider: 'hostamar-pc-vps' };
+    };
+
+    // Guard (local NVIDIA) — 5 models on :12436 via api-primary tunnel
+    // Zero cost, fast, runs on your GPU. Try glm-5.3-flash first, then others.
+    const GUARD_URL = 'https://api-primary.hostamar.com/v1'; // tunnel to :12436
+    const guardModels = [
+      'z-ai/glm-5.3-flash',
+      'deepseek-ai/deepseek-v4.1-flash',
+      'minimaxai/minimax-m3.1-flash',
+      'stepfun-ai/step-5-preview',
+      'nvidia/nemotron-3-ultra-550b-a55b',
+    ];
+    const guardCall = (m: string, capMs?: number) => async (): Promise<Res> => {
+      const r = await fetch(`${GUARD_URL}/chat/completions`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
+        headers: { 'Content-Type': 'application/json' }, // no auth for nvidia-guard
+        body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
+      });
+      if (!r.ok) throw new Error(`guard ${r.status}`);
+      const j: any = await r.json();
+      const rawChoice = j.choices?.[0];
+      if (rawChoice?.message?.tool_calls?.length) {
+        return { text: '', model: m, provider: 'nvidia-guard', message: rawChoice.message, finish_reason: rawChoice.finish_reason || 'tool_calls' };
+      }
+      const choice = rawChoice?.message;
+      const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
+      if (!rawTxt) throw new Error('empty');
+      return { text: rawTxt, model: m, provider: 'nvidia-guard' };
+    };
+
+    // FreeLLMAPI worker — :3002/:3005
+    const FREE_LLM_API_URL = process.env.FREE_LLM_API_URL || 'http://localhost:3002/v1';
+    const freeLlmApiCall = (capMs?: number) => async (): Promise<Res> => {
+      const r = await fetch(`${FREE_LLM_API_URL}/chat/completions`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'kilo-auto/free', messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
+      });
+      if (!r.ok) throw new Error(`freellmapi ${r.status}`);
+      const j: any = await r.json();
+      const rawChoice = j.choices?.[0];
+      if (rawChoice?.message?.tool_calls?.length) {
+        return { text: '', model: 'kilo-auto/free', provider: 'freellmapi', message: rawChoice.message, finish_reason: rawChoice.finish_reason || 'tool_calls' };
+      }
+      const choice = rawChoice?.message;
+      const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
+      if (!rawTxt) throw new Error('empty');
+      return { text: rawTxt, model: 'kilo-auto/free', provider: 'freellmapi' };
+    };
+
+  // FREE fallback chain — Guard → OmniRoute → FreeLLMAPI → Kilo/Edge
+  // Runs BEFORE paid selection so free users get best available model.
+  for (const m of guardModels) {
+    attempts.push({ name: `guard:${m}`, fn: guardCall(m, 10_000) });
+  }
+  attempts.push({ name: 'hostamar-pc-vps:omni', fn: omniCall(12_000) });
+  attempts.push({ name: 'freellmapi:kilo-auto/free', fn: freeLlmApiCall(10_000) });
 
   // PAID selection first — never silently swap the user's chosen model.
   if (wanted) {
@@ -272,15 +330,15 @@ function looksLikeCot(t: string): boolean {
   const lastUser = messages[messages.length - 1]?.content?.toLowerCase() || '';
   let fallback = '';
   if (lastUser.includes('bkash') || lastUser.includes('বিকাশ') || lastUser.includes('payment') || lastUser.includes('পেমেন্ট') || lastUser.includes('trx')) {
-    fallback = `bKash পেমেন্ট: আমাদের পার্সোনাল নাম্বার 01822417463 তে Send Money করুন। Plans: Starter ৳990 (6000cr) / Pro ৳1,900 (13000cr) / Business ৳2,900 (30000cr) — 1cr = 1TK। তারপর TrxID টি https://hostamar.com/dashboard/payment এ সাবমিট করুন — আমরা ৫ মিনিটে Approve করব।`;
+    fallback = `bKash পেমেন্ট: আমাদের পার্সোনাল নাম্বার 01822417463 তে Send Money করুন। প্ল্যান: প্রিমিয়াম ৪,৯৯৯ / বিজনেস ১,৯৯৯ (সবচেয়ে জনপ্রিয়) / স্টার্টার ৫৯৯ — ১ cr = ১ টাকা। TrxID https://hostamar.com/dashboard/payment-এ দিন, ৫ মিনিটে এপ্রুভ।`;
   } else if (lastUser.includes('storage') || lastUser.includes('স্টোরেজ') || lastUser.includes('upload') || lastUser.includes('file')) {
-    fallback = `Storage B2: 5GB FREE — https://hostamar.com/dashboard/storage এ upload করুন। S3 endpoint s3.us-east-005.backblazeb2.com bucket hostamar-prod।`;
+    fallback = `Storage B2: 5GB FREE — https://hostamar.com/dashboard/storage-এ upload করুন। S3 endpoint s3.us-east-005.backblazeb2.com bucket hostamar-prod।`;
   } else if (lastUser.includes('tv') || lastUser.includes('channel') || lastUser.includes('চ্যানেল') || lastUser.includes('live')) {
     fallback = `TV: ৫০টি স্টেবল চ্যানেল — https://hostamar.com/tv — API /api/tv/stable-channels`;
-  } else if (lastUser.includes('pricing') || lastUser.includes('price') || lastUser.includes('প্রাইস') || lastUser.includes('package')) {
-    fallback = `Pricing: Starter ৳990 (6000cr), Pro ৳1,900 (13000cr), Business ৳2,900 (30000cr) — সাইনআপে 3000cr বোনাস — 1cr = 1TK — https://hostamar.com/pricing`;
+  } else if (lastUser.includes('pricing') || lastUser.includes('price') || lastUser.includes('প্রাইস') || lastUser.includes('package') || lastUser.includes('প্ল্যান')) {
+    fallback = `প্রাইসিং: প্রিমিয়াম ৪,৯৯৯ / বিজনেস ১,৯৯৯ (সবচেয়ে জনপ্রিয়) / স্টার্টার ৫৯৯ — সাইনআপে ৩০০০ cr বোনাস (১ cr = ১ টাকা) — https://hostamar.com/pricing`;
   } else {
-    fallback = `Hostamar Support: ৫০+ AI সার্ভিস, 120 মডেল চ্যাট, ব্রাউজার IDE, ক্লাউড হোস্টিং, TV ৫০ চ্যানেল — সাইনআপে 3000cr বোনাস (1cr = 1TK = ১ ভবিষ্যৎ HOST কয়েন)। কী জানতে চান?`;
+    fallback = `Hostamar Support: ৫০+ AI সার্ভিস, ১২০ মডেল চ্যাট, ব্রাউজার IDE, ক্লাউড হোস্টিং, TV ৫০ চ্যানেল — সাইনআপে ৩০০০ cr বোনাস (১ cr = ১ টাকা) — কী জানতে চান?`;
   }
   trace.push({ provider: 'knowledge-base', status: 'fallback', error: 'all-providers-failed' });
   return { text: fallback, model: 'knowledge-base-fallback', provider: 'fallback', trace };
