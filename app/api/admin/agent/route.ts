@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
       return { history: (rows.rows || []).reverse(), dbType }
     }),
     5000,
-    { result: { history: [] }, dbType: 'none' as any }
+    { result: { history: [], dbType: 'none' as any }, dbType: 'none' as any }
   )
 
   return NextResponse.json({ history: result?.result?.history || [], fallback: result?.dbType || 'none' })
