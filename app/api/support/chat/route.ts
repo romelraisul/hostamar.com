@@ -19,6 +19,16 @@ export async function POST(req: NextRequest){
   const messages: Array<{role:string,content:string}> = body.messages || []
   const last = messages[messages.length-1]?.content || ''
   // Allow empty/short messages to reach fallback — fallback returns friendly Bangla guidance
+  if (!last.trim()) {
+    // Return friendly Bangla guidance for empty message
+    return NextResponse.json({ 
+      reply: '👋 নমস্কার! হোস্টামার সাপোর্টে স্বাগতম। আপনি কীভাবে সাহায্য চান? (যেমন: "বিকাশে কীভাবে নেব", "স্টোরেজ কীভাবে বাড়াব", "টিভি চ্যানেল দেখতে চাই")',
+      model: 'fallback',
+      provider: 'local',
+      ok: true,
+      system: 'Hostamar Support — empty message handled'
+    })
+  }
 
   // Save user chat
   // SQLite dialect: ? placeholders, no ::jsonb, no NOW()
