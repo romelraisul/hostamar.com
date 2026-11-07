@@ -4,6 +4,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { executeWithFailover } from '@/lib/db-failover'
 
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders() })
+}
+
 /**
  * GET /api/admin/transactions?status=pending_verification&limit=100
  *
@@ -87,7 +99,7 @@ export async function GET(req: NextRequest) {
         transactions: [],
         fallback: 'none',
         warning: 'All databases unavailable',
-      })
+      }, { headers: corsHeaders() })
     }
 
     return NextResponse.json({
@@ -97,11 +109,15 @@ export async function GET(req: NextRequest) {
       count: result.result.transactions.length,
       transactions: result.result.transactions,
       fallback: result.dbType,
-    })
+    }, { headers: corsHeaders() })
   } catch (error: any) {
-    const status = error?.cause?.status || 500
-    if (status === 401) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    if (status === 403) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const status = error?.cause?.status || error?.status || 500
+    if (status === 401) {
+      return NextResponse.json({ error: 'অনুমতি নেই: দয়া করে লগইন করুন' }, { status: 401, headers: corsHeaders() })
+    }
+    if (status === 403) {
+      return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() })
+    }
     console.error('[admin transactions] error:', error)
     return NextResponse.json({
       ok: true,
@@ -111,6 +127,6 @@ export async function GET(req: NextRequest) {
       transactions: [],
       fallback: 'error',
       warning: 'DB error - returned empty',
-    }, { status: 200 })
+    }, { status: 200, headers: corsHeaders() })
   }
 }

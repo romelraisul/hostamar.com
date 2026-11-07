@@ -19,6 +19,18 @@ const EMPLOYEES = [
   'Guard',
 ] as const;
 
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders() })
+}
+
 async function isAdmin(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get('auth_token')?.value;
   if (!token) return false;
@@ -27,7 +39,7 @@ async function isAdmin(req: NextRequest): Promise<boolean> {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() });
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || 10), 50);
 
   // Try with db-failover first, fall back to static data
@@ -91,7 +103,7 @@ export async function GET(req: NextRequest) {
       roster: 17,
       fleet: [],
       fallback: result.dbType,
-    });
+    }, { headers: corsHeaders() });
   }
 
   // All DBs down - return static fallback
@@ -105,7 +117,7 @@ export async function GET(req: NextRequest) {
     fleet: [],
     fallback: 'error',
     warning: 'DB error - returned static fallback',
-  });
+  }, { headers: corsHeaders() });
 }
 
 export async function POST(req: NextRequest) {
@@ -225,5 +237,5 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) { console.error('[fleet] fleetLaneStatus.upsert failed:', e instanceof Error ? e.message : e); }
 
-  return NextResponse.json({ ok: true, id: row.id });
+  return NextResponse.json({ ok: true, id: row.id }, { headers: corsHeaders() });
 }

@@ -4,6 +4,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { executeWithFailover } from '@/lib/db-failover'
 
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders() })
+}
+
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin(req)
@@ -76,32 +88,36 @@ export async function GET(req: NextRequest) {
     })
 
     if (!result) {
-          return NextResponse.json({
-            ok: true,
-            customers: [],
-            pagination: { page, limit, total: 0, totalPages: 0, hasMore: false },
-            fallback: 'none',
-            warning: 'All databases unavailable',
-          })
-        }
+      return NextResponse.json({
+        ok: true,
+        customers: [],
+        pagination: { page, limit, total: 0, totalPages: 0, hasMore: false },
+        fallback: 'none',
+        warning: 'All databases unavailable',
+      }, { headers: corsHeaders() })
+    }
 
-        const { customers, total } = result.result
-        return NextResponse.json({
-          ok: true,
-          customers,
-          pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit),
-            hasMore: skip + limit < total,
-          },
-          fallback: result.dbType,
-        })
+    const { customers, total } = result.result
+    return NextResponse.json({
+      ok: true,
+      customers,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasMore: skip + limit < total,
+      },
+      fallback: result.dbType,
+    }, { headers: corsHeaders() })
   } catch (error: any) {
-    const status = error?.cause?.status || 500
-    if (status === 401) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    if (status === 403) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const status = error?.cause?.status || error?.status || 500
+    if (status === 401) {
+      return NextResponse.json({ error: 'অনুমতি নেই: দয়া করে লগইন করুন' }, { status: 401, headers: corsHeaders() })
+    }
+    if (status === 403) {
+      return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() })
+    }
     console.error('Admin customers fetch error:', error)
     return NextResponse.json({
       ok: true,
@@ -109,6 +125,6 @@ export async function GET(req: NextRequest) {
       pagination: { page: 1, limit: 20, total: 0, totalPages: 0, hasMore: false },
       fallback: 'error',
       warning: 'DB error - returned empty',
-    }, { status: 200 })
+    }, { status: 200, headers: corsHeaders() })
   }
 }

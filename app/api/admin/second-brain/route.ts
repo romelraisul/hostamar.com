@@ -13,6 +13,18 @@ export const dynamic = 'force-dynamic'
 
 const LOCAL_ASK = process.env.SECOND_BRAIN_ASK_URL || 'http://127.0.0.1:3010/ask'
 
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders() })
+}
+
 async function isAdmin(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get('auth_token')?.value
   if (!token) return false
@@ -21,7 +33,7 @@ async function isAdmin(req: NextRequest): Promise<boolean> {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() })
   // Storage snapshot: wiki/synthesis files were synced into Neon? No — the
   // second brain is a LOCAL artifact. Report reachability + describe state.
   let askOnline = false
@@ -38,15 +50,15 @@ export async function GET(req: NextRequest) {
     note: askOnline
       ? 'Query layer reachable from this runtime.'
       : 'Query layer runs on the owner\u2019s PC (127.0.0.1:3010). Not reachable from this server runtime — cloud fallback active. Ask locally via POST http://127.0.0.1:3010/ask or use CLI: python3 ~/harmes-workspace/server/dynamic_context.py "question" [--quality]',
-  })
+  }, { headers: corsHeaders() })
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() })
   let body: any
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Bad JSON' }, { status: 400 }) }
+  try { body = await req.json() } catch { return NextResponse.json({ error: 'Bad JSON' }, { status: 400, headers: corsHeaders() }) }
   const q = String(body.q || '').slice(0, 2000)
-  if (!q) return NextResponse.json({ error: 'missing q' }, { status: 400 })
+  if (!q) return NextResponse.json({ error: 'missing q' }, { status: 400, headers: corsHeaders() })
   try {
     const r = await fetch(LOCAL_ASK, {
       method: 'POST',
@@ -56,7 +68,7 @@ export async function POST(req: NextRequest) {
     })
     if (!r.ok) throw new Error(`upstream ${r.status}`)
     const d = await r.json()
-    return NextResponse.json({ q, answer: d.answer, source: 'local-second-brain' })
+    return NextResponse.json({ q, answer: d.answer, source: 'local-second-brain' }, { headers: corsHeaders() })
   } catch (e: unknown) {
     return NextResponse.json({
       ok: true,
@@ -66,6 +78,6 @@ export async function POST(req: NextRequest) {
       mode: 'cloud-fallback',
       wiki: [],
       note: 'query layer local-only - cloud fallback active',
-    }, { status: 200 })
+    }, { status: 200, headers: corsHeaders() })
   }
 }

@@ -37,10 +37,12 @@ DECISIONS_URL = "https://decisions.hostamar.com"
 DECISION_API_URL = "https://decisions.hostamar.com"
 HOSTAMAR_PC_MAX_AGE_S = "1200"
 TURSO_DATABASE_URL = "libsql://hostamar-db-romelraisul.aws-us-east-1.turso.io"
-TURSO_AUTH_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoiNzZhMTQ3ZDUtM2YyYS00YjQxLWE3ZjEtYzBjZDNhOWM4ODNlIiwiaWF0IjoxNzg0OTUwMjc5LCJpZCI6IjI2OTY3NDczLTU3ODgtNDYxYS04Y2E4LTE2YzA2OGQ5ZjE1NSJ9.gTBwJjY9UqBhPLm6VvL9YhXK3Qf8Q5Z7R8S9T0U1V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2"
+TURSO_AUTH_TOKEN = "eyJhbG...30Bw"
 NEON_DATABASE_URL = "postgresql://neondb_owner:***@ep-spring-frog-aoikue4i-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-SUPABASE_DATABASE_URL = "postgresql://postgres.eviipjtymitvghmnozlj:***@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+SUPABASE_DATABASE_URL = "postgresql://postgres.eviipjtymitvghmnozlj:PVh9IF36PgWEn8mK@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require"
 LOCAL_DATABASE_URL = "postgresql://postgres:***@host.docker.internal:5432/hostamar?sslmode=disable"
+LIGHTNING_API_TOKEN = "placeholder-add-real-token-to-enable-spill"
+LIGHTNING_FLEET_ID = "placeholder"
 
 [observability.logs]
 enabled = true

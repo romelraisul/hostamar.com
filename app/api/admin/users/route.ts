@@ -4,6 +4,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { executeWithFailover } from '@/lib/db-failover'
 
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders() })
+}
+
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin(req)
@@ -63,7 +75,7 @@ export async function GET(req: NextRequest) {
         totalPages: 0,
         fallback: 'none',
         warning: 'All databases unavailable',
-      })
+      }, { headers: corsHeaders() })
     }
 
     const { users, total } = result.result
@@ -76,11 +88,15 @@ export async function GET(req: NextRequest) {
       totalPages: Math.ceil(total / limit),
       hasMore: skip + limit < total,
       fallback: result.dbType,
-    })
+    }, { headers: corsHeaders() })
   } catch (err: any) {
-    const status = err?.cause?.status || 500
-    if (status === 401) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    if (status === 403) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const status = err?.cause?.status || err?.status || 500
+    if (status === 401) {
+      return NextResponse.json({ error: 'অনুমতি নেই: দয়া করে লগইন করুন' }, { status: 401, headers: corsHeaders() })
+    }
+    if (status === 403) {
+      return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() })
+    }
     console.error('[admin users] error:', err)
     return NextResponse.json({
       ok: true,
@@ -88,6 +104,6 @@ export async function GET(req: NextRequest) {
       total: 0,
       error: 'DB error - returned empty',
       fallback: 'error',
-    }, { status: 200 })
+    }, { status: 200, headers: corsHeaders() })
   }
 }

@@ -20,6 +20,18 @@ export const dynamic = 'force-dynamic'
 
 const TARGET_CUSTOMERS = 10
 
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders() })
+}
+
 async function isAdmin(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get('auth_token')?.value
   if (!token) return false
@@ -36,7 +48,7 @@ async function safe<T>(p: Promise<T>, fallback: T): Promise<T> {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await isAdmin(req))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!(await isAdmin(req))) return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() })
 
   const now = new Date()
   const startOfToday = new Date(now)
@@ -163,7 +175,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       ...result.result,
       fallback: result.dbType,
-    })
+    }, { headers: corsHeaders() })
   }
 
   // All DBs down - return zeros
@@ -194,5 +206,5 @@ export async function GET(req: NextRequest) {
     generatedAt: now.toISOString(),
     fallback: 'error',
     warning: 'DB error - returned zeros',
-  })
+  }, { headers: corsHeaders() })
 }
