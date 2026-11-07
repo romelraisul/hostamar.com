@@ -272,7 +272,7 @@ export default {
 						if (url.pathname === "/api/tv/manifest") return handleTVManifestRequest(env, request, cache);
 						if (url.pathname === "/api/tv/live") return handleTVLiveRequest(env, request, cache);
 						if (url.pathname === "/tv/manifest.json") return handleTVManifestFileRequest(env, request, cache);
-						if (url.pathname === "/tv") return handleTVPageRequest(env, request, cache);
+						if (url.pathname === "/tv" || url.pathname === "/tv/") return handleTVPageRequest(env, request, cache);
 						if (url.pathname.startsWith("/tv/watch/")) return handleTVWatchRequest(env, request, cache);
 						if (url.pathname.endsWith(".mp4") && url.pathname.startsWith("/tv/")) return handleTVVideoRequest(env, request, cache);
 
