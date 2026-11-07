@@ -19,6 +19,24 @@ const EMPLOYEES = [
   'Guard',
 ] as const;
 
+const BRAIN_MODELS_URL = process.env.BRAIN_MODELS_URL || 'http://localhost:4000/v1/models';
+
+async function fetchModelCount(): Promise<number> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(BRAIN_MODELS_URL, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data.data) ? data.data.length : 71;
+    }
+  } catch {
+    // fall through to default
+  }
+  return 71; // fallback
+}
+
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
@@ -41,6 +59,8 @@ async function isAdmin(req: NextRequest): Promise<boolean> {
 export async function GET(req: NextRequest) {
   if (!(await isAdmin(req))) return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403, headers: corsHeaders() });
   const limit = Math.min(Number(req.nextUrl.searchParams.get('limit') || 10), 50);
+
+  const modelCount = await fetchModelCount();
 
   // Try with db-failover first, fall back to static data
   const result = await executeWithFailover(async (client, dbType) => {
@@ -77,6 +97,7 @@ export async function GET(req: NextRequest) {
               needsYou: latest[e]!.needsYou,
             }
           : null,
+        hasReport: !!latest[e],
       })),
       recent: rows.slice(0, limit).map((r) => ({
         employee: r.employee,
@@ -89,8 +110,6 @@ export async function GET(req: NextRequest) {
       storage: {
         telegramFiles: Number(files.rows[0]?.cnt || 0),
         telegramBytes: (agg.rows[0]?.sum || '0').toString(),
-        // B2 is the hot cache in front of Telegram; sizes reported by the local
-        // WSL syncer when present (not stored in Neon).
       },
     };
   });
@@ -98,9 +117,9 @@ export async function GET(req: NextRequest) {
   if (result) {
     return NextResponse.json({
       ...result.result,
-      models: 71,
+      models: modelCount,
       sops: 65,
-      roster: 17,
+      roster: EMPLOYEES.length,
       fleet: [],
       fallback: result.dbType,
     }, { headers: corsHeaders() });
@@ -108,12 +127,12 @@ export async function GET(req: NextRequest) {
 
   // All DBs down - return static fallback
   return NextResponse.json({
-    employees: EMPLOYEES.map((e) => ({ name: e, lastReport: null })),
+    employees: EMPLOYEES.map((e) => ({ name: e, lastReport: null, hasReport: false })),
     recent: [],
     storage: { telegramFiles: 0, telegramBytes: '0' },
-    models: 71,
+    models: modelCount,
     sops: 65,
-    roster: 17,
+    roster: EMPLOYEES.length,
     fleet: [],
     fallback: 'error',
     warning: 'DB error - returned static fallback',

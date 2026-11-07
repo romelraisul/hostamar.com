@@ -197,10 +197,10 @@ tools/realesrgan/models/
 .env.providers
 .tv-agent-secret.local
 
-# TV + video renders (must NOT be ignored — .vercelignore mirrors this)
-!public/tv/*.mp4
-!public/tv/b2-manifest.json
-!public/videos/*.mp4
+# TV + video renders (served from B2/CDN, not git — must NOT be tracked)
+# public/tv/*.mp4
+# public/tv/b2-manifest.json
+# public/videos/*.mp4
 
 # secrets & backups - never commit
 .env
