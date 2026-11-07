@@ -1,5 +1,4 @@
 import type { NextRequest } from 'next/server'
-import { createClient } from '@libsql/client/web'
 import { signToken, comparePassword, verifyToken as verifyTokenBase } from '@/lib/auth-utils'
 
 export { signToken, comparePassword }
@@ -34,10 +33,11 @@ type AuthUser = {
   customer: any
 }
 
-function getTursoClient() {
+async function getTursoClient() {
   const url = (process.env.TURSO_DATABASE_URL || '').replace(/^libsql:\/\//, 'https://')
   const authToken = process.env.TURSO_AUTH_TOKEN || ''
   if (!url) throw new Error('TURSO_DATABASE_URL not configured')
+  const { createClient } = await import('@libsql/client/web')
   return createClient({ url, authToken })
 }
 
@@ -53,7 +53,7 @@ function getPhone(row: any): string | null {
 
 async function findCustomerById(id: string) {
   try {
-    const client = getTursoClient()
+    const client = await getTursoClient()
     const result = await client.execute({
       sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE id = ? LIMIT 1',
       args: [id],
@@ -68,7 +68,7 @@ async function findCustomerById(id: string) {
 
 async function findCustomerByEmail(email: string) {
   try {
-    const client = getTursoClient()
+    const client = await getTursoClient()
     const result = await client.execute({
       sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE email = ? LIMIT 1',
       args: [email],

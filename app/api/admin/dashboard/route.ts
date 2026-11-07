@@ -2,18 +2,18 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
-import { createClient } from '@libsql/client/web'
 
-function getTursoClient() {
+async function getTursoClient() {
   const url = (process.env.TURSO_DATABASE_URL || '').replace(/^libsql:\/\//, 'https://')
   const authToken = process.env.TURSO_AUTH_TOKEN || ''
+  const { createClient } = await import('@libsql/client/web')
   return createClient({ url, authToken })
 }
 
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin(req)
-    const db = getTursoClient()
+    const db = await getTursoClient()
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 

@@ -1,6 +1,5 @@
 // Lazy Prisma replacement for NextAuth callbacks on Cloudflare Workers
 // Uses raw @libsql/client/web — no fs.readdir, no query engine, no WASM load.
-import { createClient } from '@libsql/client/web'
 
 interface CustomerRow {
   id: string
@@ -13,10 +12,11 @@ interface CustomerRow {
   updatedAt: string | null
 }
 
-function getClient() {
+async function getClient() {
   const url = (process.env.TURSO_DATABASE_URL || '').replace(/^libsql:\/\//, 'https://')
   const authToken = process.env.TURSO_AUTH_TOKEN || ''
   if (!url) throw new Error('TURSO_DATABASE_URL not configured')
+  const { createClient } = await import('@libsql/client/web')
   return createClient({ url, authToken })
 }
 
@@ -34,7 +34,7 @@ function mapCustomer(row: any): CustomerRow {
 }
 
 export async function findCustomerByEmail(email: string): Promise<CustomerRow | null> {
-  const client = getClient()
+  const client = await getClient()
   const result = await client.execute({
     sql: 'SELECT id, email, name, password, role, "emailVerified", "createdAt", "updatedAt" FROM "Customer" WHERE email = ? LIMIT 1',
     args: [email],
@@ -43,7 +43,7 @@ export async function findCustomerByEmail(email: string): Promise<CustomerRow | 
 }
 
 export async function findCustomerById(id: string): Promise<CustomerRow | null> {
-  const client = getClient()
+  const client = await getClient()
   const result = await client.execute({
     sql: 'SELECT id, email, name, password, role, "emailVerified", "createdAt", "updatedAt" FROM "Customer" WHERE id = ? LIMIT 1',
     args: [id],
@@ -52,7 +52,7 @@ export async function findCustomerById(id: string): Promise<CustomerRow | null> 
 }
 
 export async function createCustomer(data: { email: string; name: string; password: string; role: string; source: string; stage: string }): Promise<CustomerRow> {
-  const client = getClient()
+  const client = await getClient()
   const id = `cust_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   await client.execute({
     sql: 'INSERT INTO "Customer" (id, email, name, password, role, source, stage, "createdAt", "updatedAt") VALUES (?, ?, ?, ?, ?, ?, ?, datetime("now"), datetime("now"))',

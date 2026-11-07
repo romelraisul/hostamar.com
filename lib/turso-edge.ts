@@ -1,11 +1,10 @@
 // ponytail: Cloudflare Workers cannot load Prisma 5.22's libssl detection
 // (fs.readdir on /lib -> unenv throws). Direct @libsql/client/web is fetch-only
 // and works on both Workers and Node. Use this on Workers; keep Prisma for Vercel.
-import { createClient } from '@libsql/client/web'
 
-let _client: ReturnType<typeof createClient> | null = null
+let _client: ReturnType<typeof import('@libsql/client/web').then(m => m.createClient)> | null = null
 
-export function getTursoEdgeClient() {
+export async function getTursoEdgeClient() {
   if (_client) return _client
   const raw = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL?.split('?')[0]
   const authToken = process.env.TURSO_AUTH_TOKEN || process.env.DATABASE_URL?.split('authToken=')[1]?.split('&')[0]
@@ -19,6 +18,7 @@ export function getTursoEdgeClient() {
   // Turso documents for Workers. Local check on this DB: both transports return
   // rows; https is the one that fits the CPU budget.
   const url = raw.replace(/^libsql:\/\//, 'https://')
+  const { createClient } = await import('@libsql/client/web')
   _client = createClient({ url, authToken })
   return _client
 }

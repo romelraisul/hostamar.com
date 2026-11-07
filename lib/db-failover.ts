@@ -1,4 +1,3 @@
-import { createClient } from '@libsql/client/web'
 import { Pool } from '@neondatabase/serverless'
 import { createPool } from '@vercel/postgres'
 
@@ -14,7 +13,7 @@ export interface DBHealth {
 }
 
 interface DBClients {
-  turso?: ReturnType<typeof createClient>
+  turso?: any
   neon?: Pool
   supabase?: Pool
   local?: Pool
@@ -25,12 +24,13 @@ let lastHealthCheck = 0
 let cachedHealth: DBHealth | null = null
 const HEALTH_CACHE_MS = 30000
 
-function getTursoClient() {
+async function getTursoClient() {
   if (clients.turso) return clients.turso
   const raw = process.env.TURSO_DATABASE_URL
   const authToken = process.env.TURSO_AUTH_TOKEN
   if (!raw) return null
   const url = raw.replace(/^libsql:\/\//, 'https://')
+  const { createClient } = await import('@libsql/client/web')
   clients.turso = createClient({ url, authToken })
   return clients.turso
 }
@@ -61,7 +61,7 @@ function getLocalClient() {
 
 async function checkTurso(): Promise<boolean> {
   try {
-    const client = getTursoClient()
+    const client = await getTursoClient()
     if (!client) return false
     const result = await Promise.race([
       client.execute('SELECT 1'),
@@ -150,7 +150,7 @@ export async function getActiveDB(): Promise<{ type: DBType; client: any } | nul
   const health = await getDBHealth()
 
   if (health.turso === 'connected') {
-    return { type: 'turso', client: getTursoClient() }
+    return { type: 'turso', client: await getTursoClient() }
   }
   if (health.neon === 'connected') {
     return { type: 'neon', client: getNeonClient() }
@@ -178,7 +178,7 @@ export async function executeWithFailover<T>(
     let client: any
     switch (dbType) {
       case 'turso':
-        client = getTursoClient()
+        client = await getTursoClient()
         break
       case 'neon':
         client = getNeonClient()
