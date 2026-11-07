@@ -118,52 +118,66 @@ async function probeUrl(url: string, timeoutMs: number): Promise<{ up: boolean; 
 }
 
 export async function GET(req: NextRequest) {
-  const admin = requireAdmin(req)
-  if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  try {
+    const admin = requireAdmin(req)
+    if (!admin) return NextResponse.json({ error: 'নিষিদ্ধ: অ্যাডমিন অ্যাক্সেস দরকার' }, { status: 403 })
 
-  const force = req.nextUrl.searchParams.get('force') === '1'
-  if (force) {
-    for (const k of Object.keys(cache)) delete cache[k]
+    const force = req.nextUrl.searchParams.get('force') === '1'
+    if (force) {
+      for (const k of Object.keys(cache)) delete cache[k]
+    }
+
+    // All probes in parallel. Tunnel endpoints (ai/comfy.hostamar.com) can take
+    // 2-4s from Vercel, so give them generous timeouts to avoid false "offline".
+    // V50 fix: LiteLLM has NO /health route (404) and it hangs on full-model
+    // health checks — probe /v1/models instead (fast, cheap, real 200).
+    const [gateway, comfy, kilocode, nvidia, tokenrouter, opencode] = await Promise.all([
+      probeUrl(`${GATEWAY_URL}/v1/models`, 6000),
+      probeUrl(`${COMFY_URL}/system_stats`, 7000),
+      probeProvider('kilocode'),
+      probeProvider('nvidia'),
+      probeProvider('tokenrouter'),
+      probeProvider('opencode'),
+    ])
+
+    let chain: any = { tier: 'unknown', provider: 'unknown', reason: 'probing' }
+    try { chain = getFallbackStatus() } catch { /* ignore */ }
+
+    return NextResponse.json({
+      ts: new Date().toISOString(),
+      chain,
+      gateway: {
+        url: GATEWAY_URL,
+        up: gateway.up,
+        latencyMs: gateway.latencyMs,
+        status: gateway.status ?? null,
+      },
+      comfyui: {
+        url: COMFY_URL,
+        up: comfy.up,
+        latencyMs: comfy.latencyMs,
+        gpu: comfy.body?.devices?.[0]
+          ? {
+              name: comfy.body.devices[0].name,
+              vramTotalMB: Math.round((comfy.body.devices[0].vram_total || 0) / 1048576),
+              vramFreeMB: Math.round((comfy.body.devices[0].vram_free || 0) / 1048576),
+            }
+          : null,
+        version: comfy.body?.system?.comfyui_version || null,
+      },
+      providers: { kilocode, nvidia, tokenrouter, opencode },
+      cacheTtlSec: CACHE_TTL_MS / 1000,
+    }, { headers: { 'Cache-Control': 'no-store' }})
+  } catch (error) {
+    console.error('[admin/ai-status] error:', error)
+    return NextResponse.json({
+      ts: new Date().toISOString(),
+      chain: { tier: 'error', provider: 'error', reason: 'internal error' },
+      gateway: { url: GATEWAY_URL, up: false, latencyMs: 0, status: null },
+      comfyui: { url: COMFY_URL, up: false, latencyMs: 0, gpu: null, version: null },
+      providers: { kilocode: { up: false, total: 0, free: 0, latencyMs: 0, sample: [], error: 'internal error', probedAt: Date.now() }, nvidia: { up: false, total: 0, free: 0, latencyMs: 0, sample: [], error: 'internal error', probedAt: Date.now() }, tokenrouter: { up: false, total: 0, free: 0, latencyMs: 0, sample: [], error: 'internal error', probedAt: Date.now() }, opencode: { up: false, total: 0, free: 0, latencyMs: 0, sample: [], error: 'internal error', probedAt: Date.now() } },
+      cacheTtlSec: CACHE_TTL_MS / 1000,
+      warning: 'Internal error - returned safe fallback',
+    }, { status: 200, headers: { 'Cache-Control': 'no-store' }})
   }
-
-  // All probes in parallel. Tunnel endpoints (ai/comfy.hostamar.com) can take
-  // 2-4s from Vercel, so give them generous timeouts to avoid false "offline".
-  // V50 fix: LiteLLM has NO /health route (404) and it hangs on full-model
-  // health checks — probe /v1/models instead (fast, cheap, real 200).
-  const [gateway, comfy, kilocode, nvidia, tokenrouter, opencode] = await Promise.all([
-    probeUrl(`${GATEWAY_URL}/v1/models`, 6000),
-    probeUrl(`${COMFY_URL}/system_stats`, 7000),
-    probeProvider('kilocode'),
-    probeProvider('nvidia'),
-    probeProvider('tokenrouter'),
-    probeProvider('opencode'),
-  ])
-
-  const chain = getFallbackStatus()
-
-  return NextResponse.json({
-    ts: new Date().toISOString(),
-    chain,
-    gateway: {
-      url: GATEWAY_URL,
-      up: gateway.up,
-      latencyMs: gateway.latencyMs,
-      status: gateway.status ?? null,
-    },
-    comfyui: {
-      url: COMFY_URL,
-      up: comfy.up,
-      latencyMs: comfy.latencyMs,
-      gpu: comfy.body?.devices?.[0]
-        ? {
-            name: comfy.body.devices[0].name,
-            vramTotalMB: Math.round((comfy.body.devices[0].vram_total || 0) / 1048576),
-            vramFreeMB: Math.round((comfy.body.devices[0].vram_free || 0) / 1048576),
-          }
-        : null,
-      version: comfy.body?.system?.comfyui_version || null,
-    },
-    providers: { kilocode, nvidia, tokenrouter, opencode },
-    cacheTtlSec: CACHE_TTL_MS / 1000,
-  }, { headers: { 'Cache-Control': 'no-store' } })
 }
