@@ -1,4 +1,0 @@
-Title: Hostamar Agent Infra Receipt — 24/7 Agents, No Server Management
-Description: Persistent container + cron, TencentDB-Memory (chat+skill+wiki), Open-connector 1400+ APIs, GPU spot from $0.20/h (RTX 4090) EU-BD, Infisical secrets + OpenObserve logs. TOTAL $49/mo — infrastructure, not software. Comment INFRA + Follow.
-Tags: hostamar, agent infra, AI agents, 24/7, sovereign cloud, GPU spot, RTX 4090, EU-BD, TencentDB-Memory, Open-connector, Infisical, OpenObserve
-Category: Technology

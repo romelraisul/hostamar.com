@@ -1,4 +1,0 @@
-Title: Hostamar Compliance & Audit Receipt — Secrets, Logs, Audit Trail at Zero Cost
-Description: Infisical secret manager, OpenObserve audit logs, E2E encryption at rest, GDPR EU/BD residency, SOC2-ready reports. TOTAL $0.00. Comment COMPLY + Follow.
-Tags: hostamar, compliance, audit, Infisical, OpenObserve, GDPR, SOC2, EU-BD, secrets, encryption
-Category: Technology
