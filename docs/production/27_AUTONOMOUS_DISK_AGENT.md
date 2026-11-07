@@ -54,14 +54,55 @@ approval — the script logs that clearly.
 - Graceful wsl --shutdown -> restart validated: guard 200, 12 containers up,
   guest 328 GB free — no re-provisioning needed
 - Idempotent re-runs: 0 B reclaimed, no false warnings
+- 2026-11-07: C: 14.6 GB -> 12.0 GB free (used 937.8 -> 940.8 GB). Safe ops
+  only: truncate /var/log/syslog + /var/log/kern.log; journalctl
+  --vacuum-size=100M (0B freed). C: now < 15 GB -> stopped; big-lever
+  candidates listed below, no host moves/deletes without user approval.
+  daily-disk-agent.timer active (next 21:00).
 
-## Big levers left (user decision, one-time)
-- ComfyUI models ~241 GB (diffusion 84 / text_encoders 64 / LLM 31 / minimax 18
-  / chatterbox 13) — re-downloadable HF, move-comfyui-to-d.sh (no D: present)
-- OneDrive 85 GB — "Free up space" in Explorer (cloud keeps them)
-- Pagefile 41.85 GB allocated (peak 23.3) — cap to 8 GB via wmic pagefileset
-  where name="C:\\pagefile.sys" set InitialSize=8192,MaximumSize=8192 + reboot
-- hostamar-build 34 GB, .hermes 27 GB, OpenMontage 24 GB, models 20 GB, bonsai2 12 GB
+## Big levers left (user decision, one-time) — measured 2026-11-07
+- C: total ~952 GB; used 937.8 GB; free 12.0 GB (< 15 GB threshold -> STOP,
+  no host moves/deletes without user approval)
+- OneDrive 84.92 GB (C:\Users\User\OneDrive) — "Free up space" in Explorer
+  (cloud keeps them); OneDrive\Pictures\videos ~16.5 GB across six .mpg files
+- pagefile.sys 32 GB allocated (peak 23.3 GB, current ~10 GB) — cap to 16 GB
+  via `wmic pagefileset where name="C:\\pagefile.sys" set
+  InitialSize=16384,MaximumSize=16384` + reboot (saves ~16 GB)
+- wsl-swap.vhdx 7.72 GB (C:\temp\wsl-swap.vhdx) — WSL swap; .wslconfig
+  swap=8 GB already set
+- podman ext4.vhdx 6.11 GB
+  (C:\Users\User\.local\share\containers\podman\machine\wsl\wsldist\...)
+- cosyvoice3-bengali models 4.13 GB; .lmstudio models 2.53 GB; ollama.zip
+  2.07 GB
+- Not levers today: ComfyUI missing at C:\Users
+omel\comfyui;
+  hostamar-build 0.00 GB; .hermes 0.00 GB on Windows host (re-verify if
+  revisited). ComfyUI models are never deleted per rules.
+- Older records (ComfyUI ~241 GB, hostamar-build 34 GB, .hermes 27 GB) are
+  stale on this host — re-measure before acting.
+
+## Production verified state — recorded 2026-11-07
+- C: free 12.0 GB — re-verified this run (14.6 GB before safe ops; journal
+  vacuum freed 0B). Safe ops only; nothing moved or deleted.
+- TV: /api/tv 393 b2-live-private-signed; /tv/manifest.json 402; proxy 200
+  video/mp4
+- DB: turso/neon/supabase connected, local skipped, overall up
+- Admin: 401/403 Bangla unauth, 200 with admin auth; ai-status 200 fallback;
+  guard Layer A/C skip-note, Layer B functional; second-brain cloud-fallback;
+  fleet 200: 16 employees / 1553 files / 373 GB
+- Gateway: /api/gateway/models 200 (6 tiers, 1 up); /api/v1/models 200 (105 own
+  catalog); Guard :12436 5 models; FreeLLMAPI :3002/:3005 401 direct (auth
+  expected); OmniRoute :20128 600+ models; Docker 12/12 UP, volumes 10
+- Frontend: Bangla hero; Pricing Premium ৪,৯৯৯ / Business ১,৯৯৯ MOST POPULAR /
+  Starter ৫৯৯; Header Green H + BETA 10 nav; Footer bKash 01822417463 + SSL +
+  ৭ দিন মানি-ব্যাক; Login/Signup Continue with Google; no debug text;
+  SSO /api/auth/sso/start 302, /api/auth/google 307
+- Infra: .wslconfig memory=32GB swap=8GB processors=10; timers kilo-boot-heal /
+  daily-disk-agent / weekly-trim-compact / wsl-auto-start active; WSL disk
+  315 GB free; C: ~11-15 GB
+- CI: last gh runs all success; no test users left
+- Non-C: items carried forward from last verified session (docs 28/29/00);
+  not re-probed this run. No secrets recorded.
 
 ## Layers of self-heal now active
 - reboot: kilo-boot-heal.service (45 s after default.target) + timer every 20 min
