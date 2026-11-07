@@ -214,9 +214,12 @@ export async function GET(req: NextRequest) {
         ),
       ])
 
-      const controlByEmp = new Map((controls.rows || []).map((c: any) => [c.employee, c]))
-      const statusByEmp = new Map((laneStatuses.rows || []).map((l: any) => [l.employee, l]))
+      type LaneStatus = { employee: string; role: string | null; schedule: string | null; lastRunAt: string | null; verdict: string | null; streak: number; lastSnippet: string | null }
+      type FleetControl = { employee: string; paused: boolean; autonomy: string }
       type RecentReport = { employee: string; runAt: string; verdict: string | null; needsYou: string | null; finished: string | null }
+
+      const controlByEmp = new Map<string, FleetControl>((controls.rows || []).map((c: any) => [c.employee, c as FleetControl]))
+      const statusByEmp = new Map<string, LaneStatus>((laneStatuses.rows || []).map((l: any) => [l.employee, l as LaneStatus]))
       const latestReport = new Map<string, RecentReport>()
       for (const r of recentReports.rows || []) {
         if (!latestReport.has(r.employee)) latestReport.set(r.employee, r as RecentReport)
