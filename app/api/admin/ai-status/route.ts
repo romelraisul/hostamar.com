@@ -1,13 +1,8 @@
 // /api/admin/ai-status — live AI infrastructure status for the admin panel.
 //
-// Reports the 24/7 cloud fallback chain (KiloCode -> NVIDIA -> TokenRouter ->
-// OpenCode), the local gateway (ai.hostamar.com), and ComfyUI GPU status.
-// Provider catalog probes are cached 60s in a module-level global (Vercel
-// reuses function instances) so the admin UI can poll frequently without
-// hammering free-tier APIs.
+// Reports the 24/7 cloud fallback chain (KiloCode -> NVIDIA -> TokenRouter -> OpenCode), the local gateway (ai.hostamar.com), and ComfyUI GPU status. Provider catalog probes are cached 60s in a module-level global (Vercel reuses function instances) so the admin UI can poll frequently without hammering free-tier APIs.
 //
-// SECURITY: /api/admin/* is middleware-whitelisted, so this route SELF-GUARDS
-// via auth_token cookie + admin/superadmin role (same pattern as diagnostics).
+// SECURITY: /api/admin/* is middleware-whitelisted, so this route SELF-GUARDS via auth_token cookie + admin/superadmin role (same pattern as diagnostics).
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { getFallbackStatus } from '@/lib/kilocode-client'
@@ -54,6 +49,20 @@ const g = globalThis as unknown as { __aiStatusCache?: Record<string, ProbeResul
 const cache: Record<string, ProbeResult> = g.__aiStatusCache || (g.__aiStatusCache = {})
 const CACHE_TTL_MS = 60_000
 
+// Safe fetch wrapper that returns a fallback result on error (for build-time compatibility)
+async function safeFetch(url: string, options: RequestInit & { timeoutMs?: number }, fallback: any): Promise<any> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 5000)
+    const res = await fetch(url, { ...options, signal: controller.signal, cache: 'no-store' })
+    clearTimeout(timeout)
+    return res
+  } catch (e) {
+    console.warn('[build] Fetch failed, using fallback:', url, e instanceof Error ? e.message : e)
+    return fallback
+  }
+}
+
 async function probeProvider(name: string): Promise<ProbeResult> {
   const now = Date.now()
   const hit = cache[name]
@@ -70,16 +79,15 @@ async function probeProvider(name: string): Promise<ProbeResult> {
   const url = cfg.base.replace(/\/+$/, '') + cfg.modelsPath
   const t0 = Date.now()
   try {
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
-      signal: AbortSignal.timeout(5000),
-      cache: 'no-store',
-    })
+      timeoutMs: 5000,
+    }, null)
     result.latencyMs = Date.now() - t0
-    if (!res.ok) {
-      result.error = `HTTP ${res.status}`
+    if (!res || !res.ok) {
+      result.error = res ? `HTTP ${res.status}` : 'fetch failed'
     } else {
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       const models: Array<{ id?: string }> = data?.data || data?.models || []
       const ids = models.map((m) => m.id).filter(Boolean) as string[]
       result.total = ids.length
@@ -98,8 +106,9 @@ async function probeProvider(name: string): Promise<ProbeResult> {
 async function probeUrl(url: string, timeoutMs: number): Promise<{ up: boolean; latencyMs: number; status?: number; body?: any }> {
   const t0 = Date.now()
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' })
+    const res = await safeFetch(url, { timeoutMs }, null)
     const latencyMs = Date.now() - t0
+    if (!res) return { up: false, latencyMs }
     let body: any = null
     try { body = await res.json() } catch { /* not json */ }
     return { up: res.ok, latencyMs, status: res.status, body }
