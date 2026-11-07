@@ -22,7 +22,16 @@ const globalForPrisma = globalThis as unknown as {
   prisma: any
 }
 
+// Build mode detection — during CI build, database may not be accessible
+const isBuildMode = process.env.NEXT_PUBLIC_SKIP_DB_MIGRATE === '1' || process.env.BUILD_MODE === 'true'
+
 function createPrismaClient(): any {
+  // During build mode, return a mock client that doesn't connect to DB
+  if (isBuildMode) {
+    console.log('[build] Prisma: returning mock client')
+    return createMockPrismaClient()
+  }
+
   // ponytail: Cloudflare Workers only set TURSO_DATABASE_URL/TURSO_AUTH_TOKEN,
   // never DATABASE_URL. Fall back so the Worker can reach Turso without a
   // second secret. Upgrade path: set DATABASE_URL explicitly and this is a no-op.
@@ -66,6 +75,41 @@ function createPrismaClient(): any {
     adapter,
     log: env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   })
+}
+
+function createMockPrismaClient(): any {
+  // Mock Prisma client that returns empty results for all queries
+  const mockDelegate = {
+    count: async () => 0,
+    findMany: async () => [],
+    findFirst: async () => null,
+    findUnique: async () => null,
+    create: async () => ({}),
+    update: async () => ({}),
+    delete: async () => ({}),
+    aggregate: async () => ({}),
+    groupBy: async () => [],
+  }
+  
+  const models = [
+    'customer', 'subscription', 'payment', 'betaInvite', 'order', 'product',
+    'video', 'channel', 'playlist', 'user', 'session', 'account', 'verificationToken',
+    'auditLog', 'alert', 'notification', 'setting', 'webhook', 'apiKey',
+  ]
+  
+  const mockClient: any = {}
+  for (const model of models) {
+    mockClient[model] = { ...mockDelegate }
+  }
+  
+  // Add Prisma client methods
+  mockClient.$transaction = async (fn: any) => fn(mockClient)
+  mockClient.$connect = async () => {}
+  mockClient.$disconnect = async () => {}
+  mockClient.$on = () => {}
+  mockClient.$extends = () => mockClient
+  
+  return mockClient
 }
 
 // ponytail: truly lazy — no throw on import, only on first actual method call.
@@ -143,7 +187,7 @@ function serialized<T>(fn: () => Promise<T>): Promise<T> {
       () => clearTimeout(timer),
       () => clearTimeout(timer),
     )
-  })
+  )
 }
 
 const delegateCache = new WeakMap<object, Map<string | symbol, unknown>>()
