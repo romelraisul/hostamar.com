@@ -161,33 +161,27 @@ function serialized<T>(fn: () => Promise<T>): Promise<T> {
     startedAt = Date.now()
     return fn()
   }
-  const run = engineQueue.then(start, start) // wait for the previous op, ok or not
-  engineQueue = run.then(
-    () => undefined,
-    () => undefined,
-  ) // keep the chain alive on errors
-
-  const settled = run.then(
-    () => {
-      const total = Date.now() - t0
-      if (total > SLOW_OP_MS) {
-        console.log(`[prisma] slow op wait=${startedAt - t0}ms run=${Date.now() - startedAt}ms total=${total}ms`)
-      }
-    },
-    () => undefined,
-  )
-
+  const run = engineQueue.then(start, start)
+  engineQueue = run.then(() => undefined, () => undefined)
   return new Promise<T>((resolve, reject) => {
-    settled.then(() => undefined)
-    run.then(resolve, reject)
     const timer = setTimeout(() => {
       if (!startedAt) reject(new Error(`prisma op still queued after ${QUEUE_CEILING_MS}ms — isolate busy`))
     }, QUEUE_CEILING_MS)
     run.then(
-      () => clearTimeout(timer),
-      () => clearTimeout(timer),
+      (result) => {
+        clearTimeout(timer)
+        const total = Date.now() - t0
+        if (total > SLOW_OP_MS) {
+          console.log(`[prisma] slow op wait=${startedAt - t0}ms run=${Date.now() - startedAt}ms total=${total}ms`)
+        }
+        resolve(result)
+      },
+      (err) => {
+        clearTimeout(timer)
+        reject(err)
+      }
     )
-  )
+  })
 }
 
 const delegateCache = new WeakMap<object, Map<string | symbol, unknown>>()
