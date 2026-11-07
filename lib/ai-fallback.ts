@@ -196,35 +196,6 @@ function looksLikeCot(t: string): boolean {
       return { text: rawTxt, model: bestModel, provider: 'hostamar-pc-vps' };
     };
 
-    // Guard (local NVIDIA) — 5 models on :12436 via api-primary tunnel
-    // Zero cost, fast, runs on your GPU. Try glm-5.3-flash first, then others.
-    const GUARD_URL = 'https://api-primary.hostamar.com/v1'; // tunnel to :12436
-    const guardModels = [
-      'z-ai/glm-5.3-flash',
-      'deepseek-ai/deepseek-v4.1-flash',
-      'minimaxai/minimax-m3.1-flash',
-      'stepfun-ai/step-5-preview',
-      'nvidia/nemotron-3-ultra-550b-a55b',
-    ];
-    const guardCall = (m: string, capMs?: number) => async (): Promise<Res> => {
-      const r = await fetch(`${GUARD_URL}/chat/completions`, {
-        method: 'POST',
-        signal: AbortSignal.timeout(Math.min(capMs ?? 1e9, attemptTimeoutMs())),
-        headers: { 'Content-Type': 'application/json' }, // no auth for nvidia-guard
-        body: JSON.stringify({ model: m, messages: allMessages, temperature: 0.7, max_tokens: MAX_TOKENS, ...toolFields }),
-      });
-      if (!r.ok) throw new Error(`guard ${r.status}`);
-      const j: any = await r.json();
-      const rawChoice = j.choices?.[0];
-      if (rawChoice?.message?.tool_calls?.length) {
-        return { text: '', model: m, provider: 'nvidia-guard', message: rawChoice.message, finish_reason: rawChoice.finish_reason || 'tool_calls' };
-      }
-      const choice = rawChoice?.message;
-      const rawTxt = typeof choice?.content === 'string' ? choice.content.trim() : '';
-      if (!rawTxt) throw new Error('empty');
-      return { text: rawTxt, model: m, provider: 'nvidia-guard' };
-    };
-
     // FreeLLMAPI worker — :3002/:3005
     const FREE_LLM_API_URL = process.env.FREE_LLM_API_URL || 'http://localhost:3002/v1';
     const freeLlmApiCall = (capMs?: number) => async (): Promise<Res> => {
@@ -246,11 +217,8 @@ function looksLikeCot(t: string): boolean {
       return { text: rawTxt, model: 'kilo-auto/free', provider: 'freellmapi' };
     };
 
-  // FREE fallback chain — Guard → OmniRoute → FreeLLMAPI → Kilo/Edge
-  // Runs BEFORE paid selection so free users get best available model.
-  for (const m of guardModels) {
-    attempts.push({ name: `guard:${m}`, fn: guardCall(m, 10_000) });
-  }
+  // FREE fallback chain — OmniRoute → FreeLLMAPI → Kilo/Edge
+  // No guard (nvidia-guard :12436) — guard is personal only, not for website.
   attempts.push({ name: 'hostamar-pc-vps:omni', fn: omniCall(12_000) });
   attempts.push({ name: 'freellmapi:kilo-auto/free', fn: freeLlmApiCall(10_000) });
 
