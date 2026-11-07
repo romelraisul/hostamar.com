@@ -23,7 +23,7 @@
     "make": "make",
     "prepush": "bash scripts/check-vercel-quota.sh && npm run build",
     "check:vercel-quota": "bash scripts/check-vercel-quota.sh",
-    "worker:build": "mkdir -p node_modules/@libsql/client/node_modules/@libsql && cp -rn node_modules/@libsql/isomorphic-ws node_modules/@libsql/client/node_modules/@libsql/ && opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && node scripts/patch_handler_sqlite.mjs",
+    "worker:build": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && node scripts/patch_handler_sqlite.mjs",
     "worker:deploy": "node scripts/populate-b2.mjs && env -u CLOUDFLARE_API_TOKEN wrangler deploy -c wrangler-pages.toml",
     "deploy:guarded": "bash scripts/deploy-guarded.sh"
   },
@@ -37,6 +37,7 @@
     "@cloudflare/next-on-pages": "^1.13.6",
     "@fontsource/noto-sans-bengali": "^5.2.11",
     "@libsql/client": "0.14.0",
+    "@libsql/isomorphic-ws": "^0.1.5",
     "@monaco-editor/react": "^4.7.0",
     "@neondatabase/serverless": "^1.0.0",
     "@next-auth/prisma-adapter": "^1.0.7",
@@ -83,7 +84,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@libsql/isomorphic-ws": "^0.1.5",
     "@types/bcryptjs": "^2.4.6",
     "@types/fluent-ffmpeg": "^2.1.28",
     "@types/jsonwebtoken": "^9.0.10",
