@@ -1,5 +1,5 @@
 name: MLOps — build, type-check, quality gates (free tier)
-# Zero-cost CI/CD: GitHub Actions free minutes + git push = Vercel deploy.
+# Zero-cost CI/CD: GitHub Actions free minutes + Cloudflare Pages deploy.
 # Model changes: model-test-results.json is the eval artifact; regression gate
 # = /api/v1/models returns ≥110 working + chat smoke test via kilocode.
 on:
@@ -29,7 +29,7 @@ jobs:
           NEXTAUTH_SECRET: dummy
           NEXTAUTH_URL: https://hostamar.com
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'file:./ci.db' }}
-      # Canary/rollback: Vercel dashboard promote (never `vercel --prod` from repo —
+      # Canary/rollback: Cloudflare Pages dashboard promote (never deploy --prod from repo —
       # the CLI recreates the duplicate project and burns quota).
       # Model eval: run scripts/model-smoke.mjs against a PR preview when a
       # model-test-results.json diff is present (next step, needs preview URL).

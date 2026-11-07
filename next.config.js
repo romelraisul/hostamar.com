@@ -149,7 +149,7 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: false,
-    serverActions: { allowedOrigins: ['hostamar.com', '*.vercel.app'] },
+    serverActions: { allowedOrigins: ['hostamar.com'] },
     scrollRestoration: true,
     optimizePackageImports: ['lucide-react'],
     serverComponentsExternalPackages: ['playwright-core'],

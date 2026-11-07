@@ -25,10 +25,6 @@ jobs:
                 echo "Running SEO crawl..."
                 # node scripts/seo-crawler.js
                 ;;
-              vercel-guard-cleanup)
-                echo "Running Vercel guard cleanup..."
-                node scripts/vercel-guard.mjs
-                ;;
               *)
                 echo "Unknown job type: $TYPE"
                 ;;
