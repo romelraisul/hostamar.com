@@ -75,43 +75,6 @@ async function medusa(path: string, init?: RequestInit & { json?: unknown }) {
     try { data = JSON.parse(text) } catch { throw new Error(`medusa ${path} -> ${res.status} ${text.slice(0, 120)}`) }
     if (!res.ok) throw new Error(`medusa ${path} -> ${res.status} ${data.message || text.slice(0, 120)}`)
 
-    // FORGE 2026-11-03: the SMS auto-match webhook (app/api/payments/sms-webhook/route.ts
-    // fallback, lines 111-119) reconciles bKash TrxIDs against `transaction` rows with
-    // gateway='bkash_personal'. The store checkout created a Medusa order and wrote
-    // NOTHING locally — so 234+ pending orders were invisible to the only automation that
-    // converts them. Mirror the completed order here so the buyer's TrxID matches.
-    // ponytail: one write in the shared helper beats a guard in every caller; fail-open
-    // (wrapped) so a DB hiccup can never fail an order that Medusa already created.
-    if (path.endsWith('/complete') && (!init?.json || Object.keys(init.json).length === 0) && data?.order?.id) {
-      const ord = data.order
-      const phone = String(ord.shipping_address?.phone || '').replace(/\D/g, '').replace(/^(?:00)?8801/, '01')
-      const pkgKey = String(ord.items?.[0]?.variant?.product?.handle || 'starter')
-        .replace(/[^a-z0-9]/gi, '').toLowerCase()
-      const tier = (['starter', 'pro', 'business'] as const).includes(pkgKey as any)
-        ? (pkgKey as 'starter' | 'pro' | 'business') : 'starter'
-      const amountBdt = Math.round((ord.total ?? 0) / 100)
-      const planPrice = PAYMENT_PLANS[tier]?.price || amountBdt
-      const credits = planCredits(tier)
-      try {
-        const { prisma } = await import('@/lib/prisma')
-        await prisma.transaction.create({
-          data: {
-            customerId: ord.customer_id || 'guest',
-            amount: amountBdt,
-            currency: 'BDT',
-            status: 'pending',
-            gateway: 'bkash_personal',
-            gatewayTrxId: null,
-            videoPackage: tier,
-            creditsAdded: credits,
-            cardType: phone || null,
-            cardBrand: '01822417463',
-          },
-        })
-      } catch (e: any) {
-        console.warn('[store/checkout] order mirror skipped:', String(e?.message || e).slice(0, 120))
-      }
-    }
     return data
   }
 
@@ -204,6 +167,41 @@ export async function POST(req: NextRequest) {
     const item: any = order.items?.[0]
     const title = item?.variant?.product?.title || item?.title || variant_id
     const hasDb = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0)
+
+    // FORGE: mirror completed Medusa order to local `transaction` row so the
+    // SMS bKash auto-match webhook can find it by phone + pending + bkash_personal.
+    // Lives here (not in medusa helper) so hasDb is checked explicitly; fail-open
+    // so a DB hiccup can never fail an order Medusa already created.
+    if (hasDb) {
+      try {
+        const { prisma } = await import('@/lib/prisma')
+        const ord = order
+        const phone = String(ord.shipping_address?.phone || '').replace(/\D/g, '').replace(/^(?:00)?8801/, '01')
+        const pkgKey = String(ord.items?.[0]?.variant?.product?.handle || 'starter')
+          .replace(/[^a-z0-9]/gi, '').toLowerCase()
+        const tier = (['starter', 'pro', 'business'] as const).includes(pkgKey as any)
+          ? (pkgKey as 'starter' | 'pro' | 'business') : 'starter'
+        const amountBdtMirror = Math.round((ord.total ?? 0) / 100)
+        const planPrice = PAYMENT_PLANS[tier]?.price || amountBdtMirror
+        const credits = planCredits(tier)
+        await prisma.transaction.create({
+          data: {
+            customerId: ord.customer_id || 'guest',
+            amount: amountBdtMirror,
+            currency: 'BDT',
+            status: 'pending',
+            gateway: 'bkash_personal',
+            gatewayTrxId: null,
+            videoPackage: tier,
+            creditsAdded: credits,
+            cardType: phone || null,
+            cardBrand: '01822417463',
+          },
+        })
+      } catch (e: any) {
+        console.warn('[store/checkout] order mirror skipped:', String(e?.message || e).slice(0, 120))
+      }
+    }
 
     waitUntil(Promise.all([
       (async () => {
