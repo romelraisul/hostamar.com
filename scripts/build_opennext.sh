@@ -9,11 +9,9 @@ TARGET_DIR="$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libsql"
 DEST="$TARGET_DIR/isomorphic-ws"
 if [ -d "$ISOMORPHIC_WS_SRC" ]; then
   mkdir -p "$TARGET_DIR"
-  # Use cp -r for better compatibility
   cp -r "$ISOMORPHIC_WS_SRC/"* "$DEST/" 2>/dev/null || cp -r "$ISOMORPHIC_WS_SRC/" "$DEST/"
   echo "Pre-copied @libsql/isomorphic-ws to $DEST"
   ls -la "$DEST/"
-  # Verify web.mjs exists
   if [ -f "$DEST/web.mjs" ]; then
     echo "web.mjs confirmed present"
   else
@@ -28,10 +26,15 @@ if [ -f "$HRANA_CLIENT_INDEX" ]; then
   echo "Original hrana-client index.js (first 20 lines):"
   head -20 "$HRANA_CLIENT_INDEX"
   
-  # Patch the dynamic import inside openWs function
+  # Patch all references to @libsql/isomorphic-ws
+  # 1. Dynamic import in openWs function
   sed -i 's/(await import("@libsql\/isomorphic-ws"))\.WebSocket/globalThis.WebSocket/g' "$HRANA_CLIENT_INDEX"
-  # Also patch any static import if present
+  # 2. Static import
   sed -i 's/import { WebSocket } from "@libsql\/isomorphic-ws";/const WebSocket = globalThis.WebSocket;/g' "$HRANA_CLIENT_INDEX"
+  # 3. Export statement
+  sed -i 's/export { WebSocket } from "@libsql\/isomorphic-ws";/export { WebSocket }; const WebSocket = globalThis.WebSocket;/g' "$HRANA_CLIENT_INDEX"
+  # 4. Any other import from isomorphic-ws
+  sed -i 's/from "@libsql\/isomorphic-ws"/from "globalThis"/g' "$HRANA_CLIENT_INDEX"
   echo "Patched hrana-client to use global WebSocket"
   
   # Verify the patch
