@@ -18,7 +18,7 @@ export async function POST(req: NextRequest){
   const body = await req.json().catch(()=>({}))
   const messages: Array<{role:string,content:string}> = body.messages || []
   const last = messages[messages.length-1]?.content || ''
-  if(!last.trim()) return NextResponse.json({ error:'empty message' },{status:400})
+  // Allow empty/short messages to reach fallback — fallback returns friendly Bangla guidance
 
   // Save user chat
   // SQLite dialect: ? placeholders, no ::jsonb, no NOW()

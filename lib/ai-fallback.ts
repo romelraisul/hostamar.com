@@ -295,9 +295,14 @@ function looksLikeCot(t: string): boolean {
   }
 
   // 5. FINAL UNLIMITED FALLBACK
-  const lastUser = messages[messages.length - 1]?.content?.toLowerCase() || '';
+  // Handles: empty, short (hui/hi/asdf), unknown, or any unmatched input
+  // Always returns 200 + Bangla guidance — never "unavailable"
+  const lastUser = messages[messages.length - 1]?.content?.toLowerCase().trim() || '';
   let fallback = '';
-  if (lastUser.includes('bkash') || lastUser.includes('বিকাশ') || lastUser.includes('payment') || lastUser.includes('পেমেন্ট') || lastUser.includes('trx')) {
+  if (!lastUser || lastUser.length < 3) {
+    // Empty or too short (hui, hi, asdf, a, b, etc.)
+    fallback = `আপনার প্রশ্ন লিখুন — প্ল্যান / দাম / পেমেন্ট / টিভি / স্টোরেজ নিয়ে যেকোনো কিছু জিজ্ঞাসা করুন। উদাহরণ: "প্রিমিয়াম প্ল্যান কত?", "বিকাশে কীভাবে নেব?"। সাহায্য লাগলে support@hostamar.com-এ ইমেইল করুন।`;
+  } else if (lastUser.includes('bkash') || lastUser.includes('বিকাশ') || lastUser.includes('payment') || lastUser.includes('পেমেন্ট') || lastUser.includes('trx')) {
     fallback = `bKash পেমেন্ট: আমাদের পার্সোনাল নাম্বার 01822417463 তে Send Money করুন। প্ল্যান: প্রিমিয়াম ৪,৯৯৯ / বিজনেস ১,৯৯৯ (সবচেয়ে জনপ্রিয়) / স্টার্টার ৫৯৯ — ১ cr = ১ টাকা। TrxID https://hostamar.com/dashboard/payment-এ দিন, ৫ মিনিটে এপ্রুভ।`;
   } else if (lastUser.includes('storage') || lastUser.includes('স্টোরেজ') || lastUser.includes('upload') || lastUser.includes('file')) {
     fallback = `Storage B2: 5GB FREE — https://hostamar.com/dashboard/storage-এ upload করুন। S3 endpoint s3.us-east-005.backblazeb2.com bucket hostamar-prod।`;
@@ -306,7 +311,8 @@ function looksLikeCot(t: string): boolean {
   } else if (lastUser.includes('pricing') || lastUser.includes('price') || lastUser.includes('প্রাইস') || lastUser.includes('package') || lastUser.includes('প্ল্যান')) {
     fallback = `প্রাইসিং: প্রিমিয়াম ৪,৯৯৯ / বিজনেস ১,৯৯৯ (সবচেয়ে জনপ্রিয়) / স্টার্টার ৫৯৯ — সাইনআপে ৩০০০ cr বোনাস (১ cr = ১ টাকা) — https://hostamar.com/pricing`;
   } else {
-    fallback = `Hostamar Support: ৫০+ AI সার্ভিস, ১২০ মডেল চ্যাট, ব্রাউজার IDE, ক্লাউড হোস্টিং, TV ৫০ চ্যানেল — সাইনআপে ৩০০০ cr বোনাস (১ cr = ১ টাকা) — কী জানতে চান?`;
+    // Unknown but non-trivial input — guide to known topics
+    fallback = `আপনার প্রশ্নটা ঠিক বুঝতে পারিনি। প্ল্যান, দাম, বিকাশ/নগদ/রকেটে পেমেন্ট, টিভি, স্টোরেজ — কোনটা নিয়ে জানতে চান, একটু খুলে লিখুন। অথবা support@hostamar.com-এ ইমেইল করুন।`;
   }
   trace.push({ provider: 'knowledge-base', status: 'fallback', error: 'all-providers-failed' });
   return { text: fallback, model: 'knowledge-base-fallback', provider: 'fallback', trace };
