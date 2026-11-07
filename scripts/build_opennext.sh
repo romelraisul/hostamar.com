@@ -5,21 +5,18 @@ set -euo pipefail
 PROJECT_ROOT="$(pwd)"
 ISOMORPHIC_WS_SRC="$PROJECT_ROOT/node_modules/@libsql/isomorphic-ws"
 
-# Pre-copy isomorphic-ws to where hrana-client expects it
-# This must happen BEFORE OpenNext's esbuild runs
-TARGET_DIRS=(
-  "$PROJECT_ROOT/.open-next/server-functions/default/node_modules/@libsql/client/node_modules/@libsql"
-  "$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libsql"
-)
+# Pre-copy isomorphic-ws to the MAIN node_modules where OpenNext will pick it up
+# This must happen BEFORE OpenNext runs so it gets bundled correctly
+TARGET_DIR="$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libsql"
 
-for TARGET_DIR in "${TARGET_DIRS[@]}"; do
-  DEST="$TARGET_DIR/isomorphic-ws"
-  if [ -d "$ISOMORPHIC_WS_SRC" ]; then
-    mkdir -p "$TARGET_DIR"
-    cp -r "$ISOMORPHIC_WS_SRC" "$DEST"
-    echo "Pre-copied @libsql/isomorphic-ws to $DEST"
-  fi
-done
+DEST="$TARGET_DIR/isomorphic-ws"
+if [ -d "$ISOMORPHIC_WS_SRC" ]; then
+  mkdir -p "$TARGET_DIR"
+  # Use rsync for more reliable copying, or cp with explicit file list
+  rsync -a "$ISOMORPHIC_WS_SRC/" "$DEST/"
+  echo "Pre-copied @libsql/isomorphic-ws to $DEST"
+  ls -la "$DEST/"
+fi
 
 echo "Running Prisma generate..."
 npx prisma generate
@@ -37,11 +34,15 @@ if [ -f "$HANDLER_PATH" ]; then
 fi
 
 # Also ensure isomorphic-ws exists in the final .open-next output
-for TARGET_DIR in "${TARGET_DIRS[@]}"; do
+OPEN_NEXT_TARGET_DIRS=(
+  "$PROJECT_ROOT/.open-next/server-functions/default/node_modules/@libsql/client/node_modules/@libsql"
+)
+
+for TARGET_DIR in "${OPEN_NEXT_TARGET_DIRS[@]}"; do
   DEST="$TARGET_DIR/isomorphic-ws"
   if [ -d "$ISOMORPHIC_WS_SRC" ] && [ ! -d "$DEST" ]; then
     mkdir -p "$TARGET_DIR"
-    cp -r "$ISOMORPHIC_WS_SRC" "$DEST"
+    rsync -a "$ISOMORPHIC_WS_SRC/" "$DEST/"
     echo "Post-copied @libsql/isomorphic-ws to $DEST"
   fi
 done
