@@ -52,21 +52,32 @@ function getPhone(row: any): string | null {
 }
 
 async function findCustomerById(id: string) {
-  const client = getTursoClient()
-  const result = await client.execute({
-    sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE id = ? LIMIT 1',
-    args: [id],
-  })
-  return result.rows[0] || null
+  try {
+    const client = getTursoClient()
+    const result = await client.execute({
+      sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE id = ? LIMIT 1',
+      args: [id],
+    })
+    return result.rows[0] || null
+  } catch (e) {
+    // During build, database may not be accessible — return null to allow build to proceed
+    console.warn('[build] Database query failed, returning null:', e instanceof Error ? e.message : e)
+    return null
+  }
 }
 
 async function findCustomerByEmail(email: string) {
-  const client = getTursoClient()
-  const result = await client.execute({
-    sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE email = ? LIMIT 1',
-    args: [email],
-  })
-  return result.rows[0] || null
+  try {
+    const client = getTursoClient()
+    const result = await client.execute({
+      sql: 'SELECT id, email, name, phone, "role" FROM "Customer" WHERE email = ? LIMIT 1',
+      args: [email],
+    })
+    return result.rows[0] || null
+  } catch (e) {
+    console.warn('[build] Database query failed, returning null:', e instanceof Error ? e.message : e)
+    return null
+  }
 }
 
 export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {

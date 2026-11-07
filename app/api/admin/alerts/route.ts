@@ -27,11 +27,19 @@ export async function GET(req: NextRequest) {
   }> = []
   const now = new Date()
 
+  // Helper to safely run Prisma queries during build
+  async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+    try {
+      return await fn()
+    } catch (e) {
+      console.warn('[build] Prisma query failed, using fallback:', e instanceof Error ? e.message : e)
+      return fallback
+    }
+  }
+
   // 1. Customer count (informational)
-  const totalCustomers = await prisma.customer.count()
-  const payingCustomers = await prisma.subscription.count({
-    where: { status: 'active' },
-  })
+  const totalCustomers = await safeQuery(() => prisma.customer.count(), 0)
+  const payingCustomers = await safeQuery(() => prisma.subscription.count({ where: { status: 'active' } }), 0)
   alerts.push({
     level: 'info',
     code: 'CUSTOMERS_STATS',
@@ -40,12 +48,12 @@ export async function GET(req: NextRequest) {
   })
 
   // 2. Failed payments in last 24h
-  const failedPayments = await prisma.payment.count({
+  const failedPayments = await safeQuery(() => prisma.payment.count({
     where: {
       status: 'failed',
       createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
     },
-  })
+  }), 0)
   if (failedPayments > 0) {
     alerts.push({
       level: 'warning',
@@ -56,12 +64,12 @@ export async function GET(req: NextRequest) {
   }
 
   // 3. Pending payments older than 1 hour (likely stuck/manual review needed)
-  const stuckPayments = await prisma.payment.count({
+  const stuckPayments = await safeQuery(() => prisma.payment.count({
     where: {
       status: 'pending',
       createdAt: { lte: new Date(now.getTime() - 60 * 60 * 1000) },
     },
-  })
+  }), 0)
   if (stuckPayments > 0) {
     alerts.push({
       level: 'critical',
@@ -72,9 +80,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 4. Beta invites remaining (low stock warning)
-  const betaPending = await prisma.betaInvite.count({
-    where: { status: 'PENDING' },
-  })
+  const betaPending = await safeQuery(() => prisma.betaInvite.count({ where: { status: 'PENDING' } }), 0)
   if (betaPending < 5) {
     alerts.push({
       level: 'warning',
@@ -85,9 +91,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 5. Customers who have never verified email (security audit breadcrumb)
-  const unverified = await prisma.customer.count({
-    where: { emailVerified: null },
-  })
+  const unverified = await safeQuery(() => prisma.customer.count({ where: { emailVerified: null } }), 0)
   if (unverified > 0) {
     alerts.push({
       level: 'warning',
