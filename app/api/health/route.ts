@@ -61,7 +61,7 @@ function toEpochMs(v: unknown): number | null {
 async function probePc(): Promise<PcProbe> {
   const started = Date.now()
   try {
-    const client = getTursoEdgeClient()
+    const client = await getTursoEdgeClient()
     // rowid DESC = insertion order: independent of how runAt is encoded.
     const res = await client.execute(
       `SELECT "runAt" FROM "FleetReport" ORDER BY rowid DESC LIMIT ${PC_SAMPLE_ROWS}`,
@@ -94,7 +94,7 @@ async function probePc(): Promise<PcProbe> {
 
 async function checkDb(): Promise<{ connected: boolean; customers: number }> {
   try {
-    const client = getTursoEdgeClient()
+    const client = await getTursoEdgeClient()
     await client.execute('SELECT 1')
     const row = await client.execute('SELECT COUNT(*) AS total FROM Customer')
     return { connected: true, customers: Number(row.rows[0]?.total ?? 0) }

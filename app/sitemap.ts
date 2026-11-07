@@ -105,7 +105,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // FreeVideoSource has no 'status' column — all rows are valid edge videos.
   let videoEntries: MetadataRoute.Sitemap = []
   try {
-    const c = getTursoEdgeClient()
+    const c = await getTursoEdgeClient()
     const res = await c.execute(`
           SELECT tvs.slug, tvs.updatedAt
           FROM "TvVideoSeo" tvs

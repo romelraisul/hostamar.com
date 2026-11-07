@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
 
     // 3) Lookup in DB — must exist, otherwise create as customer (SSO JIT provisioning)
     // Use getTursoEdgeClient which works on Workers
-    const db = getTursoEdgeClient();
+    const db = await getTursoEdgeClient();
     const found = await db.execute({
       sql: "SELECT id, email, name, role FROM Customer WHERE email = ? LIMIT 1",
       args: [normalizedEmail],

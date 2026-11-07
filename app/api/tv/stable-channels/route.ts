@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   const country = searchParams.get('country') || 'bd'
 
   try {
-    const db = getTursoEdgeClient()
+    const db = await getTursoEdgeClient()
 
     // Try to get stable channels - handle missing tables gracefully
     let items: any[] = []

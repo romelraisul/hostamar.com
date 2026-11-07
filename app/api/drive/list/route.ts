@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const folderId = req.nextUrl.searchParams.get('folderId') || null
     const q = (req.nextUrl.searchParams.get('q') || '').trim()
 
-    const client = getTursoEdgeClient()
+    const client = await getTursoEdgeClient()
 
     if (q) {
       const rs = await client.execute({

@@ -8,7 +8,7 @@ import { getTursoEdgeClient } from '@/lib/turso-edge'
  *  (2nd highest route after the 1102 kills). Same DB, same number, no wasm. */
 async function liveCatalogCount(): Promise<number> {
   try {
-    const rs = await getTursoEdgeClient().execute('SELECT COUNT(*) AS n FROM "ServiceCatalog" WHERE isActive = 1')
+    const rs = await (await getTursoEdgeClient()).execute('SELECT COUNT(*) AS n FROM "ServiceCatalog" WHERE isActive = 1')
     return Number(rs.rows[0]?.n ?? 0)
   } catch {
     return 0

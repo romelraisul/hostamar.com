@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
   // persist to Turso (SQLite dialect: no NOW()/gen_random_uuid()/::jsonb)
   try {
-    const db = getTursoEdgeClient()
+    const db = await getTursoEdgeClient()
     await db.execute(`CREATE TABLE IF NOT EXISTS "market_adjustment" (id TEXT PRIMARY KEY, "suggestedPrice" REAL, "currentPrice" REAL, "diffPct" REAL, status TEXT, "hostaPrice" REAL, "usdtBdt" REAL, "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`)
     const id = `adj-${Date.now()}`
     await db.execute({

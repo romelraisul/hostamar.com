@@ -9,7 +9,7 @@ TARGET_DIR="$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libsql"
 DEST="$TARGET_DIR/isomorphic-ws"
 if [ -d "$ISOMORPHIC_WS_SRC" ]; then
   mkdir -p "$TARGET_DIR"
-  cp -r "$ISOMORPHIC_WS_SRC/"* "$DEST/" 2>/dev/null || cp -r "$ISOMORPHIC_WS_SRC/" "$DEST/"
+  cp -r "$ISOMORPHIC_WS_SRC/." "$DEST/"
   echo "Pre-copied @libsql/isomorphic-ws to $DEST"
   ls -la "$DEST/"
   if [ -f "$DEST/web.mjs" ]; then
@@ -25,18 +25,19 @@ HRANA_CLIENT_INDEX="$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libs
 if [ -f "$HRANA_CLIENT_INDEX" ]; then
   echo "Original hrana-client index.js (first 20 lines):"
   head -20 "$HRANA_CLIENT_INDEX"
-  
-  # Patch all references to @libsql/isomorphic-ws
+
+  # Patch all references to @libsql/isomorphic-ws using plain double quotes
+  # (the previous sed used escaped quotes which never matched the file).
   # 1. Dynamic import in openWs function
-  sed -i 's/(await import("@libsql\/isomorphic-ws"))\.WebSocket/globalThis.WebSocket/g' "$HRANA_CLIENT_INDEX"
+  sed -i 's/(await import("@libsql\/isomorphic-ws")).WebSocket/globalThis.WebSocket/g' "$HRANA_CLIENT_INDEX"
   # 2. Static import
   sed -i 's/import { WebSocket } from "@libsql\/isomorphic-ws";/const WebSocket = globalThis.WebSocket;/g' "$HRANA_CLIENT_INDEX"
-  # 3. Export statement
-  sed -i 's/export { WebSocket } from "@libsql\/isomorphic-ws";/export { WebSocket }; const WebSocket = globalThis.WebSocket;/g' "$HRANA_CLIENT_INDEX"
+  # 3. Export statement (in .d.ts / declaration files)
+  sed -i 's/export { WebSocket } from "@libsql\/isomorphic-ws";/export { WebSocket };/g' "$HRANA_CLIENT_INDEX"
   # 4. Any other import from isomorphic-ws
   sed -i 's/from "@libsql\/isomorphic-ws"/from "globalThis"/g' "$HRANA_CLIENT_INDEX"
   echo "Patched hrana-client to use global WebSocket"
-  
+
   # Verify the patch
   echo "Patched hrana-client index.js (first 20 lines):"
   head -20 "$HRANA_CLIENT_INDEX"
@@ -68,7 +69,7 @@ for TARGET_DIR in "${OPEN_NEXT_TARGET_DIRS[@]}"; do
   DEST="$TARGET_DIR/isomorphic-ws"
   if [ -d "$ISOMORPHIC_WS_SRC" ] && [ ! -d "$DEST" ]; then
     mkdir -p "$TARGET_DIR"
-    cp -r "$ISOMORPHIC_WS_SRC/"* "$DEST/" 2>/dev/null || cp -r "$ISOMORPHIC_WS_SRC/" "$DEST/"
+    cp -r "$ISOMORPHIC_WS_SRC/." "$DEST/"
     echo "Post-copied @libsql/isomorphic-ws to $DEST"
   fi
 done

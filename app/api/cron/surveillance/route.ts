@@ -48,9 +48,9 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  let client: ReturnType<typeof getTursoEdgeClient>
+  let client: any
   try {
-    client = getTursoEdgeClient()
+    client = await getTursoEdgeClient()
   } catch (e) {
     return Response.json({ error: (e as Error).message }, { status: 503 })
   }

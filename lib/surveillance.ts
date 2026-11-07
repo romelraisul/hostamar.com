@@ -21,9 +21,9 @@ const SAMPLE_RATE = Number(process.env.SURVEILLANCE_SAMPLE || '0.25')
 // "[unenv] fs.readdir is not implemented" -> prisma init dies) — direct
 // @libsql/client/web is fetch-only and runs on Workers AND Vercel Node
 // (same pattern as lib/turso-edge.ts consumers). sqlite dialect.
-function tryTurso() {
+async function tryTurso() {
   try {
-    return getTursoEdgeClient()
+    return await getTursoEdgeClient()
   } catch {
     return null // surveillance must never break chat
   }
@@ -57,7 +57,7 @@ export async function upsertRiskUser(
   score: number,
   reason: string,
 ): Promise<void> {
-  const client = tryTurso()
+  const client = await tryTurso()
   if (!client) return
   try {
     // sqlite scalar max(a,b) == Postgres GREATEST(a,b); createdAt explicit
@@ -85,7 +85,7 @@ export async function recordSurveillance(opts: {
   prompt: string
   responseLen: number
 }): Promise<void> {
-  const client = tryTurso()
+  const client = await tryTurso()
   if (!client) return
   try {
     if (Math.random() > SAMPLE_RATE) return

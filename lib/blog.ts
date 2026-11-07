@@ -669,6 +669,31 @@ export const POSTS: Post[] = [
     ],
   },
 
+  {
+    slug: 'api-first-software-delivery-a-practical-guide',
+    title: 'API-first software delivery — a practical guide',
+    excerpt: 'A professional guide to API-first software delivery, exploring how scalable architectures and GPU-driven AI services power modern digital products.',
+    category: 'ব্যবসা',
+    readTime: '9 মিনিট',
+    date: '২০২৬-১১-০৭',
+    views: 0,
+    tags: ['AI', 'ভিডিও', 'GPU'],
+    icon: '🧩',
+    badge: 'Software Company',
+    author: 'Raisul Mahmud Romel Mohammad',
+    body: [
+      'In the modern landscape of software engineering, the methodology used to deliver services determines the scalability, flexibility, and longevity of a digital product. As businesses move away from monolithic structures toward distributed ecosystems, "API-first" has emerged as a fundamental principle. This guide explores the practical implementation of API-first software delivery and how it integrates with high-performance infrastructure, such as GPU-driven AI services.',
+      'Understanding the API-First Paradigm',
+      'Traditionally, software development followed a "code-first" approach, where the application logic and database were built before exposing functionalities through an interface. In an API-first model, the Application Programming Interface (API) is treated as a first-class citizen. Before a single line of application code is written, the interface is designed, documented, and agreed upon by all stakeholders.',
+      'This approach shifts the focus from building a single application to building a platform. By defining the contract (often using OpenAPI or Swagger) upfront, frontend teams, backend teams, and third-party integrators can work in parallel. This reduces development bottlenecks and ensures that the service is consumable by various clients—whether it be a mobile app, a web dashboard, or another automated system.',
+      'Integration with High-Performance AI Infrastructure',
+      'For software companies specializing in media, AI, and heavy computational tasks, API-first delivery is not just a convenience; it is a necessity. Modern generative tasks, such as AI video and voice generation, require significant hardware resources. Hostamar, for instance, manages complex workflows by running AI operations on high-performance GPUs located both in the European Union and in Bangladesh.',
+      'When a software company integrates services like video generation into their own product, they rely on the stability of the API to manage heavy workloads. For instance, a developer might need to interface with specialized hardware, such as a **huan yuan video gpu** setup, to handle high-resolution rendering or complex neural network processing. An API-first approach allows these hardware-intensive tasks to be abstracted away from the end-user interface, allowing the client to simply "request" a video and receive a processed file via a standardized endpoint.',
+      'Scalability and the Modular Architecture',
+      'An API-first strategy facilitates a microservices architecture. Instead of one large, fragile codebase, the system is broken down into small, independent services that communicate via APIs. This modularity offers',
+    ],
+  },
+
 ]
 
 export function formatViews(n: number): string {

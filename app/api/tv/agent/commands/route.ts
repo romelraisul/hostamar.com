@@ -16,10 +16,10 @@ export async function GET(req: NextRequest) {
     })
     
     if (!expected || secret !== expected) {
-      return NextResponse.json({ error: 'Unauthorized', message: 'Invalid agent secret' }, { status: 401 })
-    }
-    
-    const client = getTursoEdgeClient()
+          return NextResponse.json({ error: 'Unauthorized', message: 'Invalid agent secret' }, { status: 401 })
+        }
+
+        const client = await getTursoEdgeClient()
     console.log('[tv/agent/commands] Turso client created')
     
     try {

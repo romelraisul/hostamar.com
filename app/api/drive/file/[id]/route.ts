@@ -18,7 +18,7 @@ const isOrigin = (req: NextRequest) =>
 type Row = { id: string; fileName: string; fileSize: bigint; mimeType: string | null; telegramMessageId: number | null; chunkGroupId: string | null }
 
 async function loadFile(id: string, ownerId: string | null, shareToken: string | null) {
-  const client = getTursoEdgeClient()
+  const client = await getTursoEdgeClient()
   const rs = await client.execute({
     sql: `SELECT "id","ownerId","fileName","fileSize","mimeType","telegramMessageId","chunkGroupId","shareToken","shareTokenExpires"
           FROM "DriveFile" WHERE "id" = ? LIMIT 1`,
@@ -34,7 +34,7 @@ async function loadFile(id: string, ownerId: string | null, shareToken: string |
 }
 
 async function rowsFor(f: Row & { shareToken: string | null }) {
-  const client = getTursoEdgeClient()
+  const client = await getTursoEdgeClient()
   if (!f.chunkGroupId) return [f]
   const rs = await client.execute({
     sql: `SELECT "id","fileName","fileSize","mimeType","telegramMessageId","chunkGroupId","shareToken"
@@ -128,7 +128,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     const f = await loadFile(id, ownerId, null)
     if (!f) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const client = getTursoEdgeClient()
+    const client = await getTursoEdgeClient()
     const bytes = new Uint8Array(24)
     crypto.getRandomValues(bytes)
     const token = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('')

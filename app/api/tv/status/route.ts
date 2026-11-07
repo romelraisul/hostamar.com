@@ -106,7 +106,7 @@ export async function GET() {
   // Count iptv channels using Turso edge client
   let iptvChannels = 0
   try {
-    const db = getTursoEdgeClient()
+    const db = await getTursoEdgeClient()
     const res = await db.execute('SELECT COUNT(*) as cnt FROM "TvIptvChannel"')
     iptvChannels = res.rows[0]?.cnt as number || 0
   } catch {}
@@ -114,7 +114,7 @@ export async function GET() {
   // PC age from fleet report (if available)
   let pcAge = 'unknown'
   try {
-    const db = getTursoEdgeClient()
+    const db = await getTursoEdgeClient()
     const res = await db.execute('SELECT MAX("updatedAt") as last FROM "FleetReport" WHERE name LIKE \'%pc%\'')
     const last = res.rows[0]?.last as string | null
     if (last) {

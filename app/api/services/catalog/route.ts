@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   let services: Array<Record<string, unknown>> = []
   try {
-    const client = getTursoEdgeClient()
+    const client = await getTursoEdgeClient()
     const result = await client.execute(
       `SELECT id, name, nameBn, category, categoryBn, creditCost, dollarRange,
               benefit, benefitBn, perfectFor, perfectForBn, icon, isActive

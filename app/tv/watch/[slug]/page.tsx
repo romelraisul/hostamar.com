@@ -45,7 +45,7 @@ async function getSeo(slug: string): Promise<SeoRow | null> {
     // Turso URL ("must start with file:") — getSeo returned null forever and
     // every /tv/watch page 404'd. Direct @libsql/client (fetch-only, installed)
     // is the one shared path: whole-shelf heal, not per-slug.
-    const c = getTursoEdgeClient()
+    const c = await getTursoEdgeClient()
     const res = await c.execute({
       sql: 'SELECT * FROM "TvVideoSeo" WHERE slug = ? LIMIT 1',
       args: [slug],
@@ -96,7 +96,7 @@ async function getSeo(slug: string): Promise<SeoRow | null> {
 
 async function getRelated(product: string, excludeSlug: string): Promise<SeoRow[]> {
   try {
-    const c = getTursoEdgeClient()
+    const c = await getTursoEdgeClient()
     const one = async (where: string, args: string[]): Promise<SeoRow[]> => {
       const res = await c.execute({
         sql: `SELECT * FROM "TvVideoSeo" WHERE ${where} AND slug <> ? ORDER BY updatedAt DESC LIMIT 3`,
@@ -117,7 +117,7 @@ async function getRelated(product: string, excludeSlug: string): Promise<SeoRow[
 // the DB, so this degrades to [] and pages render on-demand (ISR) instead.
 export async function generateStaticParams() {
   try {
-    const c = getTursoEdgeClient()
+    const c = await getTursoEdgeClient()
     const res = await c.execute('SELECT slug FROM "TvVideoSeo"')
     return res.rows.map((r) => ({ slug: String(r.slug) }))
   } catch {

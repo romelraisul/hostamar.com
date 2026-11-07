@@ -113,7 +113,7 @@ async function getSitemapUrls(): Promise<string[]> {
 
   // TV videos: TvVideoSeo JOIN FreeVideoSource WHERE status='ready' LIMIT 200
   try {
-    const client = getTursoEdgeClient()
+    const client = await getTursoEdgeClient()
     const res = await client.execute(`
       SELECT tvs.slug
       FROM "TvVideoSeo" tvs
