@@ -85,8 +85,8 @@ export async function POST(req: NextRequest) {
     const commands = ['/check', '/audit', '/build', '/qa', '/ship', '/retro', '/health', '/help']
     const isSlash = commands.includes(slashCmd)
 
-    // Persist the turn (fire-and-forget with timeout)
-    await withTimeout(persistChat(msgs, user.id), 3000, null)
+    // Persist the turn and capture DB status
+    const persistResult = await withTimeout(persistChat(msgs, user.id), 3000, null)
 
     // Run health check for /check or /health
     let healthData: any = null
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
       ? `✅ ${slashCmd.toUpperCase()} executed\n` +
         (healthData ? `Health: ${JSON.stringify(healthData.health, null, 2)}\n` : '') +
         `PC-VPS: ${pcVpsUp ? 'UP (' + bestModel + ')' : 'DOWN'}\n` +
-        `DB: ${result?.result?.ok ? 'connected (' + result?.dbType + ')' : 'fallback'}\n` +
+        `DB: ${persistResult?.result?.ok ? 'connected (' + persistResult?.dbType + ')' : 'fallback'}\n` +
         `Time: ${new Date().toISOString()}`
       : `🛠 Chat OS received: "${text.slice(0, 200)}" — agent echo (LLM wiring pending).`
 
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
       status: {
         ok: true,
         received: 1,
-        db: result?.result?.ok ? `agentChat (${result.dbType})` : 'fallback (no DB)',
+        db: persistResult?.result?.ok ? `agentChat (${persistResult.dbType})` : 'fallback (no DB)',
         health: healthData?.health || null,
         pcVps: pcVpsUp ? 'up' : 'down',
         model: bestModel || null,
