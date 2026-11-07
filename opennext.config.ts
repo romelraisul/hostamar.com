@@ -1,5 +1,6 @@
 import { defineCloudflareConfig } from '@opennextjs/cloudflare'
 
 export default defineCloudflareConfig({
-  externals: ['@libsql/isomorphic-ws', '@libsql/client', '@libsql/hrana-client'],
+  // @ts-ignore - edgeExternals is in OpenNextConfig but not CloudflareOverrides
+  edgeExternals: ['@libsql/isomorphic-ws', '@libsql/client', '@libsql/hrana-client'],
 })
