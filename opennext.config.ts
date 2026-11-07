@@ -1,6 +1,11 @@
+import type { OpenNextConfig } from '@opennextjs/aws/types/open-next.js'
 import { defineCloudflareConfig } from '@opennextjs/cloudflare'
 
-export default defineCloudflareConfig({
-  // @ts-ignore - edgeExternals is in OpenNextConfig but not CloudflareOverrides
+const cloudflareConfig = defineCloudflareConfig({})
+
+const config: OpenNextConfig = {
+  ...cloudflareConfig,
   edgeExternals: ['@libsql/isomorphic-ws', '@libsql/client', '@libsql/hrana-client'],
-})
+}
+
+export default config
