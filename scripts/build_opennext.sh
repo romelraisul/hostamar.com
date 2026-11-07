@@ -1,21 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Use current working directory (GitHub Actions uses /home/runner/work/...)
 PROJECT_ROOT="$(pwd)"
 ISOMORPHIC_WS_SRC="$PROJECT_ROOT/node_modules/@libsql/isomorphic-ws"
 
-# Pre-copy isomorphic-ws to the MAIN node_modules where OpenNext will pick it up
-# This must happen BEFORE OpenNext runs so it gets bundled correctly
+# Pre-copy isomorphic-ws to where hrana-client expects it
 TARGET_DIR="$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libsql"
-
 DEST="$TARGET_DIR/isomorphic-ws"
 if [ -d "$ISOMORPHIC_WS_SRC" ]; then
   mkdir -p "$TARGET_DIR"
-  # Use rsync for more reliable copying, or cp with explicit file list
   rsync -a "$ISOMORPHIC_WS_SRC/" "$DEST/"
   echo "Pre-copied @libsql/isomorphic-ws to $DEST"
   ls -la "$DEST/"
+fi
+
+# Patch hrana-client to not import @libsql/isomorphic-ws
+# Cloudflare Workers has WebSocket globally available
+HRANA_CLIENT_INDEX="$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libsql/hrana-client/lib-esm/index.js"
+if [ -f "$HRANA_CLIENT_INDEX" ]; then
+  sed -i "s/import { WebSocket } from \"@libsql\/isomorphic-ws\";/const WebSocket = globalThis.WebSocket;/" "$HRANA_CLIENT_INDEX"
+  echo "Patched hrana-client to use global WebSocket"
 fi
 
 echo "Running Prisma generate..."
