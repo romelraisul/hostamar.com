@@ -18,8 +18,13 @@ fi
 # Cloudflare Workers has WebSocket globally available
 HRANA_CLIENT_INDEX="$PROJECT_ROOT/node_modules/@libsql/client/node_modules/@libsql/hrana-client/lib-esm/index.js"
 if [ -f "$HRANA_CLIENT_INDEX" ]; then
-  sed -i "s/import { WebSocket } from \"@libsql\/isomorphic-ws\";/const WebSocket = globalThis.WebSocket;/" "$HRANA_CLIENT_INDEX"
+  # Patch the dynamic import inside openWs function
+  sed -i 's/(await import("@libsql\/isomorphic-ws"))\.WebSocket/globalThis.WebSocket/g' "$HRANA_CLIENT_INDEX"
+  # Also patch any static import if present
+  sed -i 's/import { WebSocket } from "@libsql\/isomorphic-ws";/const WebSocket = globalThis.WebSocket;/g' "$HRANA_CLIENT_INDEX"
   echo "Patched hrana-client to use global WebSocket"
+  # Verify the patch
+  grep -n "globalThis.WebSocket" "$HRANA_CLIENT_INDEX" || echo "WARNING: Patch may not have applied"
 fi
 
 echo "Running Prisma generate..."
