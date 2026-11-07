@@ -182,7 +182,7 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
           await deleteMessages(parts.map((p) => p.telegramMessageId as number).filter(Boolean))
         } catch { /* best-effort revoke; the row delete is the source of truth */ }
       }
-      await getTursoEdgeClient().execute({
+      await (await getTursoEdgeClient()).execute({
         sql: `DELETE FROM "DriveFile" WHERE "id" IN (${parts.map(() => '?').join(',')}) AND "ownerId" = ?`,
         args: [...parts.map((p) => p.id), ownerId],
       })
