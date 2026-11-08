@@ -1,12 +1,9 @@
-# Exclude all MP4s except our edge-shelf videos
-*.mp4
-*.m3u8
-!public/tv/receipt-sovereign-gpu-spot-narrated.mp4
-# Also exclude other large media directories
+# Exclude MP4s in bulk directories (too large for Vercel 100MB limit)
+docker/tv-station/videos/
 public/videos/
 public/demo/
-docker/tv-station/videos/
 app/tv/loop.mp4/
+# Do NOT exclude public/tv/ — our edge-shelf videos go there
 deploy/
 # Vercel standalone build copies public/ into .next/standalone/public/ —
 # the patterns above don't match there, so the 774MB of MP4s get uploaded
