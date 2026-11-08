@@ -126,3 +126,6 @@ file '/home/romel/hostamar.com/public/tv/sovereign-video-os-narrated.mp4'
 file '/home/romel/hostamar.com/public/tv/sovereign-video-os-shorts.mp4'
 file '/home/romel/hostamar.com/public/tv/pc-as-vps-episode.mp4'
 file '/home/romel/hostamar.com/public/tv/pc-as-vps-shorts.mp4'
+file '/home/romel/hostamar.com/public/tv/day1-vertical-narrated.mp4'
+
+file '/home/romel/hostamar.com/public/tv/day1-square-narrated.mp4'
