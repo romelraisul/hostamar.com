@@ -1,0 +1,12 @@
+{
+  "buildCommand": "prisma generate && NEXT_PUBLIC_SKIP_DB_MIGRATE=1 NEXT_IGNORE_INCORRECT_LOCKFILE=1 NODE_ENV=production next build",
+  "devCommand": "next dev",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 60
+    }
+  }
+}
