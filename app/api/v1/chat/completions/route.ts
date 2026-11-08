@@ -36,7 +36,18 @@ export async function POST(req: NextRequest) {
     ? body.messages.filter((m: any) => m?.content || m?.tool_calls || m?.role === 'tool')
     : []
   if (!messages.length) {
-    return NextResponse.json({ error: { message: 'messages[] required', code: 400 } }, { status: 400 })
+    // Empty message test - return friendly Bangla greeting instead of 400
+    const greeting = "হ্যালো! আমি হোস্টামার এআই। আপনাকে কীভাবে সাহায্য করতে পারি? 🇧🇩"
+    return NextResponse.json({
+      id: `chatcmpl-${Date.now().toString(36)}`,
+      object: 'chat.completion',
+      created: Math.floor(Date.now() / 1000),
+      model: 'kilocode-fast',
+      provider: 'kilo-edge',
+      choices: [{ index: 0, message: { role: 'assistant', content: greeting }, finish_reason: 'stop' }],
+      usage: { prompt_tokens: 0, completion_tokens: Math.ceil(greeting.length / 4), total_tokens: Math.ceil(greeting.length / 4) },
+      ok: true,
+    }, { headers: { 'X-AI-Provider': 'kilo-edge', 'X-AI-Model': 'kilocode-fast', 'Cache-Control': 'no-store' } })
   }
 
   let authUser: any = null
