@@ -26,6 +26,7 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { notify as telegramNotify } from '@/lib/support/telegram'
 import { pushFleetNote, LEAD_LANE } from '@/lib/support/fleet-push'
 import { recordOpsEvent } from '@/lib/ops-events'
+import { getTursoEdgeClient } from '@/lib/turso-edge'
 
 const TOPICS = ['billing', 'video', 'hosting', 'gaming', 'other'] as const
 
@@ -132,6 +133,23 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('[contact] DB persist failed, falling back to file store:', err instanceof Error ? err.message : err)
+    }
+
+    // (1c) Direct libsql fallback (bypasses Prisma adapter issues on Vercel)
+    if (persisted === 'none') {
+      try {
+        const client = await getTursoEdgeClient()
+        const directId = `lead-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+        await client.execute({
+          sql: `INSERT INTO Lead (id, name, email, phone, source, status, score, tags, notes, createdAt) VALUES (?, ?, ?, ?, 'contact-form', 'new', 0, ?, ?, ?)`,
+          args: [directId, name, email || null, phone || null, topic, notes, createdAt],
+        })
+        id = directId
+        persisted = 'db'
+        console.log('[contact] Direct libsql persist succeeded:', directId)
+      } catch (e) {
+        console.error('[contact] Direct libsql persist failed:', e instanceof Error ? e.message : e)
+      }
     }
 
     const record = { id, name, email, phone, topic, message, attachment, source: 'contact-form', createdAt }
