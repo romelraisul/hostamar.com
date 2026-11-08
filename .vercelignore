@@ -1,7 +1,10 @@
+# Exclude all MP4s except our edge-shelf videos
 public/tv/*.mp4
 public/tv/*.m3u8
-public/tv/hls/
-public/tv/hls2/
+!public/tv/receipt-sovereign-gpu-spot-narrated.mp4
+# Also exclude other large media directories
+public/videos/
+deploy/
 # Vercel standalone build copies public/ into .next/standalone/public/ —
 # the patterns above don't match there, so the 774MB of MP4s get uploaded
 # and hit the 100MB file-size limit. Block the standalone copy too.
