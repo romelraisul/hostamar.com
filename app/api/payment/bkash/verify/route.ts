@@ -16,6 +16,13 @@ import { slidingWindow, getClientIpEdge } from '@/lib/rate-limit-edge'
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
+    // Ensure DB tables exist before any Prisma operations (prod DB predates Transaction/Notification)
+    try {
+      await (await import('@/lib/ensure-schema')).ensureSchema()
+    } catch {
+      // fail-open: skip schema if Prisma init fails
+    }
+
     const authUser = await getAuthUser(req)
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -90,6 +97,13 @@ export async function POST(req: NextRequest) {
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
   try {
+    // Ensure DB tables exist before any Prisma operations (prod DB predates Transaction/Notification)
+    try {
+      await (await import('@/lib/ensure-schema')).ensureSchema()
+    } catch {
+      // fail-open: skip schema if Prisma init fails
+    }
+
     const authUser = await getAuthUser(req)
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
