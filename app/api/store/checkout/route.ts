@@ -131,14 +131,15 @@ export async function POST(req: NextRequest) {
     // shipping-options ∥ payment-collections share only cart_id. New depth = 4
     // hops: create → [options ∥ collection] → [ship ∥ session] → complete.
     const { cart } = await medusa('/carts', {
-      method: 'POST',
-      json: {
-        region_id: REGION,
-        items: [{ variant_id, quantity }],
-        email,
-        shipping_address: { first_name: first || 'Guest', last_name: rest.join(' ') || '.', address_1: address1, city, postal_code: postcode, country_code: 'bd', ...(phone ? { phone } : {}) },
-      },
-    })
+        method: 'POST',
+        json: {
+            region_id: REGION,
+            currency_code: 'bdt',
+            items: [{ variant_id, quantity }],
+            email,
+            shipping_address: { first_name: first || 'Guest', last_name: rest.join(' ') || '.', address_1: address1, city, postal_code: postcode, country_code: 'bd', ...(phone ? { phone } : {}) },
+          },
+        })
     if (!cart?.id) throw new Error('no cart')
     const [{ shipping_options }, { payment_collection }] = await Promise.all([
       medusa(`/shipping-options?cart_id=${cart.id}`),
