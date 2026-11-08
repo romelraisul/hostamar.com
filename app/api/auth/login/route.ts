@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { executeWithFailover } from '@/lib/db-failover'
 
 const BACKEND_URL = process.env.API_BACKEND_URL || 'https://api.hostamar.com'
 
@@ -14,6 +15,30 @@ function validatePassword(password: string): string | null {
   return null
 }
 
+async function findUserByEmail(email: string) {
+  return executeWithFailover(async (client, dbType) => {
+    const q = dbType === 'turso'
+      ? { sql: `SELECT * FROM "Customer" WHERE email = ? LIMIT 1`, args: [email] }
+      : { text: `SELECT * FROM "Customer" WHERE email = $1 LIMIT 1`, values: [email] }
+    const rows = dbType === 'turso'
+      ? (await client.execute(q as any)).rows
+      : (await client.query(q.text, q.values)).rows
+    return rows[0] || null
+  })
+}
+
+async function getMfaStatus(userId: string) {
+  return executeWithFailover(async (client, dbType) => {
+    const q = dbType === 'turso'
+      ? { sql: `SELECT "mfaSecret", "mfaEnabled" FROM "Customer" WHERE id = ? LIMIT 1`, args: [userId] }
+      : { text: `SELECT "mfaSecret", "mfaEnabled" FROM "Customer" WHERE id = $1 LIMIT 1`, values: [userId] }
+    const rows = dbType === 'turso'
+      ? (await client.execute(q as any)).rows
+      : (await client.query(q.text, q.values)).rows
+    return rows[0] || null
+  })
+}
+
 export async function POST(request: NextRequest) {
   // RATE LIMIT (edge layer, ALWAYS enforced): 10 logins / 15 min per IP
   const { slidingWindow, getClientIpEdge } = await import('@/lib/rate-limit-edge')
@@ -25,88 +50,68 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // ponytail: any DATABASE_URL means local DB path (postgres on Neon, libsql on Turso)
-  const hasLocalDb = !!process.env.DATABASE_URL && !process.env.API_BACKEND_URL
+  // Use db-failover for edge-compatible login (works on Cloudflare Workers/Pages)
+  // This replaces the Prisma-only path which fails on edge due to @libsql/client/web WebSocket issues
+  try {
+    const { comparePassword, signToken } = await import('@/lib/auth-utils')
 
-  if (hasLocalDb) {
-    try {
-      const { comparePassword, signToken } = await import('@/lib/auth-utils')
-      const { prisma } = await import('@/lib/prisma')
+    const body = await request.json()
+    const { email, password } = body
 
-      const body = await request.json()
-      const { email, password } = body
+    const normalizedEmail = email?.trim?.().toLowerCase?.().replace(/\.com\.com+$/, '.com').replace(/\.com\.com\.com+$/, '.com').replace(/\s+/g, '') || ''
 
-      const normalizedEmail = email?.trim?.().toLowerCase?.().replace(/\.com\.com+$/, '.com').replace(/\.com\.com\.com+$/, '.com').replace(/\s+/g, '') || ''
-
-      const pwErr = validatePassword(password)
-      if (!normalizedEmail || !validateEmail(normalizedEmail)) {
-        return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
-      }
-      if (pwErr) {
-        return NextResponse.json({ error: pwErr }, { status: 400 })
-      }
-
-      const customer = await prisma.customer.findUnique({ where: { email: normalizedEmail } })
-      if (!customer) {
-        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
-      }
-
-      const valid = await comparePassword(password, customer.password!)
-      if (!valid) {
-        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
-      }
-
-      const token = signToken({ id: customer.id, email: customer.email, name: customer.name, role: customer.role })
-
-      // MFA gate (optional TOTP): if enabled, require a valid 6-digit code
-      // before issuing the session cookie.
-      let mfaRow: any = null
-      try {
-        mfaRow = await prisma.$queryRawUnsafe(
-          `SELECT "mfaSecret", "mfaEnabled" FROM "Customer" WHERE id = $1 LIMIT 1`, customer.id,
-        )
-      } catch { /* columns not present yet → no MFA configured */ }
-      const mfa = Array.isArray(mfaRow) ? mfaRow[0] : null
-      if (mfa?.mfaEnabled) {
-        const { totpVerify } = await import('@/lib/totp')
-        const supplied = String((body as any)?.mfaToken || (request.headers.get('x-mfa-token') || ''))
-        if (!totpVerify(mfa.mfaSecret, supplied)) {
-          return NextResponse.json(
-            { mfaRequired: true, error: 'MFA কোড লাগবে (6-digit, Google Authenticator)' },
-            { status: 401 },
-          )
-        }
-      }
-
-      // SECURITY: server-set HttpOnly cookie — XSS cannot read the token.
-      // Client keeps receiving `token` in JSON for Bearer/CLI use, but the
-      // browser session rides on this cookie exclusively.
-      const res = NextResponse.json({
-        token,
-        user: { id: customer.id, email: customer.email, name: customer.name, role: customer.role }
-      })
-      // BUG (found by E2E customer sim 2026-10-15): res.cookies.set DEDUPES by
-      // cookie name — the expiry writes below erased the real session cookie
-      // and shipped only "auth_token=" → every login produced an empty cookie
-      // → infinite login loop. Raw Set-Cookie headers append instead.
-      // MIGRATION 2026-10-15: subdomain removed → all Video OS traffic is
-      // same-origin on hostamar.com. Host-only cookie (no Domain attr) +
-      // SameSite=Lax works natively everywhere; the Domain=None era is over.
-      res.headers.append('Set-Cookie',
-        `auth_token=${token}; Path=/; Max-Age=${60*60*24*30}; Secure; HttpOnly; SameSite=Lax`)
-      // Expire stale pre-migration cookies: the old Domain=.hostamar.com
-      // (None) cookie and any www-variant. The host-only new cookie above
-      // replaces the old host-only one by name+path.
-      res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=.hostamar.com; Secure; HttpOnly; SameSite=Lax')
-      res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-      return res
-    } catch (e: any) {
-      console.error('Local login error, falling back to proxy:', e)
-      // Fall through to proxy below
+    const pwErr = validatePassword(password)
+    if (!normalizedEmail || !validateEmail(normalizedEmail)) {
+      return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
     }
+    if (pwErr) {
+      return NextResponse.json({ error: pwErr }, { status: 400 })
+    }
+
+    // Use db-failover to find user (works on edge: Turso HTTPS -> Neon -> Supabase)
+    const customerResult = await findUserByEmail(normalizedEmail)
+    const customer = customerResult?.result
+    if (!customer) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+
+    const valid = await comparePassword(password, (customer as any).password!)
+    if (!valid) {
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
+    }
+
+    const token = signToken({ id: customer.id, email: customer.email, name: customer.name, role: customer.role })
+
+    // MFA gate (optional TOTP)
+    const mfaResult = await getMfaStatus((customer as any).id)
+    const mfa = mfaResult?.result
+    if (mfa?.mfaEnabled) {
+      const { totpVerify } = await import('@/lib/totp')
+      const supplied = String((body as any)?.mfaToken || (request.headers.get('x-mfa-token') || ''))
+      if (!totpVerify(mfa.mfaSecret, supplied)) {
+        return NextResponse.json(
+          { mfaRequired: true, error: 'MFA কোড লাগবে (6-digit, Google Authenticator)' },
+          { status: 401 },
+        )
+      }
+    }
+
+    // SECURITY: server-set HttpOnly cookie
+    const res = NextResponse.json({
+      token,
+      user: { id: customer.id, email: customer.email, name: customer.name, role: customer.role }
+    })
+    res.headers.append('Set-Cookie',
+      `auth_token=${token}; Path=/; Max-Age=${60*60*24*30}; Secure; HttpOnly; SameSite=Lax`)
+    res.headers.append('Set-Cookie', 'auth_token=; Path=/; Max-Age=0; Domain=.hostamar.com; Secure; HttpOnly; SameSite=Lax')
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    return res
+  } catch (e: any) {
+    console.error('Edge login error:', e)
+    // Fall through to proxy as last resort
   }
 
-  // Proxy to local backend via Cloudflare tunnel
+  // Proxy to local backend via Cloudflare tunnel (fallback)
   try {
     const body = await request.json()
     const resp = await fetch(`${BACKEND_URL}/api/auth/login`, {
