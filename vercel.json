@@ -1,7 +1,7 @@
 {
   "buildCommand": "prisma generate && NEXT_PUBLIC_SKIP_DB_MIGRATE=1 NEXT_IGNORE_INCORRECT_LOCKFILE=1 NODE_ENV=production next build",
   "devCommand": "next dev",
-  "installCommand": "npm ci",
+  "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["sin1"],
   "functions": {
