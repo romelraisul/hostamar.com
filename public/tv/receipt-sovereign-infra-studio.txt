@@ -1,0 +1,4 @@
+Title: Hostamar Sovereign Infra Receipt — EU-BD GPU Spot, Data Never Leaves Region
+Description: RTX 4090 spot ৳0.20/hr, H100 spot ৳1.50/hr, Infisical secrets $0, OpenObserve logs $0, Coolify self-host $0. TOTAL ৳0.20 — own your cloud. Comment SOVEREIGN + follow.
+Tags: hostamar, sovereign infra, GPU spot, RTX 4090, H100, EU-BD, data residency, Coolify, Infisical
+Category: Technology

@@ -170,7 +170,24 @@ state/
 FINAL_DEPLOY_REPORT.md
 LIVE_*.md
 *.mp4
+# --- edge shelf: our own renders, force-included so they ship to Vercel+CF ---
+# (PC-off-safe content; third-party cc0/cmt/bogra/coxbazar/travel are excluded below)
 !public/tv/receipt-sovereign-gpu-spot-narrated.mp4
+!public/tv/receipt-*.mp4
+!public/tv/build-log-*-narrated.mp4
+!public/tv/build-log-*-short*.mp4
+!public/tv/build-log-*-shorts.mp4
+!public/tv/day1-*-narrated.mp4
+!public/tv/pc-as-vps*.mp4
+!public/tv/sovereign-*-narrated.mp4
+!public/tv/sovereign-*.mp4
+!public/tv/shorts-receipt-*.mp4
+!public/tv/shorts-sovereign-*.mp4
+!public/tv/shorts-build-log-*.mp4
+!public/tv/shorts-day1-*.mp4
+!public/tv/shorts-code-to-screen*.mp4
+!public/tv/code-to-screen-narrated.mp4
+!public/tv/focusflow-pitch-shorts.mp4
 !docker/tv-station/videos/viral/.gitkeep
 docker/tts/models/
 *.onnx
