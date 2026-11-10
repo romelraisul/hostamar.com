@@ -190,6 +190,8 @@ LIVE_*.md
 !public/tv/focusflow-pitch-shorts.mp4
 !public/tv/agent-cloud-*.mp4
 !public/tv/autopilot-v2-shorts.mp4
+!public/tv/*-episode-narrated.mp4
+!public/tv/*-programme-narrated.mp4
 !docker/tv-station/videos/viral/.gitkeep
 docker/tts/models/
 *.onnx
