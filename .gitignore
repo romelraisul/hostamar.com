@@ -188,6 +188,8 @@ LIVE_*.md
 !public/tv/shorts-code-to-screen*.mp4
 !public/tv/code-to-screen-narrated.mp4
 !public/tv/focusflow-pitch-shorts.mp4
+!public/tv/agent-cloud-*.mp4
+!public/tv/autopilot-v2-shorts.mp4
 !docker/tv-station/videos/viral/.gitkeep
 docker/tts/models/
 *.onnx
@@ -231,7 +233,7 @@ data/leads/
 *.bak_*
 *.bak-*
 
-# Third-party footage must NEVER ship to the edge shelf. CC0 (nasa/prelinger) and
+# Third-party footage exclusion (enforced by safety-review.sh; not merely gitignore)
 # downloaded (cmt*) clips are not our content; publishing them at hostamar.com/tv/
 # presents other people's work as ours (YouTube reused-content / copyright).
 # Kept on disk for the local tunnel feed; excluded from git and the deploy.
