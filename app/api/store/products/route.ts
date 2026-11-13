@@ -2,7 +2,10 @@
 // at the edge is irrelevant for a 2-click buyer and removes the per-request
 // cold function + bridge hop that made 2/3 prod loads take ~20s.
 // CDN cache (s-maxage=300) absorbs all traffic; no Worker CPU/memory for edge cache.
-export const revalidate = 300
+// FORGE 2026-11-13: ISR (revalidate=300) caused Cloudflare 1101 errors on hostamar.com
+// — switch to force-dynamic like checkout route (verified working), CDN headers
+// still provide 300s edge cache via s-maxage.
+export const dynamic = 'force-dynamic'
 
 // ============================================================================
 // GET /api/store/products — public Medusa catalog bridge (FORGE, 2026-09-14).
