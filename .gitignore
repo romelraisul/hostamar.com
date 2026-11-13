@@ -192,6 +192,29 @@ LIVE_*.md
 !public/tv/autopilot-v2-shorts.mp4
 !public/tv/*-episode-narrated.mp4
 !public/tv/*-programme-narrated.mp4
+# --- edge shelf v2 (2026-11-14 shift): force-include our own renders published
+# by publish_own_to_edge.py. *.mp4 ignores everything; these negations re-include
+# OUR renders only. Third-party guards (cc0_/cmt[0-9]*/bogra/coxbazar/travel) stay
+# below and are NOT negated, so they can never ship.
+!public/tv/HostamarH3_*.mp4
+!public/tv/shorts-*.mp4
+!public/tv/episode-*.mp4
+!public/tv/eu-bd-gpu-spot*.mp4
+!public/tv/gps-episode*.mp4
+!public/tv/gpu-spot-market*.mp4
+!public/tv/build-log-*.mp4
+!public/tv/cdn-edge*.mp4
+!public/tv/dubbing-bn*.mp4
+!public/tv/edge-compute*.mp4
+!public/tv/hydrogen-economy*.mp4
+!public/tv/permafrost*.mp4
+!public/tv/quantum-computing*.mp4
+!public/tv/shop-winter*.mp4
+!public/tv/store-124*.mp4
+!public/tv/trillion-market*.mp4
+!public/tv/video-ads*.mp4
+!public/tv/agent-autonomous*.mp4
+!public/tv/final_output*.mp4
 !docker/tv-station/videos/viral/.gitkeep
 docker/tts/models/
 *.onnx
