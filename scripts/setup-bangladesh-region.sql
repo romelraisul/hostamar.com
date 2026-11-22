@@ -51,3 +51,19 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO region_payment_provider (id, region_id, payment_provider_id, created_at, updated_at)
 VALUES ('rpp_bangladesh_default', 'reg_01M27QBX4C3XKZFWCQD47CM2EJ', 'pp_system_default', NOW(), NOW())
 ON CONFLICT (region_id, payment_provider_id) DO NOTHING;
+
+-- FORGE: Create price_list and price_preference for Bangladesh region BDT pricing
+-- Without this, calculated prices don't return in Store API (blocks add-to-cart/checkout)
+INSERT INTO price_list (id, status, title, description, type, created_at, updated_at)
+VALUES ('plist_01M27QBX4C3XKZFWCQD47CM2EJ', 'active', 'Bangladesh Prices', 'Bangladesh region price list', 'sale', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET status = 'active', updated_at = NOW();
+
+-- Link existing BDT prices to Bangladesh price_list
+UPDATE price
+SET price_list_id = 'plist_01M27QBX4C3XKZFWCQD47CM2EJ', updated_at = NOW()
+WHERE currency_code = 'bdt' AND price_list_id IS NULL;
+
+-- Create price_preference linking Bangladesh region to Bangladesh price_list
+INSERT INTO price_preference (id, attribute, value, is_tax_inclusive, created_at, updated_at)
+VALUES ('prpref_bangladesh_region', 'region_id', 'reg_01M27QBX4C3XKZFWCQD47CM2EJ', false, NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
