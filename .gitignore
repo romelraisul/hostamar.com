@@ -84,3 +84,17 @@ logs/
 **/*.pem
 **/*.key
 .env.run
+.env.cf-secrets
+.env.dbg
+.env.dbg2
+.env.hostamarcom.pull
+.env.opennext
+.env.prod
+.env.prod2
+.env.production.pull
+.env.production.vercel
+.env.vercel-check-prod
+.env.vercel.check
+.env.vercel.prod
+.env.vercel.production
+.tv-agent-secret.local
